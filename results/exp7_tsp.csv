@@ -1,0 +1,6 @@
+method,total_cost_s,savings_vs_original_pct,runtime_ms,ratio_optimal
+original_order,7662.1,0.0,,1
+held_karp,3557.5,53.6,2.8,1
+nn_2opt,3557.5,53.6,0.7,1.0000
+sa_best_of_5_seeds,3557.5,53.6,29.3,1.0000
+sa_mean±std,3564.6±9.7,,,

@@ -1,0 +1,57 @@
+[
+  {
+    "id": 1,
+    "from": "Bưu điện Thành phố",
+    "to": "Chợ Bến Thành",
+    "time_s": 472.0,
+    "distance_m": 1514.8,
+    "google_maps_url": "https://www.google.com/maps/dir/10.7791894,106.7001527/10.7721929,106.6975561/data=!4m2!4m1!3e0",
+    "geojson": "results/exp6_routes/route_1.geojson",
+    "png": "results/exp6_routes/route_1.png",
+    "note_vi": "Nhóm mở google_maps_url lúc ~07:30, chụp màn hình đặt cạnh PNG này trong báo cáo."
+  },
+  {
+    "id": 2,
+    "from": "ĐH Khoa học Tự nhiên (Nguyễn Văn Cừ)",
+    "to": "Thảo Cầm Viên",
+    "time_s": 1425.6,
+    "distance_m": 6988.2,
+    "google_maps_url": "https://www.google.com/maps/dir/10.7628393,106.6825233/10.7872537,106.7050041/data=!4m2!4m1!3e0",
+    "geojson": "results/exp6_routes/route_2.geojson",
+    "png": "results/exp6_routes/route_2.png",
+    "note_vi": "Nhóm mở google_maps_url lúc ~07:30, chụp màn hình đặt cạnh PNG này trong báo cáo."
+  },
+  {
+    "id": 3,
+    "from": "Cầu Kiệu",
+    "to": "Bảo tàng Hồ Chí Minh (Bến Nhà Rồng)",
+    "time_s": 1719.2,
+    "distance_m": 7117.9,
+    "google_maps_url": "https://www.google.com/maps/dir/10.7928774,106.6817525/10.7680655,106.705993/data=!4m2!4m1!3e0",
+    "geojson": "results/exp6_routes/route_3.geojson",
+    "png": "results/exp6_routes/route_3.png",
+    "note_vi": "Nhóm mở google_maps_url lúc ~07:30, chụp màn hình đặt cạnh PNG này trong báo cáo."
+  },
+  {
+    "id": 4,
+    "from": "Chợ Tân Định",
+    "to": "Bitexco Financial Tower",
+    "time_s": 1001.2,
+    "distance_m": 4306.8,
+    "google_maps_url": "https://www.google.com/maps/dir/10.7885505,106.6911219/10.7718636,106.7039118/data=!4m2!4m1!3e0",
+    "geojson": "results/exp6_routes/route_4.geojson",
+    "png": "results/exp6_routes/route_4.png",
+    "note_vi": "Nhóm mở google_maps_url lúc ~07:30, chụp màn hình đặt cạnh PNG này trong báo cáo."
+  },
+  {
+    "id": 5,
+    "from": "BV Từ Dũ",
+    "to": "BV Nhi Đồng 2",
+    "time_s": 1184.6,
+    "distance_m": 5667.5,
+    "google_maps_url": "https://www.google.com/maps/dir/10.7691351,106.6871325/10.7791968,106.702175/data=!4m2!4m1!3e0",
+    "geojson": "results/exp6_routes/route_5.geojson",
+    "png": "results/exp6_routes/route_5.png",
+    "note_vi": "Nhóm mở google_maps_url lúc ~07:30, chụp màn hình đặt cạnh PNG này trong báo cáo."
+  }
+]

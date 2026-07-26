@@ -149,16 +149,34 @@ def test_multiroute_duplicate_stops_422():
 
 # ------------------------------------------------------------- benchmark
 
+from pathlib import Path
 
-def test_benchmark_missing_results_404():
+RESULTS_BUILT = (Path(__file__).resolve().parents[2]
+                 / "results" / "exp3_benchmark.csv").exists()
+
+
+def test_benchmark_endpoint():
+    """404 RESULTS_NOT_FOUND before Phase 6 has run; real data afterwards."""
     r = client.post("/api/benchmark", json={})
-    assert r.status_code == 404
-    assert r.json()["error"]["code"] == "RESULTS_NOT_FOUND"
+    if RESULTS_BUILT:
+        assert r.status_code == 200
+        exps = r.json()["experiments"]
+        assert {e["experiment_id"] for e in exps} >= {1, 2, 3, 4, 5, 7}
+        exp3 = next(e for e in exps if e["experiment_id"] == 3)
+        assert len(exp3["rows"]) == 4000
+        assert {"algorithm", "nodes_expanded", "runtime_ms"} <= set(exp3["rows"][0])
+    else:
+        assert r.status_code == 404
+        assert r.json()["error"]["code"] == "RESULTS_NOT_FOUND"
 
 
-def test_benchmark_single_missing_404():
+def test_benchmark_single_experiment():
     r = client.post("/api/benchmark", json={"experiment_id": 3})
-    assert r.status_code == 404
+    if RESULTS_BUILT:
+        assert r.status_code == 200
+        assert len(r.json()["experiments"]) == 1
+    else:
+        assert r.status_code == 404
 
 
 # ------------------------------------------------- explanation deep-dive

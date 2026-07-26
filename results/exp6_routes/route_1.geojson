@@ -1,0 +1,35 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "from": "Bưu điện Thành phố",
+        "to": "Chợ Bến Thành",
+        "time_s": 472.0,
+        "distance_m": 1514.8
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            106.7001527,
+            10.7791894
+          ],
+          [
+            106.6990461,
+            10.7758208
+          ],
+          [
+            106.7002992,
+            10.7729233
+          ],
+          [
+            106.6975561,
+            10.7721929
+          ]
+        ]
+      }
+    }
+  ]
+}

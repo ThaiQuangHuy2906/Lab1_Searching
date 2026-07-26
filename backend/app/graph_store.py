@@ -29,8 +29,11 @@ class GraphStore:
     """Immutable view of one graph + profiles, with precomputed weights."""
 
     def __init__(self, graph: GraphFile, profiles: TrafficProfiles,
-                 level: GraphLevel) -> None:
+                 level: GraphLevel, gamma: float | None = None) -> None:
+        """gamma: override the congestion weight ONLY for benchmark exp 5;
+        None means the locked project constant."""
         self.level: GraphLevel = level
+        self.gamma = gamma
         self.graph = graph
         self.profiles = profiles
 
@@ -57,7 +60,9 @@ class GraphStore:
             for slot in TIME_SLOTS:
                 cong = profiles.profiles[slot]
                 self._weight[(mode, slot)] = {
-                    e.id: edge_weight(e, cong[e.id], mode) for e in graph.edges
+                    e.id: (edge_weight(e, cong[e.id], mode) if gamma is None
+                           else edge_weight(e, cong[e.id], mode, gamma))
+                    for e in graph.edges
                 }
 
     # ------------------------------------------------------------------ api
@@ -99,6 +104,11 @@ class GraphStore:
             dist += e.length_m
             time_s += self._weight[("balanced", slot)][e.id]
         return cost, dist, time_s
+
+    def reweighted(self, gamma: float) -> "GraphStore":
+        """A sibling store whose balanced/time weights use a custom gamma
+        (benchmark experiment 5 — sensitivity curve)."""
+        return GraphStore(self.graph, self.profiles, self.level, gamma=gamma)
 
     # ---------------------------------------------------------------- load
 

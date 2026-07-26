@@ -28,9 +28,12 @@ def haversine_m(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
     return 2 * r * math.asin(math.sqrt(a))
 
 
-def congestion_factor(level: int) -> float:
-    """f_cong = 1 + GAMMA * (level - 1) / 4, level in [1..5] -> [1 .. 1+GAMMA]."""
-    return 1.0 + GAMMA * (level - 1) / 4.0
+def congestion_factor(level: int, gamma: float = GAMMA) -> float:
+    """f_cong = 1 + gamma * (level - 1) / 4, level in [1..5] -> [1 .. 1+gamma].
+
+    gamma defaults to the locked project constant (rule 4); the override
+    exists ONLY for the sensitivity experiment (benchmark exp 5)."""
+    return 1.0 + gamma * (level - 1) / 4.0
 
 
 def edge_penalty_s(edge: Edge) -> float:
@@ -41,18 +44,21 @@ def edge_penalty_s(edge: Edge) -> float:
             + PENALTY_S["traffic_light"] * r.traffic_light)
 
 
-def edge_weight(edge: Edge, congestion: int, mode: Mode) -> float:
+def edge_weight(edge: Edge, congestion: int, mode: Mode,
+                gamma: float = GAMMA) -> float:
     """weight(e, h, mode) — SCHEMA §D. Meters for distance, seconds otherwise.
 
     t_free is recomputed EXACTLY as length_m / (free_speed_kmh / 3.6)
     instead of reading the stored free_travel_time_s: that field is
     rounded to 0.1 s for display, and a rounded-DOWN value would break
     the w >= length/v_max chain the admissibility proof rests on
-    (HEURISTIC-PROOF.md §2, Bổ đề 3).
+    (HEURISTIC-PROOF.md §2, Bổ đề 3). `gamma` override is for benchmark
+    experiment 5 only — the product always runs the locked default.
     """
     if mode == "distance":
         return edge.length_m
-    timed = (edge.length_m / (edge.free_speed_kmh / 3.6)) * congestion_factor(congestion)
+    t_free = edge.length_m / (edge.free_speed_kmh / 3.6)
+    timed = t_free * congestion_factor(congestion, gamma)
     if mode == "time":
         return timed
     return timed + edge_penalty_s(edge)  # balanced (default)

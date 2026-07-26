@@ -163,13 +163,13 @@ Button/SelectTrigger/Switch/input. Switch: thumb TRẮNG cố định + viền
 Thanh nổi giữa-đáy bản đồ, nền `surface-panel/95`, viền `surface-border`:
 `[⏮ step-back] [▶/⏸] [⏭ step-forward] [━━━●━━ slider] [Bước 37/143] [tốc độ ▾]`
 
-- Tốc độ: 0.5× / 1× / 2× / 4× / 8× (base 500 ms/bước).
+- Tốc độ: 0.5× / 1× / 2× / 4× / 8× / 16× (base 500 ms/bước; 16× thêm ở v10e — 8× vẫn chậm với trace G_real hàng nghìn bước).
 - **Đồng bộ hai chiều với bảng g/h/f:** kéo slider → bản đồ + bảng cùng nhảy tới
   bước đó; hàng node đang expand **sáng lên** (nền white/10, chữ trắng) và tự cuộn
   vào tầm nhìn; click một hàng trong bảng → nhảy tới bước node đó được expand.
 - Phím tắt: `Space` play/pause · `←`/`→` lùi/tiến 1 bước.
 - Đây là trải nghiệm xuất hiện xuyên suốt video giảng thuật toán — mọi thay đổi
-  phải mượt ở 8× trên G_demo.
+  phải mượt ở 16× trên G_demo.
 
 ## 6. Bản đồ
 

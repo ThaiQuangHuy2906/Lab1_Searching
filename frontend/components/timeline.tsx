@@ -14,7 +14,7 @@ import {
 import { useApp } from "@/lib/store";
 
 const BASE_MS = 500;
-const SPEEDS = [0.5, 1, 2, 4, 8];
+const SPEEDS = [0.5, 1, 2, 4, 8, 16];
 
 export function Timeline() {
   const trace = useApp((s) => s.trace);

@@ -1,0 +1,5 @@
+# Pinned versions verified on Python 3.14.0 / Windows 11 (Phase 0).
+# NOTE: PROMPT-MASTER specifies Python 3.11, but only 3.14 is installed on the
+# team machine — approved deviation, see docs/TIENDO.md (Phase 0 notes).
+pydantic==2.13.4
+pytest==9.1.1

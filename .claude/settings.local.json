@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -c \"import pypdf; print\\('pypdf OK'\\)\")",
+      "Bash(python -c \"import PyPDF2; print\\('PyPDF2 OK'\\)\")",
+      "Bash(python -c \"import fitz; print\\('pymupdf OK'\\)\")",
+      "Bash(python -c \"import pdfplumber; print\\('pdfplumber OK'\\)\")",
+      "Bash(python -)",
+      "Bash(py --list)",
+      "Bash(git --version)",
+      "Bash(npm --version)"
+    ]
+  }
+}

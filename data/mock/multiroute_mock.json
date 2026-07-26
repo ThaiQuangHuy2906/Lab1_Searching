@@ -1,0 +1,69 @@
+{
+  "method": "nn_2opt",
+  "mode": "balanced",
+  "time_slot": "07:30",
+  "graph": "demo",
+  "found": true,
+  "order": [
+    "n0001",
+    "n0007",
+    "n0005",
+    "n0002"
+  ],
+  "legs": [
+    {
+      "from_node": "n0001",
+      "to_node": "n0007",
+      "path": [
+        "n0001",
+        "n0007"
+      ],
+      "metrics": {
+        "total_cost": 162.9,
+        "total_distance_m": 811.0,
+        "total_time_s": 162.9
+      }
+    },
+    {
+      "from_node": "n0007",
+      "to_node": "n0005",
+      "path": [
+        "n0007",
+        "n0001",
+        "n0006",
+        "n0004",
+        "n0005"
+      ],
+      "metrics": {
+        "total_cost": 641.4,
+        "total_distance_m": 2880.3,
+        "total_time_s": 641.4
+      }
+    },
+    {
+      "from_node": "n0005",
+      "to_node": "n0002",
+      "path": [
+        "n0005",
+        "n0002"
+      ],
+      "metrics": {
+        "total_cost": 123.6,
+        "total_distance_m": 516.0,
+        "total_time_s": 123.6
+      }
+    }
+  ],
+  "totals": {
+    "total_cost": 927.9,
+    "total_distance_m": 4207.3,
+    "total_time_s": 927.9
+  },
+  "original_order_totals": {
+    "total_cost": 1573.2,
+    "total_distance_m": 6707.3,
+    "total_time_s": 1573.2
+  },
+  "savings_pct": 41.0,
+  "optimal_guarantee": false
+}

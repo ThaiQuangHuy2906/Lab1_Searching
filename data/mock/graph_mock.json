@@ -1,0 +1,348 @@
+{
+  "meta": {
+    "name": "G_mock",
+    "bbox": [
+      106.68,
+      10.76,
+      106.72,
+      10.8
+    ],
+    "directed": true,
+    "created": "2026-07-26",
+    "crs": "EPSG:4326",
+    "node_count": 8,
+    "edge_count": 16
+  },
+  "nodes": [
+    {
+      "id": "n0001",
+      "name": "Chợ Bến Thành",
+      "lat": 10.7725,
+      "lon": 106.698,
+      "type": "landmark"
+    },
+    {
+      "id": "n0002",
+      "name": "Nhà thờ Đức Bà",
+      "lat": 10.7798,
+      "lon": 106.699,
+      "type": "landmark"
+    },
+    {
+      "id": "n0003",
+      "name": "Bưu điện Thành phố",
+      "lat": 10.7797,
+      "lon": 106.6999,
+      "type": "landmark"
+    },
+    {
+      "id": "n0004",
+      "name": "Dinh Độc Lập",
+      "lat": 10.777,
+      "lon": 106.6953,
+      "type": "landmark"
+    },
+    {
+      "id": "n0005",
+      "name": "Hồ Con Rùa",
+      "lat": 10.7826,
+      "lon": 106.6959,
+      "type": "landmark"
+    },
+    {
+      "id": "n0006",
+      "name": "Công viên Tao Đàn",
+      "lat": 10.7736,
+      "lon": 106.6923,
+      "type": "landmark"
+    },
+    {
+      "id": "n0007",
+      "name": "Bitexco Financial Tower",
+      "lat": 10.7717,
+      "lon": 106.7043,
+      "type": "landmark"
+    },
+    {
+      "id": "n0008",
+      "name": "Nhà hát Thành phố",
+      "lat": 10.7766,
+      "lon": 106.7032,
+      "type": "landmark"
+    }
+  ],
+  "edges": [
+    {
+      "id": "e00001",
+      "u": "n0001",
+      "v": "n0006",
+      "name": "Trương Định",
+      "length_m": 733.4,
+      "highway": "residential",
+      "oneway": false,
+      "free_speed_kmh": 30,
+      "free_travel_time_s": 88.0,
+      "risk": {
+        "flood": 1,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00002",
+      "u": "n0001",
+      "v": "n0007",
+      "name": "Hàm Nghi",
+      "length_m": 811.0,
+      "highway": "primary",
+      "oneway": false,
+      "free_speed_kmh": 45,
+      "free_travel_time_s": 64.9,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 1
+      }
+    },
+    {
+      "id": "e00003",
+      "u": "n0001",
+      "v": "n0008",
+      "name": "Lê Lợi",
+      "length_m": 917.6,
+      "highway": "primary",
+      "oneway": false,
+      "free_speed_kmh": 45,
+      "free_travel_time_s": 73.4,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 1
+      }
+    },
+    {
+      "id": "e00004",
+      "u": "n0002",
+      "v": "n0003",
+      "name": "Công xã Paris",
+      "length_m": 130.9,
+      "highway": "tertiary",
+      "oneway": false,
+      "free_speed_kmh": 35,
+      "free_travel_time_s": 13.5,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00005",
+      "u": "n0002",
+      "v": "n0004",
+      "name": "Lê Duẩn",
+      "length_m": 647.5,
+      "highway": "primary",
+      "oneway": false,
+      "free_speed_kmh": 45,
+      "free_travel_time_s": 51.8,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 1
+      }
+    },
+    {
+      "id": "e00006",
+      "u": "n0002",
+      "v": "n0008",
+      "name": "Đồng Khởi",
+      "length_m": 670.4,
+      "highway": "secondary",
+      "oneway": true,
+      "free_speed_kmh": 40,
+      "free_travel_time_s": 60.3,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 1
+      }
+    },
+    {
+      "id": "e00007",
+      "u": "n0003",
+      "v": "n0002",
+      "name": "Công xã Paris",
+      "length_m": 130.9,
+      "highway": "tertiary",
+      "oneway": false,
+      "free_speed_kmh": 35,
+      "free_travel_time_s": 13.5,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00008",
+      "u": "n0003",
+      "v": "n0005",
+      "name": "Hai Bà Trưng",
+      "length_m": 654.6,
+      "highway": "secondary",
+      "oneway": true,
+      "free_speed_kmh": 40,
+      "free_travel_time_s": 58.9,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 1
+      }
+    },
+    {
+      "id": "e00009",
+      "u": "n0004",
+      "v": "n0002",
+      "name": "Lê Duẩn",
+      "length_m": 647.5,
+      "highway": "primary",
+      "oneway": false,
+      "free_speed_kmh": 45,
+      "free_travel_time_s": 51.8,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 1
+      }
+    },
+    {
+      "id": "e00010",
+      "u": "n0004",
+      "v": "n0005",
+      "name": "Pasteur",
+      "length_m": 693.4,
+      "highway": "secondary",
+      "oneway": true,
+      "free_speed_kmh": 40,
+      "free_travel_time_s": 62.4,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00011",
+      "u": "n0005",
+      "v": "n0002",
+      "name": "Phạm Ngọc Thạch",
+      "length_m": 516.0,
+      "highway": "secondary",
+      "oneway": true,
+      "free_speed_kmh": 40,
+      "free_travel_time_s": 46.4,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 1
+      }
+    },
+    {
+      "id": "e00012",
+      "u": "n0006",
+      "v": "n0001",
+      "name": "Trương Định",
+      "length_m": 733.4,
+      "highway": "residential",
+      "oneway": false,
+      "free_speed_kmh": 30,
+      "free_travel_time_s": 88.0,
+      "risk": {
+        "flood": 1,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00013",
+      "u": "n0006",
+      "v": "n0004",
+      "name": "Huyền Trân Công Chúa",
+      "length_m": 642.5,
+      "highway": "residential",
+      "oneway": true,
+      "free_speed_kmh": 30,
+      "free_travel_time_s": 77.1,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 1,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00014",
+      "u": "n0007",
+      "v": "n0001",
+      "name": "Hàm Nghi",
+      "length_m": 811.0,
+      "highway": "primary",
+      "oneway": false,
+      "free_speed_kmh": 45,
+      "free_travel_time_s": 64.9,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 1
+      }
+    },
+    {
+      "id": "e00015",
+      "u": "n0008",
+      "v": "n0001",
+      "name": "Lê Lợi",
+      "length_m": 917.6,
+      "highway": "primary",
+      "oneway": false,
+      "free_speed_kmh": 45,
+      "free_travel_time_s": 73.4,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 1
+      }
+    },
+    {
+      "id": "e00016",
+      "u": "n0008",
+      "v": "n0007",
+      "name": "Hải Triều",
+      "length_m": 617.2,
+      "highway": "tertiary",
+      "oneway": true,
+      "free_speed_kmh": 35,
+      "free_travel_time_s": 63.5,
+      "risk": {
+        "flood": 0,
+        "construction": 1,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    }
+  ]
+}

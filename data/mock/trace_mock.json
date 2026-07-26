@@ -1,0 +1,210 @@
+{
+  "algorithm": "astar",
+  "mode": "balanced",
+  "time_slot": "07:30",
+  "graph": "demo",
+  "found": true,
+  "path": [
+    "n0006",
+    "n0001",
+    "n0008"
+  ],
+  "metrics": {
+    "total_cost": 395.0,
+    "total_distance_m": 1651.0,
+    "total_time_s": 395.0,
+    "nodes_expanded": 7,
+    "max_frontier": 4,
+    "runtime_ms": 1.2,
+    "optimal_guarantee": true,
+    "epsilon_bound": null,
+    "beam_width": null,
+    "trace_truncated": false
+  },
+  "trace": [
+    {
+      "step": 1,
+      "expanded": "n0006",
+      "frontier": [
+        "n0001",
+        "n0004"
+      ],
+      "g": {
+        "n0001": 214.0,
+        "n0004": 164.9
+      },
+      "h": {
+        "n0001": 58.3,
+        "n0004": 69.1
+      },
+      "f": {
+        "n0001": 272.3,
+        "n0004": 234.1
+      }
+    },
+    {
+      "step": 2,
+      "expanded": "n0004",
+      "frontier": [
+        "n0001",
+        "n0002",
+        "n0005"
+      ],
+      "g": {
+        "n0001": 214.0,
+        "n0002": 319.4,
+        "n0005": 297.5
+      },
+      "h": {
+        "n0001": 58.3,
+        "n0002": 46.4,
+        "n0005": 83.2
+      },
+      "f": {
+        "n0001": 272.3,
+        "n0002": 365.9,
+        "n0005": 380.7
+      }
+    },
+    {
+      "step": 3,
+      "expanded": "n0001",
+      "frontier": [
+        "n0002",
+        "n0005",
+        "n0007",
+        "n0008"
+      ],
+      "g": {
+        "n0002": 319.4,
+        "n0005": 297.5,
+        "n0007": 376.9,
+        "n0008": 395.0
+      },
+      "h": {
+        "n0002": 46.4,
+        "n0005": 83.2,
+        "n0007": 44.6,
+        "n0008": 0.0
+      },
+      "f": {
+        "n0002": 365.9,
+        "n0005": 380.7,
+        "n0007": 421.5,
+        "n0008": 395.0
+      }
+    },
+    {
+      "step": 4,
+      "expanded": "n0002",
+      "frontier": [
+        "n0003",
+        "n0005",
+        "n0007",
+        "n0008"
+      ],
+      "g": {
+        "n0003": 338.0,
+        "n0005": 297.5,
+        "n0007": 376.9,
+        "n0008": 395.0
+      },
+      "h": {
+        "n0003": 39.9,
+        "n0005": 83.2,
+        "n0007": 44.6,
+        "n0008": 0.0
+      },
+      "f": {
+        "n0003": 377.9,
+        "n0005": 380.7,
+        "n0007": 421.5,
+        "n0008": 395.0
+      }
+    },
+    {
+      "step": 5,
+      "expanded": "n0003",
+      "frontier": [
+        "n0005",
+        "n0007",
+        "n0008"
+      ],
+      "g": {
+        "n0005": 297.5,
+        "n0007": 376.9,
+        "n0008": 395.0
+      },
+      "h": {
+        "n0005": 83.2,
+        "n0007": 44.6,
+        "n0008": 0.0
+      },
+      "f": {
+        "n0005": 380.7,
+        "n0007": 421.5,
+        "n0008": 395.0
+      }
+    },
+    {
+      "step": 6,
+      "expanded": "n0005",
+      "frontier": [
+        "n0007",
+        "n0008"
+      ],
+      "g": {
+        "n0007": 376.9,
+        "n0008": 395.0
+      },
+      "h": {
+        "n0007": 44.6,
+        "n0008": 0.0
+      },
+      "f": {
+        "n0007": 421.5,
+        "n0008": 395.0
+      }
+    },
+    {
+      "step": 7,
+      "expanded": "n0008",
+      "frontier": [
+        "n0007"
+      ],
+      "g": {
+        "n0007": 376.9
+      },
+      "h": {
+        "n0007": 44.6
+      },
+      "f": {
+        "n0007": 421.5
+      }
+    }
+  ],
+  "explanation": {
+    "summary_vi": "Tuyến Công viên Tao Đàn → Chợ Bến Thành → Nhà hát Thành phố được chọn vì tổng chi phí thấp nhất (395 s ≈ 6,6 phút; 1,65 km) theo chế độ cân bằng lúc 07:30. Trên tuyến có đoạn ùn tắc: Lê Lợi (mức 4/5). Tuyến thay thế qua Huyền Trân Công Chúa bị loại vì tổng chi phí cao hơn 55 s (450 s so với 395 s). A* với heuristic admissible đảm bảo tuyến tối ưu.",
+    "congested_segments": [
+      {
+        "edge": "e00003",
+        "name": "Lê Lợi",
+        "level": 4
+      }
+    ],
+    "alternatives": [
+      {
+        "label": "Tuyến thay thế qua Huyền Trân Công Chúa",
+        "path": [
+          "n0006",
+          "n0004",
+          "n0002",
+          "n0008"
+        ],
+        "total_distance_m": 1960.4,
+        "total_time_s": 449.9,
+        "why_not_vi": "Tổng chi phí cao hơn ~55 s so với tuyến được chọn tại khung giờ 07:30, nên bị loại dù vẫn tới đích."
+      }
+    ]
+  }
+}

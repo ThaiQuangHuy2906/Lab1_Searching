@@ -1,0 +1,22 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+*.egg-info/
+
+# Secrets — TomTom API key lives here, never commit (PROMPT-MASTER rule 7)
+.env
+
+# Raw intermediate data (graphml, tomtom raw) — rebuilt by scripts/01-03
+data/raw/
+
+# Node / Next.js (frontend, Phase 5)
+node_modules/
+.next/
+out/
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+*.swp

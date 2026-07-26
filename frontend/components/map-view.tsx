@@ -7,7 +7,7 @@
 import * as React from "react";
 import DeckGL from "@deck.gl/react";
 import { LineLayer, PathLayer, ScatterplotLayer, TextLayer } from "@deck.gl/layers";
-import { PathStyleExtension } from "@deck.gl/extensions";
+import { CollisionFilterExtension, PathStyleExtension } from "@deck.gl/extensions";
 import { WebMercatorViewport, type MapViewState, type PickingInfo } from "@deck.gl/core";
 import { Map as MapLibre } from "react-map-gl/maplibre";
 import "maplibre-gl/dist/maplibre-gl.css";
@@ -119,7 +119,7 @@ export function MapView() {
         getTargetPosition: (d: (typeof edgeData)[number]) => d.target,
         getColor: (d: (typeof edgeData)[number]) =>
           trafficLayer ? CONGESTION[d.level] : C.edgeDim,
-        getWidth: isDemo ? 2.5 : 1.5,
+        getWidth: isDemo ? 3 : 1.6,
         widthUnits: "pixels",
         updateTriggers: { getColor: [trafficLayer, traffic, theme] },
       }),
@@ -246,6 +246,9 @@ export function MapView() {
           outlineWidth: 2,
           outlineColor: C.labelOutline,
           fontSettings: { sdf: true },
+          // labels yield instead of overlapping (DESIGN 6, review v4)
+          extensions: [new CollisionFilterExtension()],
+          collisionTestProps: { sizeScale: 1.6 },
         }),
       );
     }

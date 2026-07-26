@@ -89,8 +89,13 @@ export function MetricsTab() {
   if (!trace) {
     return (
       <EmptyState icon={MousePointerClick} title="Chưa có kết quả"
-        hint={<>Chọn điểm <b>Đi</b> / <b>Đến</b> ở panel trái rồi bấm{" "}
-          <b className="text-ink">Chạy thuật toán</b>.</>} />
+        hint={
+          <span className="mx-auto block max-w-56 text-left">
+            1. Chọn điểm <b>Đi</b> và <b>Đến</b><br />
+            2. Bấm <b className="text-ink">Chạy thuật toán</b><br />
+            3. Bấm ▶ trên timeline để xem từng bước
+          </span>
+        } />
     );
   }
 

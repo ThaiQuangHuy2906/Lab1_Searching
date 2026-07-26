@@ -114,8 +114,8 @@ export function ControlPanel() {
   const isDemo = s.graph === "demo";
 
   return (
-    <aside className="flex h-full w-80 shrink-0 flex-col overflow-y-auto border-r border-surface-border bg-surface-panel">
-      <div className="flex items-center gap-2.5 border-b border-surface-border px-4 py-3">
+    <aside className="flex h-full w-80 shrink-0 flex-col border-r border-surface-border bg-surface-panel">
+      <div className="flex shrink-0 items-center gap-2.5 border-b border-surface-border px-4 py-3">
         <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-algo-frontier/15 text-algo-frontier">
           <Route className="size-4" />
         </span>
@@ -125,6 +125,7 @@ export function ControlPanel() {
         </div>
       </div>
 
+      <div className="min-h-0 flex-1 overflow-y-auto">
       <Section title="Bối cảnh">
         <Field label="Đồ thị">
           <Select value={s.graph} onValueChange={(v) => void s.loadGraph(v as "demo" | "real")}>
@@ -271,7 +272,9 @@ export function ControlPanel() {
         )}
       </Section>
 
-      <div className="mt-auto flex flex-col gap-2 px-4 py-4">
+      </div>
+      {/* CTA ghim đáy panel — luôn nhìn thấy (DESIGN 4, duyệt v4) */}
+      <div className="flex shrink-0 flex-col gap-2 border-t border-surface-border px-4 py-3">
         <Button size="lg" className="w-full" disabled={s.running} onClick={() => void s.runRoute()}>
           {s.running ? <Loader2 className="animate-spin" /> : <Play />}
           {s.running ? "Đang chạy…" : "Chạy thuật toán"}

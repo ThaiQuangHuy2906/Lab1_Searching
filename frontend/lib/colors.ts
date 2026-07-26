@@ -26,14 +26,14 @@ export interface Palette {
 
 const DARK: Palette = {
   deck: {
-    node: [82, 82, 91, 200], //          zinc-600
+    node: [113, 113, 122, 235], //       zinc-500 (v4: was invisible on dark basemap)
     frontier: [34, 211, 238, 255], //    cyan-400
     expanded: [167, 139, 250, 255], //   violet-400
     current: [255, 255, 255, 255],
     path: [251, 191, 36, 255], //        amber-400
     bidiForward: [34, 211, 238, 255],
     bidiBackward: [251, 113, 133, 255], // rose-400
-    edgeDim: [63, 63, 70, 160], //       zinc-700
+    edgeDim: [82, 82, 91, 210], //       zinc-600 (v4: raised, still below algo colors)
     compareB: [34, 211, 238, 255],
     start: [16, 185, 129, 255], //       emerald-500
     goal: [239, 68, 68, 255], //         red-500
@@ -53,7 +53,7 @@ const DARK: Palette = {
   congestionHex: { 1: "#10b981", 2: "#a3e635", 3: "#facc15", 4: "#f97316", 5: "#ef4444" },
   hex: {
     frontier: "#22d3ee", expanded: "#a78bfa", current: "#ffffff", path: "#fbbf24",
-    bidiForward: "#22d3ee", bidiBackward: "#fb7185", node: "#52525b",
+    bidiForward: "#22d3ee", bidiBackward: "#fb7185", node: "#71717a",
     inkDim: "#a1a1aa", grid: "#27272a", panel: "#18181b",
   },
   basemap: "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",

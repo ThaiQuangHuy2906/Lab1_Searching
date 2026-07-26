@@ -44,14 +44,14 @@ trên nền trắng; node đang expand đảo trắng→đen.
 
 | Token | Tối | Sáng | Ý nghĩa |
 |---|---|---|---|
-| `algo-node` | zinc-600 `#52525b` | zinc-400 `#a1a1aa` | node thường |
+| `algo-node` | zinc-500 `#71717a` | zinc-400 `#a1a1aa` | node thường (duyệt v4: nâng 1 nấc — bản cũ tàng hình trên basemap tối) |
 | `algo-frontier` | cyan-400 `#22d3ee` | cyan-600 `#0891b2` | node trong frontier |
 | `algo-expanded` | violet-400 `#a78bfa` | violet-600 `#7c3aed` | node đã expand |
 | `algo-current` | white `#ffffff` + pulse trắng | zinc-900 `#18181b` + pulse đen | node đang expand |
 | `algo-path` | amber-400 `#fbbf24` | amber-600 `#d97706` | tuyến kết quả, nét dày 4px |
 | `bidi-forward` | cyan-400 `#22d3ee` | cyan-600 `#0891b2` | phía xuôi (side=forward) |
 | `bidi-backward` | rose-400 `#fb7185` | rose-600 `#e11d48` | phía ngược (side=backward) |
-| `edge-dim` | zinc-700 `#3f3f46` | zinc-300 `#d4d4d8` | cạnh thường |
+| `edge-dim` | zinc-600 `#52525b` | zinc-300 `#d4d4d8` | cạnh thường (duyệt v4: nâng 1 nấc, vẫn dưới mọi màu thuật toán) |
 | `cong-1..5` | `#10b981 #a3e635 #facc15 #f97316 #ef4444` | `#059669 #4d7c0f #a16207 #ea580c #dc2626` (lime-700/yellow-700 — đo WCAG trên nền positron) | thang ùn tắc 1→5 |
 | Start | chip **"Đi"**: nền emerald-700 `#047857`, chữ trắng — CỐ ĐỊNH 2 chế độ (chữ 5,48) | | điểm xuất phát; token `start` (marker/badge) vẫn emerald-500/600 theo chế độ |
 | Goal | chip **"Đến"**: nền red-600 `#dc2626`, chữ trắng — CỐ ĐỊNH 2 chế độ (đồ hoạ ≥3,5 / chữ 4,83) | | điểm đích; token `goal` vẫn red-500/600 theo chế độ |
@@ -80,7 +80,7 @@ thang 1–5; so sánh → 2 tuyến). Nền `surface-panel/95`, chữ 12px.
    (beam_width khi beam; epsilon khi idastar)
 3. **Hành trình:** Đi · Đến (dropdown tên với G_demo, click bản đồ với G_real)
    · danh sách Stops (multiroute) + nút "Tối ưu thứ tự"
-4. Nút **"Chạy thuật toán"** lớn, full-width, cao 44px
+4. Nút **"Chạy thuật toán"** lớn, full-width, cao 44px — **GHIM cố định đáy panel** (header + footer đứng yên, chỉ vùng giữa cuộn; duyệt v4: CTA từng bị đẩy khỏi màn hình)
 + Công tắc "Chế độ offline" (vẽ thuần deck.gl trên nền `surface`) và "Lớp ùn tắc".
 
 **Drawer phải — 3 tab:** `Số liệu` | `Giải thích` | `So sánh`
@@ -111,7 +111,7 @@ Thanh nổi giữa-đáy bản đồ, nền `surface-panel/95`, viền `surface-
   `https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json`
 - Chế độ **Offline**: tắt basemap, vẽ thuần đồ thị bằng deck.gl trên nền `surface`
   — bảo hiểm wifi phòng bảo vệ; mọi lớp thuật toán giữ nguyên.
-- G_demo: node có nhãn tên POI (ẩn dần khi zoom xa); G_real: không nhãn.
+- G_demo: node có nhãn tên POI (ẩn dần khi zoom xa, **collision filter** — label đè nhau thì tự nhường); G_real: không nhãn.
 - **Hover node** → tooltip tên POI (G_demo) / id nút (G_real) — nền `surface-panel`.
 - **Tuyến kết quả có viền (casing)**: lớp nền màu `surface` rộng 7px dưới lớp màu
   6px — tuyến nổi trên mọi nền bản đồ (kỹ thuật casing bản đồ chuẩn); áp dụng cho

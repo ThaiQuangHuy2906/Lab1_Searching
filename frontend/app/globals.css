@@ -12,7 +12,7 @@
   --ink: 244 244 245; /*        zinc-100 */
   --ink-dim: 161 161 170; /*    zinc-400 */
   --hl: 255 255 255; /*         row highlight base (dùng /10) */
-  --algo-node: 82 82 91; /*     zinc-600 */
+  --algo-node: 113 113 122; /*  zinc-500 (v4) */
   --algo-frontier: 34 211 238; /* cyan-400 */
   --algo-expanded: 167 139 250; /* violet-400 */
   --algo-current: 255 255 255;

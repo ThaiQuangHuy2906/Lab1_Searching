@@ -99,7 +99,7 @@ function NodePicker({ kind }: { kind: "start" | "goal" }) {
             onValueChange={(v) => set(kind === "start" ? { start: v } : { goal: v })}
           >
             <SelectTrigger aria-label={kind === "start" ? "Điểm đi" : "Điểm đến"}>
-              <SelectValue placeholder="Chọn địa danh…" />
+              <SelectValue placeholder={kind === "start" ? "Chọn điểm xuất phát…" : "Chọn điểm đến…"} />
             </SelectTrigger>
             <SelectContent>
               {graphData?.nodes.map((n) => (
@@ -209,7 +209,7 @@ export function ControlPanel() {
             tip="Số node tốt nhất giữ lại mỗi lớp — k nhỏ chạy nhanh nhưng có thể không tìm thấy đường.">
             <input
               type="number" min={1}
-              className="h-9 rounded-lg border border-surface-border bg-surface-panel px-3 font-mono text-sm"
+              className="h-9 rounded-lg border border-surface-border bg-surface px-3 font-mono text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-algo-frontier focus-visible:ring-offset-2 focus-visible:ring-offset-surface-panel"
               placeholder={isDemo ? "mặc định 5" : "mặc định 50"}
               value={s.beamWidth}
               onChange={(e) => s.set({ beamWidth: e.target.value === "" ? "" : Number(e.target.value) })}
@@ -221,7 +221,7 @@ export function ControlPanel() {
             tip="Mỗi vòng IDA* nới ngưỡng thêm ε giây; nghiệm nằm trong khoảng tối ưu + ε.">
             <input
               type="number" min={0.1} step={0.5}
-              className="h-9 rounded-lg border border-surface-border bg-surface-panel px-3 font-mono text-sm"
+              className="h-9 rounded-lg border border-surface-border bg-surface px-3 font-mono text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-algo-frontier focus-visible:ring-offset-2 focus-visible:ring-offset-surface-panel"
               placeholder="mặc định 5"
               value={s.epsilon}
               onChange={(e) => s.set({ epsilon: e.target.value === "" ? "" : Number(e.target.value) })}

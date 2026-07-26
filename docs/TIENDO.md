@@ -27,6 +27,20 @@
 
 ## Nhật ký quyết định
 
+- **2026-07-27 (repo GitHub + duyệt v8c–v9):** (a) Push toàn bộ lên
+  `github.com/ThaiQuangHuy2906/Lab1_Searching` (khuyến nghị để Private tới khi chấm
+  xong); thêm `.gitattributes` chuẩn hoá LF; README sửa 78→79 test. (b) v8c: biểu đồ
+  /benchmark — Recharts tự ẩn nhãn trục X (10 cột chỉ 7 nhãn, cột idastar bị đọc nhầm
+  thành bidijkstra — user bắt được) → `interval={0}` + nhãn nghiêng; trục Y đổi thang
+  log đúng kịch bản video. (c) v8d–v8e: nhãn POI trắng hẳn/đậm hẳn theo chế độ + fix
+  TextLayer nhãn thiếu `updateTriggers` theme (đổi theme xong nhãn giữ màu cũ — chìm
+  vào nền); node/cạnh chế độ Sáng cùng bệnh chìm → zinc-600/zinc-500. (d) v9 panel:
+  mọi control nhập (select/input/nút secondary) nền `surface` "khoét sâu" trên panel
+  (hết trắng-trên-trắng); focus ring 2px `algo-frontier` áp THẬT vào
+  Button/Select/Switch/input (DESIGN quy định từ đầu nhưng code thiếu — phát hiện khi
+  rà đồng bộ); switch thumb trắng cố định (thumb đen nặng ở chế độ sáng); placeholder
+  Đi/Đến phân biệt. WCAG ALL PASS sau mỗi vòng.
+
 - **2026-07-26 (tối muộn — audit G_demo, user duyệt "sửa ngay"):** Audit độc lập bên ngoài
   phát hiện G_demo méo khoảng cách (median 1,69× · 40,1% cặp >2× · max 20,67× so G_real;
   cặp quy chiếu CVHLĐ→Hồ Con Rùa 10 159,8 m vs thật 1 584,2 m). Nguyên nhân: luật

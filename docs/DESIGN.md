@@ -95,6 +95,17 @@ thang 1–5; so sánh → 2 tuyến). Nền `surface-panel/95`, chữ 12px.
 
 *(Drawer nới 360→400 px ở duyệt v5d: cột f của bảng g/h/f từng bị cắt mép.)*
 
+**Điều khiển dạng form — duyệt v9 (panel bị chê "phẳng"):** mọi control NHẬP
+(SelectTrigger, input số, nút secondary) dùng nền **`surface`** thay vì
+`surface-panel` — "khoét sâu" một nấc so với panel ở CẢ 2 chế độ (tối: zinc-950
+trên zinc-900; sáng: zinc-50 trên trắng), hết cảnh input trắng-trên-trắng.
+Popup/dropdown (SelectContent) vẫn `surface-panel` + `shadow-float` (lớp NỔI).
+Focus ring 2px `algo-frontier` (đã quy định §2) từ v9 áp THẬT vào code
+Button/SelectTrigger/Switch/input. Switch: thumb TRẮNG cố định + viền
+`ring-black/15` + bóng nhỏ (thumb đen cũ nhìn nặng ở chế độ sáng); track giữ
+`surface-border` (off) / `algo-frontier` (on). Placeholder Đi/Đến phân biệt:
+"Chọn điểm xuất phát…" / "Chọn điểm đến…".
+
 **Drawer phải — 3 tab:** `Số liệu` | `Giải thích` | `So sánh`
 - Đầu tab Số liệu có **dòng nguồn kết quả**: "A* · Cân bằng · 07:30 · G_demo" —
   kết quả đang xem thuộc cấu hình nào (tránh nhầm khi user đã đổi lựa chọn ở panel).

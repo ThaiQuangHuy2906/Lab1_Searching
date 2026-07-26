@@ -5,7 +5,7 @@
 // Tooltip = icon ? cạnh label (InfoTip); switch rows thẳng hàng (§8).
 
 import * as React from "react";
-import { Crosshair, ListOrdered, Loader2, Play, Route, X } from "lucide-react";
+import { ArrowDownUp, Crosshair, ListOrdered, Loader2, Play, Route, X } from "lucide-react";
 import { Button } from "./ui/button";
 import { Switch } from "./ui/switch";
 import { InfoTip } from "./ui/info-tip";
@@ -80,6 +80,17 @@ function NodePicker({ kind }: { kind: "start" | "goal" }) {
   const set = useApp((s) => s.set);
   const isDemo = graph === "demo";
 
+  // ride-hailing style (DESIGN v9d): fixed role color, hollow dot -> filled
+  const roleHex = kind === "start" ? "#047857" : "#dc2626";
+  const roleDot = (
+    <span
+      aria-hidden
+      className="pointer-events-none absolute left-3 top-1/2 z-10 size-2.5 -translate-y-1/2 rounded-full"
+      style={value ? { background: roleHex } : { border: `2px solid ${roleHex}` }}
+    />
+  );
+  const roleBorder = value ? { borderColor: `${roleHex}99` } : undefined;
+
   // nút ✕ xoá chọn — cùng kiểu với ✕ của hàng Stops (DESIGN §4, duyệt v8)
   const clear = value ? (
     <button
@@ -94,12 +105,14 @@ function NodePicker({ kind }: { kind: "start" | "goal" }) {
   if (isDemo) {
     return (
       <div className="flex items-center gap-1">
-        <div className="min-w-0 flex-1">
+        <div className="relative min-w-0 flex-1">
+          {roleDot}
           <Select
             value={value ?? ""}
             onValueChange={(v) => set(kind === "start" ? { start: v } : { goal: v })}
           >
-            <SelectTrigger aria-label={kind === "start" ? "Điểm đi" : "Điểm đến"}>
+            <SelectTrigger aria-label={kind === "start" ? "Điểm đi" : "Điểm đến"}
+              className={"pl-8 " + (value ? "font-medium" : "")} style={roleBorder}>
               <SelectValue placeholder={kind === "start" ? "Chọn điểm xuất phát…" : "Chọn điểm đến…"} />
             </SelectTrigger>
             <SelectContent>
@@ -116,15 +129,34 @@ function NodePicker({ kind }: { kind: "start" | "goal" }) {
   const active = pickTarget === kind;
   return (
     <div className="flex items-center gap-1">
-      <Button
-        variant="secondary"
-        className={"min-w-0 flex-1 " + (active ? "border-algo-frontier text-algo-frontier" : "")}
-        onClick={() => set({ pickTarget: active ? null : kind })}
-      >
-        <Crosshair />
-        {value ? `Đã chọn: ${value}` : active ? "Bấm vào bản đồ…" : "Chọn trên bản đồ"}
-      </Button>
+      <div className="relative min-w-0 flex-1">
+        {roleDot}
+        <Button
+          variant="secondary"
+          className={"w-full pl-8 " + (active ? "border-algo-frontier text-algo-frontier" : "")}
+          style={active ? undefined : roleBorder}
+          onClick={() => set({ pickTarget: active ? null : kind })}
+        >
+          <Crosshair />
+          {value ? `Đã chọn: ${value}` : active ? "Bấm vào bản đồ…" : "Chọn trên bản đồ"}
+        </Button>
+      </div>
       {clear}
+    </div>
+  );
+}
+
+function SwapButton() {
+  const s = useApp();
+  return (
+    <div className="-my-1.5 flex justify-end pr-1">
+      <Button
+        variant="ghost" size="iconSm" aria-label="Đảo chiều Đi ↔ Đến"
+        disabled={!s.start && !s.goal}
+        onClick={() => s.set({ start: s.goal, goal: s.start })}
+      >
+        <ArrowDownUp className="size-3.5" />
+      </Button>
     </div>
   );
 }
@@ -237,10 +269,11 @@ export function ControlPanel() {
       </Section>
 
       <Section title="Hành trình">
-        <Field label="Đi — điểm xuất phát" dot="#047857">
+        <Field label="Đi — điểm xuất phát">
           <NodePicker kind="start" />
         </Field>
-        <Field label="Đến — điểm đích" dot="#dc2626">
+        <SwapButton />
+        <Field label="Đến — điểm đích">
           <NodePicker kind="goal" />
         </Field>
         <Field label={`Điểm giao hàng (${s.stops.length}/15)`}

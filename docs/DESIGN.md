@@ -95,6 +95,13 @@ thang 1–5; so sánh → 2 tuyến). Nền `surface-panel/95`, chữ 12px.
 
 *(Drawer nới 360→400 px ở duyệt v5d: cột f của bảng g/h/f từng bị cắt mép.)*
 
+**Khối Đi/Đến — duyệt v9d (kiểu app gọi xe, §1):** chấm vai trò nằm TRONG ô
+(trái, 10px): RỖNG (viền 2px màu vai trò) khi chưa chọn → ĐẦY khi đã chọn; viền ô
+nhuốm màu vai trò khi có giá trị (emerald-700 Đi · red-600 Đến — đúng cặp màu chip
+cố định §3); giữa 2 ô có nút **⇅ đảo chiều** (ghost, disabled khi cả 2 trống) —
+điểm demo bất đối xứng: đồ thị có đường một chiều nên đảo chiều đổi chi phí.
+Nhãn 2 field bỏ chấm (đã chuyển vào ô). Nút ✕ xoá giữ nguyên.
+
 **Tooltip (icon ?) — duyệt v9c (bị chê nhỏ + chìm):** ĐẢO MÀU bằng token sẵn có:
 nền `ink`, chữ `surface-panel` (tối: nền sáng chữ tối · sáng: nền tối chữ trắng —
 tương phản ~17:1, tự đúng cả 2 chế độ, không thêm màu mới), chữ **13px/20px

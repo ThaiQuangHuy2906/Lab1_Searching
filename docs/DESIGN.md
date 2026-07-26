@@ -64,7 +64,7 @@ trên nền trắng; node đang expand đảo trắng→đen.
 | Goal | chip **"Đến"**: nền red-600 `#dc2626`, chữ trắng — CỐ ĐỊNH 2 chế độ (đồ hoạ ≥3,5 / chữ 4,83) | | điểm đích; token `goal` vẫn red-500/600 theo chế độ |
 | Stops | số trên nền amber theo chế độ, chữ **zinc-950** cả 2 (đo: trắng trên amber-600 chỉ 3,19) | | điểm giao multiroute |
 | So sánh | A `algo-path` liền · B `algo-frontier` nét đứt (cả 2 chế độ) | | 2 tuyến chồng lớp |
-| Nhãn POI trên map | zinc-200 viền nền tối (v8 — luôn hiện nên phải đọc được mọi zoom) | zinc-700 viền trắng | TextLayer G_demo |
+| Nhãn POI trên map | zinc-50 TRẮNG HẲN, 12,5px đậm 600, halo tối 3px (v8d — zinc-200/11px vẫn bị chê mờ; kèm fix stale updateTriggers khi đổi theme) | zinc-700 viền trắng | TextLayer G_demo |
 | Basemap | Carto **dark-matter** | Carto **positron** | không cần key |
 
 **Legend:** cố định góc **dưới-trái**, tiêu đề nhỏ "CHÚ GIẢI" (10px uppercase, v6),

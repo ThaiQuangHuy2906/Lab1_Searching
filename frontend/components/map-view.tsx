@@ -298,17 +298,22 @@ export function MapView() {
           data: graphData.nodes.filter((n) => n.name),
           getPosition: (n: GraphNode) => [n.lon, n.lat],
           getText: (n: GraphNode) => n.name ?? "",
-          getSize: 11,
+          getSize: 12.5,
           getColor: C.label,
-          getPixelOffset: [0, -14],
+          getPixelOffset: [0, -15],
           fontFamily: "Be Vietnam Pro, sans-serif",
+          fontWeight: 600,
           characterSet: "auto",
-          outlineWidth: 2,
+          outlineWidth: 3,
           outlineColor: C.labelOutline,
           fontSettings: { sdf: true },
-          // labels yield instead of overlapping (DESIGN 6, review v4)
+          // labels yield instead of overlapping (DESIGN 6, review v4;
+          // v8d: lighter collision box so far more names stay visible)
           extensions: [new CollisionFilterExtension()],
-          collisionTestProps: { sizeScale: 1.6 },
+          collisionTestProps: { sizeScale: 1.1 },
+          // accessor must re-run on theme switch or labels keep the old
+          // theme's color and sink into the basemap (same bug class as v2)
+          updateTriggers: { getColor: [theme] },
         }),
       );
     }

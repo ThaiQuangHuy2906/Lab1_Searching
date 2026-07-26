@@ -43,7 +43,7 @@ const DARK: Palette = {
     chipGoal: [220, 38, 38, 255], //     red-600 — graphics >= 3.0 & white text >= 4.5 both themes
     chipText: [255, 255, 255, 255],
     pulse: [255, 255, 255, 180],
-    label: [228, 228, 231, 245], //      zinc-200 (v8: labels now always on — must read at any zoom)
+    label: [250, 250, 250, 255], //      zinc-50 (v8d: full white — zinc-200 still read as dim)
     labelOutline: [9, 9, 11, 235],
   },
   congestion: {

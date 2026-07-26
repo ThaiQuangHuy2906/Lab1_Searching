@@ -43,6 +43,8 @@ py -3.14 -m venv .venv
 .venv\Scripts\python.exe -m pytest backend\tests\ -q          # kỳ vọng: 79 passed
 
 # 3. (TUỲ CHỌN) build lại data từ OSM — cần mạng, ~2 phút
+#    (muốn congestion TomTom THẬT: copy .env.example -> .env, điền TOMTOM_API_KEY,
+#     chạy scripts/03a_crawl_tomtom.py đúng 4 khung giờ TRƯỚC bước 03b)
 .venv\Scripts\python.exe scripts\01_download_osm.py
 .venv\Scripts\python.exe scripts\02_build_graph.py
 .venv\Scripts\python.exe scripts\03b_build_profiles.py real

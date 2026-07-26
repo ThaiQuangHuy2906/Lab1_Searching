@@ -66,3 +66,7 @@ py -3.14 -m venv .venv
 - Console Windows mặc định cp1252 — script Python in tiếng Việt phải wrap stdout UTF-8
   (hoặc chỉ print ASCII); mọi file đọc/ghi với `encoding="utf-8"`.
 - Đường dẫn repo chứa dấu tiếng Việt + khoảng trắng — luôn quote path trong lệnh shell.
+- **CẤM chạy `npm run build` khi dev server đang chạy** — cả hai cùng ghi `.next/`,
+  build sẽ phá chunk của dev server (đã gây sự cố 404 toàn bộ static). Khi user đang
+  `npm run dev`: kiểm tra type bằng `npx tsc --noEmit`; chỉ build khi dev đã tắt,
+  và sau khi đổi `next.config.ts` phải nhắc user restart dev server.

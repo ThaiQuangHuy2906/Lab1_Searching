@@ -8,12 +8,13 @@ import * as React from "react";
 import DeckGL from "@deck.gl/react";
 import { LineLayer, PathLayer, ScatterplotLayer, TextLayer } from "@deck.gl/layers";
 import { CollisionFilterExtension, PathStyleExtension } from "@deck.gl/extensions";
-import { WebMercatorViewport, type MapViewState, type PickingInfo } from "@deck.gl/core";
+import { FlyToInterpolator, WebMercatorViewport, type MapViewState, type PickingInfo } from "@deck.gl/core";
 import { Map as MapLibre } from "react-map-gl/maplibre";
 import "maplibre-gl/dist/maplibre-gl.css";
 
 import { type RGBA } from "@/lib/colors";
 import { usePalette } from "@/lib/use-palette";
+import { Home, Minus, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { useApp } from "@/lib/store";
 import { Button } from "./ui/button";
@@ -48,6 +49,7 @@ export function MapView() {
   const [viewState, setViewState] = React.useState<MapViewState | null>(null);
   const [pulse, setPulse] = React.useState(1);
   const basemapErrorShown = React.useRef(false);
+  const homeView = React.useRef<MapViewState | null>(null);
 
   // initial camera: fit the graph bbox
   React.useEffect(() => {
@@ -57,7 +59,9 @@ export function MapView() {
       [[left, bottom], [right, top]],
       { padding: 72 },
     );
-    setViewState({ longitude: vp.longitude, latitude: vp.latitude, zoom: vp.zoom });
+    const home = { longitude: vp.longitude, latitude: vp.latitude, zoom: vp.zoom };
+    homeView.current = home;
+    setViewState(home);
   }, [graphData]);
 
   // the ONLY decorative motion allowed: pulse ring on the current node
@@ -422,8 +426,27 @@ export function MapView() {
           © CARTO · © OpenStreetMap contributors
         </div>
       )}
+      {/* map controls (DESIGN 6, v6): zoom +/- and fly-home */}
+      <div className="absolute bottom-10 right-3 z-10 flex flex-col gap-1 rounded-lg border border-surface-border bg-surface-panel p-1 shadow-float">
+        <Button variant="ghost" size="iconSm" aria-label="Phóng to"
+          onClick={() => setViewState((v) => v && ({ ...v, zoom: (v.zoom ?? 0) + 0.7, transitionDuration: 250 }))}>
+          <Plus />
+        </Button>
+        <Button variant="ghost" size="iconSm" aria-label="Thu nhỏ"
+          onClick={() => setViewState((v) => v && ({ ...v, zoom: (v.zoom ?? 0) - 0.7, transitionDuration: 250 }))}>
+          <Minus />
+        </Button>
+        <Button variant="ghost" size="iconSm" aria-label="Về toàn cảnh"
+          onClick={() => homeView.current && setViewState({
+            ...homeView.current,
+            transitionDuration: 500,
+            transitionInterpolator: new FlyToInterpolator(),
+          })}>
+          <Home />
+        </Button>
+      </div>
       {pickTarget && (
-        <div className="absolute left-1/2 top-3 -translate-x-1/2 rounded-lg border border-surface-border bg-surface-panel/95 px-3 py-1.5 text-sm">
+        <div className="absolute left-1/2 top-3 -translate-x-1/2 rounded-lg border border-surface-border bg-surface-panel px-3 py-1.5 text-sm shadow-float">
           Bấm vào một nút giao trên bản đồ để chọn{" "}
           <span className="font-bold text-algo-frontier">
             {pickTarget === "start" ? "điểm Đi" : pickTarget === "goal" ? "điểm Đến" : "điểm giao"}

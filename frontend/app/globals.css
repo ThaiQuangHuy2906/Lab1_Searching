@@ -21,6 +21,7 @@
   --bidi-backward: 251 113 133; /* rose-400 */
   --start: 16 185 129; /*       emerald-500 */
   --goal: 239 68 68; /*         red-500 */
+  --shadow-float: 0 4px 16px rgb(0 0 0 / 0.45);
 }
 
 :root[data-theme="light"] {
@@ -39,6 +40,7 @@
   --bidi-backward: 225 29 72; /* rose-600 */
   --start: 5 150 105; /*        emerald-600 */
   --goal: 220 38 38; /*         red-600 */
+  --shadow-float: 0 4px 16px rgb(0 0 0 / 0.14);
 }
 
 @layer base {

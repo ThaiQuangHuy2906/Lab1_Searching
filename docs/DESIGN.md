@@ -14,8 +14,15 @@ Cảm hứng: **phòng điều khiển giao thông + app gọi xe Việt Nam**. 
 - **Sáng** — cùng hệ token, giá trị đổi qua CSS variables; basemap đổi sang Carto
   positron. Toggle ở góc phải-trên, lưu lựa chọn vào localStorage.
 
-**Cấm:** gradient, glassmorphism, shadow màu, animation trang trí. Hiệu ứng duy nhất
-được phép: vòng pulse ở node đang expand (đặc tả §3) và transition ẩn/hiện drawer.
+**Cấm:** gradient, glassmorphism, shadow MÀU, animation trang trí. Hiệu ứng được phép:
+vòng pulse ở node đang expand (§3), transition ẩn/hiện drawer, và các **micro-feedback
+chức năng** (duyệt v6): hover/active state 150 ms trên phần tử tương tác, nút nhấn
+`scale(0.98)` khi active — phản hồi thao tác, không phải trang trí.
+
+**Phân lớp v6:** phần tử NỔI TRÊN BẢN ĐỒ (timeline, legend, cụm nút góc, banner chọn
+điểm) dùng nền ĐẶC `surface-panel` + **bóng trung tính** `shadow-float`
+(`0 4px 16px rgb(0 0 0/0.45)` tối · `0 4px 16px rgb(0 0 0/0.14)` sáng) — chiều sâu
+2 lớp rõ ràng: bản đồ ↔ điều khiển. Bóng đen trung tính, không phải shadow màu.
 
 ## 2. Token nền tảng (Dark | Light)
 
@@ -60,7 +67,8 @@ trên nền trắng; node đang expand đảo trắng→đen.
 | Nhãn POI trên map | zinc-400 viền nền tối | zinc-700 viền trắng | TextLayer G_demo |
 | Basemap | Carto **dark-matter** | Carto **positron** | không cần key |
 
-**Legend:** cố định góc **dưới-trái** bản đồ, luôn hiển thị; nội dung theo ngữ cảnh
+**Legend:** cố định góc **dưới-trái**, tiêu đề nhỏ "CHÚ GIẢI" (10px uppercase, v6),
+luôn hiển thị; nội dung theo ngữ cảnh
 (chạy 1 thuật toán → 5 mục thuật toán; bidijkstra → thêm 2 phía; bật lớp ùn tắc →
 thang 1–5; so sánh → 2 tuyến). Nền `surface-panel/95`, chữ 12px.
 
@@ -127,6 +135,9 @@ Thanh nổi giữa-đáy bản đồ, nền `surface-panel/95`, viền `surface-
 - **Attribution** "© CARTO · © OpenStreetMap contributors" chữ 10px góc dưới-phải
   khi dùng basemap (bắt buộc theo license; ẩn ở chế độ Offline).
 - Lớp ùn tắc: tô cạnh theo `cong-1..5` của khung giờ đang chọn.
+- **Cụm điều khiển bản đồ** (v6, góc phải-dưới): 3 nút dọc `+` / `−` / `⌂ về toàn cảnh`
+  — zoom có transition 250 ms, nút ⌂ bay về khung nhìn fitBounds ban đầu (FlyTo 500 ms).
+  Cứu cảnh quay video khi lỡ pan/zoom lạc.
 
 ## 7. Copy & lỗi
 

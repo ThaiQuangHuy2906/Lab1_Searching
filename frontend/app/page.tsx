@@ -39,7 +39,7 @@ export default function Home() {
           <div className="absolute right-3 top-3 z-10 flex items-center gap-2">
             <Link
               href="/benchmark"
-              className="flex items-center gap-1.5 rounded-lg border border-surface-border bg-surface-panel/95 px-3 py-1.5 text-xs text-ink-dim hover:text-ink"
+              className="flex items-center gap-1.5 rounded-lg border border-surface-border bg-surface-panel px-3 py-1.5 text-xs text-ink-dim transition-colors duration-150 hover:text-ink shadow-float"
             >
               <BarChart3 className="size-3.5" /> Benchmark
             </Link>

@@ -23,3 +23,6 @@ Thumbs.db
 
 # Claude Code local settings (per-machine)
 .claude/settings.local.json
+
+# TypeScript incremental build info
+frontend/tsconfig.tsbuildinfo

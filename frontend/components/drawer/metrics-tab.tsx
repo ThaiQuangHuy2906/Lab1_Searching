@@ -1,8 +1,8 @@
 "use client";
 
 import {
-  Clock, Gauge, Layers, MousePointerClick, Network, Route as RouteIcon,
-  Sigma, Timer,
+  BadgeCheck, Clock, Gauge, Layers, MousePointerClick, Network,
+  Route as RouteIcon, Sigma, Timer,
 } from "lucide-react";
 import { Badge } from "../ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
@@ -117,7 +117,8 @@ export function MetricsTab() {
         {trace.graph === "demo" ? "G_demo" : "G_real"}
       </p>
       <div className="flex flex-wrap items-center gap-1.5">
-        <Badge variant={m.optimal_guarantee ? "ok" : "warn"}>
+        <Badge variant={m.optimal_guarantee ? "ok" : "warn"} className="gap-1">
+          {m.optimal_guarantee && <BadgeCheck className="size-3.5" />}
           {m.optimal_guarantee
             ? trace.algorithm === "idastar"
               ? `Tối ưu trong ε = ${fmtVi(m.epsilon_bound ?? 5)} s`

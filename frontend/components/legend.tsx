@@ -41,7 +41,8 @@ export function Legend() {
   const comparing = drawerTab === "compare" && compare;
 
   return (
-    <div className="absolute bottom-4 left-4 z-10 flex flex-col gap-1.5 rounded-lg border border-surface-border bg-surface-panel/95 px-3 py-2.5 text-xs text-ink-dim">
+    <div className="absolute bottom-4 left-4 z-10 flex flex-col gap-1.5 rounded-lg border border-surface-border bg-surface-panel px-3 py-2.5 text-xs text-ink-dim shadow-float">
+      <span className="text-[10px] font-bold uppercase tracking-wider">Chú giải</span>
       {trace && !multi && (
         <>
           {isBidi ? (

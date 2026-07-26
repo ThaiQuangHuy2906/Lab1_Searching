@@ -33,6 +33,7 @@ const config: Config = {
         mono: ["var(--font-jetbrains)", "monospace"],
       },
       borderRadius: { lg: "8px" },
+      boxShadow: { float: "var(--shadow-float)" },
     },
   },
   plugins: [],

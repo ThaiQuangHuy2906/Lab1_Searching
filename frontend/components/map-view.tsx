@@ -161,12 +161,16 @@ export function MapView() {
           getPosition: (d: (typeof arrows)[number]) => d.pos,
           getText: () => "▶",
           getAngle: (d: (typeof arrows)[number]) => d.angle,
-          getSize: isDemo ? 11 : 9,
+          getSize: isDemo ? 15 : 11,
           getColor: (d: (typeof arrows)[number]) =>
-            trafficLayer ? CONGESTION[d.level] : C.node,
+            trafficLayer ? CONGESTION[d.level] : C.label,
           characterSet: ["▶"],
           fontFamily: "sans-serif",
           billboard: false,
+          // SDF outline: mũi tên nổi rõ trên mọi nền (DESIGN 6, review v5b)
+          fontSettings: { sdf: true },
+          outlineWidth: 3,
+          outlineColor: C.labelOutline,
           updateTriggers: { getColor: [trafficLayer, traffic, theme] },
         }),
       );

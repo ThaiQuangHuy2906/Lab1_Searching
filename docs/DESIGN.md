@@ -113,12 +113,12 @@ Thanh nổi giữa-đáy bản đồ, nền `surface-panel/95`, viền `surface-
   — bảo hiểm wifi phòng bảo vệ; mọi lớp thuật toán giữ nguyên.
 - G_demo: node có nhãn tên POI (ẩn dần khi zoom xa, **collision filter** — label đè nhau thì tự nhường); G_real: không nhãn.
 - **Hover node** → tooltip tên POI (G_demo) / id nút (G_real) — nền `surface-panel`.
-- **Mũi tên hướng cạnh** (duyệt v5): ký hiệu ▶ nhỏ tại TRUNG ĐIỂM mỗi cạnh, xoay theo
-  hướng đi của cạnh, màu theo màu cạnh hiện hành (ùn tắc khi bật lớp, `edge-dim` khi
-  không). Cặp 2 chiều: mỗi chiều lệch sang PHẢI hướng đi ~6 m (kiểu làn giao thông) —
-  hai mũi tên song song ngược chiều; cạnh một chiều nằm giữa. G_demo hiện luôn;
-  G_real chỉ hiện khi zoom ≥ 14 (tránh rối). Đây là thông tin CHỨC NĂNG (đường một
-  chiều), không phải trang trí.
+- **Mũi tên hướng cạnh** (duyệt v5, làm RÕ ở v5b): ký hiệu ▶ tại TRUNG ĐIỂM mỗi cạnh,
+  xoay theo hướng đi; **15 px (demo) / 11 px (real), viền SDF màu nền** để nổi rõ trên
+  mọi lớp; màu theo ùn tắc khi bật lớp, màu nhãn (`label`) khi không. Cặp 2 chiều:
+  mỗi chiều lệch sang PHẢI hướng đi ~6 m (kiểu làn giao thông) — hai mũi tên song song
+  ngược chiều; cạnh một chiều nằm giữa. G_demo hiện luôn; G_real chỉ hiện khi zoom ≥ 14.
+  Đây là thông tin CHỨC NĂNG (đường một chiều), không phải trang trí.
 - **Tuyến kết quả có viền (casing)**: lớp nền màu `surface` rộng 7px dưới lớp màu
   6px — tuyến nổi trên mọi nền bản đồ (kỹ thuật casing bản đồ chuẩn); áp dụng cho
   route chính, multiroute và tuyến so sánh.

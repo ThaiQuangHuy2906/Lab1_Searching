@@ -10,7 +10,8 @@ export interface Palette {
   deck: {
     node: RGBA; frontier: RGBA; expanded: RGBA; current: RGBA; path: RGBA;
     bidiForward: RGBA; bidiBackward: RGBA; edgeDim: RGBA; compareB: RGBA;
-    start: RGBA; goal: RGBA; stop: RGBA; stopText: RGBA; chipText: RGBA;
+    start: RGBA; goal: RGBA; stop: RGBA; stopText: RGBA;
+    chipStart: RGBA; chipGoal: RGBA; chipText: RGBA;
     pulse: RGBA; label: RGBA; labelOutline: RGBA;
   };
   congestion: Record<number, RGBA>;
@@ -37,7 +38,9 @@ const DARK: Palette = {
     start: [16, 185, 129, 255], //       emerald-500
     goal: [239, 68, 68, 255], //         red-500
     stop: [251, 191, 36, 255],
-    stopText: [24, 24, 27, 255],
+    stopText: [9, 9, 11, 255], //        zinc-950 on bright amber (>= 4.5)
+    chipStart: [4, 120, 87, 255], //     emerald-700 — white text >= 4.5 both themes
+    chipGoal: [220, 38, 38, 255], //     red-600 — graphics >= 3.0 & white text >= 4.5 both themes
     chipText: [255, 255, 255, 255],
     pulse: [255, 255, 255, 180],
     label: [161, 161, 170, 230], //      zinc-400
@@ -61,28 +64,30 @@ const LIGHT: Palette = {
     node: [161, 161, 170, 210], //       zinc-400
     frontier: [8, 145, 178, 255], //     cyan-600
     expanded: [124, 58, 237, 255], //    violet-600
-    current: [9, 9, 11, 255], //         zinc-950
-    path: [245, 158, 11, 255], //        amber-500
+    current: [24, 24, 27, 255], //       zinc-900 (per review round 2)
+    path: [217, 119, 6, 255], //         amber-600
     bidiForward: [8, 145, 178, 255],
     bidiBackward: [225, 29, 72, 255], // rose-600
     edgeDim: [212, 212, 216, 190], //    zinc-300
     compareB: [8, 145, 178, 255],
     start: [5, 150, 105, 255], //        emerald-600
     goal: [220, 38, 38, 255], //         red-600
-    stop: [245, 158, 11, 255],
-    stopText: [255, 255, 255, 255],
+    stop: [217, 119, 6, 255], //         amber-600
+    stopText: [9, 9, 11, 255], //        zinc-950 on amber-600 (white measured 3.19 < 4.5)
+    chipStart: [4, 120, 87, 255], //     emerald-700
+    chipGoal: [220, 38, 38, 255], //     red-600 (measured: see check_contrast)
     chipText: [255, 255, 255, 255],
-    pulse: [9, 9, 11, 170],
+    pulse: [24, 24, 27, 170],
     label: [63, 63, 70, 235], //         zinc-700
     labelOutline: [255, 255, 255, 230],
   },
   congestion: {
-    1: [5, 150, 105, 220], 2: [101, 163, 13, 220], 3: [234, 179, 8, 225],
+    1: [5, 150, 105, 220], 2: [77, 124, 15, 220], 3: [161, 98, 7, 225],
     4: [234, 88, 12, 235], 5: [220, 38, 38, 245],
   },
-  congestionHex: { 1: "#059669", 2: "#65a30d", 3: "#eab308", 4: "#ea580c", 5: "#dc2626" },
+  congestionHex: { 1: "#059669", 2: "#4d7c0f", 3: "#a16207", 4: "#ea580c", 5: "#dc2626" },
   hex: {
-    frontier: "#0891b2", expanded: "#7c3aed", current: "#09090b", path: "#f59e0b",
+    frontier: "#0891b2", expanded: "#7c3aed", current: "#18181b", path: "#d97706",
     bidiForward: "#0891b2", bidiBackward: "#e11d48", node: "#a1a1aa",
     inkDim: "#71717a", grid: "#e4e4e7", panel: "#ffffff",
   },

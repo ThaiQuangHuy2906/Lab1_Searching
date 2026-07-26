@@ -47,15 +47,15 @@ trên nền trắng; node đang expand đảo trắng→đen.
 | `algo-node` | zinc-600 `#52525b` | zinc-400 `#a1a1aa` | node thường |
 | `algo-frontier` | cyan-400 `#22d3ee` | cyan-600 `#0891b2` | node trong frontier |
 | `algo-expanded` | violet-400 `#a78bfa` | violet-600 `#7c3aed` | node đã expand |
-| `algo-current` | white `#ffffff` + pulse trắng | zinc-950 `#09090b` + pulse đen | node đang expand |
-| `algo-path` | amber-400 `#fbbf24` | amber-500 `#f59e0b` | tuyến kết quả, nét dày 4px |
+| `algo-current` | white `#ffffff` + pulse trắng | zinc-900 `#18181b` + pulse đen | node đang expand |
+| `algo-path` | amber-400 `#fbbf24` | amber-600 `#d97706` | tuyến kết quả, nét dày 4px |
 | `bidi-forward` | cyan-400 `#22d3ee` | cyan-600 `#0891b2` | phía xuôi (side=forward) |
 | `bidi-backward` | rose-400 `#fb7185` | rose-600 `#e11d48` | phía ngược (side=backward) |
 | `edge-dim` | zinc-700 `#3f3f46` | zinc-300 `#d4d4d8` | cạnh thường |
-| `cong-1..5` | `#10b981 #a3e635 #facc15 #f97316 #ef4444` | `#059669 #65a30d #eab308 #ea580c #dc2626` | thang ùn tắc 1→5 |
-| Start | chip emerald-500, chữ trắng, **"Đi"** | chip emerald-600, chữ trắng | điểm xuất phát |
-| Goal | chip red-500, chữ trắng, **"Đến"** | chip red-600, chữ trắng | điểm đích |
-| Stops | số trong tròn `algo-path`, chữ nền tối | như Tối (chữ trắng trên amber-500) | điểm giao multiroute |
+| `cong-1..5` | `#10b981 #a3e635 #facc15 #f97316 #ef4444` | `#059669 #4d7c0f #a16207 #ea580c #dc2626` (lime-700/yellow-700 — đo WCAG trên nền positron) | thang ùn tắc 1→5 |
+| Start | chip **"Đi"**: nền emerald-700 `#047857`, chữ trắng — CỐ ĐỊNH 2 chế độ (chữ 5,48) | | điểm xuất phát; token `start` (marker/badge) vẫn emerald-500/600 theo chế độ |
+| Goal | chip **"Đến"**: nền red-600 `#dc2626`, chữ trắng — CỐ ĐỊNH 2 chế độ (đồ hoạ ≥3,5 / chữ 4,83) | | điểm đích; token `goal` vẫn red-500/600 theo chế độ |
+| Stops | số trên nền amber theo chế độ, chữ **zinc-950** cả 2 (đo: trắng trên amber-600 chỉ 3,19) | | điểm giao multiroute |
 | So sánh | A `algo-path` liền · B `algo-frontier` nét đứt (cả 2 chế độ) | | 2 tuyến chồng lớp |
 | Nhãn POI trên map | zinc-400 viền nền tối | zinc-700 viền trắng | TextLayer G_demo |
 | Basemap | Carto **dark-matter** | Carto **positron** | không cần key |
@@ -137,3 +137,13 @@ Thanh nổi giữa-đáy bản đồ, nền `surface-panel/95`, viền `surface-
 Có kết quả → recharts trên nền tối đúng token: bar `nodes_expanded` và `runtime_ms`
 theo thuật toán (màu `algo-frontier`, lưới `surface-border`, chữ `ink-dim`),
 line độ nhạy γ 2 đường (`algo-path` + `algo-expanded`).
+
+## 10. Kiểm định tương phản (tự động)
+
+`python scripts/check_contrast.py` — parse palette thật từ `lib/colors.ts` + CSS vars,
+đọc màu nền basemap **thật** từ style JSON của Carto, tính contrast WCAG:
+đồ hoạ thông tin ≥ 3,0 (so cả nền panel lẫn nền basemap), chữ ≥ 4,5. Trạng thái:
+**PASS toàn bộ cả 2 chế độ** (2026-07-26). Ngoại lệ CÓ CHỦ ĐÍCH, không tính ngưỡng:
+`algo-node` và `edge-dim` — node/cạnh "chưa thăm" nhận diện bằng SỰ VẮNG màu,
+cố ý chìm để lớp thuật toán nổi; nếu nâng đạt 3,0 thì toàn bản đồ sáng rực và
+frontier/expanded mất độ nổi. Cần mắt người xác nhận khi duyệt.

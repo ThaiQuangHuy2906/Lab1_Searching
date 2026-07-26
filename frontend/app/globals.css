@@ -33,8 +33,8 @@
   --algo-node: 161 161 170; /*  zinc-400 */
   --algo-frontier: 8 145 178; /* cyan-600 */
   --algo-expanded: 124 58 237; /* violet-600 */
-  --algo-current: 9 9 11;
-  --algo-path: 245 158 11; /*   amber-500 */
+  --algo-current: 24 24 27; /*  zinc-900 */
+  --algo-path: 217 119 6; /*    amber-600 */
   --bidi-forward: 8 145 178;
   --bidi-backward: 225 29 72; /* rose-600 */
   --start: 5 150 105; /*        emerald-600 */

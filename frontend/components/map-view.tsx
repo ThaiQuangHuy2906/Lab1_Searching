@@ -34,6 +34,7 @@ export function MapView() {
   const goal = useApp((s) => s.goal);
   const stops = useApp((s) => s.stops);
   const pickTarget = useApp((s) => s.pickTarget);
+  const theme = useApp((s) => s.theme);
   const set = useApp((s) => s.set);
   const anim = useAnimation();
   const P = usePalette();
@@ -119,7 +120,7 @@ export function MapView() {
           trafficLayer ? CONGESTION[d.level] : C.edgeDim,
         getWidth: isDemo ? 2.5 : 1.5,
         widthUnits: "pixels",
-        updateTriggers: { getColor: [trafficLayer, traffic] },
+        updateTriggers: { getColor: [trafficLayer, traffic, theme] },
       }),
     ];
 
@@ -194,7 +195,7 @@ export function MapView() {
         getRadius: isDemo ? 5.5 : 3,
         radiusUnits: "pixels",
         stroked: false,
-        updateTriggers: { getFillColor: [anim.stepIdx, trace] },
+        updateTriggers: { getFillColor: [anim.stepIdx, trace, theme] },
       }),
     );
     if (isDemo) {
@@ -255,8 +256,8 @@ export function MapView() {
 
     // start / goal chips + multiroute stop numbers
     const chips: { pos: [number, number]; text: string; bg: RGBA; fg: RGBA }[] = [];
-    if (start && coord.get(start)) chips.push({ pos: coord.get(start)!, text: "Đi", bg: C.start, fg: C.chipText });
-    if (goal && coord.get(goal)) chips.push({ pos: coord.get(goal)!, text: "Đến", bg: C.goal, fg: C.chipText });
+    if (start && coord.get(start)) chips.push({ pos: coord.get(start)!, text: "Đi", bg: C.chipStart, fg: C.chipText });
+    if (goal && coord.get(goal)) chips.push({ pos: coord.get(goal)!, text: "Đến", bg: C.chipGoal, fg: C.chipText });
     const orderedStops = multi?.found ? multi.order.slice(1) : stops;
     orderedStops.forEach((id, i) => {
       const pos = coord.get(id);
@@ -285,7 +286,7 @@ export function MapView() {
     return out;
   }, [graphData, coord, toPath, traffic, trafficLayer, congestedSet, trace, compare,
       multi, anim, nodeColor, pulse, isDemo, showLabels, start, goal, stops,
-      pickTarget, drawerTab, C, CONGESTION]);
+      pickTarget, drawerTab, C, CONGESTION, theme]);
 
   const onClick = React.useCallback(
     (info: PickingInfo) => {

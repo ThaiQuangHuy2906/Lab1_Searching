@@ -156,7 +156,7 @@ nên kể). Kèm [HÌNH → results/figs/admissibility_scatter.png] và
 [SỐ LIỆU → results/exp2_admissibility.csv: 0 vi phạm trên 21 170 điểm; h/h* lớn nhất ≈ 0,565].
 
 [ĐIỀN: nhận xét h/h* ≈ 0,565 nghĩa là heuristic "lỏng" — vì sao (đường vòng + ùn tắc
-làm chi phí thật lớn hơn nhiều thời gian bay thẳng ở 60 km/h) và hệ quả (A* vẫn đúng
+làm chi phí thật lớn hơn nhiều thời gian bay thẳng ở v_max = 45 km/h) và hệ quả (A* vẫn đúng
 nhưng tiết kiệm expand có giới hạn: 771 so với 1 226 của Dijkstra — exp3).]
 
 ---

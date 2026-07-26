@@ -26,14 +26,14 @@ export interface Palette {
 
 const DARK: Palette = {
   deck: {
-    node: [113, 113, 122, 235], //       zinc-500 (v4: was invisible on dark basemap)
+    node: [212, 212, 216, 245], //       zinc-300 (v8: v4's zinc-500 still sank into the basemap)
     frontier: [34, 211, 238, 255], //    cyan-400
     expanded: [167, 139, 250, 255], //   violet-400
     current: [255, 255, 255, 255],
     path: [251, 191, 36, 255], //        amber-400
     bidiForward: [34, 211, 238, 255],
     bidiBackward: [251, 113, 133, 255], // rose-400
-    edgeDim: [82, 82, 91, 210], //       zinc-600 (v4: raised, still below algo colors)
+    edgeDim: [161, 161, 170, 215], //    zinc-400 (v8: raised again, still below algo colors)
     compareB: [34, 211, 238, 255],
     start: [16, 185, 129, 255], //       emerald-500
     goal: [239, 68, 68, 255], //         red-500
@@ -43,8 +43,8 @@ const DARK: Palette = {
     chipGoal: [220, 38, 38, 255], //     red-600 — graphics >= 3.0 & white text >= 4.5 both themes
     chipText: [255, 255, 255, 255],
     pulse: [255, 255, 255, 180],
-    label: [161, 161, 170, 230], //      zinc-400
-    labelOutline: [9, 9, 11, 220],
+    label: [228, 228, 231, 245], //      zinc-200 (v8: labels now always on — must read at any zoom)
+    labelOutline: [9, 9, 11, 235],
   },
   congestion: {
     1: [16, 185, 129, 220], 2: [163, 230, 53, 220], 3: [250, 204, 21, 220],
@@ -53,7 +53,7 @@ const DARK: Palette = {
   congestionHex: { 1: "#10b981", 2: "#a3e635", 3: "#facc15", 4: "#f97316", 5: "#ef4444" },
   hex: {
     frontier: "#22d3ee", expanded: "#a78bfa", current: "#ffffff", path: "#fbbf24",
-    bidiForward: "#22d3ee", bidiBackward: "#fb7185", node: "#71717a",
+    bidiForward: "#22d3ee", bidiBackward: "#fb7185", node: "#d4d4d8",
     inkDim: "#a1a1aa", grid: "#27272a", panel: "#18181b",
   },
   basemap: "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",

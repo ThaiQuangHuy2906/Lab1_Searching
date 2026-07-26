@@ -111,7 +111,8 @@ export function MapView() {
   );
 
   const isDemo = graph === "demo";
-  const showLabels = isDemo && (viewState?.zoom ?? 0) >= 12.8;
+  // v8: G_demo labels are ALWAYS on (user request) — collision filter handles overlap
+  const showLabels = isDemo;
 
   const layers = React.useMemo(() => {
     if (!graphData) return [];

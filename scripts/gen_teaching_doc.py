@@ -61,7 +61,12 @@ def build_substore(demo: GraphStore) -> tuple[GraphStore, dict[str, str]]:
                      for slot in demo.profiles.profiles},
     })
     label = {by_name[nm].id: SHORT[nm] for nm in SUB_NAMES}
-    return GraphStore(graph, profiles, "demo"), label
+    sub = GraphStore(graph, profiles, "demo")
+    # inherit v_max from the FULL G_demo: the GUI runs on the full graph, so
+    # the h column here must be computed with the same v_max to match it 100%
+    # (a larger v_max only shrinks h -> admissibility is preserved)
+    sub.v_max_ms = demo.v_max_ms
+    return sub, label
 
 
 def fmt_map(m: dict[str, float] | None, lab: dict[str, str]) -> str:
@@ -192,10 +197,14 @@ Trọng số cạnh = `t_free × f_cong + penalty` (SCHEMA §D, γ=1,5):
 |---|---|---|---|---|---|---|
 {e_rows}
 
-Heuristic tới đích SC: `h(n) = haversine(n, SC) / v_max` (v_max = 60 km/h — admissible,
-chứng minh trong `docs/HEURISTIC-PROOF.md`):
+*(Mọi số giây trong tài liệu đã làm tròn về nguyên cho dễ đọc — cộng tay có thể
+lệch ±1 s so với tổng chính xác; app và test tính bằng số lẻ đầy đủ.)*
 
-| Node | haversine → SC (m) | **h (s)** |
+Heuristic tới đích {lab[goal]}: `h(n) = haversine(n, {lab[goal]}) / v_max`, với
+v_max = **{store.v_max_ms * 3.6:.0f} km/h** — tốc độ lớn nhất có thật trong G_demo
+(không đoán quá ⇒ admissible, chứng minh trong `docs/HEURISTIC-PROOF.md`):
+
+| Node | haversine → {lab[goal]} (m) | **h (s)** |
 |---|---|---|
 {h_rows}
 
@@ -319,7 +328,7 @@ A* cũng dùng h nhưng CÓ g nên không bị.
 
 ## 8. Dijkstra hai chiều
 
-**Ý tưởng:** chạy ĐỒNG THỜI hai Dijkstra — xuôi từ BT và ngược từ SC (trên đồ thị đảo
+**Ý tưởng:** chạy ĐỒNG THỜI hai Dijkstra — xuôi từ BT và ngược từ {lab[goal]} (trên đồ thị đảo
 chiều cạnh, vì đường một chiều!). Mỗi bước expand phía có chi phí đỉnh nhỏ hơn (cột
 "Phía"). Khi hai vùng chạm nhau và `top_xuôi + top_ngược ≥ μ` (μ = chi phí gặp tốt
 nhất đã thấy) thì dừng — tối ưu như Dijkstra nhưng hai "bong bóng" nhỏ thay vì một
@@ -350,7 +359,7 @@ Complete ✔ · Tối ưu ✔ trong ngưỡng ε.
 tiết kiệm cực nhiều bộ nhớ, đổi lại có thể cắt nhầm nhánh chứa lời giải.
 Complete ✘ · Tối ưu ✘.
 
-**k = 2** — bị hẹp:
+**k = 2:**
 
 {trace_table(d['beam_k2'], lab)}
 
@@ -361,7 +370,12 @@ Complete ✘ · Tối ưu ✘.
 {trace_table(d['beam'], lab)}
 
 {result_line(d['beam'], lab)}
-**Nói trong video:** {"k=2 vẫn tìm được lần này nhưng không có bảo đảm — " if d['beam_k2'].found else "k=2 CẮT MẤT lời giải (found=false) — "}đây là minh hoạ sống động nhất của "incomplete".
+{f'''**Nghịch lý đáng giảng:** k=5 ({d['beam'].metrics.total_cost:.0f} s) TỆ HƠN k=2
+({d['beam_k2'].metrics.total_cost:.0f} s)! Lý do nằm ở luật "đã vào beam là chốt":
+k rộng đưa {lab[goal]} vào beam SỚM qua đường xấu rồi không bao giờ xét lại đường
+rẻ hơn; k hẹp CẮT {lab[goal]} khỏi beam, vòng sau nó vào lại bằng đường tốt hơn.
+Beam KHÔNG đơn điệu theo k — tăng k không hứa hẹn kết quả tốt hơn.''' if d['beam_k2'].found and d['beam'].found and d['beam'].metrics.total_cost > d['beam_k2'].metrics.total_cost + 0.5 else ""}
+**Nói trong video:** {"k=2 vẫn tìm được lần này nhưng không có bảo đảm — " if d['beam_k2'].found else "k=2 CẮT MẤT lời giải (found=false) — "}đây là minh hoạ sống động nhất của "incomplete"{" (và ô kết quả 2 mức k ở trên cho thấy thêm: kết quả không đơn điệu theo k)" if d['beam_k2'].found and d['beam'].found and abs(d['beam'].metrics.total_cost - d['beam_k2'].metrics.total_cost) > 0.5 else ""}.
 
 ---
 

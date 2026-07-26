@@ -47,6 +47,25 @@
   Benchmark exp1–7 VẪN CHƯA chạy lại — chờ TomTom (giữ nguyên cảnh báo TẠM). UI duyệt
   v8: nút ✕ xoá chọn Đi/Đến (cả dropdown G_demo lẫn chọn-trên-bản-đồ G_real).
 
+- **2026-07-26 (rà soát vòng 2 theo lệnh user — "đừng tự tin"):** phát hiện & sửa:
+  (a) **Mọi chỗ nói "v_max = 60 km/h" là SAI với dữ liệu thật** — cả G_real lẫn G_demo
+  max free_speed = **45 km/h** (code luôn đúng: `GraphStore.v_max_ms` lấy max của chính
+  đồ thị; chỉ CÂU VĂN sai). Sửa: HEURISTIC-PROOF §1+§5, BaoCao mục e, Video 6:00,
+  template GIAI-THICH (in v_max động). (b) Template GIAI-THICH còn hardcode đích cũ
+  "SC" ở khối heuristic + mục Hai chiều ("ngược từ SC") — làm động theo goal. (c)
+  Substore 7-node tự tính v_max riêng (42,4) ≠ v_max G_demo đầy đủ (45) → bảng h lệch
+  GUI, vi phạm cam kết "khớp 100%": build_substore giờ KẾ THỪA v_max của G_demo
+  (h nhỏ đi ⇒ vẫn admissible). (d) Beam trên cặp mới: k=5 (449 s) TỆ HƠN k=2 (341 s) —
+  xác minh code: đúng semantics "đã vào beam là chốt" (Phase 3), KHÔNG phải bug; viết
+  thêm đoạn "Nghịch lý đáng giảng" (điều kiện hoá — chỉ in khi xảy ra) + chú thích
+  "frontier hiển thị ứng viên trước khi cắt k". (e) Bảng giây làm tròn cộng tay lệch
+  ±1 s (341,5 hiển thị 342 nhưng tổng 341) → thêm chú thích làm tròn ở §0. (f) Số
+  stage build ghi nhầm trong DATA.md §7 (+76 → thật là +820/−744). (g) Kiểm
+  DETERMINISM: chạy lại 04+03b → byte-identical (git sạch). (h) pytest 79/79 +
+  check_contrast ALL PASS sau các đổi màu. UI duyệt v8 bổ sung theo yêu cầu user:
+  dark nâng node zinc-500→300, cạnh zinc-600→400, nhãn POI zinc-400→200; nhãn POI
+  G_demo LUÔN hiện (bỏ ngưỡng zoom 12,8 — collision filter vẫn tự nhường khi đè).
+
 - **2026-07-26 (tối — sau chốt Phase 7):** (a) **Benchmark sẽ chạy lại MỘT lượt duy nhất khi có dữ liệu TomTom (ngày mai)** — số exp1–7 hiện tại trong `results/` và các trích dẫn trong report/ + GIAI-THICH coi là TẠM (đã gắn cảnh báo đầu từng file). (b) Chuỗi duyệt UI bằng mắt v5→v7: mũi tên hướng di chuyển CHỈ trên tuyến kết quả (route/multiroute/so sánh, cách nhau ≥220 m, viền SDF màu tuyến); drawer nới 360→400px hết cắt cột f; polish v6 (bóng trung tính cho lớp nổi, cụm nút bản đồ +/−/⌂ có transition, micro-feedback 150 ms, chú giải có tiêu đề); v7 redesign tab Giải thích (header tuyến + chips thời gian/km, GỘP đoạn ùn tắc theo tên đường kèm số đoạn, legend thêm mục "▶ Hướng di chuyển"). Mọi thay đổi ghi DESIGN.md trước khi code.
 
 - **2026-07-26 (Phase 7):** (a) GIAI-THICH-THUAT-TOAN.md SINH TỰ ĐỘNG từ chính search.py trên đồ thị con 7 node thật của G_demo — bảng chạy tay không bao giờ lệch code/GUI, tái sinh bằng `scripts/gen_teaching_doc.py`. (b) Chọn cặp dạy: bài chính BT→SC (3 tuyến cạnh tranh, minh hoạ một chiều); phản ví dụ BX→BT cho BFS (+52% vì ít cạnh) và Greedy (+147 s vì tin h bỏ g) — quét toàn bộ cặp trong subgraph để chọn. (c) Bảng thực nghiệm mục g của báo cáo: phát hiện số nháp sai (Greedy gap thật 60,9% chứ không phải 18,3%) → mọi số trong deliverable đều tính lại từ CSV. (d) Screenshot báo cáo/video quy ước chế độ TỐI.

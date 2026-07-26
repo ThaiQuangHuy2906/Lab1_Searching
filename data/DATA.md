@@ -109,7 +109,7 @@ Bản build hiện tại: `source = "synthetic"` (chưa có key TomTom). Có key
 | | G_real | G_demo |
 |---|---|---|
 | Node | **2 118** (raw 2 230, SCC 2 118) | **51** (đủ 51 POI sau review, không POI nào bị gộp) |
-| Cạnh | **4 699** (raw 4 922; gộp 22 cạnh song song, bỏ self-loop) | **253** (kề 177 → vá bất biến +76 → tỉa an-toàn-toàn-cục) |
+| Cạnh | **4 699** (raw 4 922; gộp 22 cạnh song song, bỏ self-loop) | **253** (kề 177 → vá bất biến +820 → tỉa an-toàn-toàn-cục −744) |
 | Một chiều | 1 433 | 51 (chỉ khi G_real thật sự không có chiều ngược) |
 | Đèn tín hiệu | 185 cạnh / 77 node | 122 cạnh |
 | Ngập / lô cốt / hẻm | 402 / 107 / 8 | 39 / 31 / 0 |

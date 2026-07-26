@@ -26,8 +26,9 @@ $hav(a,b)$ = khoảng cách **haversine** (đường tròn lớn) giữa hai to�
 
 $$h_{dist}(n) = hav(n, goal) \ \text{(m)}, \qquad h_{time}(n) = h_{bal}(n) = \frac{hav(n, goal)}{v_{\max}} \ \text{(giây)}$$
 
-với $v_{\max} = \max_{e \in E} v(e)$ — trong dữ liệu hiện tại $v_{\max} = 60$ km/h $= 16{,}67$ m/s
-(trên G_demo là tốc độ trung bình lớn nhất của cạnh co, luôn $\le 60$ km/h).
+với $v_{\max} = \max_{e \in E} v(e)$ tính trên CHÍNH đồ thị đang chạy — trong dữ liệu
+hiện tại cả G_real lẫn G_demo đều có $v_{\max} = 45$ km/h $= 12{,}5$ m/s (với G_demo,
+$v(e)$ của cạnh co là tốc độ trung bình dọc đường thật nên không vượt max của G_real).
 
 **Định nghĩa.** Heuristic $h$ là *admissible* nếu $h(n) \le h^*(n)$ với mọi $n$, trong đó
 $h^*(n)$ là chi phí tối ưu từ $n$ tới $goal$ (nếu không tới được, $h^*(n)=+\infty$ và bất
@@ -102,7 +103,7 @@ trong đó $w$ là $w_{time}$ hoặc $w_{bal}$ (Bổ đề 3 chặn cả hai). $
 
 $h$ phải chặn dưới thời gian của **mọi** đường đi có thể, kể cả những đường toàn cạnh
 nhanh nhất. Nếu thay $v_{\max}$ bằng tốc độ của một cạnh cụ thể (hoặc tốc độ trung
-bình), tồn tại phản ví dụ: đoạn về đích toàn đường 60 km/h nhưng $h$ chia cho 30 km/h
+bình), tồn tại phản ví dụ: đoạn về đích toàn đường 45 km/h nhưng $h$ chia cho 30 km/h
 sẽ **ước lượng quá** ($h > h^*$) → mất admissible → A* có thể trả đường sai. Đánh đổi:
 $v_{\max}$ làm $h$ "lỏng" hơn (ước lượng thấp) → expand nhiều node hơn một chút nhưng
 luôn đúng — số liệu cụ thể xem thí nghiệm 2 và 3.

@@ -43,7 +43,7 @@
 - (6:00) **A\*** [người B hoặc C]: chỉ vào cột f — node hướng về đích có f nhỏ được
   ưu tiên; nêu luật tie-break khi hai node cùng f (chọn h nhỏ hơn); so expand A* 771
   vs Dijkstra 1 226 trên G_real (benchmark).
-  Nói 1 câu về admissible: "h là thời gian bay thẳng ở 60 km/h — không bao giờ đoán quá."
+  Nói 1 câu về admissible: "h là thời gian bay thẳng ở tốc độ lớn nhất của đồ thị (45 km/h) — không bao giờ đoán quá."
 - (7:15) **Greedy** [người C]: cùng cặp BT→BX — lao theo h "nhìn gần đích" nên sập
   cùng bẫy với BFS (+157 s, +46%); đối chiếu với A* cũng dùng h nhưng CÓ g nên không bị.
 - (8:00) **Dijkstra hai chiều** [người C]: GUI 2 màu lan từ 2 phía (cột "Phía" trong

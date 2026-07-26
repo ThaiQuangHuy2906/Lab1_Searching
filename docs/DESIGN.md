@@ -51,20 +51,20 @@ trên nền trắng; node đang expand đảo trắng→đen.
 
 | Token | Tối | Sáng | Ý nghĩa |
 |---|---|---|---|
-| `algo-node` | zinc-500 `#71717a` | zinc-400 `#a1a1aa` | node thường (duyệt v4: nâng 1 nấc — bản cũ tàng hình trên basemap tối) |
+| `algo-node` | zinc-300 `#d4d4d8` | zinc-400 `#a1a1aa` | node thường (duyệt v4 nâng 1 nấc; duyệt v8: dark nâng tiếp zinc-500→300 — user vẫn thấy chìm) |
 | `algo-frontier` | cyan-400 `#22d3ee` | cyan-600 `#0891b2` | node trong frontier |
 | `algo-expanded` | violet-400 `#a78bfa` | violet-600 `#7c3aed` | node đã expand |
 | `algo-current` | white `#ffffff` + pulse trắng | zinc-900 `#18181b` + pulse đen | node đang expand |
 | `algo-path` | amber-400 `#fbbf24` | amber-600 `#d97706` | tuyến kết quả, nét dày 4px |
 | `bidi-forward` | cyan-400 `#22d3ee` | cyan-600 `#0891b2` | phía xuôi (side=forward) |
 | `bidi-backward` | rose-400 `#fb7185` | rose-600 `#e11d48` | phía ngược (side=backward) |
-| `edge-dim` | zinc-600 `#52525b` | zinc-300 `#d4d4d8` | cạnh thường (duyệt v4: nâng 1 nấc, vẫn dưới mọi màu thuật toán) |
+| `edge-dim` | zinc-400/85% `#a1a1aa` | zinc-300 `#d4d4d8` | cạnh thường (duyệt v8: dark zinc-600→400 nhạt alpha — nổi hẳn nhưng vẫn dưới mọi màu thuật toán) |
 | `cong-1..5` | `#10b981 #a3e635 #facc15 #f97316 #ef4444` | `#059669 #4d7c0f #a16207 #ea580c #dc2626` (lime-700/yellow-700 — đo WCAG trên nền positron) | thang ùn tắc 1→5 |
 | Start | chip **"Đi"**: nền emerald-700 `#047857`, chữ trắng — CỐ ĐỊNH 2 chế độ (chữ 5,48) | | điểm xuất phát; token `start` (marker/badge) vẫn emerald-500/600 theo chế độ |
 | Goal | chip **"Đến"**: nền red-600 `#dc2626`, chữ trắng — CỐ ĐỊNH 2 chế độ (đồ hoạ ≥3,5 / chữ 4,83) | | điểm đích; token `goal` vẫn red-500/600 theo chế độ |
 | Stops | số trên nền amber theo chế độ, chữ **zinc-950** cả 2 (đo: trắng trên amber-600 chỉ 3,19) | | điểm giao multiroute |
 | So sánh | A `algo-path` liền · B `algo-frontier` nét đứt (cả 2 chế độ) | | 2 tuyến chồng lớp |
-| Nhãn POI trên map | zinc-400 viền nền tối | zinc-700 viền trắng | TextLayer G_demo |
+| Nhãn POI trên map | zinc-200 viền nền tối (v8 — luôn hiện nên phải đọc được mọi zoom) | zinc-700 viền trắng | TextLayer G_demo |
 | Basemap | Carto **dark-matter** | Carto **positron** | không cần key |
 
 **Legend:** cố định góc **dưới-trái**, tiêu đề nhỏ "CHÚ GIẢI" (10px uppercase, v6),
@@ -123,7 +123,7 @@ Thanh nổi giữa-đáy bản đồ, nền `surface-panel/95`, viền `surface-
   `https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json`
 - Chế độ **Offline**: tắt basemap, vẽ thuần đồ thị bằng deck.gl trên nền `surface`
   — bảo hiểm wifi phòng bảo vệ; mọi lớp thuật toán giữ nguyên.
-- G_demo: node có nhãn tên POI (ẩn dần khi zoom xa, **collision filter** — label đè nhau thì tự nhường); G_real: không nhãn.
+- G_demo: node LUÔN có nhãn tên POI ở mọi mức zoom (duyệt v8 — bỏ ngưỡng zoom 12.8; **collision filter** vẫn tự nhường khi label đè nhau); G_real: không nhãn.
 - **Hover node** → tooltip tên POI (G_demo) / id nút (G_real) — nền `surface-panel`.
 - **Mũi tên hướng TUYẾN** (duyệt v5c — thay bản mũi-tên-mọi-cạnh v5/v5b vì rối):
   ▶ CHỈ xuất hiện dọc tuyến kết quả sau khi chạy thuật toán — tuyến chính, các chặng

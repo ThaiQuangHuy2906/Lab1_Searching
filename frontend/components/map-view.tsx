@@ -131,6 +131,47 @@ export function MapView() {
       }),
     ];
 
+    // direction arrows at edge midpoints (DESIGN 6, review v5):
+    // two-way pairs shift right of travel like traffic lanes
+    if (isDemo || (viewState?.zoom ?? 0) >= 14) {
+      const pairSet = new Set(graphData.edges.map((e) => `${e.u}|${e.v}`));
+      const arrows = graphData.edges.map((e) => {
+        const [x1, y1] = coord.get(e.u)!;
+        const [x2, y2] = coord.get(e.v)!;
+        const latMid = (y1 + y2) / 2;
+        const dxm = (x2 - x1) * Math.cos((latMid * Math.PI) / 180);
+        const dym = y2 - y1;
+        const len = Math.hypot(dxm, dym) || 1;
+        const twoWay = pairSet.has(`${e.v}|${e.u}`);
+        // right-of-travel normal (screen sense), ~6.5 m in degrees
+        const off = twoWay ? 0.00006 : 0;
+        const nx = (dym / len) * off;
+        const ny = (-dxm / len) * off;
+        return {
+          id: e.id,
+          pos: [(x1 + x2) / 2 + nx, latMid + ny] as [number, number],
+          angle: (Math.atan2(dym, dxm) * 180) / Math.PI,
+          level: traffic?.[e.id] ?? 1,
+        };
+      });
+      out.push(
+        new TextLayer({
+          id: "edge-arrows",
+          data: arrows,
+          getPosition: (d: (typeof arrows)[number]) => d.pos,
+          getText: () => "▶",
+          getAngle: (d: (typeof arrows)[number]) => d.angle,
+          getSize: isDemo ? 11 : 9,
+          getColor: (d: (typeof arrows)[number]) =>
+            trafficLayer ? CONGESTION[d.level] : C.node,
+          characterSet: ["▶"],
+          fontFamily: "sans-serif",
+          billboard: false,
+          updateTriggers: { getColor: [trafficLayer, traffic, theme] },
+        }),
+      );
+    }
+
     if (congestedSet.size) {
       out.push(
         new LineLayer({

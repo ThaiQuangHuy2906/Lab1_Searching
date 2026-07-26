@@ -101,7 +101,7 @@ export function MapView() {
   );
 
   const isDemo = graph === "demo";
-  const showLabels = isDemo && (viewState?.zoom ?? 0) >= 13.5;
+  const showLabels = isDemo && (viewState?.zoom ?? 0) >= 12.8;
 
   const layers = React.useMemo(() => {
     if (!graphData) return [];

@@ -17,13 +17,16 @@ const MODE_LABEL = {
 
 export function ExplainTab() {
   const trace = useApp((s) => s.trace);
+  const multi = useApp((s) => s.multi);
   const graphData = useApp((s) => s.graphData);
   const P = usePalette();
 
   if (!trace) {
     return (
       <EmptyState icon={MessageSquareText} title="Chưa có giải thích"
-        hint="Chạy một thuật toán để đọc phần giải thích lộ trình bằng tiếng Việt." />
+        hint={multi?.found
+          ? "Kết quả tối ưu thứ tự không kèm giải thích lộ trình — xem tab Số liệu; muốn đọc giải thích, chạy tuyến 2 điểm (Đi/Đến) bằng nút Chạy thuật toán."
+          : "Chạy một thuật toán để đọc phần giải thích lộ trình bằng tiếng Việt."} />
     );
   }
   const ex = trace.explanation;

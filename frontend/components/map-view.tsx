@@ -315,7 +315,9 @@ export function MapView() {
     // start / goal chips + multiroute stop numbers
     const chips: { pos: [number, number]; text: string; bg: RGBA; fg: RGBA }[] = [];
     if (start && coord.get(start)) chips.push({ pos: coord.get(start)!, text: "Đi", bg: C.chipStart, fg: C.chipText });
-    if (goal && coord.get(goal)) chips.push({ pos: coord.get(goal)!, text: "Đến", bg: C.chipGoal, fg: C.chipText });
+    // multiroute result = Đi -> stops; "Đến" is NOT part of it -> hide its chip
+    if (goal && coord.get(goal) && !multi?.found)
+      chips.push({ pos: coord.get(goal)!, text: "Đến", bg: C.chipGoal, fg: C.chipText });
     const orderedStops = multi?.found ? multi.order.slice(1) : stops;
     orderedStops.forEach((id, i) => {
       const pos = coord.get(id);

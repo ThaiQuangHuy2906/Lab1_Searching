@@ -1,0 +1,10 @@
+# Normalize every text file to LF in the repo (checkout as-is).
+# Kills the LF/CRLF warning storm and keeps diffs identical across
+# Windows/macOS teammates.
+* text=auto eol=lf
+
+# Binaries — never touch
+*.png binary
+*.pdf binary
+*.ico binary
+*.woff2 binary

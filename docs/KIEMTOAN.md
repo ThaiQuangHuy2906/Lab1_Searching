@@ -20,10 +20,10 @@
 | B5 | L3-03 updateTriggers layer nodes + rà 10 layer | L3-03 | ✅ XONG — thêm anim.steps.length vào getFillColor layer nodes (đúng fix verify agent đã chứng minh bằng diffProps); rà lại 10 layer còn lại: data động rebuild mỗi render hoặc đã có trigger theme — không layer nào cùng bệnh |
 | B6 | L3-04 guard start/goal/stops sau await + khoá panel khi đang bay | L3-04 | ✅ XONG — cả 3 action so đủ graph/slot/mode/algorithm/start/goal/stops (runCompare còn đòi trace gốc còn sống); khoá chéo running/comparing/multiRunning ở cả store lẫn UI (dropdown, swap, ✕, thêm điểm, map click, 3 nút chạy) |
 | B7 | L3-05 mã lỗi method lạ · L3-06 envelope 404/405 · L3-07 format VN /benchmark | L3-05/06/07 | ✅ XONG — chỉ map HELD_KARP_LIMIT khi msg 'held_karp supports at most' (+test); handler StarletteHTTPException trả envelope §C.7 tiếng Việt cho 404/405 (+test); /benchmark: formatter/tickFormatter fmtVi cho 2 bar chart + chart γ (kể cả nhãn 'γ = 1,5'); npx tsc --noEmit = 0 lỗi |
-| C8 | L4-01 viết lại 4 vị trí γ theo khung ĐỘ NHẠY | L4-01 | ⬜ |
-| C9 | L4-04 tiêu đề hình exp5 trung tính | L4-04 | ⬜ |
-| C10 | L4-02 viết scripts/05_calibrate_gamma.py + dòng γ̂ vào BaoCao c | L4-02 | ⬜ |
-| C11 | L4-03 caveat exp7 vào template gen_teaching_doc | L4-03 | ⬜ |
+| C8 | L4-01 viết lại 4 vị trí γ theo khung ĐỘ NHẠY | L4-01 | ✅ XONG — Slide:27, Video 22:00 (kèm lời dặn 'KHÔNG nói chọn 1,5 vì cực tiểu'), BaoCao hint mục c (dòng 77) + khối [ĐIỀN 101-116 viết lại trọn: hằng số thiết kế + giải thích vì sao lập luận cũ là vòng + độ nhạy ~2,6% |
+| C9 | L4-04 tiêu đề hình exp5 trung tính | L4-04 | ✅ XONG — benchmark.py: 'Độ nhạy γ: thời gian & quãng đường tuyến được chọn'; PNG sẽ tự đúng ở lượt benchmark TomTom duy nhất |
+| C10 | L4-02 viết scripts/05_calibrate_gamma.py + dòng γ̂ vào BaoCao c | L4-02 | ✅ XONG — fit f=1+γ(c−1)/4 least-squares trên inflation freeFlow/current, level lấy đúng mapping ratio_to_level dùng chung với 03b (chuyển vào pipeline_common); xuất results/gamma_calibration.csv; chưa có snapshot → thông báo rõ + exit 1 (đã smoke); BaoCao mục c có sẵn dòng trích γ̂; DATA.md §1 thêm bước 05 |
+| C11 | L4-03 caveat exp7 vào template gen_teaching_doc | L4-03 | ✅ XONG — thêm 'Caveat bắt buộc khi nói: … kết quả trên INSTANCE 10 điểm này, KHÔNG phải bảo đảm tổng quát' ngay dưới câu exp7 trong template; GIAI-THICH tái sinh ở D12 |
 | D12 | gen_teaching_doc bỏ hardcode exp3/exp7 — đọc results/*.csv | L6-01/L4-05 | ⬜ |
 | D13 | Mở rộng cảnh báo SỐ TẠM 4 file (kể cả số chạy tay) | L6-01 | ⬜ |
 | D14 | results/README.md nguồn synthetic + seed + lệnh tái sinh | L6-02 | ⬜ |

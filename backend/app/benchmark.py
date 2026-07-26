@@ -334,7 +334,7 @@ def exp5(store: GraphStore, pairs: list[tuple[str, str]]) -> str:
              color=C_EXPANDED, label="Quãng đường TB (km)")
     ax2.set_ylabel("quãng đường TB (km)", color=C_EXPANDED)
     ax2.spines["top"].set_visible(False)
-    ax1.set_title("Độ nhạy γ: tăng phạt ùn tắc → tuyến dài hơn nhưng nhanh hơn",
+    ax1.set_title("Độ nhạy γ: thời gian & quãng đường tuyến được chọn",
                   color=C_INK, fontsize=11)
     ax1.axvline(1.5, color=C_GRID, linewidth=1, linestyle="--")
     ax1.annotate("γ = 1,5 (mặc định)", (1.5, ax1.get_ylim()[0]),

@@ -395,6 +395,9 @@ Shipper xuất phát từ **BT**, giao tại **HN, MT, SC** (không quay về). 
   — tiết kiệm {100 * (orig_cost - hk_cost) / orig_cost:.0f}% so thứ tự nhập.
 - Trên kịch bản 10 điểm thật (benchmark exp7): tiết kiệm 53,6%, NN+2-opt và SA
   đều đạt đúng nghiệm Held-Karp; SA trung bình 5 seed = 3 564,6 ± 9,7 s.
+  **Caveat bắt buộc khi nói:** việc NN+2-opt/SA chạm nghiệm Held-Karp là kết quả
+  trên INSTANCE 10 điểm này (không gian nhỏ), KHÔNG phải bảo đảm tổng quát —
+  hai thuật toán này vẫn là xấp xỉ, không có chứng minh tối ưu.
 
 **Held-Karp nói ngắn gọn trong video:** dp[S][i] = chi phí rẻ nhất xuất phát BT, thăm
 đúng tập S, đứng ở i. Điền dần theo kích thước S (2^n trạng thái) — với n=4 chỉ có

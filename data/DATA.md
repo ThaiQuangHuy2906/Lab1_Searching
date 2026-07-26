@@ -10,8 +10,9 @@
 02_build_graph.py    graphml → data/graph_real.json (SCHEMA §A)
 03a_crawl_tomtom.py  (TUỲ CHỌN, cần TOMTOM_API_KEY trong .env) → data/raw/tomtom/<slot>/
 03b_build_profiles.py real|demo → data/traffic_profiles_<level>.json (TomTom nếu có + synthetic fallback)
-04_build_gdemo.py    graph_real + gdemo_pois.json → data/graph_demo.json + gdemo_preview.png
-validate_data.py     kiểm tra toàn bộ ràng buộc SCHEMA + liên thông mạnh + phủ profile
+04_build_gdemo.py    graph_real + gdemo_pois.json → data/graph_demo.json + gdemo_corridors.json + gdemo_preview.png
+05_calibrate_gamma.py (TUỲ CHỌN, chạy SAU 03a) → results/gamma_calibration.csv (γ̂ thực nghiệm từ TomTom)
+validate_data.py     kiểm tra toàn bộ ràng buộc SCHEMA + liên thông mạnh + phủ profile + 6 bất biến demo/real
 ```
 
 Thứ tự chạy đầy đủ: `01 → 02 → 03b real → 04 → 03b demo → validate_data`.

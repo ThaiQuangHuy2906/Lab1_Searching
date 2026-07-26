@@ -49,6 +49,16 @@ MAIN_CLASSES = {"motorway", "trunk", "primary", "secondary",
 TIME_SLOTS = ("07:30", "12:00", "17:30", "22:00")
 
 
+def ratio_to_level(ratio: float) -> int:
+    """TomTom currentSpeed/freeFlowSpeed ratio -> congestion level 1-5.
+    Shared by 03b (assigns levels) and 05 (calibrates gamma against the
+    SAME level assignment) — the two MUST agree, so the mapping lives here."""
+    for threshold, level in ((0.85, 1), (0.70, 2), (0.55, 3), (0.40, 4)):
+        if ratio >= threshold:
+            return level
+    return 5
+
+
 def corridor_mean_level(
     eids: list[str], slot_levels: dict[str, int], t_free_by_eid: dict[str, float]
 ) -> int:

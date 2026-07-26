@@ -74,7 +74,8 @@ giữa 2 điểm theo nhiều tiêu chí, (ii) xếp thứ tự giao nhiều đ�
 > lập luận kỹ: nhóm KHÔNG cộng α·dist + β·time + γ·cong đa đơn vị như công thức mẫu
 > của đề mà QUY HẾT VỀ GIÂY — đề vẫn được thoả vì đủ 4 thành phần distance/time/
 > congestion/risk (mode distance riêng, congestion nhân vào time, risk cộng giây).
-> Trỏ sang thí nghiệm 5 khi bàn cách chọn γ.
+> Trỏ sang thí nghiệm 5 (PHÂN TÍCH ĐỘ NHẠY) khi bàn về γ — γ=1,5 là hằng số thiết kế;
+> exp5 chỉ chứng minh kết luận BỀN với lựa chọn γ, không phải "chọn 1,5 bằng thí nghiệm".
 
 **Định nghĩa hình thức** *(điền sẵn — nhóm kiểm tra và diễn giải thêm)*:
 - Không gian trạng thái: tập node V (giao lộ/địa danh); trạng thái = node hiện tại.
@@ -103,9 +104,17 @@ cùng thứ nguyên → cộng có nghĩa vật lý "thời gian tương đươn
 ("mỗi LƯỢT băng qua một vùng ngập đắt thêm 60 giây" — flag đặt tại cạnh ĐI VÀO vùng
 nên tuyến xuyên vùng trả đúng một lần, không cộng dồn theo từng đoạn OSM nhỏ,
 xem DATA.md §4); (3) heuristic admissible chứng minh
-được sạch sẽ trên cùng đơn vị. Nêu vì sao γ=1,5: trỏ [HÌNH → results/figs/exp5_gamma_curves.png]
-— thời gian tuyến đạt cực tiểu quanh γ=1,5 [SỐ LIỆU → results/exp5_gamma.csv:
-790,8 s tại γ=1,5 so với 811,8 s tại γ=0].]
+được sạch sẽ trên cùng đơn vị. Về γ=1,5: trình bày là HẰNG SỐ THIẾT KẾ — nghĩa vật lý
+"kẹt cứng mức 5 làm thời gian gấp (1+γ) = 2,5 lần lúc thoáng". TUYỆT ĐỐI KHÔNG lập luận
+"đường cong đạt cực tiểu tại γ=1,5 nên 1,5 là đúng": thước đo của exp5 tự dùng γ=1,5
+nên cực tiểu tại 1,5 là hệ quả toán học của thước, không phải bằng chứng (đổi thước
+sang γ=0 thì "cực tiểu" nhảy về 0). Trình bày exp5 đúng vai PHÂN TÍCH ĐỘ NHẠY: trỏ
+[HÌNH → results/figs/exp5_gamma_curves.png] — thời gian tuyến chênh trên CẢ DẢI γ∈[0;3]
+chỉ ~2,6% [SỐ LIỆU → results/exp5_gamma.csv: 790,8 s tại γ=1,5 vs 811,8 s tại γ=0]
+⇒ kết luận của hệ ít nhạy với lựa chọn γ. Sau lượt crawl TomTom bổ sung thêm một câu:
+γ̂ ước lượng ĐỘC LẬP từ dữ liệu thật (scripts/05_calibrate_gamma.py — fit
+f = 1 + γ(c−1)/4 trên inflation freeFlow/current của từng điểm đo) =
+[SỐ LIỆU → results/gamma_calibration.csv] — đối chiếu với hằng số 1,5.]
 
 [ĐIỀN: ùn tắc đổi tuyến thế nào — trỏ exp4: 83,5% cặp OD đổi tuyến giữa 07:30 và 22:00.]
 

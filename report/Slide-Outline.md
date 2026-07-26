@@ -24,7 +24,7 @@
 **Slide 3 — Mô hình hoá + hàm chi phí** *(rubric: modeling 15đ)*
 - Đồ thị CÓ HƯỚNG; cạnh mang length/speed/congestion(4 khung giờ)/risk 0-1
 - `w = t_free·f_cong + penalty` — QUY HẾT VỀ GIÂY (điểm khác công thức mẫu của đề)
-- γ=1,5 chọn bằng THÍ NGHIỆM: cực tiểu thời gian tại γ=1,5 (exp5)
+- γ=1,5 là HẰNG SỐ THIẾT KẾ (kẹt cứng mức 5 ⇒ thời gian ×2,5 lúc thoáng); exp5 là PHÂN TÍCH ĐỘ NHẠY — chênh cả dải γ∈[0;3] chỉ ~2,6% ⇒ kết luận ít nhạy với lựa chọn γ
 > 🗣 60s: nhấn lý do "cùng đơn vị mới cộng có nghĩa"; mỗi lượt băng qua vùng ngập = +60 s
 > (flag tại cạnh ĐI VÀO vùng — trả một lần mỗi lượt, không cộng dồn theo đoạn OSM).
 

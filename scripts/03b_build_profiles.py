@@ -33,7 +33,7 @@ import sys
 
 from pipeline_common import (
     DATA_DIR, MAIN_CLASSES, RAW_DIR, TIME_SLOTS, corridor_mean_level,
-    dump_json, haversine_m, load_json,
+    dump_json, haversine_m, load_json, ratio_to_level,
 )
 
 SEED = 42
@@ -46,13 +46,6 @@ PEAK_RANGES = {
 }
 DEFAULT_PEAK = (2, 3)
 INCIDENT_SHARE = 0.10
-
-
-def ratio_to_level(ratio: float) -> int:
-    for threshold, level in ((0.85, 1), (0.70, 2), (0.55, 3), (0.40, 4)):
-        if ratio >= threshold:
-            return level
-    return 5
 
 
 def load_tomtom_levels(slot: str) -> list[tuple[float, float, int]]:

@@ -82,7 +82,10 @@
   A*/BiDijkstra ~750, IDA*/IDDFS hàng trăm nghìn (cái giá tiết kiệm bộ nhớ).
 - (21:00) Chiếu `admissibility_scatter.png` (0 vi phạm/21 170 điểm) + kể bài học
   làm tròn 3 cm suýt phá admissible (test tự bắt được).
-- (22:00) `exp5_gamma_curves.png`: vì sao chọn γ=1,5 bằng số liệu; 1 câu về exp1
+- (22:00) `exp5_gamma_curves.png`: PHÂN TÍCH ĐỘ NHẠY γ — nói rõ "γ=1,5 là hằng số
+  thiết kế; đường cong cho thấy kết quả chênh cả dải γ∈[0;3] chỉ ~2,6%, tức kết luận
+  ít nhạy với lựa chọn γ" (KHÔNG nói "chọn 1,5 vì cực tiểu tại 1,5" — thước đo exp5
+  tự dùng γ=1,5, lập luận đó là vòng); 1 câu về exp1
   (1 200/1 200 khớp NetworkX).
 
 ## 23:00 – 25:00 · Hạn chế & kết

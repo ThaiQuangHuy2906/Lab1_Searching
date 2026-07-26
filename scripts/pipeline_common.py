@@ -10,6 +10,7 @@ from __future__ import annotations
 import json
 import math
 import sys
+import unicodedata
 from pathlib import Path
 from typing import Any
 
@@ -64,6 +65,19 @@ def haversine_m(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
 def first_of(value: Any) -> Any:
     """OSM attrs may be scalar or list (multi-tagged way); take the first."""
     return value[0] if isinstance(value, list) else value
+
+
+# OSM street names sometimes use Latin Eth (U+00D0/U+00F0) instead of the
+# Vietnamese D-with-stroke (U+0110/U+0111) — visually near-identical but a
+# different codepoint, which breaks string matching/search.
+_ETH_TO_DSTROKE = str.maketrans({"Ð": "Đ", "ð": "đ"})
+
+
+def clean_name(name: str | None) -> str | None:
+    """NFC-normalize a display name and fix Eth -> D-with-stroke."""
+    if not name:
+        return name
+    return unicodedata.normalize("NFC", name).translate(_ETH_TO_DSTROKE)
 
 
 def speed_for(highway: Any) -> int:

@@ -22,7 +22,8 @@ import osmnx as ox
 
 from pipeline_common import (
     BBOX, DATA_DIR, RAW_DIR, NARROW_HIGHWAYS,
-    ceil_dm, dump_json, first_of, load_json, risk_flags_for_nodes, speed_for,
+    ceil_dm, clean_name, dump_json, first_of, load_json, risk_flags_for_nodes,
+    speed_for,
 )
 
 IN_GRAPHML = RAW_DIR / "graph_raw.graphml"
@@ -65,14 +66,14 @@ def main() -> None:
         key = (nid[u], nid[v])
         if key in best and best[key]["free_travel_time_s"] <= travel:
             continue
-        name = data.get("name")
+        name = clean_name(str(first_of(data.get("name"))) if data.get("name") else None)
         risk = risk_flags_for_nodes(
             [(g.nodes[u]["y"], g.nodes[u]["x"]), (g.nodes[v]["y"], g.nodes[v]["x"])],
             risks,
         )
         best[key] = {
             "u": key[0], "v": key[1],
-            "name": str(first_of(name)) if name else None,
+            "name": name,
             "length_m": length,
             "highway": highway,
             "oneway": True,  # provisional; fixed below from structure

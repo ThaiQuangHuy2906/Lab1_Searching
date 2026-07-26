@@ -39,6 +39,10 @@ Mặc định khi không nhận diện được: 30 km/h. Lý do: tốc độ **
 TP.HCM thấp hơn nhiều tốc độ giới hạn pháp lý; bảng phản ánh trải nghiệm chạy xe máy
 khi đường thoáng. `free_travel_time_s = length_m / (v_free/3.6)`, làm tròn 0.1 s (chỉ để hiển thị — trọng số tính lại chính xác từ length/speed).
 
+**Chuẩn hoá tên đường:** mọi trường `name` được normalize **NFC** và thay ký tự Eth
+của OSM (`Ð` U+00D0 / `ð` U+00F0) bằng chữ Đ/đ tiếng Việt chuẩn (U+0110/U+0111) —
+tránh lỗi so khớp/tìm kiếm chuỗi dù hiển thị gần giống nhau.
+
 **Làm tròn chiều dài:** `length_m` luôn làm tròn **LÊN** 0.1 m (`ceil_dm`) để bảo toàn
 bất đẳng thức `length ≥ haversine(u,v)` mà chứng minh admissible cần (xem
 `docs/HEURISTIC-PROOF.md` §6b — test consistency từng bắt được vi phạm ~3 cm khi làm tròn thường).

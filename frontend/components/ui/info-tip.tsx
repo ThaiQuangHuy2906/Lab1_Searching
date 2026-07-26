@@ -15,7 +15,7 @@ export function InfoTip({ text }: { text: string }) {
           aria-label={`Giải thích: ${text}`}
           className="inline-flex shrink-0 cursor-help align-middle text-ink-dim hover:text-ink"
         >
-          <CircleHelp className="size-3.5" />
+          <CircleHelp className="size-4" />
         </button>
       </TooltipTrigger>
       <TooltipContent>{text}</TooltipContent>

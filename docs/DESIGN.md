@@ -95,6 +95,12 @@ thang 1–5; so sánh → 2 tuyến). Nền `surface-panel/95`, chữ 12px.
 
 *(Drawer nới 360→400 px ở duyệt v5d: cột f của bảng g/h/f từng bị cắt mép.)*
 
+**Tooltip (icon ?) — duyệt v9c (bị chê nhỏ + chìm):** ĐẢO MÀU bằng token sẵn có:
+nền `ink`, chữ `surface-panel` (tối: nền sáng chữ tối · sáng: nền tối chữ trắng —
+tương phản ~17:1, tự đúng cả 2 chế độ, không thêm màu mới), chữ **13px/20px
+font-medium**, đệm 14×10, `max-w-72`, mũi tên cùng màu nền, `shadow-float`,
+không viền. Icon ? nâng size-3.5 → size-4.
+
 **Panel nổi khỏi bản đồ — duyệt v9b:** panel trái VÀ drawer phải mang
 `shadow-float` + `z-10` (bóng trung tính đổ lên bản đồ — cùng triết lý phân lớp
 v6: bản đồ ↔ điều khiển; trước đó 2 khối này chỉ có viền 1px, phẳng).

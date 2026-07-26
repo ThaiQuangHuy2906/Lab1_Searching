@@ -18,6 +18,7 @@ from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from .explain import build_explanation
 from .graph_store import GraphStore
@@ -65,7 +66,10 @@ async def on_validation_error(_req: Request, exc: RequestValidationError):
     detail = "; ".join(
         f"{'.'.join(str(p) for p in e.get('loc', []))}: {e.get('msg', '')}"
         for e in exc.errors()[:3])
-    if "held_karp" in detail:
+    # Only the size-limit validator message counts: a plain enum error for
+    # method="brute" also contains the substring "held_karp" and used to
+    # get mislabeled HELD_KARP_LIMIT here (audit finding L3-05).
+    if "held_karp supports at most" in detail:
         return error_json(422, "HELD_KARP_LIMIT",
                           "held_karp nhận tối đa 15 điểm (kể cả điểm xuất phát); "
                           "hãy dùng nn_2opt hoặc sa cho 16 điểm.")
@@ -88,6 +92,18 @@ async def on_value_error(_req: Request, exc: ValueError):
     msg = str(exc)
     code = "HELD_KARP_LIMIT" if "held_karp" in msg else "VALIDATION_ERROR"
     return error_json(422, code, f"Yêu cầu không hợp lệ: {msg}")
+
+
+@app.exception_handler(StarletteHTTPException)
+async def on_http_error(_req: Request, exc: StarletteHTTPException):
+    # Unknown paths / wrong methods used to leak Starlette's English
+    # {"detail": ...} shape (audit finding L3-06). SCHEMA §C says EVERY
+    # error uses the §C.7 envelope; VALIDATION_ERROR is the closest of
+    # its five codes for a mis-addressed request.
+    vi = {404: "Đường dẫn API không tồn tại — xem danh sách endpoint trong docs/SCHEMA.md §C.",
+          405: "Phương thức HTTP không được hỗ trợ cho đường dẫn này."}
+    return error_json(exc.status_code, "VALIDATION_ERROR",
+                      vi.get(exc.status_code, str(exc.detail)))
 
 
 @app.exception_handler(Exception)

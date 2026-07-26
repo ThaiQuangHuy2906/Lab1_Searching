@@ -184,6 +184,16 @@ def build_explanation(store: GraphStore, trace: Trace) -> Explanation:
                         "(thuật toán không complete hoặc điểm đến không tới được)."),
             congested_segments=[], alternatives=[])
     start, goal = start_goal
+    if len(trace.path) < 2:
+        # start == goal: a valid trivial route (SCHEMA §B.1, path=[start]).
+        # Without this guard the first_edge lookup below indexed path[1]
+        # and turned the whole request into a 500 (audit finding L3-01).
+        where = store.nodes[start].name or start
+        return Explanation(
+            summary_vi=(f"Điểm đi và điểm đến trùng nhau ({where}) — quãng đường "
+                        "0 m, chi phí 0 giây, không có đoạn đường nào để phân tích. "
+                        "Hãy chọn hai điểm khác nhau để so sánh tuyến."),
+            congested_segments=[], alternatives=[])
     mode, slot = trace.mode, trace.time_slot
     main_cost = trace.metrics.total_cost
     main_dist = trace.metrics.total_distance_m

@@ -24,7 +24,7 @@ import time
 
 from .graph_store import GraphStore
 from .models import Mode, TimeSlot, Trace, TraceStep
-from .search import MAX_TRACE_STEPS, _Recorder, _check_endpoints, _finish, _reconstruct, _round_map, _trivial
+from .search import _Recorder, _check_endpoints, _finish, _reconstruct, _round_map, _trivial
 
 DEFAULT_EPSILON_S = 5.0
 DEFAULT_BEAM_WIDTH = {"demo": 5, "real": 50}
@@ -70,7 +70,7 @@ def greedy(store: GraphStore, start: str, goal: str, mode: Mode = "balanced",
         open_set.discard(node)
         expanded += 1
         if node == goal:
-            if rec.enabled:
+            if rec.active:
                 rec.record(node, sorted(open_set),
                            h=_round_map({n: h(n) for n in open_set}))
             return _finish("greedy", store, mode, time_slot, True,
@@ -83,7 +83,7 @@ def greedy(store: GraphStore, start: str, goal: str, mode: Mode = "balanced",
                 heapq.heappush(heap, (h(nbr), tie, nbr))
                 open_set.add(nbr)
         max_frontier = max(max_frontier, len(open_set))
-        if rec.enabled:
+        if rec.active:
             rec.record(node, sorted(open_set),
                        h=_round_map({n: h(n) for n in open_set}))
     return _finish("greedy", store, mode, time_slot, False, [], expanded,
@@ -168,7 +168,7 @@ def bidijkstra(store: GraphStore, start: str, goal: str, mode: Mode = "balanced"
                 try_meet(nbr)
         frontier_nodes = open_f | open_b
         max_frontier = max(max_frontier, len(frontier_nodes))
-        if rec.enabled:
+        if rec.active:
             fr = sorted(frontier_nodes)
             # a node present in BOTH frontiers shows the smaller g (SCHEMA B.3)
             rec.record(node, fr, side=side, g=_round_map({
@@ -243,7 +243,7 @@ def idastar(store: GraphStore, start: str, goal: str, mode: Mode = "balanced",
             if par is not None:
                 parent[node] = par
             expanded += 1
-            if rec.enabled:
+            if rec.active:
                 fr_g: dict[str, float] = {}
                 for n, sg, _p in stack:
                     if n not in best_g and (n not in fr_g or sg < fr_g[n]):
@@ -330,7 +330,7 @@ def beam(store: GraphStore, start: str, goal: str, mode: Mode = "balanced",
             expanded += 1
             if node == goal:
                 found = True
-                if rec.enabled:
+                if rec.active:
                     snapshot(i, node)
                 break
             for nbr, eid in store.adj[node]:
@@ -340,7 +340,7 @@ def beam(store: GraphStore, start: str, goal: str, mode: Mode = "balanced",
                 if nbr not in pool or ng < pool[nbr]:
                     pool[nbr] = ng
                     parent[nbr] = node
-            if rec.enabled:
+            if rec.active:
                 snapshot(i, node)
         if found:
             break

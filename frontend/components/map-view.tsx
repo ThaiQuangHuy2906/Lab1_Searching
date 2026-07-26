@@ -245,7 +245,11 @@ export function MapView() {
         getRadius: isDemo ? 5.5 : 3,
         radiusUnits: "pixels",
         stroked: false,
-        updateTriggers: { getFillColor: [anim.stepIdx, trace, theme] },
+        // anim.steps.length is load-bearing: toggling "Trace trên G_real" OFF
+        // empties anim.steps while stepIdx/trace/theme all stay unchanged —
+        // without it deck.gl kept the stale expanded/frontier fill colors
+        // (audit finding L3-03; same bug class as the label layer below)
+        updateTriggers: { getFillColor: [anim.stepIdx, anim.steps.length, trace, theme] },
       }),
     );
     if (isDemo) {
@@ -350,15 +354,26 @@ export function MapView() {
 
   const onClick = React.useCallback(
     (info: PickingInfo) => {
-      const target = useApp.getState().pickTarget;
+      const st = useApp.getState();
+      if (st.running || st.comparing || st.multiRunning) return; // journey locked mid-flight (L3-04)
+      const target = st.pickTarget;
       if (!target || !info.object) return;
       const node = info.object as GraphNode;
-      if (target === "start") set({ start: node.id, pickTarget: null });
-      else if (target === "goal") set({ goal: node.id, pickTarget: null });
-      else {
-        const cur = useApp.getState().stops;
-        if (!cur.includes(node.id) && cur.length < 15)
-          set({ stops: [...cur, node.id], pickTarget: null });
+      if (target === "start") {
+        if (node.id === st.goal) {
+          toast.error("Điểm Đi phải khác điểm Đến.");
+          return;
+        }
+        set({ start: node.id, pickTarget: null });
+      } else if (target === "goal") {
+        if (node.id === st.start) {
+          toast.error("Điểm Đến phải khác điểm Đi.");
+          return;
+        }
+        set({ goal: node.id, pickTarget: null });
+      } else {
+        if (!st.stops.includes(node.id) && node.id !== st.start && st.stops.length < 15)
+          set({ stops: [...st.stops, node.id], pickTarget: null });
       }
     },
     [set],

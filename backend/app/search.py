@@ -48,6 +48,24 @@ class _Recorder:
         self.steps: list[TraceStep] = []
         self.truncated = False
 
+    @property
+    def active(self) -> bool:
+        """True while steps can still be appended.
+
+        Snapshot builders MUST gate on this, not on `enabled`: building a
+        frontier snapshot (sort + g/h/f maps) for a record() that will
+        no-op costs real CPU — on G_real an IDA* run kept paying it for
+        ~3.5M expansions after the cap, turning a 4 s request into 40 s
+        (audit finding L3-02). Marks `truncated` once the cap is hit so
+        skipped snapshots still surface in metrics.trace_truncated.
+        """
+        if not self.enabled:
+            return False
+        if len(self.steps) >= MAX_TRACE_STEPS:
+            self.truncated = True
+            return False
+        return True
+
     def record(self, expanded: str, frontier: list[str], *,
                g: dict[str, float] | None = None,
                h: dict[str, float] | None = None,
@@ -139,7 +157,8 @@ def bfs(store: GraphStore, start: str, goal: str, mode: Mode = "balanced",
         visited.add(node)
         expanded += 1
         if node == goal:
-            rec.record(node, sorted(open_set))
+            if rec.active:
+                rec.record(node, sorted(open_set))
             return _finish("bfs", store, mode, time_slot, True,
                            _reconstruct(parent, goal), expanded, max_frontier,
                            t0, rec, False)
@@ -149,7 +168,7 @@ def bfs(store: GraphStore, start: str, goal: str, mode: Mode = "balanced",
                 queue.append(nbr)
                 open_set.add(nbr)
         max_frontier = max(max_frontier, len(open_set))
-        if rec.enabled:
+        if rec.active:
             rec.record(node, sorted(open_set))
     return _finish("bfs", store, mode, time_slot, False, [], expanded,
                    max_frontier, t0, rec, False)
@@ -187,7 +206,8 @@ def dfs(store: GraphStore, start: str, goal: str, mode: Mode = "balanced",
             parent[node] = par
         expanded += 1
         if node == goal:
-            rec.record(node, frontier())
+            if rec.active:
+                rec.record(node, frontier())
             return _finish("dfs", store, mode, time_slot, True,
                            _reconstruct(parent, goal), expanded, max_frontier,
                            t0, rec, False)
@@ -197,7 +217,7 @@ def dfs(store: GraphStore, start: str, goal: str, mode: Mode = "balanced",
                 stack.append((nbr, node))
         fr = frontier()
         max_frontier = max(max_frontier, len(fr))
-        if rec.enabled:
+        if rec.active:
             rec.record(node, fr)
     return _finish("dfs", store, mode, time_slot, False, [], expanded,
                    max_frontier, t0, rec, False)
@@ -242,7 +262,7 @@ def iddfs(store: GraphStore, start: str, goal: str, mode: Mode = "balanced",
             fr_nodes = sorted({n for n, d, _ in stack
                                if best_depth.get(n, d + 1) > d})
             max_frontier = max(max_frontier, len(fr_nodes))
-            if rec.enabled:
+            if rec.active:
                 rec.record(node, fr_nodes, depth_limit=limit)
             if node == goal:
                 return _finish("iddfs", store, mode, time_slot, True,
@@ -309,7 +329,7 @@ def _best_first(algorithm: str, store: GraphStore, start: str, goal: str,
                        if use_h else None)
 
         if node == goal:
-            if rec.enabled:
+            if rec.active:
                 snapshot()
             return _finish(algorithm, store, mode, time_slot, True,
                            _reconstruct(parent, goal), expanded, max_frontier,
@@ -325,7 +345,7 @@ def _best_first(algorithm: str, store: GraphStore, start: str, goal: str,
                 heapq.heappush(heap, (ng + h(nbr), h(nbr), tie, nbr))
                 open_set.add(nbr)
         max_frontier = max(max_frontier, len(open_set))
-        if rec.enabled:
+        if rec.active:
             snapshot()
     return _finish(algorithm, store, mode, time_slot, False, [], expanded,
                    max_frontier, t0, rec, True)

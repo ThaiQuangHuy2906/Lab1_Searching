@@ -193,3 +193,38 @@ def test_explanation_numbers_are_consistent(mode):
     assert km_str in t.explanation.summary_vi, "real km figure must appear"
     for alt in t.explanation.alternatives:
         assert alt.why_not_vi and alt.total_time_s > 0
+
+
+# ------------------------------------------- KIEMTOAN batch regressions
+
+
+def test_route_start_equals_goal_all_algorithms():
+    """L3-01: start == goal must be a valid trivial route (SCHEMA §B.1),
+    not a 500 from the explanation builder."""
+    from app.main import ALL_ALGORITHMS
+
+    for algo in ALL_ALGORITHMS:
+        r = client.post("/api/route", json=route_body(
+            goal=DEMO_OD["start"], algorithm=algo))
+        assert r.status_code == 200, f"{algo}: {r.text[:200]}"
+        t = Trace.model_validate(r.json())
+        assert t.found and t.path == [DEMO_OD["start"]]
+        assert t.metrics.total_cost == 0
+        assert "trùng nhau" in t.explanation.summary_vi
+
+
+def test_multiroute_unknown_method_is_validation_error():
+    """L3-05: a bad enum must NOT be mislabeled HELD_KARP_LIMIT."""
+    r = client.post("/api/multiroute", json={
+        "start": "n0001", "stops": ["n0010", "n0020"], "method": "brute",
+        "time_slot": "07:30", "graph": "demo"})
+    assert r.status_code == 422
+    assert r.json()["error"]["code"] == "VALIDATION_ERROR"
+
+
+def test_unknown_path_and_method_use_envelope():
+    """L3-06: 404/405 must use the §C.7 envelope, not Starlette's shape."""
+    r = client.get("/api/nope")
+    assert r.status_code == 404 and r.json()["error"]["message_vi"]
+    r = client.get("/api/route")  # POST-only endpoint
+    assert r.status_code == 405 and r.json()["error"]["message_vi"]

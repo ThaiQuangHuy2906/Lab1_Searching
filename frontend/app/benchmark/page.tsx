@@ -13,6 +13,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { api, BackendError } from "@/lib/api";
+import { fmtInt, fmtVi } from "@/lib/format";
 import { usePalette } from "@/lib/use-palette";
 import { ThemeToggle } from "@/components/theme-toggle";
 import type { ExperimentResult } from "@/lib/types";
@@ -76,8 +77,14 @@ export default function BenchmarkPage() {
     });
   }, [exp3]);
 
+  // every number the grader sees uses the Vietnamese decimal comma
+  // (DESIGN §2) — Recharts rendered raw US-style values here (L3-07)
   const fmtLogTick = (v: number) =>
-    v >= 1000 ? `${v / 1000}k` : String(v);
+    v >= 1000 ? `${fmtVi(v / 1000, 0)}k` : fmtVi(v, v < 1 ? 2 : 0);
+  const fmtBarTip = (v: number | string, name: string): [string, string] => [
+    name === "Node expand" ? fmtInt(Number(v)) : fmtVi(Number(v), 2),
+    name,
+  ];
 
   const gamma = React.useMemo(
     () =>
@@ -139,7 +146,8 @@ export default function BenchmarkPage() {
                         interval={0} angle={-30} textAnchor="end" height={48} tickMargin={2} />
                       <YAxis stroke={INK_DIM} fontSize={11} scale="log"
                         domain={[1, "auto"]} tickFormatter={fmtLogTick} />
-                      <RTooltip {...tooltipStyle} cursor={{ fill: `${GRID}55` }} />
+                      <RTooltip {...tooltipStyle} cursor={{ fill: `${GRID}55` }}
+                        formatter={fmtBarTip} />
                       <Bar dataKey="expanded" name="Node expand" fill={CYAN} radius={[4, 4, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
@@ -155,7 +163,8 @@ export default function BenchmarkPage() {
                         interval={0} angle={-30} textAnchor="end" height={48} tickMargin={2} />
                       <YAxis stroke={INK_DIM} fontSize={11} scale="log"
                         domain={[0.01, "auto"]} tickFormatter={fmtLogTick} />
-                      <RTooltip {...tooltipStyle} cursor={{ fill: `${GRID}55` }} />
+                      <RTooltip {...tooltipStyle} cursor={{ fill: `${GRID}55` }}
+                        formatter={fmtBarTip} />
                       <Bar dataKey="runtime" name="Runtime (ms)" fill={VIOLET} radius={[4, 4, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
@@ -170,10 +179,16 @@ export default function BenchmarkPage() {
                 <ResponsiveContainer>
                   <LineChart data={gamma} margin={{ left: 4, right: 8 }}>
                     <CartesianGrid stroke={GRID} vertical={false} />
-                    <XAxis dataKey="gamma" stroke={INK_DIM} fontSize={11} />
-                    <YAxis yAxisId="t" stroke={AMBER} fontSize={11} />
-                    <YAxis yAxisId="d" orientation="right" stroke={VIOLET} fontSize={11} />
-                    <RTooltip {...tooltipStyle} />
+                    <XAxis dataKey="gamma" stroke={INK_DIM} fontSize={11}
+                      tickFormatter={(v: number) => fmtVi(Number(v), 1)} />
+                    <YAxis yAxisId="t" stroke={AMBER} fontSize={11}
+                      tickFormatter={(v: number) => fmtVi(Number(v), 0)} />
+                    <YAxis yAxisId="d" orientation="right" stroke={VIOLET} fontSize={11}
+                      tickFormatter={(v: number) => fmtVi(Number(v), 1)} />
+                    <RTooltip {...tooltipStyle}
+                      labelFormatter={(l) => `γ = ${fmtVi(Number(l), 1)}`}
+                      formatter={(v: number | string, name: string): [string, string] =>
+                        [fmtVi(Number(v), name.includes("km") ? 2 : 1), name]} />
                     <RLegend wrapperStyle={{ fontSize: 12, color: INK_DIM }} />
                     <Line yAxisId="t" dataKey="time" name="Thời gian TB (s)" stroke={AMBER} dot strokeWidth={2} />
                     <Line yAxisId="d" dataKey="dist" name="Quãng đường TB (km)" stroke={VIOLET} dot strokeWidth={2} />

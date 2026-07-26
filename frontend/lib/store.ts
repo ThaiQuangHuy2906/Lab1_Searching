@@ -190,8 +190,13 @@ export const useApp = create<AppState>((set, get) => ({
 
   runRoute: async () => {
     const s = get();
+    if (s.running || s.comparing || s.multiRunning) return; // one flight at a time (L3-04)
     if (!s.start || !s.goal) {
       toast.error("Hãy chọn cả điểm Đi và điểm Đến trước khi chạy.");
+      return;
+    }
+    if (s.start === s.goal) {
+      toast.error("Điểm Đi và điểm Đến đang trùng nhau — hãy chọn hai điểm khác nhau.");
       return;
     }
     set({ running: true, playing: false, multi: null, compare: null });
@@ -205,8 +210,13 @@ export const useApp = create<AppState>((set, get) => ({
         time_slot: s.slot, graph: s.graph, include_trace: includeTrace,
         params: Object.keys(params).length ? params : undefined,
       });
-      // graph/slot switched mid-flight -> a stale trace would draw wrong paths
-      if (get().graph !== s.graph || get().slot !== s.slot) return;
+      // ANY input this result depends on switched mid-flight -> drop it:
+      // the journey fields too, not just graph/slot — a response landing
+      // after start/goal changed drew the OLD route under NEW chips (L3-04)
+      const n = get();
+      if (n.graph !== s.graph || n.slot !== s.slot || n.mode !== s.mode ||
+          n.algorithm !== s.algorithm || n.start !== s.start || n.goal !== s.goal)
+        return;
       set({ trace: t, stepIdx: Math.max(0, t.trace.length - 1), drawerTab: "metrics" });
       if (t.found) {
         toast.success(`Đã chạy ${ALGO_LABEL[s.algorithm]} — ${t.trace.length > 0
@@ -223,6 +233,7 @@ export const useApp = create<AppState>((set, get) => ({
 
   runCompare: async () => {
     const s = get();
+    if (s.running || s.comparing || s.multiRunning) return; // L3-04
     if (!s.trace || !s.start || !s.goal) {
       toast.error("Hãy chạy thuật toán chính trước, rồi mới so sánh.");
       return;
@@ -233,7 +244,13 @@ export const useApp = create<AppState>((set, get) => ({
         start: s.start, goal: s.goal, algorithm: s.compareAlgo, mode: s.mode,
         time_slot: s.slot, graph: s.graph, include_trace: false,
       });
-      if (get().graph !== s.graph || get().slot !== s.slot) return;
+      // stale guards (L3-04): inputs unchanged AND the main trace this
+      // comparison was made against must still be on screen
+      const n = get();
+      if (n.graph !== s.graph || n.slot !== s.slot || n.mode !== s.mode ||
+          n.start !== s.start || n.goal !== s.goal ||
+          n.compareAlgo !== s.compareAlgo || n.trace !== s.trace)
+        return;
       set({ compare: t, drawerTab: "compare" });
       toast.success(`Đã so sánh với ${ALGO_LABEL[s.compareAlgo]}.`);
     } catch (e) {
@@ -245,6 +262,7 @@ export const useApp = create<AppState>((set, get) => ({
 
   runMulti: async (method) => {
     const s = get();
+    if (s.running || s.comparing || s.multiRunning) return; // L3-04
     if (!s.start || s.stops.length === 0) {
       toast.error("Cần điểm Đi và ít nhất 1 điểm giao để tối ưu thứ tự.");
       return;
@@ -255,7 +273,13 @@ export const useApp = create<AppState>((set, get) => ({
         start: s.start, stops: s.stops, method, mode: s.mode,
         time_slot: s.slot, graph: s.graph, return_to_start: false,
       });
-      if (get().graph !== s.graph || get().slot !== s.slot) return;
+      // stale guards (L3-04): journey edits mid-flight (map click adding a
+      // stop was the reproduced case) invalidate this tour
+      const n = get();
+      if (n.graph !== s.graph || n.slot !== s.slot || n.mode !== s.mode ||
+          n.start !== s.start ||
+          JSON.stringify(n.stops) !== JSON.stringify(s.stops))
+        return;
       set({ multi: m, drawerTab: "metrics" });
       if (m.found && m.savings_pct !== null) {
         toast.success(`Đã tối ưu thứ tự ${s.stops.length} điểm giao — tiết kiệm ${m.savings_pct

@@ -54,7 +54,9 @@ export function CompareTab() {
             </SelectContent>
           </Select>
         </div>
-        <Button variant="secondary" disabled={!a || s.comparing} onClick={() => void s.runCompare()}>
+        <Button variant="secondary"
+          disabled={!a || s.comparing || s.running || s.multiRunning}
+          onClick={() => void s.runCompare()}>
           {s.comparing ? <Loader2 className="animate-spin" /> : <GitCompareArrows />}
           So sánh
         </Button>

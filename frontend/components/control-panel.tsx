@@ -77,7 +77,11 @@ function NodePicker({ kind }: { kind: "start" | "goal" }) {
   const graphData = useApp((s) => s.graphData);
   const graph = useApp((s) => s.graph);
   const value = useApp((s) => (kind === "start" ? s.start : s.goal));
+  // the OTHER endpoint is excluded from this dropdown: Đi === Đến used to
+  // reach the server and 500 before the L3-01 backend guard existed
+  const other = useApp((s) => (kind === "start" ? s.goal : s.start));
   const pickTarget = useApp((s) => s.pickTarget);
+  const busy = useApp((s) => s.running || s.comparing || s.multiRunning);
   const set = useApp((s) => s.set);
   const isDemo = graph === "demo";
 
@@ -96,7 +100,8 @@ function NodePicker({ kind }: { kind: "start" | "goal" }) {
   const clear = value ? (
     <button
       aria-label={kind === "start" ? "Xoá điểm đi" : "Xoá điểm đến"}
-      className="shrink-0 rounded p-1 text-ink-dim transition-colors hover:text-goal"
+      className="shrink-0 rounded p-1 text-ink-dim transition-colors hover:text-goal disabled:pointer-events-none disabled:opacity-40"
+      disabled={busy}
       onClick={() => set(kind === "start" ? { start: null } : { goal: null })}
     >
       <X className="size-3.5" />
@@ -109,7 +114,7 @@ function NodePicker({ kind }: { kind: "start" | "goal" }) {
         <div className="relative min-w-0 flex-1">
           {roleDot}
           <Select
-            value={value ?? ""}
+            value={value ?? ""} disabled={busy}
             onValueChange={(v) => set(kind === "start" ? { start: v } : { goal: v })}
           >
             <SelectTrigger aria-label={kind === "start" ? "Điểm đi" : "Điểm đến"}
@@ -117,9 +122,11 @@ function NodePicker({ kind }: { kind: "start" | "goal" }) {
               <SelectValue placeholder={kind === "start" ? "Chọn điểm xuất phát…" : "Chọn điểm đến…"} />
             </SelectTrigger>
             <SelectContent>
-              {graphData?.nodes.map((n) => (
-                <SelectItem key={n.id} value={n.id}>{n.name ?? n.id}</SelectItem>
-              ))}
+              {graphData?.nodes
+                .filter((n) => n.id !== other)
+                .map((n) => (
+                  <SelectItem key={n.id} value={n.id}>{n.name ?? n.id}</SelectItem>
+                ))}
             </SelectContent>
           </Select>
         </div>
@@ -133,7 +140,7 @@ function NodePicker({ kind }: { kind: "start" | "goal" }) {
       <div className="relative min-w-0 flex-1">
         {roleDot}
         <Button
-          variant="secondary"
+          variant="secondary" disabled={busy}
           className={"w-full pl-8 " + (active ? "border-algo-frontier text-algo-frontier" : "")}
           style={active ? undefined : roleBorder}
           onClick={() => set({ pickTarget: active ? null : kind })}
@@ -149,12 +156,13 @@ function NodePicker({ kind }: { kind: "start" | "goal" }) {
 
 function SwapButton() {
   const s = useApp();
+  const busy = s.running || s.comparing || s.multiRunning;
   return (
     <div className="z-10 -mt-1.5 -mb-3.5 flex justify-center">
       <Button
         variant="ghost" size="iconSm" aria-label="Đảo chiều Đi ↔ Đến"
         className="h-7 w-7 rounded-full border border-surface-border bg-surface shadow-sm"
-        disabled={!s.start && !s.goal}
+        disabled={busy || (!s.start && !s.goal)}
         onClick={() => s.set({ start: s.goal, goal: s.start })}
       >
         <ArrowDownUp className="size-3.5" />
@@ -293,7 +301,8 @@ export function ControlPanel() {
                   <span className="min-w-0 flex-1 truncate">{name}</span>
                   <button
                     aria-label={`Bỏ ${name}`}
-                    className="text-ink-dim hover:text-goal"
+                    className="text-ink-dim hover:text-goal disabled:pointer-events-none disabled:opacity-40"
+                    disabled={busy}
                     onClick={() => s.set({ stops: s.stops.filter((x) => x !== id) })}
                   >
                     <X className="size-3.5" />
@@ -302,7 +311,7 @@ export function ControlPanel() {
               );
             })}
             {isDemo ? (
-              <Select value="" onValueChange={(v) => {
+              <Select value="" disabled={busy} onValueChange={(v) => {
                 if (!s.stops.includes(v) && v !== s.start && s.stops.length < 15)
                   s.set({ stops: [...s.stops, v] });
               }}>
@@ -318,7 +327,7 @@ export function ControlPanel() {
                 </SelectContent>
               </Select>
             ) : (
-              <Button variant="secondary" size="sm"
+              <Button variant="secondary" size="sm" disabled={busy}
                 className={s.pickTarget === "stop" ? "border-algo-frontier text-algo-frontier" : ""}
                 onClick={() => s.set({ pickTarget: s.pickTarget === "stop" ? null : "stop" })}>
                 <Crosshair /> Thêm điểm từ bản đồ
@@ -337,7 +346,7 @@ export function ControlPanel() {
       </div>
       {/* CTA ghim đáy panel — luôn nhìn thấy (DESIGN 4, duyệt v4) */}
       <div className="flex shrink-0 flex-col gap-2 border-t border-surface-border bg-surface-panel px-4 py-3">
-        <Button size="lg" className="w-full" disabled={s.running} onClick={() => void s.runRoute()}>
+        <Button size="lg" className="w-full" disabled={busy} onClick={() => void s.runRoute()}>
           {s.running ? <Loader2 className="animate-spin" /> : <Play />}
           {s.running ? "Đang chạy…" : "Chạy thuật toán"}
         </Button>
@@ -350,6 +359,7 @@ export function ControlPanel() {
 function MultiButtons() {
   const s = useApp();
   const [method, setMethod] = React.useState<TspMethod>("held_karp");
+  const busy = s.running || s.comparing || s.multiRunning;
   const tooMany = method === "held_karp" && s.stops.length > 14;
   const empty = s.stops.length === 0;
   return (
@@ -368,7 +378,7 @@ function MultiButtons() {
           Held-Karp nhận tối đa 15 điểm (kể cả điểm Đi) — hãy dùng NN+2-opt hoặc SA.
         </p>
       )}
-      <Button variant="secondary" disabled={s.multiRunning || tooMany || empty}
+      <Button variant="secondary" disabled={busy || tooMany || empty}
         onClick={() => void s.runMulti(method)}>
         {s.multiRunning ? <Loader2 className="animate-spin" /> : <ListOrdered />}
         {s.multiRunning ? "Đang tối ưu…" : "Tối ưu thứ tự"}

@@ -15,11 +15,11 @@
 |---|---|---|---|
 | A1 | Risk theo vùng: flag cạnh ĐI VÀO (u ngoài, v trong); rebuild 2 graph + profiles; bất biến balanced ≤1,5× ×4 slot + SÀN time/dist; sửa câu "điểm ngập = 60 s" | L1-01 | ✅ XONG — real flood 402→**54**, construction 107→**19**; G_demo 253→**292 cạnh**/56 oneway (repair 6 bất biến); demo congestion nay KẾ THỪA trung bình trọng số hành lang thật (quyết định tự đưa, ghi TIENDO — TomTom sẽ tự lan sang demo); validator 6/6 PASS (bal max 1,49); CVHLĐ→HCR giữ 1891,8 m |
 | A2 | Vá 6 assert Phụ lục B vào validate_data.py | Phụ lục B | ✅ XONG — B.1 length≥haversine · B.2 speed theo bảng · B.3 profile sanity (đỉnh>đêm, ≥2 mức, 22:00⊆{1,2} khi synthetic) · B.4 sàn ratio · B.5 risk counts ±20% · B.6 source vs data/raw/tomtom |
-| B3 | L3-01 start==goal: explain early-return + frontend chặn Đi==Đến | L3-01 | ⬜ |
-| B4 | L3-02 guard 11 điểm snapshot sau cap 5000 | L3-02 | ⬜ |
-| B5 | L3-03 updateTriggers layer nodes + rà 10 layer | L3-03 | ⬜ |
-| B6 | L3-04 guard start/goal/stops sau await + khoá panel khi đang bay | L3-04 | ⬜ |
-| B7 | L3-05 mã lỗi method lạ · L3-06 envelope 404/405 · L3-07 format VN /benchmark | L3-05/06/07 | ⬜ |
+| B3 | L3-01 start==goal: explain early-return + frontend chặn Đi==Đến | L3-01 | ✅ XONG — explain.py early-return khi len(path)<2 (summary_vi tiếng Việt); dropdown Đi/Đến loại trừ nhau, map-pick chặn trùng kèm toast, store chặn thêm 1 lớp; test API mới: 10/10 thuật toán start==goal → 200, path=[start], cost 0 |
+| B4 | L3-02 guard 11 điểm snapshot sau cap 5000 | L3-02 | ✅ XONG — _Recorder.active (enabled + chưa chạm cap) gác 13 điểm dựng snapshot (7 search.py + 6 search_advanced.py); đo lại đúng ca treo: idastar real n2037→n0725 trace 4,29 s vs no-trace 4,03 s = 1,07× (trước 7,5–10,9×), kết quả + max_frontier giống hệt |
+| B5 | L3-03 updateTriggers layer nodes + rà 10 layer | L3-03 | ✅ XONG — thêm anim.steps.length vào getFillColor layer nodes (đúng fix verify agent đã chứng minh bằng diffProps); rà lại 10 layer còn lại: data động rebuild mỗi render hoặc đã có trigger theme — không layer nào cùng bệnh |
+| B6 | L3-04 guard start/goal/stops sau await + khoá panel khi đang bay | L3-04 | ✅ XONG — cả 3 action so đủ graph/slot/mode/algorithm/start/goal/stops (runCompare còn đòi trace gốc còn sống); khoá chéo running/comparing/multiRunning ở cả store lẫn UI (dropdown, swap, ✕, thêm điểm, map click, 3 nút chạy) |
+| B7 | L3-05 mã lỗi method lạ · L3-06 envelope 404/405 · L3-07 format VN /benchmark | L3-05/06/07 | ✅ XONG — chỉ map HELD_KARP_LIMIT khi msg 'held_karp supports at most' (+test); handler StarletteHTTPException trả envelope §C.7 tiếng Việt cho 404/405 (+test); /benchmark: formatter/tickFormatter fmtVi cho 2 bar chart + chart γ (kể cả nhãn 'γ = 1,5'); npx tsc --noEmit = 0 lỗi |
 | C8 | L4-01 viết lại 4 vị trí γ theo khung ĐỘ NHẠY | L4-01 | ⬜ |
 | C9 | L4-04 tiêu đề hình exp5 trung tính | L4-04 | ⬜ |
 | C10 | L4-02 viết scripts/05_calibrate_gamma.py + dòng γ̂ vào BaoCao c | L4-02 | ⬜ |

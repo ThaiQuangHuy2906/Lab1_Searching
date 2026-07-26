@@ -1,0 +1,21 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html { @apply bg-surface text-ink; }
+  body { @apply font-sans antialiased; }
+  .font-mono { font-variant-numeric: tabular-nums; }
+  *:focus-visible {
+    @apply outline-none ring-2 ring-algo-frontier ring-offset-2 ring-offset-surface;
+  }
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-thumb { @apply bg-surface-border rounded-lg; }
+  ::-webkit-scrollbar-track { background: transparent; }
+}
+
+/* vòng pulse của node đang expand — hiệu ứng duy nhất được phép (DESIGN 1) */
+@keyframes pulse-ring {
+  0% { transform: scale(1); opacity: 0.9; }
+  100% { transform: scale(2.2); opacity: 0; }
+}

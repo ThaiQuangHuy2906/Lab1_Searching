@@ -1,0 +1,230 @@
+"use client";
+
+// Central app state (zustand). One store: config -> data -> animation.
+// Actions own all API calls and toast feedback (copy rules: DESIGN.md §7).
+
+import { create } from "zustand";
+import { toast } from "sonner";
+import { api, BackendError } from "./api";
+import type {
+  Algorithm, GraphFile, GraphLevel, Mode, MultirouteResponse, TimeSlot,
+  Trace, TspMethod,
+} from "./types";
+
+export const ALGO_LABEL: Record<Algorithm, string> = {
+  bfs: "BFS — tìm theo bề rộng",
+  dfs: "DFS — tìm theo chiều sâu",
+  iddfs: "IDDFS — đào sâu dần",
+  ucs: "UCS — chi phí đồng nhất",
+  dijkstra: "Dijkstra",
+  astar: "A*",
+  greedy: "Greedy Best-First",
+  bidijkstra: "Dijkstra hai chiều",
+  idastar: "IDA*",
+  beam: "Beam Search",
+};
+
+export type DrawerTab = "metrics" | "explain" | "compare";
+
+interface AppState {
+  // ---- cấu hình
+  graph: GraphLevel;
+  slot: TimeSlot;
+  mode: Mode;
+  algorithm: Algorithm;
+  start: string | null;
+  goal: string | null;
+  stops: string[];
+  beamWidth: number | "";
+  epsilon: number | "";
+  offlineMode: boolean;
+  trafficLayer: boolean;
+  traceOnReal: boolean; // guardrail: G_real defaults to no trace
+  pickTarget: "start" | "goal" | "stop" | null;
+
+  // ---- dữ liệu
+  graphData: GraphFile | null;
+  graphLoading: boolean;
+  traffic: Record<string, number> | null;
+  trace: Trace | null;
+  running: boolean;
+  compareAlgo: Algorithm;
+  compare: Trace | null;
+  comparing: boolean;
+  multi: MultirouteResponse | null;
+  multiRunning: boolean;
+
+  // ---- animation & layout
+  stepIdx: number;
+  playing: boolean;
+  speed: number; // multiplier: 0.5 | 1 | 2 | 4 | 8
+  drawerOpen: boolean;
+  drawerTab: DrawerTab;
+
+  // ---- actions
+  set: (patch: Partial<AppState>) => void;
+  loadGraph: (level: GraphLevel) => Promise<void>;
+  loadTraffic: () => Promise<void>;
+  setSlot: (slot: TimeSlot) => void;
+  runRoute: () => Promise<void>;
+  runCompare: () => Promise<void>;
+  runMulti: (method: TspMethod) => Promise<void>;
+  setStep: (i: number) => void;
+  togglePlay: () => void;
+}
+
+export const useApp = create<AppState>((set, get) => ({
+  graph: "demo",
+  slot: "07:30",
+  mode: "balanced",
+  algorithm: "astar",
+  start: null,
+  goal: null,
+  stops: [],
+  beamWidth: "",
+  epsilon: "",
+  offlineMode: false,
+  trafficLayer: false,
+  traceOnReal: false,
+  pickTarget: null,
+
+  graphData: null,
+  graphLoading: false,
+  traffic: null,
+  trace: null,
+  running: false,
+  compareAlgo: "dijkstra",
+  compare: null,
+  comparing: false,
+  multi: null,
+  multiRunning: false,
+
+  stepIdx: 0,
+  playing: false,
+  speed: 1,
+  drawerOpen: true,
+  drawerTab: "metrics",
+
+  set: (patch) => set(patch),
+
+  loadGraph: async (level) => {
+    set({
+      graphLoading: true, graph: level, graphData: null, traffic: null,
+      trace: null, compare: null, multi: null, start: null, goal: null,
+      stops: [], stepIdx: 0, playing: false, pickTarget: null,
+    });
+    try {
+      const g = await api.graph(level);
+      set({ graphData: g });
+      await get().loadTraffic();
+    } catch (e) {
+      toast.error(e instanceof BackendError ? e.message : "Không tải được đồ thị.");
+    } finally {
+      set({ graphLoading: false });
+    }
+  },
+
+  loadTraffic: async () => {
+    const { slot, graph } = get();
+    try {
+      const t = await api.traffic(slot, graph);
+      set({ traffic: t.congestion });
+    } catch (e) {
+      toast.error(e instanceof BackendError ? e.message : "Không tải được lớp ùn tắc.");
+    }
+  },
+
+  setSlot: (slot) => {
+    set({ slot, trace: null, compare: null, multi: null, stepIdx: 0, playing: false });
+    void get().loadTraffic();
+  },
+
+  runRoute: async () => {
+    const s = get();
+    if (!s.start || !s.goal) {
+      toast.error("Hãy chọn cả điểm Đi và điểm Đến trước khi chạy.");
+      return;
+    }
+    set({ running: true, playing: false, multi: null, compare: null });
+    try {
+      const includeTrace = s.graph === "demo" ? true : s.traceOnReal;
+      const params: { beam_width?: number; epsilon?: number } = {};
+      if (s.algorithm === "beam" && s.beamWidth !== "") params.beam_width = Number(s.beamWidth);
+      if (s.algorithm === "idastar" && s.epsilon !== "") params.epsilon = Number(s.epsilon);
+      const t = await api.route({
+        start: s.start, goal: s.goal, algorithm: s.algorithm, mode: s.mode,
+        time_slot: s.slot, graph: s.graph, include_trace: includeTrace,
+        params: Object.keys(params).length ? params : undefined,
+      });
+      set({ trace: t, stepIdx: Math.max(0, t.trace.length - 1), drawerTab: "metrics" });
+      if (t.found) {
+        toast.success(`Đã chạy ${ALGO_LABEL[s.algorithm]} — ${t.trace.length > 0
+          ? `${t.trace.length} bước, ` : ""}${t.metrics.nodes_expanded} node expand.`);
+      } else {
+        toast.warning(`${ALGO_LABEL[s.algorithm]} không tìm thấy đường — xem tab Giải thích.`);
+      }
+    } catch (e) {
+      toast.error(e instanceof BackendError ? e.message : "Chạy thuật toán thất bại.");
+    } finally {
+      set({ running: false });
+    }
+  },
+
+  runCompare: async () => {
+    const s = get();
+    if (!s.trace || !s.start || !s.goal) {
+      toast.error("Hãy chạy thuật toán chính trước, rồi mới so sánh.");
+      return;
+    }
+    set({ comparing: true });
+    try {
+      const t = await api.route({
+        start: s.start, goal: s.goal, algorithm: s.compareAlgo, mode: s.mode,
+        time_slot: s.slot, graph: s.graph, include_trace: false,
+      });
+      set({ compare: t, drawerTab: "compare" });
+      toast.success(`Đã so sánh với ${ALGO_LABEL[s.compareAlgo]}.`);
+    } catch (e) {
+      toast.error(e instanceof BackendError ? e.message : "So sánh thất bại.");
+    } finally {
+      set({ comparing: false });
+    }
+  },
+
+  runMulti: async (method) => {
+    const s = get();
+    if (!s.start || s.stops.length === 0) {
+      toast.error("Cần điểm Đi và ít nhất 1 điểm giao để tối ưu thứ tự.");
+      return;
+    }
+    set({ multiRunning: true, trace: null, compare: null, playing: false });
+    try {
+      const m = await api.multiroute({
+        start: s.start, stops: s.stops, method, mode: s.mode,
+        time_slot: s.slot, graph: s.graph, return_to_start: false,
+      });
+      set({ multi: m, drawerTab: "metrics" });
+      if (m.found && m.savings_pct !== null) {
+        toast.success(`Đã tối ưu thứ tự ${s.stops.length} điểm giao — tiết kiệm ${m.savings_pct
+          .toFixed(1).replace(".", ",")} %.`);
+      }
+    } catch (e) {
+      toast.error(e instanceof BackendError ? e.message : "Tối ưu thứ tự thất bại.");
+    } finally {
+      set({ multiRunning: false });
+    }
+  },
+
+  setStep: (i) => {
+    const n = get().trace?.trace.length ?? 0;
+    set({ stepIdx: Math.max(0, Math.min(i, n - 1)) });
+  },
+
+  togglePlay: () => {
+    const s = get();
+    const n = s.trace?.trace.length ?? 0;
+    if (n === 0) return;
+    if (!s.playing && s.stepIdx >= n - 1) set({ stepIdx: 0, playing: true });
+    else set({ playing: !s.playing });
+  },
+}));

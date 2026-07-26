@@ -41,8 +41,9 @@ py -3.14 -m venv .venv
 .venv/Scripts/python.exe scripts/validate_data.py
 # (03a_crawl_tomtom.py tuỳ chọn — cần TOMTOM_API_KEY trong .env, chạy 4 lần đúng 4 khung giờ)
 
-# (từ Phase 4) backend: .venv/Scripts/python.exe -m uvicorn app.main:app --port 8000 (cwd backend/)
-# (từ Phase 5) frontend: npm run dev (cwd frontend/)
+# backend API (cwd backend/): ../.venv/Scripts/python.exe -m uvicorn app.main:app --port 8000
+# frontend (cwd frontend/):   npm install && npm run dev   → http://localhost:3000
+#   (thiết kế bám docs/DESIGN.md — token trong frontend/tailwind.config.ts)
 ```
 
 ## Quy ước bất biến (chi tiết: PROMPT-MASTER.md mục 1)

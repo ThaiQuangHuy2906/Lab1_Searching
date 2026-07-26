@@ -61,14 +61,14 @@ const DARK: Palette = {
 
 const LIGHT: Palette = {
   deck: {
-    node: [161, 161, 170, 210], //       zinc-400
+    node: [82, 82, 91, 235], //          zinc-600 (v8e: zinc-400 sank into positron)
     frontier: [8, 145, 178, 255], //     cyan-600
     expanded: [124, 58, 237, 255], //    violet-600
     current: [24, 24, 27, 255], //       zinc-900 (per review round 2)
     path: [217, 119, 6, 255], //         amber-600
     bidiForward: [8, 145, 178, 255],
     bidiBackward: [225, 29, 72, 255], // rose-600
-    edgeDim: [212, 212, 216, 190], //    zinc-300
+    edgeDim: [113, 113, 122, 205], //    zinc-500 (v8e: raised, still below algo colors)
     compareB: [8, 145, 178, 255],
     start: [5, 150, 105, 255], //        emerald-600
     goal: [220, 38, 38, 255], //         red-600
@@ -78,8 +78,8 @@ const LIGHT: Palette = {
     chipGoal: [220, 38, 38, 255], //     red-600 (measured: see check_contrast)
     chipText: [255, 255, 255, 255],
     pulse: [24, 24, 27, 170],
-    label: [63, 63, 70, 235], //         zinc-700
-    labelOutline: [255, 255, 255, 230],
+    label: [39, 39, 42, 255], //         zinc-800 (v8e: darker to match always-on labels)
+    labelOutline: [255, 255, 255, 240],
   },
   congestion: {
     1: [5, 150, 105, 220], 2: [77, 124, 15, 220], 3: [161, 98, 7, 225],
@@ -88,7 +88,7 @@ const LIGHT: Palette = {
   congestionHex: { 1: "#059669", 2: "#4d7c0f", 3: "#a16207", 4: "#ea580c", 5: "#dc2626" },
   hex: {
     frontier: "#0891b2", expanded: "#7c3aed", current: "#18181b", path: "#d97706",
-    bidiForward: "#0891b2", bidiBackward: "#e11d48", node: "#a1a1aa",
+    bidiForward: "#0891b2", bidiBackward: "#e11d48", node: "#52525b",
     inkDim: "#71717a", grid: "#e4e4e7", panel: "#ffffff",
   },
   basemap: "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json",

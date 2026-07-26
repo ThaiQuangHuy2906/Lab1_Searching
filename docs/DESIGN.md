@@ -51,20 +51,20 @@ trên nền trắng; node đang expand đảo trắng→đen.
 
 | Token | Tối | Sáng | Ý nghĩa |
 |---|---|---|---|
-| `algo-node` | zinc-300 `#d4d4d8` | zinc-400 `#a1a1aa` | node thường (duyệt v4 nâng 1 nấc; duyệt v8: dark nâng tiếp zinc-500→300 — user vẫn thấy chìm) |
+| `algo-node` | zinc-300 `#d4d4d8` | zinc-600 `#52525b` | node thường (v8 dark zinc-500→300; v8e light zinc-400→600 — cùng bệnh chìm vào nền positron) |
 | `algo-frontier` | cyan-400 `#22d3ee` | cyan-600 `#0891b2` | node trong frontier |
 | `algo-expanded` | violet-400 `#a78bfa` | violet-600 `#7c3aed` | node đã expand |
 | `algo-current` | white `#ffffff` + pulse trắng | zinc-900 `#18181b` + pulse đen | node đang expand |
 | `algo-path` | amber-400 `#fbbf24` | amber-600 `#d97706` | tuyến kết quả, nét dày 4px |
 | `bidi-forward` | cyan-400 `#22d3ee` | cyan-600 `#0891b2` | phía xuôi (side=forward) |
 | `bidi-backward` | rose-400 `#fb7185` | rose-600 `#e11d48` | phía ngược (side=backward) |
-| `edge-dim` | zinc-400/85% `#a1a1aa` | zinc-300 `#d4d4d8` | cạnh thường (duyệt v8: dark zinc-600→400 nhạt alpha — nổi hẳn nhưng vẫn dưới mọi màu thuật toán) |
+| `edge-dim` | zinc-400/85% `#a1a1aa` | zinc-500/80% `#71717a` | cạnh thường (v8 dark zinc-600→400; v8e light zinc-300→500 — vẫn dưới mọi màu thuật toán ở cả 2 chế độ) |
 | `cong-1..5` | `#10b981 #a3e635 #facc15 #f97316 #ef4444` | `#059669 #4d7c0f #a16207 #ea580c #dc2626` (lime-700/yellow-700 — đo WCAG trên nền positron) | thang ùn tắc 1→5 |
 | Start | chip **"Đi"**: nền emerald-700 `#047857`, chữ trắng — CỐ ĐỊNH 2 chế độ (chữ 5,48) | | điểm xuất phát; token `start` (marker/badge) vẫn emerald-500/600 theo chế độ |
 | Goal | chip **"Đến"**: nền red-600 `#dc2626`, chữ trắng — CỐ ĐỊNH 2 chế độ (đồ hoạ ≥3,5 / chữ 4,83) | | điểm đích; token `goal` vẫn red-500/600 theo chế độ |
 | Stops | số trên nền amber theo chế độ, chữ **zinc-950** cả 2 (đo: trắng trên amber-600 chỉ 3,19) | | điểm giao multiroute |
 | So sánh | A `algo-path` liền · B `algo-frontier` nét đứt (cả 2 chế độ) | | 2 tuyến chồng lớp |
-| Nhãn POI trên map | zinc-50 TRẮNG HẲN, 12,5px đậm 600, halo tối 3px (v8d — zinc-200/11px vẫn bị chê mờ; kèm fix stale updateTriggers khi đổi theme) | zinc-700 viền trắng | TextLayer G_demo |
+| Nhãn POI trên map | zinc-50 TRẮNG HẲN, 12,5px đậm 600, halo tối 3px (v8d — kèm fix stale updateTriggers khi đổi theme) | zinc-800 ĐẬM HẲN viền trắng (v8e) | TextLayer G_demo |
 | Basemap | Carto **dark-matter** | Carto **positron** | không cần key |
 
 **Legend:** cố định góc **dưới-trái**, tiêu đề nhỏ "CHÚ GIẢI" (10px uppercase, v6),

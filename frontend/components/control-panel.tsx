@@ -62,7 +62,8 @@ function Section({ title, tip, children }: {
 }) {
   return (
     <div className="flex flex-col gap-3 border-b border-surface-border px-4 py-4">
-      <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-ink-dim">
+      <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider text-ink">
+        <span className="h-3 w-0.5 shrink-0 rounded-full bg-algo-frontier" />
         {title}
         {tip && <InfoTip text={tip} />}
       </div>
@@ -134,7 +135,7 @@ export function ControlPanel() {
   const busy = s.running || s.comparing || s.multiRunning;
 
   return (
-    <aside className="flex h-full w-80 shrink-0 flex-col border-r border-surface-border bg-surface-panel">
+    <aside className="relative z-10 flex h-full w-80 shrink-0 flex-col border-r border-surface-border bg-surface-panel shadow-float">
       <div className="flex shrink-0 items-center gap-2.5 border-b border-surface-border px-4 py-3">
         <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-algo-frontier/15 text-algo-frontier">
           <Route className="size-4" />

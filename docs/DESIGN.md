@@ -95,6 +95,12 @@ thang 1–5; so sánh → 2 tuyến). Nền `surface-panel/95`, chữ 12px.
 
 *(Drawer nới 360→400 px ở duyệt v5d: cột f của bảng g/h/f từng bị cắt mép.)*
 
+**Panel nổi khỏi bản đồ — duyệt v9b:** panel trái VÀ drawer phải mang
+`shadow-float` + `z-10` (bóng trung tính đổ lên bản đồ — cùng triết lý phân lớp
+v6: bản đồ ↔ điều khiển; trước đó 2 khối này chỉ có viền 1px, phẳng).
+Tiêu đề nhóm trong panel ("BỐI CẢNH"…) thêm THANH ACCENT dọc `algo-frontier`
+2×12px + chữ nâng `ink-dim` → `ink` — mắt bắt nhóm nhanh hơn, không thêm màu mới.
+
 **Điều khiển dạng form — duyệt v9 (panel bị chê "phẳng"):** mọi control NHẬP
 (SelectTrigger, input số, nút secondary) dùng nền **`surface`** thay vì
 `surface-panel` — "khoét sâu" một nấc so với panel ở CẢ 2 chế độ (tối: zinc-950

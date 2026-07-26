@@ -40,7 +40,7 @@ py -3.14 -m venv .venv
 .venv\Scripts\python.exe -m pip install -r backend\requirements.txt
 
 # 2. Kiểm tra: toàn bộ test phải xanh
-.venv\Scripts\python.exe -m pytest backend\tests\ -q          # kỳ vọng: 78 passed
+.venv\Scripts\python.exe -m pytest backend\tests\ -q          # kỳ vọng: 79 passed
 
 # 3. (TUỲ CHỌN) build lại data từ OSM — cần mạng, ~2 phút
 .venv\Scripts\python.exe scripts\01_download_osm.py
@@ -108,8 +108,9 @@ cd backend
 
 ## Kiểm chứng chất lượng (đã tự động hoá)
 
-- `pytest backend/tests/` — 78 test: schema, thuật toán đối chứng NetworkX
-  (2 550 cặp G_demo × 12 tổ hợp + G_real), TSP vs brute-force, API TestClient.
+- `pytest backend/tests/` — 79 test: schema, thuật toán đối chứng NetworkX
+  (2 550 cặp G_demo × 12 tổ hợp + G_real), TSP vs brute-force, API TestClient,
+  regression méo khoảng cách G_demo (bất biến demo/real ≤1,5× time / ≤1,8× dist).
 - `python scripts/validate_data.py` — ràng buộc SCHEMA + liên thông mạnh + phủ profile.
 - `python scripts/check_contrast.py` — tương phản WCAG cả 2 theme (đồ hoạ ≥3,0; chữ ≥4,5).
 - `python -m app.benchmark` (cwd backend) — 7 thí nghiệm, seed 42, số liệu trong `results/`.

@@ -61,7 +61,7 @@ function Section({ title, tip, children }: {
   title: string; tip?: string; children: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-col gap-3 border-b border-surface-border px-4 py-4">
+    <div className="flex shrink-0 flex-col gap-3 rounded-xl border border-surface-border bg-surface-panel px-3.5 py-3.5">
       <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider text-ink">
         <span className="h-3 w-0.5 shrink-0 rounded-full bg-algo-frontier" />
         {title}
@@ -149,9 +149,10 @@ function NodePicker({ kind }: { kind: "start" | "goal" }) {
 function SwapButton() {
   const s = useApp();
   return (
-    <div className="-my-1.5 flex justify-end pr-1">
+    <div className="z-10 -my-2.5 flex justify-end pr-2">
       <Button
         variant="ghost" size="iconSm" aria-label="Đảo chiều Đi ↔ Đến"
+        className="h-7 w-7 rounded-full border border-surface-border bg-surface shadow-sm"
         disabled={!s.start && !s.goal}
         onClick={() => s.set({ start: s.goal, goal: s.start })}
       >
@@ -167,8 +168,8 @@ export function ControlPanel() {
   const busy = s.running || s.comparing || s.multiRunning;
 
   return (
-    <aside className="relative z-10 flex h-full w-80 shrink-0 flex-col border-r border-surface-border bg-surface-panel shadow-float">
-      <div className="flex shrink-0 items-center gap-2.5 border-b border-surface-border px-4 py-3">
+    <aside className="relative z-10 flex h-full w-80 shrink-0 flex-col border-r border-surface-border bg-surface shadow-float">
+      <div className="flex shrink-0 items-center gap-2.5 border-b border-surface-border bg-surface-panel px-4 py-3">
         <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-algo-frontier/15 text-algo-frontier">
           <Route className="size-4" />
         </span>
@@ -178,7 +179,7 @@ export function ControlPanel() {
         </div>
       </div>
 
-      <div className="min-h-0 flex-1 overflow-y-auto">
+      <div className="flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto p-3">
       <Section title="Bối cảnh">
         <Field label="Đồ thị">
           <Select value={s.graph} disabled={busy}
@@ -191,14 +192,14 @@ export function ControlPanel() {
           </Select>
         </Field>
         <Field label="Khung giờ" tip="Mức ùn tắc của từng đoạn đường thay đổi theo 4 mốc giờ chụp.">
-          <div className="grid grid-cols-4 gap-1">
+          <div className="grid grid-cols-4 gap-0.5 rounded-lg border border-surface-border bg-surface p-0.5">
             {SLOTS.map((slot) => (
               <Button
                 key={slot}
                 size="sm"
                 disabled={busy}
-                variant={s.slot === slot ? "default" : "secondary"}
-                className="px-0 font-mono text-xs"
+                variant={s.slot === slot ? "default" : "ghost"}
+                className="h-7 px-0 font-mono text-xs"
                 onClick={() => s.setSlot(slot)}
               >
                 {slot}
@@ -330,7 +331,7 @@ export function ControlPanel() {
 
       </div>
       {/* CTA ghim đáy panel — luôn nhìn thấy (DESIGN 4, duyệt v4) */}
-      <div className="flex shrink-0 flex-col gap-2 border-t border-surface-border px-4 py-3">
+      <div className="flex shrink-0 flex-col gap-2 border-t border-surface-border bg-surface-panel px-4 py-3">
         <Button size="lg" className="w-full" disabled={s.running} onClick={() => void s.runRoute()}>
           {s.running ? <Loader2 className="animate-spin" /> : <Play />}
           {s.running ? "Đang chạy…" : "Chạy thuật toán"}

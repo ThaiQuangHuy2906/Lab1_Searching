@@ -95,6 +95,16 @@ thang 1–5; so sánh → 2 tuyến). Nền `surface-panel/95`, chữ 12px.
 
 *(Drawer nới 360→400 px ở duyệt v5d: cột f của bảng g/h/f từng bị cắt mép.)*
 
+**CARD HOÁ panel — duyệt v10 (nước lớn, panel bị chê "phẳng đều"):**
+panel trái và drawer phải đổi NỀN xuống `surface`; mỗi NHÓM nội dung là một
+**card** `surface-panel` bo `rounded-xl` + viền — ba tầng rõ: nền `surface`
+→ card `surface-panel` → control nhập `surface` (chìm trong card). Header app
++ footer CTA giữ nền `surface-panel` làm khối trên/dưới. Khung giờ đổi thành
+**segmented control**: khối `surface` p-0.5 viền, nút active variant default
+(cyan), nút thường ghost — một khối liền thay 4 nút rời. Switch track OFF đổi
+`surface-border` → `ink-dim/35` (track cũ tàng hình trên nền trắng). Nút ⇅
+thành nút TRÒN viền nền `surface` chồng nhẹ giữa 2 ô (kiểu app gọi xe).
+
 **Nút Xoá bản đồ — duyệt v9e:** cụm nút góc bản đồ (+/−/⌂) thêm vạch ngăn +
 nút **thùng rác** (ghost, hover đỏ `goal`): xoá MỌI THỨ trên bản đồ một chạm —
 kết quả (trace/so sánh/multiroute), lựa chọn Đi/Đến/điểm giao, animation;

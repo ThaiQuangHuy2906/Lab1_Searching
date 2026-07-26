@@ -15,7 +15,7 @@ export function Drawer() {
 
   if (!open) {
     return (
-      <div className="relative z-10 flex h-full items-start border-l border-surface-border bg-surface-panel p-2 shadow-float">
+      <div className="relative z-10 flex h-full items-start border-l border-surface-border bg-surface p-2 shadow-float">
         <Button variant="ghost" size="iconSm" aria-label="Mở panel kết quả"
           onClick={() => set({ drawerOpen: true })}>
           <PanelRightOpen />
@@ -24,7 +24,7 @@ export function Drawer() {
     );
   }
   return (
-    <aside className="relative z-10 flex h-full w-[400px] shrink-0 flex-col border-l border-surface-border bg-surface-panel shadow-float">
+    <aside className="relative z-10 flex h-full w-[400px] shrink-0 flex-col border-l border-surface-border bg-surface shadow-float">
       <div className="flex items-center gap-2 border-b border-surface-border px-3 py-2">
         <span className="flex-1 text-sm font-bold">Kết quả</span>
         <Button variant="ghost" size="iconSm" aria-label="Thu gọn panel kết quả"

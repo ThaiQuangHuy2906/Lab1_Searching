@@ -79,33 +79,52 @@ function NodePicker({ kind }: { kind: "start" | "goal" }) {
   const set = useApp((s) => s.set);
   const isDemo = graph === "demo";
 
+  // nút ✕ xoá chọn — cùng kiểu với ✕ của hàng Stops (DESIGN §4, duyệt v8)
+  const clear = value ? (
+    <button
+      aria-label={kind === "start" ? "Xoá điểm đi" : "Xoá điểm đến"}
+      className="shrink-0 rounded p-1 text-ink-dim transition-colors hover:text-goal"
+      onClick={() => set(kind === "start" ? { start: null } : { goal: null })}
+    >
+      <X className="size-3.5" />
+    </button>
+  ) : null;
+
   if (isDemo) {
     return (
-      <Select
-        value={value ?? ""}
-        onValueChange={(v) => set(kind === "start" ? { start: v } : { goal: v })}
-      >
-        <SelectTrigger aria-label={kind === "start" ? "Điểm đi" : "Điểm đến"}>
-          <SelectValue placeholder="Chọn địa danh…" />
-        </SelectTrigger>
-        <SelectContent>
-          {graphData?.nodes.map((n) => (
-            <SelectItem key={n.id} value={n.id}>{n.name ?? n.id}</SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      <div className="flex items-center gap-1">
+        <div className="min-w-0 flex-1">
+          <Select
+            value={value ?? ""}
+            onValueChange={(v) => set(kind === "start" ? { start: v } : { goal: v })}
+          >
+            <SelectTrigger aria-label={kind === "start" ? "Điểm đi" : "Điểm đến"}>
+              <SelectValue placeholder="Chọn địa danh…" />
+            </SelectTrigger>
+            <SelectContent>
+              {graphData?.nodes.map((n) => (
+                <SelectItem key={n.id} value={n.id}>{n.name ?? n.id}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        {clear}
+      </div>
     );
   }
   const active = pickTarget === kind;
   return (
-    <Button
-      variant="secondary"
-      className={active ? "border-algo-frontier text-algo-frontier" : ""}
-      onClick={() => set({ pickTarget: active ? null : kind })}
-    >
-      <Crosshair />
-      {value ? `Đã chọn: ${value}` : active ? "Bấm vào bản đồ…" : "Chọn trên bản đồ"}
-    </Button>
+    <div className="flex items-center gap-1">
+      <Button
+        variant="secondary"
+        className={"min-w-0 flex-1 " + (active ? "border-algo-frontier text-algo-frontier" : "")}
+        onClick={() => set({ pickTarget: active ? null : kind })}
+      >
+        <Crosshair />
+        {value ? `Đã chọn: ${value}` : active ? "Bấm vào bản đồ…" : "Chọn trên bản đồ"}
+      </Button>
+      {clear}
+    </div>
   );
 }
 

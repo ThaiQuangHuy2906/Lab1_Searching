@@ -11,7 +11,7 @@
 
 ## 0. Đồ thị ví dụ dùng xuyên suốt (trích từ G_demo, khu Chợ Bến Thành)
 
-7 địa danh thật · 16 cạnh thật · khung giờ **07:30** · chế độ **cân bằng** (giây):
+7 địa danh thật · 23 cạnh thật · khung giờ **07:30** · chế độ **cân bằng** (giây):
 
 | Viết tắt | Địa danh |
 |---|---|
@@ -23,44 +23,52 @@
 | **BX** | Bitexco Financial Tower |
 | **SC** | Saigon Centre (Takashimaya) |
 
-**Bài toán xuyên suốt: đi từ `BT` (Chợ Bến Thành) đến `SC` (Saigon Centre).**
-Điểm thú vị của cặp này: SC nằm ngay cạnh BT (~650 m chim bay) và có đường SC→BT,
-nhưng chiều BT→SC **không có đường trực tiếp** (một chiều!) — shipper phải vòng,
-và có **3 tuyến cạnh tranh** để các thuật toán "cãi nhau".
+**Bài toán xuyên suốt: đi từ `BT` (Chợ Bến Thành) đến `BX` (Bitexco).**
+Điểm thú vị của cặp này: có đường trực tiếp BX→BT nhưng đó là đường **MỘT CHIỀU** —
+chiều đi BT→BX không được phép, shipper phải vòng; và trên các tuyến vòng đó,
+tuyến ÍT CẠNH NHẤT lại dính đoạn kẹt nặng — cả BFS lẫn Greedy đều sập bẫy,
+chỉ nhóm thuật toán xét chi phí (UCS/Dijkstra/A*…) đi đúng.
 
 Trọng số cạnh = `t_free × f_cong + penalty` (SCHEMA §D, γ=1,5):
 
 | Cạnh | Đường | dài (m) | ùn tắc | penalty | **w (s)** | 1 chiều |
 |---|---|---|---|---|---|---|
-| BT → CV | Nguyễn Thị Nghĩa | 899 | 4 | | **177** | ✔ |
-| BT → HN | Hàm Nghi | 1094 | 4 | | **216** | ✔ |
-| BX → HN | Hàm Nghi | 556 | 4 | | **109** |  |
-| BX → SC | Hồ Tùng Mậu | 723 | 2 | 90·lô-cốt | **198** |  |
-| CV → ĐB | Phạm Ngũ Lão | 178 | 3 | | **28** |  |
+| BT → MT | Lê Lai | 858 | 4 | | **176** |  |
+| BT → SC | Lê Lợi | 1018 | 3 | 90·lô-cốt | **266** |  |
+| BT → ĐB | Lê Lai | 978 | 5 | | **229** |  |
+| BX → BT | Công trường Quách Thị Trang | 889 | 4 | | **166** | ✔ |
+| BX → HN | Hàm Nghi | 556 | 5 | | **128** |  |
+| BX → SC | Hồ Tùng Mậu | 723 | 3 | 90·lô-cốt | **227** |  |
+| BX → ĐB | Công trường Quách Thị Trang | 1073 | 4 | | **195** |  |
+| CV → ĐB | Phạm Ngũ Lão | 178 | 4 | | **34** |  |
 | HN → BX | Nguyễn Công Trứ | 751 | 3 | | **135** |  |
-| HN → MT | Lê Công Kiều | 184 | 4 | | **47** |  |
-| MT → BT | Lê Thị Hồng Gấm | 611 | 4 | | **127** | ✔ |
+| HN → MT | Lê Công Kiều | 184 | 3 | | **39** |  |
+| MT → BT | Lê Thị Hồng Gấm | 611 | 4 | | **127** |  |
 | MT → HN | Lê Công Kiều | 184 | 2 | | **30** |  |
 | MT → SC | Lê Thị Hồng Gấm | 759 | 3 | 90·lô-cốt | **223** | ✔ |
-| SC → BT | Công trường Quách Thị Trang | 649 | 5 | 90·lô-cốt | **232** | ✔ |
-| SC → BX | Hàm Nghi | 747 | 5 | 90·lô-cốt | **257** |  |
-| SC → HN | Nam Kỳ Khởi Nghĩa | 315 | 5 | 90·lô-cốt | **164** | ✔ |
-| ĐB → BT | Trần Hưng Đạo | 547 | 5 | | **118** | ✔ |
-| ĐB → CV | Phạm Ngũ Lão | 178 | 3 | | **28** |  |
-| ĐB → MT | Trần Hưng Đạo | 535 | 5 | | **114** | ✔ |
+| MT → ĐB | Trần Hưng Đạo | 795 | 4 | | **155** |  |
+| SC → BT | Công trường Quách Thị Trang | 649 | 5 | 90·lô-cốt | **232** |  |
+| SC → BX | Hàm Nghi | 747 | 4 | 90·lô-cốt | **232** |  |
+| SC → HN | Nam Kỳ Khởi Nghĩa | 315 | 3 | 90·lô-cốt | **142** | ✔ |
+| SC → ĐB | Công trường Quách Thị Trang | 832 | 5 | 90·lô-cốt | **265** |  |
+| ĐB → BT | Trần Hưng Đạo | 547 | 5 | | **118** |  |
+| ĐB → BX | Hàm Nghi | 1227 | 4 | | **220** |  |
+| ĐB → CV | Phạm Ngũ Lão | 178 | 5 | | **40** |  |
+| ĐB → MT | Trần Hưng Đạo | 535 | 5 | | **114** |  |
+| ĐB → SC | Trần Hưng Đạo | 695 | 5 | 90·lô-cốt | **249** |  |
 
 Heuristic tới đích SC: `h(n) = haversine(n, SC) / v_max` (v_max = 60 km/h — admissible,
 chứng minh trong `docs/HEURISTIC-PROOF.md`):
 
 | Node | haversine → SC (m) | **h (s)** |
 |---|---|---|
-| BT — Chợ Bến Thành | 310 | 26 |
-| BX — Bitexco Financial Tower | 412 | 35 |
-| CV — Công viên 23/9 | 743 | 63 |
-| HN — Điểm trung chuyển Hàm Nghi | 290 | 25 |
-| MT — Bảo tàng Mỹ thuật TP.HCM | 296 | 25 |
-| SC — Saigon Centre (Takashimaya) | 0 | 0 |
-| ĐB — Đền Bà Mariamman | 570 | 49 |
+| BT — Chợ Bến Thành | 695 | 59 |
+| BX — Bitexco Financial Tower | 0 | 0 |
+| CV — Công viên 23/9 | 1054 | 89 |
+| HN — Điểm trung chuyển Hàm Nghi | 358 | 30 |
+| MT — Bảo tàng Mỹ thuật TP.HCM | 527 | 44 |
+| SC — Saigon Centre (Takashimaya) | 412 | 35 |
+| ĐB — Đền Bà Mariamman | 877 | 74 |
 
 ---
 
@@ -82,32 +90,19 @@ BFS(start, goal):
 
 | Bước | Expand | Frontier sau bước (open list) |
 |---|---|---|
-| 1 | **BT** | {HN, CV} |
-| 2 | **HN** | {MT, BX, CV} |
-| 3 | **CV** | {MT, BX, ĐB} |
-| 4 | **MT** | {BX, SC, ĐB} |
-| 5 | **BX** | {SC, ĐB} |
-| 6 | **ĐB** | {SC} |
-| 7 | **SC** | ∅ |
+| 1 | **BT** | {MT, SC, ĐB} |
+| 2 | **MT** | {HN, SC, ĐB} |
+| 3 | **SC** | {HN, BX, ĐB} |
+| 4 | **ĐB** | {HN, BX, CV} |
+| 5 | **HN** | {BX, CV} |
+| 6 | **BX** | {CV} |
 
-**Kết quả:** `BT → HN → MT → SC` · chi phí **486 s** · 2.04 km · 7 lần expand · frontier tối đa 3.
-Trên cặp BT→SC này tuyến tối ưu TÌNH CỜ cũng ít cạnh nhất nên BFS trùng A* — vậy hãy
-xem **phản ví dụ ngay trên cùng đồ thị: đi `BX → BT`**:
-
-| Bước | Expand | Frontier sau bước (open list) |
-|---|---|---|
-| 1 | **BX** | {HN, SC} |
-| 2 | **HN** | {MT, SC} |
-| 3 | **SC** | {MT, BT} |
-| 4 | **MT** | {BT} |
-| 5 | **BT** | ∅ |
-
-**Kết quả:** `BX → SC → BT` · chi phí **429 s** · 1.37 km · 5 lần expand · frontier tối đa 2.
-**Nói trong video:** BFS chọn `BX → SC → BT` vì chỉ
-2 cạnh — nhưng đoạn Quách Thị Trang lúc 07:30 kẹt mức 5/5; tuyến 3 cạnh
-`BX → HN → MT → BT` chỉ tốn **283 s**.
-BFS đắt hơn **+147 s
-(+52%)**
+**Kết quả:** `BT → SC → BX` · chi phí **498 s** · 1.76 km · 6 lần expand · frontier tối đa 3.
+**Nói trong video:** BFS chọn `BT → SC → BX` vì ít cạnh
+nhất — nhưng tuyến tối ưu là `BT → MT → HN → BX`
+(**341 s**). BFS đắt hơn
+**+157 s
+(+46%)**
 — "ít cạnh nhất" không phải "rẻ nhất".
 
 ---
@@ -120,12 +115,12 @@ visited (đồ thị hữu hạn). Tối ưu ✘ — trả về đường ĐẦU
 
 | Bước | Expand | Frontier sau bước (open list) |
 |---|---|---|
-| 1 | **BT** | {HN, CV} |
-| 2 | **HN** | {MT, BX, CV} |
-| 3 | **MT** | {BX, SC, CV} |
-| 4 | **SC** | {BX, CV} |
+| 1 | **BT** | {MT, SC, ĐB} |
+| 2 | **MT** | {HN, SC, ĐB} |
+| 3 | **HN** | {BX, SC, ĐB} |
+| 4 | **BX** | {SC, ĐB} |
 
-**Kết quả:** `BT → HN → MT → SC` · chi phí **486 s** · 2.04 km · 4 lần expand · frontier tối đa 3.
+**Kết quả:** `BT → MT → HN → BX` · chi phí **341 s** · 1.79 km · 4 lần expand · frontier tối đa 3.
 
 ---
 
@@ -140,22 +135,20 @@ Tối ưu ✘ trên đồ thị trọng số (nông nhất theo SỐ CẠNH, nh�
 |---|---|---|---|
 | 1 | **BT** | 0 | ∅ |
 | 2 | **BT** | 1 | ∅ |
-| 3 | **HN** | 1 | {CV} |
-| 4 | **CV** | 1 | ∅ |
-| 5 | **BT** | 2 | ∅ |
-| 6 | **HN** | 2 | {CV} |
-| 7 | **MT** | 2 | {BX, CV} |
-| 8 | **BX** | 2 | {CV} |
-| 9 | **CV** | 2 | ∅ |
-| 10 | **ĐB** | 2 | ∅ |
-| 11 | **BT** | 3 | ∅ |
-| 12 | **HN** | 3 | {CV} |
-| 13 | **MT** | 3 | {BX, CV} |
-| 14 | **SC** | 3 | {BX, CV} |
+| 3 | **MT** | 1 | {SC, ĐB} |
+| 4 | **SC** | 1 | {ĐB} |
+| 5 | **ĐB** | 1 | ∅ |
+| 6 | **BT** | 2 | ∅ |
+| 7 | **MT** | 2 | {SC, ĐB} |
+| 8 | **HN** | 2 | {SC, ĐB} |
+| 9 | **SC** | 2 | {SC, ĐB} |
+| 10 | **ĐB** | 2 | {SC, ĐB} |
+| 11 | **SC** | 2 | {ĐB} |
+| 12 | **BX** | 2 | {ĐB} |
 
-**Kết quả:** `BT → HN → MT → SC` · chi phí **486 s** · 2.04 km · 14 lần expand · frontier tối đa 2.
-**Nói trong video:** so số expand với BFS (14 so với
-7) — cái giá của việc chạy lại; trên G_real chênh lệch
+**Kết quả:** `BT → SC → BX` · chi phí **498 s** · 1.76 km · 12 lần expand · frontier tối đa 2.
+**Nói trong video:** so số expand với BFS (12 so với
+6) — cái giá của việc chạy lại; trên G_real chênh lệch
 lên tới hàng trăm lần (xem benchmark exp3).
 
 ---
@@ -168,15 +161,15 @@ g(đích) đã tối ưu). Complete ✔ · Tối ưu ✔ (mọi w > 0).
 
 | Bước | Expand | Frontier sau bước (open list) | g |
 |---|---|---|---|
-| 1 | **BT** | {HN, CV} | CV=177, HN=216 |
-| 2 | **CV** | {HN, ĐB} | HN=216, ĐB=205 |
-| 3 | **ĐB** | {HN, MT} | HN=216, MT=319 |
-| 4 | **HN** | {MT, BX} | BX=351, MT=262 |
-| 5 | **MT** | {BX, SC} | BX=351, SC=486 |
-| 6 | **BX** | {SC} | SC=486 |
-| 7 | **SC** | ∅ | – |
+| 1 | **BT** | {MT, SC, ĐB} | MT=176, SC=266, ĐB=229 |
+| 2 | **MT** | {HN, SC, ĐB} | HN=206, SC=266, ĐB=229 |
+| 3 | **HN** | {BX, SC, ĐB} | BX=342, SC=266, ĐB=229 |
+| 4 | **ĐB** | {BX, SC, CV} | BX=342, CV=269, SC=266 |
+| 5 | **SC** | {BX, CV} | BX=342, CV=269 |
+| 6 | **CV** | {BX} | BX=342 |
+| 7 | **BX** | ∅ | – |
 
-**Kết quả:** `BT → HN → MT → SC` · chi phí **486 s** · 2.04 km · 7 lần expand · frontier tối đa 2.
+**Kết quả:** `BT → MT → HN → BX` · chi phí **341 s** · 1.79 km · 7 lần expand · frontier tối đa 3.
 
 ---
 
@@ -189,15 +182,15 @@ Trong báo cáo mục g sẽ bàn quan hệ này. Complete ✔ · Tối ưu ✔.
 
 | Bước | Expand | Frontier sau bước (open list) | g |
 |---|---|---|---|
-| 1 | **BT** | {HN, CV} | CV=177, HN=216 |
-| 2 | **CV** | {HN, ĐB} | HN=216, ĐB=205 |
-| 3 | **ĐB** | {HN, MT} | HN=216, MT=319 |
-| 4 | **HN** | {MT, BX} | BX=351, MT=262 |
-| 5 | **MT** | {BX, SC} | BX=351, SC=486 |
-| 6 | **BX** | {SC} | SC=486 |
-| 7 | **SC** | ∅ | – |
+| 1 | **BT** | {MT, SC, ĐB} | MT=176, SC=266, ĐB=229 |
+| 2 | **MT** | {HN, SC, ĐB} | HN=206, SC=266, ĐB=229 |
+| 3 | **HN** | {BX, SC, ĐB} | BX=342, SC=266, ĐB=229 |
+| 4 | **ĐB** | {BX, SC, CV} | BX=342, CV=269, SC=266 |
+| 5 | **SC** | {BX, CV} | BX=342, CV=269 |
+| 6 | **CV** | {BX} | BX=342 |
+| 7 | **BX** | ∅ | – |
 
-**Kết quả:** `BT → HN → MT → SC` · chi phí **486 s** · 2.04 km · 7 lần expand · frontier tối đa 2.
+**Kết quả:** `BT → MT → HN → BX` · chi phí **341 s** · 1.79 km · 7 lần expand · frontier tối đa 3.
 
 ---
 
@@ -210,20 +203,20 @@ Tie-break: f bằng nhau → h nhỏ hơn trước. Complete ✔ · Tối ưu �
 
 | Bước | Expand | Frontier sau bước (open list) | g | h | f |
 |---|---|---|---|---|---|
-| 1 | **BT** | {HN, CV} | CV=177, HN=216 | CV=63, HN=25 | CV=240, HN=240 |
-| 2 | **HN** | {MT, BX, CV} | BX=351, CV=177, MT=262 | BX=35, CV=63, MT=25 | BX=386, CV=240, MT=288 |
-| 3 | **CV** | {MT, BX, ĐB} | BX=351, MT=262, ĐB=205 | BX=35, MT=25, ĐB=49 | BX=386, MT=288, ĐB=254 |
-| 4 | **ĐB** | {MT, BX} | BX=351, MT=262 | BX=35, MT=25 | BX=386, MT=288 |
-| 5 | **MT** | {BX, SC} | BX=351, SC=486 | BX=35, SC=0 | BX=386, SC=486 |
-| 6 | **BX** | {SC} | SC=486 | SC=0 | SC=486 |
-| 7 | **SC** | ∅ | – | – | – |
+| 1 | **BT** | {MT, SC, ĐB} | MT=176, SC=266, ĐB=229 | MT=44, SC=35, ĐB=74 | MT=220, SC=301, ĐB=303 |
+| 2 | **MT** | {HN, SC, ĐB} | HN=206, SC=266, ĐB=229 | HN=30, SC=35, ĐB=74 | HN=236, SC=301, ĐB=303 |
+| 3 | **HN** | {BX, SC, ĐB} | BX=342, SC=266, ĐB=229 | BX=0, SC=35, ĐB=74 | BX=342, SC=301, ĐB=303 |
+| 4 | **SC** | {BX, ĐB} | BX=342, ĐB=229 | BX=0, ĐB=74 | BX=342, ĐB=303 |
+| 5 | **ĐB** | {BX, CV} | BX=342, CV=269 | BX=0, CV=89 | BX=342, CV=358 |
+| 6 | **BX** | {CV} | CV=269 | CV=89 | CV=358 |
 
-**Kết quả:** `BT → HN → MT → SC` · chi phí **486 s** · 2.04 km · 7 lần expand · frontier tối đa 3.
-**Nói trong video:** (1) chỉ vào **bước 1** — CV và HN cùng f = 240, A* chọn HN vì
-h nhỏ hơn: đúng luật tie-break của nhóm; (2) đồ thị 7 node quá bé để thấy A* tiết
-kiệm expand (7 so với 7 của UCS) —
-trên G_real 200 cặp, A* expand trung bình **771** so với **1 226** của Dijkstra/UCS,
-tức tiết kiệm ~37% nhờ heuristic định hướng (results/exp3_benchmark.csv).
+**Kết quả:** `BT → MT → HN → BX` · chi phí **341 s** · 1.79 km · 6 lần expand · frontier tối đa 3.
+**Nói trong video:** (1) chỉ vào cột f — node hướng về BX có f nhỏ nên được ưu tiên;
+khi hai node cùng f, A* chọn node có h nhỏ hơn (luật tie-break của nhóm); (2) đồ thị
+7 node quá bé để thấy A* tiết kiệm expand (6 so với
+7 của UCS) — trên G_real 200 cặp, A* expand trung bình
+**771** so với **1 226** của Dijkstra/UCS, tức tiết kiệm ~37% nhờ heuristic định hướng
+(results/exp3_benchmark.csv — số của lượt synthetic, sẽ cập nhật theo lượt TomTom).
 
 ---
 
@@ -235,26 +228,15 @@ Complete ✔ (có visited) · Tối ưu ✘.
 
 | Bước | Expand | Frontier sau bước (open list) | h |
 |---|---|---|---|
-| 1 | **BT** | {HN, CV} | CV=63, HN=25 |
-| 2 | **HN** | {MT, BX, CV} | BX=35, CV=63, MT=25 |
-| 3 | **MT** | {BX, SC, CV} | BX=35, CV=63, SC=0 |
-| 4 | **SC** | {BX, CV} | BX=35, CV=63 |
+| 1 | **BT** | {MT, SC, ĐB} | MT=44, SC=35, ĐB=74 |
+| 2 | **SC** | {HN, MT, BX, ĐB} | BX=0, HN=30, MT=44, ĐB=74 |
+| 3 | **BX** | {HN, MT, ĐB} | HN=30, MT=44, ĐB=74 |
 
-**Kết quả:** `BT → HN → MT → SC` · chi phí **486 s** · 2.04 km · 4 lần expand · frontier tối đa 3.
-Trên BT→SC Greedy may mắn trùng tuyến tối ưu —
-nhưng nhìn **phản ví dụ `BX → BT`** (cùng cặp đã dùng cho BFS):
-
-| Bước | Expand | Frontier sau bước (open list) | h |
-|---|---|---|---|
-| 1 | **BX** | {HN, SC} | HN=36, SC=26 |
-| 2 | **SC** | {HN, BT} | BT=0, HN=36 |
-| 3 | **BT** | {HN} | HN=36 |
-
-**Kết quả:** `BX → SC → BT` · chi phí **429 s** · 1.37 km · 3 lần expand · frontier tối đa 2.
-**Nói trong video:** Greedy từ BX thấy SC có h nhỏ (SC nằm sát BT theo đường chim bay)
-nên lao vào — dính đúng đoạn kẹt 5/5, đắt hơn tối ưu
-**+147 s**. Cùng một cú
-lừa với BFS nhưng LÝ DO SAI khác nhau: BFS đếm cạnh, Greedy tin "linh cảm" h mà quên g.
+**Kết quả:** `BT → SC → BX` · chi phí **498 s** · 1.76 km · 3 lần expand · frontier tối đa 4.
+**Nói trong video:** Greedy đắt hơn tối ưu **+157 s (+46%)**
+trên cùng cặp BT→BX. Cùng sập bẫy với BFS nhưng LÝ DO SAI khác nhau: BFS đếm cạnh,
+Greedy tin "linh cảm" h (node nào nhìn gần BX là lao tới) mà quên sạch g đã trả.
+A* cũng dùng h nhưng CÓ g nên không bị.
 
 ---
 
@@ -268,14 +250,11 @@ bong bóng to. Node nằm trong cả 2 frontier hiển thị g nhỏ hơn. Compl
 
 | Bước | Expand | Phía | Frontier sau bước (open list) | g |
 |---|---|---|---|---|
-| 1 | **BT** | xuôi | {HN, SC, CV} | CV=177, HN=216, SC=0 |
-| 2 | **SC** | ngược | {HN, MT, BX, CV} | BX=198, CV=177, HN=216, MT=223 |
-| 3 | **CV** | xuôi | {HN, MT, BX, ĐB} | BX=198, HN=216, MT=223, ĐB=205 |
-| 4 | **BX** | ngược | {HN, MT, ĐB} | HN=216, MT=223, ĐB=205 |
-| 5 | **ĐB** | xuôi | {HN, MT} | HN=216, MT=223 |
-| 6 | **HN** | xuôi | {HN, MT, BX} | BX=198, HN=216, MT=223 |
+| 1 | **BT** | xuôi | {MT, BX, SC, ĐB} | BX=0, MT=176, SC=266, ĐB=229 |
+| 2 | **BX** | ngược | {HN, MT, SC, ĐB} | HN=135, MT=176, SC=232, ĐB=220 |
+| 3 | **HN** | ngược | {MT, SC, ĐB} | MT=166, SC=232, ĐB=220 |
 
-**Kết quả:** `BT → HN → MT → SC` · chi phí **486 s** · 2.04 km · 6 lần expand · frontier tối đa 4.
+**Kết quả:** `BT → MT → HN → BX` · chi phí **341 s** · 1.79 km · 3 lần expand · frontier tối đa 4.
 
 ---
 
@@ -290,31 +269,25 @@ Complete ✔ · Tối ưu ✔ trong ngưỡng ε.
 |---|---|---|---|---|---|
 | 1 | **BT** | ∅ | – | – | – |
 | 2 | **BT** | ∅ | – | – | – |
-| 3 | **HN** | {CV} | CV=177 | CV=63 | CV=240 |
+| 3 | **MT** | {SC, ĐB} | SC=266, ĐB=229 | SC=35, ĐB=74 | SC=301, ĐB=303 |
 | 4 | **BT** | ∅ | – | – | – |
-| 5 | **HN** | {CV} | CV=177 | CV=63 | CV=240 |
-| 6 | **CV** | ∅ | – | – | – |
+| 5 | **MT** | {SC, ĐB} | SC=266, ĐB=229 | SC=35, ĐB=74 | SC=301, ĐB=303 |
+| 6 | **HN** | {SC, ĐB} | SC=266, ĐB=229 | SC=35, ĐB=74 | SC=301, ĐB=303 |
 | 7 | **BT** | ∅ | – | – | – |
-| 8 | **HN** | {CV} | CV=177 | CV=63 | CV=240 |
-| 9 | **CV** | ∅ | – | – | – |
-| 10 | **ĐB** | ∅ | – | – | – |
+| 8 | **MT** | {SC, ĐB} | SC=266, ĐB=229 | SC=35, ĐB=74 | SC=301, ĐB=303 |
+| 9 | **HN** | {SC, ĐB} | SC=266, ĐB=229 | SC=35, ĐB=74 | SC=301, ĐB=303 |
+| 10 | **SC** | {ĐB} | ĐB=229 | ĐB=74 | ĐB=303 |
 | 11 | **BT** | ∅ | – | – | – |
-| 12 | **HN** | {CV} | CV=177 | CV=63 | CV=240 |
-| 13 | **MT** | {BX, CV} | BX=351, CV=177 | BX=35, CV=63 | BX=386, CV=240 |
-| 14 | **CV** | ∅ | – | – | – |
+| 12 | **MT** | {SC, ĐB} | SC=266, ĐB=229 | SC=35, ĐB=74 | SC=301, ĐB=303 |
+| 13 | **HN** | {SC, ĐB} | SC=266, ĐB=229 | SC=35, ĐB=74 | SC=301, ĐB=303 |
+| 14 | **SC** | {ĐB} | ĐB=229 | ĐB=74 | ĐB=303 |
 | 15 | **ĐB** | ∅ | – | – | – |
 | 16 | **BT** | ∅ | – | – | – |
-| 17 | **HN** | {CV} | CV=177 | CV=63 | CV=240 |
-| 18 | **MT** | {BX, CV} | BX=351, CV=177 | BX=35, CV=63 | BX=386, CV=240 |
-| 19 | **BX** | {CV} | CV=177 | CV=63 | CV=240 |
-| 20 | **CV** | ∅ | – | – | – |
-| 21 | **ĐB** | ∅ | – | – | – |
-| 22 | **BT** | ∅ | – | – | – |
-| 23 | **HN** | {CV} | CV=177 | CV=63 | CV=240 |
-| 24 | **MT** | {BX, CV} | BX=351, CV=177 | BX=35, CV=63 | BX=386, CV=240 |
-| 25 | **SC** | {BX, CV} | BX=351, CV=177 | BX=35, CV=63 | BX=386, CV=240 |
+| 17 | **MT** | {SC, ĐB} | SC=266, ĐB=229 | SC=35, ĐB=74 | SC=301, ĐB=303 |
+| 18 | **HN** | {SC, ĐB} | SC=266, ĐB=229 | SC=35, ĐB=74 | SC=301, ĐB=303 |
+| 19 | **BX** | {SC, ĐB} | SC=266, ĐB=229 | SC=35, ĐB=74 | SC=301, ĐB=303 |
 
-**Kết quả:** `BT → HN → MT → SC` · chi phí **486 s** · 2.04 km · 25 lần expand · frontier tối đa 3.
+**Kết quả:** `BT → MT → HN → BX` · chi phí **341 s** · 1.79 km · 19 lần expand · frontier tối đa 5.
 
 ---
 
@@ -328,28 +301,28 @@ Complete ✘ · Tối ưu ✘.
 
 | Bước | Expand | Frontier sau bước (open list) | g | h | f |
 |---|---|---|---|---|---|
-| 1 | **BT** | {HN, CV} | CV=177, HN=216 | CV=63, HN=25 | CV=240, HN=240 |
-| 2 | **HN** | {MT, BX, CV} | BX=351, CV=177, MT=262 | BX=35, CV=63, MT=25 | BX=386, CV=240, MT=288 |
-| 3 | **CV** | {MT, BX, ĐB} | BX=351, MT=262, ĐB=205 | BX=35, MT=25, ĐB=49 | BX=386, MT=288, ĐB=254 |
-| 4 | **ĐB** | {MT} | MT=262 | MT=25 | MT=288 |
-| 5 | **MT** | {SC} | SC=486 | SC=0 | SC=486 |
-| 6 | **SC** | ∅ | – | – | – |
+| 1 | **BT** | {MT, SC, ĐB} | MT=176, SC=266, ĐB=229 | MT=44, SC=35, ĐB=74 | MT=220, SC=301, ĐB=303 |
+| 2 | **MT** | {HN, SC, ĐB} | HN=206, SC=266, ĐB=332 | HN=30, SC=35, ĐB=74 | HN=236, SC=301, ĐB=405 |
+| 3 | **SC** | {HN, BX, ĐB} | BX=498, HN=206, ĐB=332 | BX=0, HN=30, ĐB=74 | BX=498, HN=236, ĐB=405 |
+| 4 | **HN** | {BX, ĐB} | BX=342, ĐB=332 | BX=0, ĐB=74 | BX=342, ĐB=405 |
+| 5 | **ĐB** | {BX, CV} | BX=342, CV=372 | BX=0, CV=89 | BX=342, CV=460 |
+| 6 | **BX** | {CV} | CV=372 | CV=89 | CV=460 |
 
-**Kết quả:** `BT → HN → MT → SC` · chi phí **486 s** · 2.04 km · 6 lần expand · frontier tối đa 2.
+**Kết quả:** `BT → MT → HN → BX` · chi phí **341 s** · 1.79 km · 6 lần expand · frontier tối đa 2.
 
 **k = 5 (mặc định G_demo):**
 
 | Bước | Expand | Frontier sau bước (open list) | g | h | f |
 |---|---|---|---|---|---|
-| 1 | **BT** | {HN, CV} | CV=177, HN=216 | CV=63, HN=25 | CV=240, HN=240 |
-| 2 | **HN** | {MT, BX, CV} | BX=351, CV=177, MT=262 | BX=35, CV=63, MT=25 | BX=386, CV=240, MT=288 |
-| 3 | **CV** | {MT, BX, ĐB} | BX=351, MT=262, ĐB=205 | BX=35, MT=25, ĐB=49 | BX=386, MT=288, ĐB=254 |
-| 4 | **ĐB** | {MT, BX} | BX=351, MT=262 | BX=35, MT=25 | BX=386, MT=288 |
-| 5 | **MT** | {BX, SC} | BX=351, SC=486 | BX=35, SC=0 | BX=386, SC=486 |
-| 6 | **BX** | {SC} | SC=486 | SC=0 | SC=486 |
-| 7 | **SC** | ∅ | – | – | – |
+| 1 | **BT** | {MT, SC, ĐB} | MT=176, SC=266, ĐB=229 | MT=44, SC=35, ĐB=74 | MT=220, SC=301, ĐB=303 |
+| 2 | **MT** | {HN, SC, ĐB} | HN=206, SC=266, ĐB=229 | HN=30, SC=35, ĐB=74 | HN=236, SC=301, ĐB=303 |
+| 3 | **SC** | {HN, BX, ĐB} | BX=498, HN=206, ĐB=229 | BX=0, HN=30, ĐB=74 | BX=498, HN=236, ĐB=303 |
+| 4 | **ĐB** | {HN, BX, CV} | BX=449, CV=269, HN=206 | BX=0, CV=89, HN=30 | BX=449, CV=358, HN=236 |
+| 5 | **HN** | {BX, CV} | BX=449, CV=269 | BX=0, CV=89 | BX=449, CV=358 |
+| 6 | **CV** | {BX} | BX=449 | BX=0 | BX=449 |
+| 7 | **BX** | ∅ | – | – | – |
 
-**Kết quả:** `BT → HN → MT → SC` · chi phí **486 s** · 2.04 km · 7 lần expand · frontier tối đa 3.
+**Kết quả:** `BT → ĐB → BX` · chi phí **449 s** · 2.21 km · 7 lần expand · frontier tối đa 3.
 **Nói trong video:** k=2 vẫn tìm được lần này nhưng không có bảo đảm — đây là minh hoạ sống động nhất của "incomplete".
 
 ---
@@ -361,16 +334,16 @@ Shipper xuất phát từ **BT**, giao tại **HN, MT, SC** (không quay về). 
 
 | từ \ đến | BT | HN | MT | SC |
 |---|---|---|---|---|
-| **BT** | — | 216 | 262 | 486 |
-| **HN** | 174 | — | 47 | 270 |
+| **BT** | — | 206 | 176 | 266 |
+| **HN** | 166 | — | 39 | 262 |
 | **MT** | 127 | 30 | — | 223 |
-| **SC** | 232 | 164 | 211 | — |
+| **SC** | 232 | 142 | 181 | — |
 
-- Nhìn ma trận: `BT→SC = 486` nhưng `SC→BT = 232` — bất đối xứng thấy ngay.
-- **Thứ tự nhập** BT → HN → MT → SC: `486 s`.
-- **Nearest Neighbour** (tham lam từ BT): `BT → HN → MT → SC` = `486 s`.
-- **Held-Karp** (QHĐ bitmask, tối ưu tuyệt đối): `BT → HN → MT → SC` = **`486 s`**
-  — tiết kiệm 0% so thứ tự nhập.
+- Nhìn ma trận: `BT→SC = 266` nhưng `SC→BT = 232` — bất đối xứng thấy ngay.
+- **Thứ tự nhập** BT → HN → MT → SC: `468 s`.
+- **Nearest Neighbour** (tham lam từ BT): `BT → MT → HN → SC` = `468 s`.
+- **Held-Karp** (QHĐ bitmask, tối ưu tuyệt đối): `BT → SC → HN → MT` = **`447 s`**
+  — tiết kiệm 5% so thứ tự nhập.
 - Trên kịch bản 10 điểm thật (benchmark exp7): tiết kiệm 53,6%, NN+2-opt và SA
   đều đạt đúng nghiệm Held-Karp; SA trung bình 5 seed = 3 564,6 ± 9,7 s.
 

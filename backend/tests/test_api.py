@@ -53,10 +53,12 @@ def test_graph_bad_level_gives_422_envelope():
 
 
 def test_traffic_covers_all_edges():
+    n_edges = client.get("/api/graph", params={"level": "demo"}).json()["meta"]["edge_count"]
     r = client.get("/api/traffic", params={"slot": "07:30", "level": "demo"})
     assert r.status_code == 200
     body = r.json()
-    assert body["slot"] == "07:30" and len(body["congestion"]) == 141
+    # coverage must track the CURRENT graph, never a hardcoded edge count
+    assert body["slot"] == "07:30" and len(body["congestion"]) == n_edges
     assert set(body["congestion"].values()) <= {1, 2, 3, 4, 5}
 
 

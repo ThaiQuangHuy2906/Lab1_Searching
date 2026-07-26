@@ -30,20 +30,22 @@
 > suy ra tuyến cuối. GUI: chạy trên G_demo, timeline bước-một, drawer hiện bảng g/h/f
 > — quay màn hình GUI làm "bảng động", bảng trong tài liệu làm "bảng tĩnh" khi cần dừng hình.
 
-- (2:00) **Đồ thị ví dụ** — 7 địa danh, 16 cạnh THẬT, chỉ vào 1 cạnh một chiều +
-  bảng h (haversine/v_max). Nêu bài toán chính BT → SC ("cách 650 m mà phải vòng").
-- (3:00) **BFS** [người B]: chạy GUI bước-một; sau đó chiếu PHẢN VÍ DỤ BX→BT:
-  BFS 2 cạnh 430 s vs tối ưu 3 cạnh 283 s (+52%) — chốt "ít cạnh ≠ rẻ".
+- (2:00) **Đồ thị ví dụ** — 7 địa danh, 23 cạnh THẬT, chỉ vào cạnh một chiều
+  BX→BT (Công trường Quách Thị Trang) + bảng h (haversine/v_max). Nêu bài toán chính
+  BT → BX: "có đường trực tiếp nhưng chỉ chiều VỀ — chiều đi phải vòng".
+- (3:00) **BFS** [người B]: chạy GUI bước-một NGAY trên BT→BX: BFS chọn tuyến ít cạnh
+  nhưng kẹt (498 s) vs tối ưu (341 s) — đắt hơn +46%; chốt "ít cạnh ≠ rẻ".
 - (4:00) **DFS + IDDFS** [người B]: DFS lao sâu (chỉ thứ tự expand); IDDFS cột
   "giới hạn d" tăng dần, số expand CỘNG DỒN — cái giá của chạy lại.
 - (5:00) **UCS** [người B]: chỉ cột g tăng dần theo hàng đợi ưu tiên; goal-test khi POP.
 - (5:45) **Dijkstra** [người B]: nói quan hệ với UCS (cùng máy, khác góc nhìn;
   bản cài early-exit) — 30 giây.
-- (6:00) **A\*** [người B hoặc C]: NHẤN bước 1 — CV và HN cùng f=240, chọn HN vì h nhỏ
-  hơn (luật tie-break); so expand A* 771 vs Dijkstra 1 226 trên G_real (benchmark).
+- (6:00) **A\*** [người B hoặc C]: chỉ vào cột f — node hướng về đích có f nhỏ được
+  ưu tiên; nêu luật tie-break khi hai node cùng f (chọn h nhỏ hơn); so expand A* 771
+  vs Dijkstra 1 226 trên G_real (benchmark).
   Nói 1 câu về admissible: "h là thời gian bay thẳng ở 60 km/h — không bao giờ đoán quá."
-- (7:15) **Greedy** [người C]: phản ví dụ BX→BT — SC "nhìn gần đích" nên bị lừa
-  (+147 s); đối chiếu với A* cũng dùng h nhưng CÓ g nên không bị.
+- (7:15) **Greedy** [người C]: cùng cặp BT→BX — lao theo h "nhìn gần đích" nên sập
+  cùng bẫy với BFS (+157 s, +46%); đối chiếu với A* cũng dùng h nhưng CÓ g nên không bị.
 - (8:00) **Dijkstra hai chiều** [người C]: GUI 2 màu lan từ 2 phía (cột "Phía" trong
   bảng); nêu chiều ngược chạy trên đồ thị ĐẢO CẠNH vì một chiều; luật dừng
   top_xuôi + top_ngược ≥ μ.
@@ -51,7 +53,7 @@
   đổi bộ nhớ lấy thời gian (expand 630k trên G_real!).
 - (9:45) **Beam** [người C]: chạy k=2 rồi k=5 trên GUI; nói "incomplete" +
   số benchmark: k=50 vẫn lỡ 1,5% ca trên G_real.
-- (10:30) **Held-Karp/TSP mini** [người C]: ma trận 4×4 bất đối xứng (BT→SC 486 vs
+- (10:30) **Held-Karp/TSP mini** [người C]: ma trận 4×4 bất đối xứng (BT→SC 266 vs
   SC→BT 232 — chỉ vào 2 ô), đọc tour tối ưu; hẹn demo 10 điểm ở phần sau.
 
 ## 11:00 – 20:00 · Demo sản phẩm đầy đủ (đề 4.10b)

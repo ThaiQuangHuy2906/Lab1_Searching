@@ -125,8 +125,9 @@ cùng thứ nguyên → cộng có nghĩa vật lý "thời gian tương đươn
 | | G_real | G_demo |
 |---|---|---|
 | Node | 2 118 (raw 2 230, lấy SCC) | 51 địa danh thật |
-| Cạnh | 4 699 (1 433 một chiều) | 141 (55 một chiều) |
-| Đèn / ngập / lô cốt / hẻm | 185 / 402 / 107 / 8 | 53 / 19 / 16 / 0 |
+| Cạnh | 4 699 (1 433 một chiều) | 253 (51 một chiều) |
+| Đèn / ngập / lô cốt / hẻm | 185 / 402 / 107 / 8 | 122 / 39 / 31 / 0 |
+| Bất biến demo/real | — | time ≤1,5× · dist ≤1,8× mọi cặp POI (validator chặn) |
 
 [ĐIỀN: kiến trúc 2 tầng — vì sao cần cả hai: G_demo để visualize/giảng/quay video
 (tên thật, cạnh co kế thừa hình học thật), G_real để benchmark/chứng minh scale.]
@@ -273,7 +274,7 @@ real-time, ta dùng snapshot 4 khung giờ)].
 
 > ✍️ Phụ trách: **C**
 > 💡 Gợi ý: mục ăn điểm "Multi-location" (10đ). Nhấn: vì sao ATSP (bất đối xứng do
-> một chiều — ví dụ ngay trong GIAI-THICH-THUAT-TOAN §11: BT→SC = 486 nhưng SC→BT = 232);
+> một chiều — ví dụ ngay trong GIAI-THICH-THUAT-TOAN §11: BT→SC = 266 nhưng SC→BT = 232);
 > Held-Karp là ground truth ≤15 điểm; tuyên bố rõ cái nào TỐI ƯU cái nào XẤP XỈ.
 
 **Phát biểu bài toán** [ĐIỀN: shipper từ kho (Bưu điện TP), thăm k điểm giao đúng 1 lần,

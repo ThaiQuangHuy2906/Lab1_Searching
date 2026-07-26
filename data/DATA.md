@@ -83,14 +83,21 @@ Bản build hiện tại: `source = "synthetic"` (chưa có key TomTom). Có key
   vào POI trước. Bản build hiện tại (sau khi nhóm review toạ độ bằng Google Maps 2026-07-26):
   *Nhà thờ Tân Định* dùng node thứ 2 cách 72 m (node gần nhất thuộc *Chợ Tân Định*) —
   **không còn POI nào bị gộp, đủ 51 node**.
-- **Chọn cặp kề:** mỗi POI nối k POI gần nhất (k tăng 3→5 đến khi liên thông mạnh ≥90% POI;
-  bản build này dừng ở k=4). Một hướng chỉ được giữ nếu đường ngắn nhất trên G_real
-  (theo `free_travel_time_s`) **không xuyên qua POI thứ ba**.
-- **Một chiều:** nếu cả 2 hướng hợp lệ nhưng chiều ngược dài hơn **1.4×** chiều xuôi
-  → coi là đường một chiều, chỉ giữ chiều ngắn. Cuối cùng `oneway` được suy từ cấu trúc:
-  cạnh không có cạnh ngược ⟺ `oneway=true`.
-- **Tỉa cạnh thừa:** cặp cạnh bị bỏ nếu tuyến thay thế nhanh hơn **1.5×** thời gian cạnh
-  trực tiếp (giảm rối hình; vẫn giữ liên thông mạnh và các tuyến thay thế cho explanation).
+- **Chọn cặp kề:** mỗi POI nối k POI gần nhất (k tăng 3→5 đến khi liên thông mạnh ≥90% POI).
+  MỖI HƯỚNG được xét ĐỘC LẬP: hướng được giữ ⟺ đường ngắn nhất trên G_real của hướng đó
+  **không xuyên qua POI thứ ba**. KHÔNG còn luật so độ dài 2 chiều (audit 2026-07-26:
+  luật 1.4× cũ xoá oan 30+ chiều ngược đi được thật) — cạnh mỗi chiều mang length/speed/risk
+  contract theo đúng path CHIỀU ĐÓ (bất đối xứng là đúng, nuôi ATSP). `oneway=true` giờ chỉ
+  phát sinh từ: xuyên POI thứ ba, hoặc không tới được.
+- **Bất biến khoảng cách (thêm sau audit):** với MỌI cặp POI có thứ tự, đường ngắn nhất trên
+  G_demo không được vượt **1.5×** G_real theo thời gian free-flow và **1.8×** theo quãng đường.
+  Bước *repair* tự thêm cạnh dọc shortest path thật cho cặp vi phạm (các POI liên tiếp trên
+  path là kề nhau theo định nghĩa); `validate_data.py` kiểm bất biến này VĨNH VIỄN (build fail
+  nếu vỡ) + regression cố định cặp *Cung Văn hoá Lao Động ↔ Hồ Con Rùa* ≤ 2× cả 2 chiều.
+- **Tỉa cạnh thừa (global-safe):** thử xoá từng cặp (cả 2 chiều cùng lúc), tính lại all-pairs
+  trên đồ thị demo còn lại — chỉ giữ việc xoá nếu bất biến trên VẪN đúng cho mọi cặp; vi phạm
+  thì hoàn tác. (Thay luật cũ chỉ kiểm 1.5× cục bộ tại thời điểm xoá — bị cộng dồn dây chuyền
+  và không bảo vệ mode distance.)
 - **Kế thừa thuộc tính thật:** length = tổng length các cạnh OSM; `free_speed_kmh` = tốc độ
   trung bình có trọng số của tuyến (làm tròn 0.1), `free_travel_time_s` suy lại từ tốc độ đã
   làm tròn để công thức SCHEMA khớp tuyệt đối; `highway` = loại chiếm tỉ trọng dài nhất.
@@ -102,10 +109,11 @@ Bản build hiện tại: `source = "synthetic"` (chưa có key TomTom). Có key
 | | G_real | G_demo |
 |---|---|---|
 | Node | **2 118** (raw 2 230, SCC 2 118) | **51** (đủ 51 POI sau review, không POI nào bị gộp) |
-| Cạnh | **4 699** (raw 4 922; gộp 22 cạnh song song, bỏ self-loop) | **141** (185 trước khi tỉa) |
-| Một chiều | 1 433 | 55 |
-| Đèn tín hiệu | 185 cạnh / 77 node | 53 cạnh |
-| Ngập / lô cốt / hẻm | 402 / 107 / 8 | 19 / 16 / 0 |
+| Cạnh | **4 699** (raw 4 922; gộp 22 cạnh song song, bỏ self-loop) | **253** (kề 177 → vá bất biến +76 → tỉa an-toàn-toàn-cục) |
+| Một chiều | 1 433 | 51 (chỉ khi G_real thật sự không có chiều ngược) |
+| Đèn tín hiệu | 185 cạnh / 77 node | 122 cạnh |
+| Ngập / lô cốt / hẻm | 402 / 107 / 8 | 39 / 31 / 0 |
+| Bất biến demo/real (mục 6) | — | time ≤1,5 (median 1,13 · max 1,50); dist ≤1,8 (median 1,11 · max 1,67) |
 | Yêu cầu đề (≥20 node, ≥30 cạnh) | vượt xa | vượt xa ✓ |
 
 POI đã được nhóm review trên Google Maps (2026-07-26): đổi tên *Bảo tàng Lịch sử TP.HCM*

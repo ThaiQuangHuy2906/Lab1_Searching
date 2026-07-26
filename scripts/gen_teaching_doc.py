@@ -120,7 +120,7 @@ def main() -> None:
     demo = GraphStore.load("demo")
     store, lab = build_substore(demo)
     ids_by_short = {v: k for k, v in lab.items()}
-    start, goal = ids_by_short["BT"], ids_by_short["SC"]
+    start, goal = ids_by_short["BT"], ids_by_short["BX"]
 
     # ---- run everything once ------------------------------------------------
     runs = {}
@@ -128,12 +128,6 @@ def main() -> None:
         runs[name] = fn(store, start, goal, mode=MODE, time_slot=SLOT, include_trace=True)
     runs["beam_k2"] = ADVANCED_ALGORITHMS["beam"](
         store, start, goal, mode=MODE, time_slot=SLOT, include_trace=True, beam_width=2)
-    # counter-example pair BX -> BT: fewest-edges and greedy both take the
-    # 2-edge jammed route via SC instead of the cheap 3-edge detour
-    cx_s, cx_g = ids_by_short["BX"], ids_by_short["BT"]
-    cx = {name: fn(store, cx_s, cx_g, mode=MODE, time_slot=SLOT, include_trace=True)
-          for name, fn in (("bfs", ALGORITHMS["bfs"]), ("ucs", ALGORITHMS["ucs"]),
-                           ("greedy", ADVANCED_ALGORITHMS["greedy"]))}
 
     # heuristic table
     h_rows = "\n".join(
@@ -180,16 +174,17 @@ def main() -> None:
 
 ## 0. Đồ thị ví dụ dùng xuyên suốt (trích từ G_demo, khu Chợ Bến Thành)
 
-7 địa danh thật · 16 cạnh thật · khung giờ **{SLOT}** · chế độ **cân bằng** (giây):
+7 địa danh thật · {len(store.graph.edges)} cạnh thật · khung giờ **{SLOT}** · chế độ **cân bằng** (giây):
 
 | Viết tắt | Địa danh |
 |---|---|
 """ + "\n".join(f"| **{SHORT[nm]}** | {nm} |" for nm in SUB_NAMES) + f"""
 
-**Bài toán xuyên suốt: đi từ `BT` (Chợ Bến Thành) đến `SC` (Saigon Centre).**
-Điểm thú vị của cặp này: SC nằm ngay cạnh BT (~650 m chim bay) và có đường SC→BT,
-nhưng chiều BT→SC **không có đường trực tiếp** (một chiều!) — shipper phải vòng,
-và có **3 tuyến cạnh tranh** để các thuật toán "cãi nhau".
+**Bài toán xuyên suốt: đi từ `BT` (Chợ Bến Thành) đến `BX` (Bitexco).**
+Điểm thú vị của cặp này: có đường trực tiếp BX→BT nhưng đó là đường **MỘT CHIỀU** —
+chiều đi BT→BX không được phép, shipper phải vòng; và trên các tuyến vòng đó,
+tuyến ÍT CẠNH NHẤT lại dính đoạn kẹt nặng — cả BFS lẫn Greedy đều sập bẫy,
+chỉ nhóm thuật toán xét chi phí (UCS/Dijkstra/A*…) đi đúng.
 
 Trọng số cạnh = `t_free × f_cong + penalty` (SCHEMA §D, γ=1,5):
 
@@ -225,17 +220,11 @@ BFS(start, goal):
 {trace_table(d['bfs'], lab)}
 
 {result_line(d['bfs'], lab)}
-Trên cặp BT→SC này tuyến tối ưu TÌNH CỜ cũng ít cạnh nhất nên BFS trùng A* — vậy hãy
-xem **phản ví dụ ngay trên cùng đồ thị: đi `BX → BT`**:
-
-{trace_table(cx['bfs'], lab)}
-
-{result_line(cx['bfs'], lab)}
-**Nói trong video:** BFS chọn `{" → ".join(lab[n] for n in cx['bfs'].path)}` vì chỉ
-2 cạnh — nhưng đoạn Quách Thị Trang lúc {SLOT} kẹt mức 5/5; tuyến 3 cạnh
-`{" → ".join(lab[n] for n in cx['ucs'].path)}` chỉ tốn **{cx['ucs'].metrics.total_cost:.0f} s**.
-BFS đắt hơn **+{cx['bfs'].metrics.total_cost - cx['ucs'].metrics.total_cost:.0f} s
-(+{100 * (cx['bfs'].metrics.total_cost - cx['ucs'].metrics.total_cost) / cx['ucs'].metrics.total_cost:.0f}%)**
+**Nói trong video:** BFS chọn `{" → ".join(lab[n] for n in d['bfs'].path)}` vì ít cạnh
+nhất — nhưng tuyến tối ưu là `{" → ".join(lab[n] for n in d['ucs'].path)}`
+(**{d['ucs'].metrics.total_cost:.0f} s**). BFS đắt hơn
+**+{d['bfs'].metrics.total_cost - d['ucs'].metrics.total_cost:.0f} s
+(+{100 * (d['bfs'].metrics.total_cost - d['ucs'].metrics.total_cost) / d['ucs'].metrics.total_cost:.0f}%)**
 — "ít cạnh nhất" không phải "rẻ nhất".
 
 ---
@@ -303,11 +292,12 @@ Tie-break: f bằng nhau → h nhỏ hơn trước. Complete ✔ · Tối ưu �
 {trace_table(d['astar'], lab)}
 
 {result_line(d['astar'], lab)}
-**Nói trong video:** (1) chỉ vào **bước 1** — CV và HN cùng f = 240, A* chọn HN vì
-h nhỏ hơn: đúng luật tie-break của nhóm; (2) đồ thị 7 node quá bé để thấy A* tiết
-kiệm expand ({d['astar'].metrics.nodes_expanded} so với {d['ucs'].metrics.nodes_expanded} của UCS) —
-trên G_real 200 cặp, A* expand trung bình **771** so với **1 226** của Dijkstra/UCS,
-tức tiết kiệm ~37% nhờ heuristic định hướng (results/exp3_benchmark.csv).
+**Nói trong video:** (1) chỉ vào cột f — node hướng về BX có f nhỏ nên được ưu tiên;
+khi hai node cùng f, A* chọn node có h nhỏ hơn (luật tie-break của nhóm); (2) đồ thị
+7 node quá bé để thấy A* tiết kiệm expand ({d['astar'].metrics.nodes_expanded} so với
+{d['ucs'].metrics.nodes_expanded} của UCS) — trên G_real 200 cặp, A* expand trung bình
+**771** so với **1 226** của Dijkstra/UCS, tức tiết kiệm ~37% nhờ heuristic định hướng
+(results/exp3_benchmark.csv — số của lượt synthetic, sẽ cập nhật theo lượt TomTom).
 
 ---
 
@@ -320,16 +310,10 @@ Complete ✔ (có visited) · Tối ưu ✘.
 {trace_table(d['greedy'], lab)}
 
 {result_line(d['greedy'], lab)}
-Trên BT→SC Greedy {"lệch +" + format(d['greedy'].metrics.total_cost - d['astar'].metrics.total_cost, '.0f') + " s so với A*" if d['greedy'].metrics.total_cost > d['astar'].metrics.total_cost + 0.5 else "may mắn trùng tuyến tối ưu"} —
-nhưng nhìn **phản ví dụ `BX → BT`** (cùng cặp đã dùng cho BFS):
-
-{trace_table(cx['greedy'], lab)}
-
-{result_line(cx['greedy'], lab)}
-**Nói trong video:** Greedy từ BX thấy SC có h nhỏ (SC nằm sát BT theo đường chim bay)
-nên lao vào — dính đúng đoạn kẹt 5/5, đắt hơn tối ưu
-**+{cx['greedy'].metrics.total_cost - cx['ucs'].metrics.total_cost:.0f} s**. Cùng một cú
-lừa với BFS nhưng LÝ DO SAI khác nhau: BFS đếm cạnh, Greedy tin "linh cảm" h mà quên g.
+**Nói trong video:** Greedy {"đắt hơn tối ưu **+" + format(d['greedy'].metrics.total_cost - d['astar'].metrics.total_cost, '.0f') + " s (+" + format(100 * (d['greedy'].metrics.total_cost - d['astar'].metrics.total_cost) / d['astar'].metrics.total_cost, '.0f') + "%)**" if d['greedy'].metrics.total_cost > d['astar'].metrics.total_cost + 0.5 else "lần này may mắn trùng tuyến tối ưu"}
+trên cùng cặp BT→BX. Cùng sập bẫy với BFS nhưng LÝ DO SAI khác nhau: BFS đếm cạnh,
+Greedy tin "linh cảm" h (node nào nhìn gần BX là lao tới) mà quên sạch g đã trả.
+A* cũng dùng h nhưng CÓ g nên không bị.
 
 ---
 
@@ -424,7 +408,7 @@ Shipper xuất phát từ **BT**, giao tại **HN, MT, SC** (không quay về). 
     OUT.write_text(doc, encoding="utf-8")
     print(f"wrote {OUT.relative_to(ROOT)} ({len(doc.splitlines())} lines)")
     print(f"subgraph: {len(store.graph.nodes)} nodes / {len(store.graph.edges)} edges; "
-          f"BT->SC astar={d['astar'].metrics.total_cost:.0f}s "
+          f"BT->BX astar={d['astar'].metrics.total_cost:.0f}s "
           f"bfs={d['bfs'].metrics.total_cost:.0f}s beam_k2_found={d['beam_k2'].found}")
 
 

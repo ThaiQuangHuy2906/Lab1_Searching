@@ -88,6 +88,8 @@ thang 1–5; so sánh → 2 tuyến). Nền `surface-panel/95`, chữ 12px.
    (beam_width khi beam; epsilon khi idastar)
 3. **Hành trình:** Đi · Đến (dropdown tên với G_demo, click bản đồ với G_real)
    · danh sách Stops (multiroute) + nút "Tối ưu thứ tự"
+   · khi Đi/Đến đã có giá trị → hiện nút ✕ nhỏ bên phải để xoá chọn
+   (cùng kiểu ✕ của hàng Stops: `text-ink-dim`, hover đỏ `goal`; duyệt v8)
 4. Nút **"Chạy thuật toán"** lớn, full-width, cao 44px — **GHIM cố định đáy panel** (header + footer đứng yên, chỉ vùng giữa cuộn; duyệt v4: CTA từng bị đẩy khỏi màn hình)
 + Công tắc "Chế độ offline" (vẽ thuần deck.gl trên nền `surface`) và "Lớp ùn tắc".
 

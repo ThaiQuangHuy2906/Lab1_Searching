@@ -19,7 +19,7 @@
 - Shipper TP.HCM: ùn tắc theo giờ, 1 433/4 699 cạnh MỘT CHIỀU, ngập + lô cốt
 - 2 bài toán đề yêu cầu: tìm đường 2 điểm + tối ưu thứ tự nhiều điểm giao
 - Vì sao chọn kịch bản shipper: chứa cả hai bài toán một cách tự nhiên
-> 🗣 60s: kể 1 tình huống cụ thể (đơn Bến Thành → Saigon Centre cách 650 m chim bay nhưng phải vòng vì một chiều).
+> 🗣 60s: kể 1 tình huống cụ thể (đơn Chợ Bến Thành → Bitexco: có đường trực tiếp nhưng MỘT CHIỀU ngược — chiều đi phải vòng, tuyến vòng ít cạnh nhất lại kẹt).
 
 **Slide 3 — Mô hình hoá + hàm chi phí** *(rubric: modeling 15đ)*
 - Đồ thị CÓ HƯỚNG; cạnh mang length/speed/congestion(4 khung giờ)/risk 0-1
@@ -29,14 +29,14 @@
 
 **Slide 4 — Dữ liệu 2 tầng** *(rubric: dataset trong 15đ modeling)*
 - G_real: 2 118 nút / 4 699 cạnh từ OSM (OSMnx v2, bbox trung tâm) — để benchmark
-- G_demo: 51 địa danh thật / 141 cạnh co kế thừa hình học thật — để giảng + demo
+- G_demo: 51 địa danh thật / 253 cạnh co kế thừa hình học thật (mọi cặp ≤1,5× thời gian thật) — để giảng + demo
 - Congestion: TomTom (tuỳ chọn) + synthetic có luật, seed 42 — demo OFFLINE 100%
 - Hình: `data/gdemo_preview.png`
 > 🗣 45s: vì sao 2 tầng (một để NHÌN, một để ĐO); mọi thứ tái lập được.
 
 **Slide 5 — Thuật toán vô hướng: BFS/DFS/IDDFS + UCS** *(rubric: 4 bắt buộc 20đ)*
 - Bảng chạy tay BFS trên đồ thị 7 node thật (GIAI-THICH-THUAT-TOAN §1)
-- PHẢN VÍ DỤ BX→BT: BFS chọn 2 cạnh KẸT (430 s) thay vì 3 cạnh thoáng (283 s) — +52%
+- BẪY ngay bài chính BT→BX: BFS chọn tuyến ít cạnh KẸT (498 s) thay vì tuyến thoáng (341 s) — +46%
 - UCS: lan theo CHI PHÍ → tối ưu (khớp NetworkX 1200/1200 — exp1)
 > 🗣 60s: đứng ở phản ví dụ — "ít cạnh nhất ≠ rẻ nhất" là lý do cần thuật toán có trọng số.
 
@@ -59,7 +59,7 @@
 > 🗣 60s: mỗi thuật toán một câu "đánh đổi cái gì lấy cái gì".
 
 **Slide 9 — TSP đa điểm** *(rubric: multi-location 10đ)*
-- ATSP vì ma trận BẤT đối xứng (một chiều): BT→SC 486 s nhưng SC→BT 232 s
+- ATSP vì ma trận BẤT đối xứng (một chiều): BT→SC 266 s nhưng SC→BT 232 s
 - Held-Karp = tối ưu tuyệt đối (≤15 điểm); NN+2-opt, SA = xấp xỉ
 - Kịch bản 10 điểm: tiết kiệm **53,6%** so thứ tự nhập; hình `exp7_tsp_map.png`
 > 🗣 60s: nói rõ cái nào đảm bảo tối ưu, cái nào không — đề yêu cầu tuyên bố điều này.

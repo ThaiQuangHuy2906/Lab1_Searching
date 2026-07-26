@@ -1,23 +1,36 @@
 """Step 04 — build G_demo from real POIs snapped onto G_real (SCHEMA §A).
 
-Semi-automatic recipe (PROMPT-MASTER 6.1), all rules in data/DATA.md:
-1. Load ~50 real landmarks from data/gdemo_pois.json (team-reviewed list).
-2. Snap each POI to the nearest G_real node (brute-force haversine);
-   POIs snapping to the same node are dropped with a warning.
-3. Adjacency: each POI connects to its K nearest POIs (K grows 3->5 until
-   the result is one big SCC). For each candidate pair, run a shortest
-   path on G_real (weight = free_travel_time_s, via networkx as a BUILD
-   TOOL only — product algorithms are hand-written in backend/app/).
-   A direction is kept only if its path does not pass through a third
-   POI. If both directions survive but the reverse is > ONEWAY_RATIO x
-   longer, only the short direction is kept (models real one-way loops).
-4. Each kept direction becomes one contracted demo edge inheriting real
-   geometry: total length, weighted-average speed (travel time re-derived
-   from the rounded speed so the SCHEMA formula holds exactly), dominant
-   highway type, OR of traffic_light/flood/construction flags along the
-   path, narrow_alley if narrow types cover > NARROW_SHARE of the length.
-5. Keep the largest SCC, renumber ids (nodes by snapped osmid), write
-   data/graph_demo.json + a matplotlib preview data/gdemo_preview.png.
+REWRITTEN after the external audit (2026-07-26) found G_demo distorted
+distances (median demo/real = 1.69, worst 20.7x): the old ONEWAY_RATIO
+rule deleted 30+ legitimate reverse directions, and the old pruning only
+checked a local 1.5x detour at deletion time, compounding across
+deletions and never protecting distance mode.
+
+Recipe now:
+1. Load real landmarks from data/gdemo_pois.json; snap to nearest free
+   G_real node (2nd-nearest within 120 m on conflict).
+2. Adjacency: k nearest POIs (k grows 3->5 until one big SCC). Each
+   DIRECTION is kept independently iff its shortest real path does not
+   pass through a third POI. NO length-ratio deletion: both directions
+   of an adjacent pair get their own contracted edge with that
+   direction's true path attributes (asymmetry is CORRECT and feeds
+   ATSP). One-way demo edges now only arise from the third-POI rule or
+   unreachability.
+3. REPAIR: enforce the global invariant — for EVERY ordered POI pair,
+   demo/real <= INVARIANT_TIME_RATIO on free-flow time AND
+   <= INVARIANT_DIST_RATIO on length. A violating pair is fixed by
+   adding the missing edges along its real shortest path (consecutive
+   POIs on that path are adjacent by construction). Iterate to a fixed
+   point; abort loudly if it will not converge.
+4. PRUNE (global-safe): try removing an undirected pair (all its
+   directions); recompute demo all-pairs (both weights) and keep the
+   removal ONLY if every ordered pair still satisfies the invariant;
+   otherwise revert. Longest pairs are tried first.
+5. Keep the largest SCC, renumber ids, write data/graph_demo.json +
+   preview PNG. scripts/validate_data.py re-checks the same invariant
+   forever (build fails on violation).
+
+NetworkX here is a BUILD TOOL only (PROMPT-MASTER rule 6).
 """
 
 from __future__ import annotations
@@ -33,47 +46,14 @@ from pipeline_common import (
 
 OUT_JSON = DATA_DIR / "graph_demo.json"
 OUT_PNG = DATA_DIR / "gdemo_preview.png"
-ONEWAY_RATIO = 1.4
 NARROW_SHARE = 0.30
-PRUNE_RATIO = 1.5  # drop a pair if a detour is at most 50% slower
-
-
-def prune_redundant(demo_edges: dict[tuple[str, str], dict]) -> None:
-    """Thin the demo network toward the ~120-edge target (PROMPT-MASTER 6.1).
-
-    An undirected pair {u, v} is redundant if, for EVERY kept direction,
-    the fastest alternative route (without that direct edge) is at most
-    PRUNE_RATIO x the direct free travel time. Removing such a pair keeps
-    the graph strongly connected because the alternative keeps existing.
-    Longest pairs are tried first (they are the visually confusing ones).
-    """
-    def alt_ok(u: str, v: str) -> bool:
-        g = nx.DiGraph()
-        for (a, b), e in demo_edges.items():
-            if (a, b) != (u, v):
-                g.add_edge(a, b, w=e["free_travel_time_s"])
-        try:
-            alt = nx.shortest_path_length(g, u, v, weight="w")
-        except (nx.NetworkXNoPath, nx.NodeNotFound):
-            return False
-        return alt <= PRUNE_RATIO * demo_edges[(u, v)]["free_travel_time_s"]
-
-    pairs: dict[frozenset, list[tuple[str, str]]] = defaultdict(list)
-    for u, v in demo_edges:
-        pairs[frozenset((u, v))].append((u, v))
-    order = sorted(pairs, key=lambda p: -max(
-        demo_edges[d]["length_m"] for d in pairs[p]))
-    removed = 0
-    for pair in order:
-        directions = [d for d in pairs[pair] if d in demo_edges]
-        if directions and all(alt_ok(u, v) for u, v in directions):
-            for d in directions:
-                del demo_edges[d]
-                removed += 1
-    print(f"  pruned {removed} redundant edges (detour <= {PRUNE_RATIO}x)")
-
-
 SECOND_SNAP_M = 120  # if the nearest node is taken, try the next ones within this radius
+
+# Global invariant, enforced at build time AND by validate_data.py:
+# demo shortest / real shortest <= these, for every ordered POI pair.
+INVARIANT_TIME_RATIO = 1.5   # on free-flow travel time
+INVARIANT_DIST_RATIO = 1.8   # on length (distance mode)
+REPAIR_MAX_ROUNDS = 20
 
 
 def snap_pois(pois: list[dict], nodes: list[dict]) -> dict[str, dict]:
@@ -83,7 +63,7 @@ def snap_pois(pois: list[dict], nodes: list[dict]) -> dict[str, dict]:
     taken by an earlier POI, the next-nearest FREE node within
     SECOND_SNAP_M is used instead (keeps both landmark names on the map).
     Only when no free node exists inside that radius is the POI merged
-    into the earlier one (documented in DATA.md, e.g. Nhà thờ Tân Định).
+    into the earlier one (documented in DATA.md).
     """
     snapped: dict[str, dict] = {}
     used: dict[str, str] = {}
@@ -118,7 +98,7 @@ def snap_pois(pois: list[dict], nodes: list[dict]) -> dict[str, dict]:
     return snapped
 
 
-def contract(path: list[str], real_edges: dict, coord: dict) -> dict:
+def contract(path: list[str], real_edges: dict) -> dict:
     """Merge a G_real node path into one demo edge's attributes."""
     length = t_free = 0.0
     by_highway: dict[str, float] = defaultdict(float)
@@ -152,6 +132,120 @@ def contract(path: list[str], real_edges: dict, coord: dict) -> dict:
     }
 
 
+# --------------------------------------------------------- invariant tools
+
+
+def demo_digraph(demo_edges: dict[tuple[str, str], dict], key: str) -> "nx.DiGraph":
+    g = nx.DiGraph()
+    for (u, v), e in demo_edges.items():
+        g.add_edge(u, v, w=e[key])
+    return g
+
+
+def all_pairs(g: "nx.DiGraph", sources: set[str]) -> dict[str, dict[str, float]]:
+    out = {}
+    for s in sources:
+        if s in g:
+            out[s] = nx.single_source_dijkstra_path_length(g, s, weight="w")
+        else:
+            out[s] = {}
+    return out
+
+
+def invariant_violations(
+    demo_edges: dict, poi_nodes: set[str],
+    real_time: dict, real_dist: dict,
+) -> list[tuple[str, str, str, float]]:
+    """[(u, v, weight_kind, ratio)] for every ordered pair breaking the
+    invariant; unreachable pairs are reported with ratio = inf."""
+    bad = []
+    for kind, key, real_ap, limit in (
+        ("time", "free_travel_time_s", real_time, INVARIANT_TIME_RATIO),
+        ("dist", "length_m", real_dist, INVARIANT_DIST_RATIO),
+    ):
+        demo_ap = all_pairs(demo_digraph(demo_edges, key), poi_nodes)
+        for a in poi_nodes:
+            for b in poi_nodes:
+                if a == b:
+                    continue
+                d = demo_ap.get(a, {}).get(b)
+                r = real_ap[a][b]
+                if d is None:
+                    bad.append((a, b, kind, float("inf")))
+                elif d > limit * r + 1e-6:
+                    bad.append((a, b, kind, d / r))
+    return bad
+
+
+def repair_invariant(
+    demo_edges: dict, poi_nodes: set[str], g_real_time: "nx.DiGraph",
+    g_real_dist: "nx.DiGraph", real_time: dict, real_dist: dict,
+    real_edges: dict,
+) -> None:
+    """Add edges along real shortest paths until the invariant holds.
+
+    For a violating ordered pair, walk its real shortest path (by the
+    violated weight); consecutive POIs along that path are adjacent by
+    construction (no third POI strictly between them), so each missing
+    consecutive pair becomes a new contracted demo edge. Repeats until
+    no violations remain (typically 1-2 rounds).
+    """
+    for round_no in range(1, REPAIR_MAX_ROUNDS + 1):
+        bad = invariant_violations(demo_edges, poi_nodes, real_time, real_dist)
+        if not bad:
+            if round_no > 1:
+                print(f"  repair: invariant OK sau {round_no - 1} vòng")
+            return
+        added = 0
+        for a, b, kind, _r in bad:
+            g = g_real_time if kind == "time" else g_real_dist
+            path = nx.shortest_path(g, a, b, weight="w")
+            waypoints = [n for n in path if n in poi_nodes]
+            for x, y in zip(waypoints, waypoints[1:]):
+                if (x, y) in demo_edges:
+                    continue
+                seg = path[path.index(x):path.index(y) + 1]
+                demo_edges[(x, y)] = contract(seg, real_edges)
+                added += 1
+        print(f"  repair vòng {round_no}: {len(bad)} cặp vi phạm -> thêm {added} cạnh")
+        if added == 0:
+            raise SystemExit(
+                "repair_invariant: còn vi phạm nhưng không thêm được cạnh mới — "
+                "kiểm tra lại ngưỡng INVARIANT_*")
+    raise SystemExit("repair_invariant: không hội tụ sau REPAIR_MAX_ROUNDS vòng")
+
+
+def prune_redundant(
+    demo_edges: dict, poi_nodes: set[str],
+    real_time: dict, real_dist: dict,
+) -> None:
+    """Global-safe pruning (audit fix).
+
+    Try removing an undirected pair (all of its directions at once);
+    KEEP the removal only if the FULL invariant still holds for every
+    ordered pair afterwards (checked with fresh all-pairs runs on the
+    reduced graph — no compounding local approximations). Longest pairs
+    are tried first. Distance mode is protected explicitly.
+    """
+    pairs: dict[frozenset, list[tuple[str, str]]] = defaultdict(list)
+    for u, v in demo_edges:
+        pairs[frozenset((u, v))].append((u, v))
+    order = sorted(pairs, key=lambda p: -max(
+        demo_edges[d]["length_m"] for d in pairs[p]))
+    removed = 0
+    for pair in order:
+        directions = [d for d in pairs[pair] if d in demo_edges]
+        if not directions:
+            continue
+        backup = {d: demo_edges.pop(d) for d in directions}
+        if invariant_violations(demo_edges, poi_nodes, real_time, real_dist):
+            demo_edges.update(backup)  # revert — invariant would break
+        else:
+            removed += len(backup)
+    print(f"  pruned {removed} cạnh (global-safe: mọi cặp vẫn ≤ "
+          f"{INVARIANT_TIME_RATIO}x time / {INVARIANT_DIST_RATIO}x dist)")
+
+
 def main() -> None:
     real = load_json(DATA_DIR / "graph_real.json")
     pois = load_json(DATA_DIR / "gdemo_pois.json")["pois"]
@@ -160,13 +254,20 @@ def main() -> None:
 
     coord = {n["id"]: (n["lat"], n["lon"]) for n in real["nodes"]}
     real_edges = {(e["u"], e["v"]): e for e in real["edges"]}
-    g_real = nx.DiGraph()
+    g_real_time = nx.DiGraph()
+    g_real_dist = nx.DiGraph()
     for (u, v), e in real_edges.items():
-        g_real.add_edge(u, v, w=e["free_travel_time_s"])
+        t_exact = e["length_m"] / (e["free_speed_kmh"] / 3.6)
+        g_real_time.add_edge(u, v, w=t_exact)
+        g_real_dist.add_edge(u, v, w=e["length_m"])
 
     names = list(snapped)
     node_of = {nm: snapped[nm]["node"]["id"] for nm in names}
     poi_nodes = set(node_of.values())
+
+    # real all-pairs between POIs — the reference for the invariant
+    real_time = all_pairs(g_real_time, poi_nodes)
+    real_dist = all_pairs(g_real_dist, poi_nodes)
 
     def poi_dist(a: str, b: str) -> float:
         (la, lo), (lb, lo2) = coord[node_of[a]], coord[node_of[b]]
@@ -181,28 +282,15 @@ def main() -> None:
                 pairs.add(tuple(sorted((a, b))))
         for a, b in sorted(pairs):
             na, nb = node_of[a], node_of[b]
-            legs = {}
+            # each DIRECTION independently: keep iff no third POI en route
             for u, v in ((na, nb), (nb, na)):
                 try:
-                    path = nx.shortest_path(g_real, u, v, weight="w")
+                    path = nx.shortest_path(g_real_time, u, v, weight="w")
                 except nx.NetworkXNoPath:
                     continue
                 if any(p in poi_nodes for p in path[1:-1]):
                     continue  # passes through a third POI -> not adjacent
-                legs[(u, v)] = path
-            if not legs:
-                continue
-            if len(legs) == 2:
-                l1 = sum(real_edges[(x, y)]["length_m"]
-                         for x, y in zip(legs[(na, nb)], legs[(na, nb)][1:]))
-                l2 = sum(real_edges[(x, y)]["length_m"]
-                         for x, y in zip(legs[(nb, na)], legs[(nb, na)][1:]))
-                if l2 > ONEWAY_RATIO * l1:
-                    del legs[(nb, na)]
-                elif l1 > ONEWAY_RATIO * l2:
-                    del legs[(na, nb)]
-            for (u, v), path in legs.items():
-                demo_edges[(u, v)] = contract(path, real_edges, coord)
+                demo_edges[(u, v)] = contract(path, real_edges)
 
         g_demo = nx.DiGraph(list(demo_edges))
         if g_demo.number_of_nodes():
@@ -213,10 +301,13 @@ def main() -> None:
             break
         print(f"  k={k}: SCC only {len(scc)}/{len(names)} POIs — retrying with k+1")
 
-    prune_redundant(demo_edges)
+    print(f"  adjacency: {len(demo_edges)} cạnh trước repair/prune")
+    repair_invariant(demo_edges, poi_nodes, g_real_time, g_real_dist,
+                     real_time, real_dist, real_edges)
+    prune_redundant(demo_edges, poi_nodes, real_time, real_dist)
+
     g_demo = nx.DiGraph(list(demo_edges))
     scc = max(nx.strongly_connected_components(g_demo), key=len)
-
     dropped = poi_nodes - scc
     for nm in [n for n in names if node_of[n] in dropped]:
         print(f"  WARN: '{nm}' outside the largest SCC — dropped")

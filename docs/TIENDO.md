@@ -11,7 +11,7 @@
 | 4 | FastAPI main.py, graph_store.py, explain.py | ✅ | uvicorn chạy thật (smoke health/route/multiroute qua HTTP); 19 test API (78/78 toàn suite): đủ 6 endpoint, error envelope §C.7, đủ 10 thuật toán qua /api/route; explanation tiếng Việt số liệu thật + ≥1 alternative khác tuyến, nêu đúng tiêu chí từng thuật toán + gap so tối ưu. G_demo rebuild: cạnh co mang **tên đường thật** (141/141) | `phase-4: FastAPI + Vietnamese explanations` |
 | 5 | Frontend Next.js 15 (map, animation, so sánh, multiroute, benchmark) | ✅ | `npm run build` pass, dev server 200 cả `/` và `/benchmark` (path unicode không gây vấn đề). Đủ theo đặc tả: DESIGN.md + token trước code; panel trái 320px; MapLibre Carto dark + offline mode; timeline SIGNATURE đồng bộ 2 chiều bảng g/h/f; drawer 3 tab; multiroute; legend cố định; 10 thuật toán; guardrail G_real. ĐÃ CHỐT sau 3 vòng duyệt mắt: (v1) thêm 2 chế độ Sáng/Tối qua CSS variables + basemap positron; (v2) audit contrast WCAG bằng scripts/check_contrast.py — đo trên nền basemap THẬT, sửa 4 màu rớt, fix updateTriggers repaint; (v3) tooltip icon ?, SwitchRow thẳng hàng, bỏ label lặp, stat card icon, chú thích g/h/f | `phase-5: Next.js frontend` + 3 fix |
 | 6 | benchmark.py — 7 thí nghiệm → results/ | ✅ | Chạy đủ 7 thí nghiệm (~7 phút, seed 42): **exp1 1200/1200 khớp NetworkX 1e-6**; exp2 **0 vi phạm admissible / 21 170 điểm** (h/h* max 0,565); exp3 đủ **10 thuật toán × 200 cặp × 2 khung giờ** (4 000 dòng — cả iddfs/idastar chạy full sau khi đo khả thi); exp4 **83,5% cặp đổi tuyến** 07:30 vs 22:00 + 3 GeoJSON; exp5 đường cong γ có **cực tiểu thời gian quanh γ=1,5** (ủng hộ mặc định); exp6 5 tuyến + link Google Maps; exp7 TSP 10 điểm **tiết kiệm 53,6%**, NN+2opt & SA đều đạt nghiệm Held-Karp (SA mean 3564,6±9,7). 78/78 test; /api/benchmark trả 200 với 4 000 rows | `phase-6: benchmark suite` |
-| 7 | Deliverables: BaoCao-Khung, Slide-Outline, Video-KichBan, GIAI-THICH-THUAT-TOAN, README | ✅ | GIAI-THICH sinh TỰ ĐỘNG từ trace thật (`scripts/gen_teaching_doc.py` — đồ thị con 7 node khu Bến Thành + phản ví dụ BX→BT khiến BFS/Greedy sai +52%); BaoCao-Khung 10 mục a–j đủ marker, bảng benchmark điền số ĐÃ VERIFY từ CSV; Slide 14 trang map rubric; Video 18–25 phút đúng checklist 4.10 + nhắc tab ẩn danh; README 5 bước dựng từ zero + troubleshooting. pytest 78/78 | `phase-7: deliverables` |
+| 7 | Deliverables: BaoCao-Khung, Slide-Outline, Video-KichBan, GIAI-THICH-THUAT-TOAN, README | ✅ | GIAI-THICH sinh TỰ ĐỘNG từ trace thật (`scripts/gen_teaching_doc.py` — đồ thị con 7 node khu Bến Thành; *cặp dạy sau audit dữ liệu đổi thành BT→BX, xem nhật ký 26/07 tối muộn*); BaoCao-Khung 10 mục a–j đủ marker, bảng benchmark điền số ĐÃ VERIFY từ CSV; Slide 14 trang map rubric; Video 18–25 phút đúng checklist 4.10 + nhắc tab ẩn danh; README 5 bước dựng từ zero + troubleshooting. pytest 78/78 | `phase-7: deliverables` |
 
 ## Câu hỏi mở
 
@@ -26,6 +26,26 @@
 - Chụp 8 screenshot + 5 ảnh Google Maps đối chứng; quay video; đóng gói `[GroupID].zip`.
 
 ## Nhật ký quyết định
+
+- **2026-07-26 (tối muộn — audit G_demo, user duyệt "sửa ngay"):** Audit độc lập bên ngoài
+  phát hiện G_demo méo khoảng cách (median 1,69× · 40,1% cặp >2× · max 20,67× so G_real;
+  cặp quy chiếu CVHLĐ→Hồ Con Rùa 10 159,8 m vs thật 1 584,2 m). Nguyên nhân: luật
+  `ONEWAY_RATIO=1.4` xoá oan 30+ chiều ngược đi được thật; tỉa cạnh chỉ kiểm tra cục bộ
+  từng cạnh; mode distance không được bảo vệ. **Sửa (04_build_gdemo viết lại):** bỏ hẳn
+  ONEWAY_RATIO — mỗi chiều giữ đúng theo đường đi thật trong G_real; thêm **bất biến
+  demo/real ≤1,5× (time) VÀ ≤1,8× (dist) cho MỌI cặp POI có hướng**, cưỡng chế bằng
+  `repair_invariant` (thêm cạnh co dọc shortest path thật) + `prune_redundant` an-toàn-
+  toàn-cục (thử gỡ → kiểm lại toàn bộ all-pairs cả 2 trọng số → hoàn tác nếu vỡ);
+  validator vĩnh viễn `check_demo_invariant` trong validate_data + regression test riêng
+  cặp CVHLĐ↔HCR ≤2×. **Kết quả:** 141→**253 cạnh**, 55→**51 oneway**; ratio time
+  median 1,13 / p90 1,33 / max 1,50 — dist 1,11 / 1,28 / 1,67; CVHLĐ→HCR còn 1 891,8 m
+  (1,19×), chiều ngược 1 473,4 m. pytest 79/79 (test traffic bỏ hardcode 141 cạnh —
+  đọc edge_count động). **Cặp dạy GIAI-THICH chọn lại bằng quét toàn subgraph:** BT→BX
+  — một cặp mang trọn cả 3 bài học (cạnh trực tiếp BX→BT một chiều nên chiều đi phải
+  vòng; BFS lẫn Greedy cùng sập bẫy +157 s/+46%; nhóm xét chi phí đi đúng 341 s) — đồng
+  bộ số vào Video-KichBan/Slide-Outline/BaoCao-Khung (ma trận ATSP mini giờ 266 vs 232).
+  Benchmark exp1–7 VẪN CHƯA chạy lại — chờ TomTom (giữ nguyên cảnh báo TẠM). UI duyệt
+  v8: nút ✕ xoá chọn Đi/Đến (cả dropdown G_demo lẫn chọn-trên-bản-đồ G_real).
 
 - **2026-07-26 (tối — sau chốt Phase 7):** (a) **Benchmark sẽ chạy lại MỘT lượt duy nhất khi có dữ liệu TomTom (ngày mai)** — số exp1–7 hiện tại trong `results/` và các trích dẫn trong report/ + GIAI-THICH coi là TẠM (đã gắn cảnh báo đầu từng file). (b) Chuỗi duyệt UI bằng mắt v5→v7: mũi tên hướng di chuyển CHỈ trên tuyến kết quả (route/multiroute/so sánh, cách nhau ≥220 m, viền SDF màu tuyến); drawer nới 360→400px hết cắt cột f; polish v6 (bóng trung tính cho lớp nổi, cụm nút bản đồ +/−/⌂ có transition, micro-feedback 150 ms, chú giải có tiêu đề); v7 redesign tab Giải thích (header tuyến + chips thời gian/km, GỘP đoạn ùn tắc theo tên đường kèm số đoạn, legend thêm mục "▶ Hướng di chuyển"). Mọi thay đổi ghi DESIGN.md trước khi code.
 

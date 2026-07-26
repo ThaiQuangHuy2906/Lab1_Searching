@@ -24,7 +24,7 @@ export function Drawer() {
     );
   }
   return (
-    <aside className="flex h-full w-[360px] shrink-0 flex-col border-l border-surface-border bg-surface-panel">
+    <aside className="flex h-full w-[400px] shrink-0 flex-col border-l border-surface-border bg-surface-panel">
       <div className="flex items-center gap-2 border-b border-surface-border px-3 py-2">
         <span className="flex-1 text-sm font-bold">Kết quả</span>
         <Button variant="ghost" size="iconSm" aria-label="Thu gọn panel kết quả"

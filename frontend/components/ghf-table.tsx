@@ -52,9 +52,9 @@ export function GhfTable() {
         <thead className="sticky top-0 bg-surface-panel text-left text-ink-dim">
           <tr>
             <th className="px-2.5 py-1.5 font-medium">Node</th>
-            {usesG && <th className="px-2 py-1.5 text-right font-medium">g</th>}
-            {usesH && <th className="px-2 py-1.5 text-right font-medium">h</th>}
-            {usesF && <th className="px-2 py-1.5 text-right font-medium">f</th>}
+            {usesG && <th className="whitespace-nowrap px-1.5 py-1.5 text-right font-medium">g</th>}
+            {usesH && <th className="whitespace-nowrap px-1.5 py-1.5 text-right font-medium">h</th>}
+            {usesF && <th className="whitespace-nowrap px-1.5 py-1.5 text-right font-medium">f</th>}
           </tr>
         </thead>
         <tbody>
@@ -83,9 +83,9 @@ export function GhfTable() {
                 <span className="mr-1.5 inline-block size-2 rounded-full bg-algo-frontier align-middle" />
                 {nameOf(id)}
               </td>
-              {usesG && <td className="px-2 py-1.5 text-right font-mono">{val(cur.g, id)}</td>}
-              {usesH && <td className="px-2 py-1.5 text-right font-mono">{val(cur.h, id)}</td>}
-              {usesF && <td className="px-2 py-1.5 text-right font-mono">{val(cur.f, id)}</td>}
+              {usesG && <td className="whitespace-nowrap px-1.5 py-1.5 text-right font-mono">{val(cur.g, id)}</td>}
+              {usesH && <td className="whitespace-nowrap px-1.5 py-1.5 text-right font-mono">{val(cur.h, id)}</td>}
+              {usesF && <td className="whitespace-nowrap px-1.5 py-1.5 text-right font-mono">{val(cur.f, id)}</td>}
             </tr>
           ))}
         </tbody>

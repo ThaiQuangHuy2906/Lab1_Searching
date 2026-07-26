@@ -69,7 +69,7 @@ thang 1–5; so sánh → 2 tuyến). Nền `surface-panel/95`, chữ 12px.
 ```
 ┌──────────────┬──────────────────────────────────┬───────────────┐
 │ Panel trái   │            Bản đồ                │ Drawer phải   │
-│ 320px cố định│  (Legend góc dưới-trái)          │ 360px, thu    │
+│ 320px cố định│  (Legend góc dưới-trái)          │ 400px, thu    │
 │              │  (Timeline nổi giữa-đáy)         │ gọn được      │
 └──────────────┴──────────────────────────────────┴───────────────┘
 ```
@@ -82,6 +82,8 @@ thang 1–5; so sánh → 2 tuyến). Nền `surface-panel/95`, chữ 12px.
    · danh sách Stops (multiroute) + nút "Tối ưu thứ tự"
 4. Nút **"Chạy thuật toán"** lớn, full-width, cao 44px — **GHIM cố định đáy panel** (header + footer đứng yên, chỉ vùng giữa cuộn; duyệt v4: CTA từng bị đẩy khỏi màn hình)
 + Công tắc "Chế độ offline" (vẽ thuần deck.gl trên nền `surface`) và "Lớp ùn tắc".
+
+*(Drawer nới 360→400 px ở duyệt v5d: cột f của bảng g/h/f từng bị cắt mép.)*
 
 **Drawer phải — 3 tab:** `Số liệu` | `Giải thích` | `So sánh`
 - Đầu tab Số liệu có **dòng nguồn kết quả**: "A* · Cân bằng · 07:30 · G_demo" —

@@ -20,3 +20,6 @@ out/
 .DS_Store
 Thumbs.db
 *.swp
+
+# Claude Code local settings (per-machine)
+.claude/settings.local.json

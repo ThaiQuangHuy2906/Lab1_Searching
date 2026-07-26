@@ -153,7 +153,7 @@ export function MapView() {
 
     // final route / compare / multiroute — casing (nền) + màu (DESIGN 6)
     const casedPath = (id: string, data: { path: [number, number][] }[],
-                       color: RGBA, width = 6) => {
+                       color: RGBA, width = 6, dash?: [number, number]) => {
       out.push(
         new PathLayer({
           id: `${id}-casing`, data,
@@ -166,6 +166,12 @@ export function MapView() {
           getPath: (d: { path: [number, number][] }) => d.path,
           getColor: color, getWidth: width,
           widthUnits: "pixels", jointRounded: true, capRounded: true,
+          // dashed body over a SOLID casing (v10d): compare route B reads
+          // as one continuous band instead of dissolving into the grid
+          ...(dash ? {
+            getDashArray: dash, dashJustified: true,
+            extensions: [new PathStyleExtension({ dash: true })],
+          } : {}),
         }),
       );
     };
@@ -223,21 +229,8 @@ export function MapView() {
       routeArrows("route-arrows", [routePath], C.path);
     }
     if (compare?.found && drawerTab === "compare") {
-      out.push(
-        new PathLayer({
-          id: "route-compare",
-          data: [{ path: toPath(compare.path) }],
-          getPath: (d: { path: [number, number][] }) => d.path,
-          getColor: C.compareB,
-          getWidth: 3,
-          widthUnits: "pixels",
-          jointRounded: true,
-          capRounded: true,
-          getDashArray: [6, 4],
-          dashJustified: true,
-          extensions: [new PathStyleExtension({ dash: true })],
-        }),
-      );
+      casedPath("route-compare", [{ path: toPath(compare.path) }],
+        C.compareB, 5, [10, 5]);
       routeArrows("compare-arrows", [toPath(compare.path)], C.compareB);
     }
 

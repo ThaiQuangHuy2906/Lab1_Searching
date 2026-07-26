@@ -52,7 +52,8 @@ class _Recorder:
                g: dict[str, float] | None = None,
                h: dict[str, float] | None = None,
                f: dict[str, float] | None = None,
-               depth_limit: int | None = None) -> None:
+               depth_limit: int | None = None,
+               side: str | None = None) -> None:
         if not self.enabled:
             return
         if len(self.steps) >= MAX_TRACE_STEPS:
@@ -60,7 +61,7 @@ class _Recorder:
             return
         self.steps.append(TraceStep(
             step=len(self.steps) + 1, expanded=expanded, frontier=frontier,
-            g=g, h=h, f=f, depth_limit=depth_limit))
+            g=g, h=h, f=f, depth_limit=depth_limit, side=side))
 
 
 def _round_map(values: dict[str, float]) -> dict[str, float]:

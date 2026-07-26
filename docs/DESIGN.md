@@ -95,6 +95,18 @@ thang 1–5; so sánh → 2 tuyến). Nền `surface-panel/95`, chữ 12px.
 
 *(Drawer nới 360→400 px ở duyệt v5d: cột f của bảng g/h/f từng bị cắt mép.)*
 
+**LUẬT VÔ HIỆU KẾT QUẢ CŨ — duyệt v10f (user bắt bug multiroute; rà thêm
+thấy tuyến 2 điểm cùng bệnh):** mọi kết quả trên bản đồ là HÀM CỦA HÀNH TRÌNH —
+đổi bất kỳ input hành trình nào (Đi / Đến / danh sách điểm giao, kể cả ⇅ và ✕)
+thì kết quả liên quan VÔ HIỆU NGAY LẬP TỨC: tuyến 2 điểm + so sánh + tối ưu
+thứ tự biến mất cùng animation (bản đồ không bao giờ hiển thị kết quả lệch
+với panel). Chặn TẬP TRUNG một chỗ trong `store.set` — mọi đường mutate
+(dropdown, click bản đồ, ✕, ⇅) đều đi qua. Đổi thuật toán/tiêu chí KHÔNG xoá
+kết quả (dòng nguồn kết quả trong drawer ghi rõ cấu hình đã chạy).
+Kèm yêu cầu user: khối "Phương pháp tối ưu thứ tự" LUÔN HIỆN thay vì ẩn —
+chưa có điểm giao thì select + nút MỜ (disabled), icon ? đổi tooltip thành
+"Thêm ít nhất 1 điểm giao để mở phần này."
+
 **Công tắc "Trace trên G_real" phản hồi TỨC THÌ — duyệt v10c (user bắt được
 độ trễ):** công tắc điều khiển cả HIỂN THỊ hiện tại, không chỉ request lần sau:
 OFF → timeline + lớp bước (frontier/expanded/current) biến mất NGAY (tuyến kết

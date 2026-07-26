@@ -326,12 +326,12 @@ export function ControlPanel() {
             )}
           </div>
         </Field>
-        {s.stops.length > 0 && (
-          <Field label="Phương pháp tối ưu thứ tự"
-            tip="Held-Karp cho nghiệm tối ưu tuyệt đối (tối đa 15 điểm); NN + 2-opt và SA là xấp xỉ nhanh.">
-            <MultiButtons />
-          </Field>
-        )}
+        <Field label="Phương pháp tối ưu thứ tự"
+          tip={s.stops.length === 0
+            ? "Thêm ít nhất 1 điểm giao để mở phần này."
+            : "Held-Karp cho nghiệm tối ưu tuyệt đối (tối đa 15 điểm); NN + 2-opt và SA là xấp xỉ nhanh."}>
+          <MultiButtons />
+        </Field>
       </Section>
 
       </div>
@@ -351,9 +351,11 @@ function MultiButtons() {
   const s = useApp();
   const [method, setMethod] = React.useState<TspMethod>("held_karp");
   const tooMany = method === "held_karp" && s.stops.length > 14;
+  const empty = s.stops.length === 0;
   return (
     <div className="flex flex-col gap-1.5">
-      <Select value={method} onValueChange={(v) => setMethod(v as TspMethod)}>
+      <Select value={method} disabled={empty}
+        onValueChange={(v) => setMethod(v as TspMethod)}>
         <SelectTrigger aria-label="Phương pháp TSP"><SelectValue /></SelectTrigger>
         <SelectContent>
           <SelectItem value="held_karp">Held-Karp — tối ưu tuyệt đối</SelectItem>
@@ -366,7 +368,7 @@ function MultiButtons() {
           Held-Karp nhận tối đa 15 điểm (kể cả điểm Đi) — hãy dùng NN+2-opt hoặc SA.
         </p>
       )}
-      <Button variant="secondary" disabled={s.multiRunning || tooMany}
+      <Button variant="secondary" disabled={s.multiRunning || tooMany || empty}
         onClick={() => void s.runMulti(method)}>
         {s.multiRunning ? <Loader2 className="animate-spin" /> : <ListOrdered />}
         {s.multiRunning ? "Đang tối ưu…" : "Tối ưu thứ tự"}

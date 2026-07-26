@@ -129,7 +129,24 @@ export const useApp = create<AppState>((set, get) => ({
   drawerOpen: true,
   drawerTab: "metrics",
 
-  set: (patch) => set(patch),
+  set: (patch) =>
+    set((state) => {
+      // stale-result invalidation (DESIGN v10f): every on-map result is a
+      // function of the journey inputs. The moment start/goal/stops change
+      // (any path: dropdown, map click, clear ✕, swap ⇅), kill the results
+      // that depended on them so the map can never contradict the panel.
+      if (!("start" in patch) && !("goal" in patch) && !("stops" in patch))
+        return patch;
+      const extra: Partial<AppState> = {};
+      if (state.trace && !("trace" in patch)) {
+        extra.trace = null;
+        extra.stepIdx = 0;
+        extra.playing = false;
+      }
+      if (state.compare && !("compare" in patch)) extra.compare = null;
+      if (state.multi && !("multi" in patch)) extra.multi = null;
+      return { ...patch, ...extra };
+    }),
 
   clearMap: () => {
     set({ trace: null, compare: null, multi: null, start: null, goal: null,

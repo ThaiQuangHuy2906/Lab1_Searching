@@ -6,46 +6,59 @@
 
 ## 1. Định hướng
 
-Cảm hứng: **phòng điều khiển giao thông + app gọi xe Việt Nam**. Theme **TỐI** — lý do
-chức năng: nền tối làm lớp phủ thuật toán (cyan/violet/amber) và thang màu ùn tắc nổi
-rõ nhất, tối ưu cho quay video demo.
+Cảm hứng: **phòng điều khiển giao thông + app gọi xe Việt Nam**. Có **2 chế độ**
+(cập nhật theo yêu cầu duyệt vòng 1, 2026-07-26):
+- **Tối (mặc định)** — lý do chức năng: nền tối làm lớp phủ thuật toán và thang màu
+  ùn tắc nổi rõ nhất. **Quy ước: video demo + screenshot báo cáo dùng chế độ Tối**
+  để mọi hình nhất quán (nhóm có thể đổi quy ước này, nhưng phải chọn MỘT).
+- **Sáng** — cùng hệ token, giá trị đổi qua CSS variables; basemap đổi sang Carto
+  positron. Toggle ở góc phải-trên, lưu lựa chọn vào localStorage.
 
 **Cấm:** gradient, glassmorphism, shadow màu, animation trang trí. Hiệu ứng duy nhất
 được phép: vòng pulse ở node đang expand (đặc tả §3) và transition ẩn/hiện drawer.
 
-## 2. Token nền tảng
+## 2. Token nền tảng (Dark | Light)
 
-| Token | Giá trị | Dùng cho |
-|---|---|---|
-| `surface` | zinc-950 `#09090b` | nền trang, nền map offline |
-| `surface-panel` | zinc-900 `#18181b` | panel trái, drawer, card, timeline |
-| `surface-border` | zinc-800 `#27272a` | viền panel/card/input |
-| `surface-hover` | zinc-800/60 | hover row, hover item |
-| `ink` | zinc-100 `#f4f4f5` | chữ chính |
-| `ink-dim` | zinc-400 `#a1a1aa` | nhãn phụ, chú thích |
-| Bo góc | **8px** (`rounded-lg`) | thống nhất mọi panel/card/nút/input |
-| Focus ring | 2px cyan-400, offset 2px nền tối | mọi phần tử focus bằng bàn phím |
+Mọi token là CSS variable trên `:root[data-theme]`; tailwind trỏ vào biến — component
+chỉ dùng tên token, KHÔNG dùng mã màu trực tiếp.
+
+| Token | Tối | Sáng | Dùng cho |
+|---|---|---|---|
+| `surface` | zinc-950 `#09090b` | zinc-50 `#fafafa` | nền trang, nền map offline |
+| `surface-panel` | zinc-900 `#18181b` | white `#ffffff` | panel trái, drawer, card, timeline |
+| `surface-border` | zinc-800 `#27272a` | zinc-200 `#e4e4e7` | viền panel/card/input |
+| `ink` | zinc-100 `#f4f4f5` | zinc-900 `#18181b` | chữ chính |
+| `ink-dim` | zinc-400 `#a1a1aa` | zinc-500 `#71717a` | nhãn phụ, chú thích |
+| `hl` (row highlight) | white @10% | zinc-950 @8% | hàng đang expand trong bảng g/h/f |
+| Bo góc | **8px** (`rounded-lg`) — cả 2 chế độ | | thống nhất mọi panel/card/nút/input |
+| Focus ring | 2px `algo-frontier`, offset 2px | | mọi phần tử focus bằng bàn phím |
 
 **Font:** `Be Vietnam Pro` (400/500/700) toàn UI — đủ dấu Việt đẹp. `JetBrains Mono`
 cho **mọi con số** (metrics, g/h/f, bước, toạ độ) với `tabular-nums`.
 **Số kiểu VN:** dấu phẩy thập phân — `812,4 s` · `3,12 km` · `41,0 %` (helper `fmtVi`).
 
-## 3. Bảng màu ngữ nghĩa — CỐ ĐỊNH (map + legend + bảng + chart dùng chung)
+## 3. Bảng màu ngữ nghĩa — CỐ ĐỊNH theo chế độ (map + legend + bảng + chart dùng chung)
 
-| Token | Giá trị | Ý nghĩa |
-|---|---|---|
-| `algo-node` | zinc-600 `#52525b` | node thường |
-| `algo-frontier` | cyan-400 `#22d3ee` | node trong frontier |
-| `algo-expanded` | violet-400 `#a78bfa` | node đã expand |
-| `algo-current` | white `#ffffff` + **vòng pulse** trắng 2px | node đang expand ở bước hiện tại |
-| `algo-path` | amber-400 `#fbbf24`, nét dày 4px | tuyến kết quả |
-| `bidi-forward` | cyan-400 `#22d3ee` | phía xuôi (side=forward) |
-| `bidi-backward` | rose-400 `#fb7185` | phía ngược (side=backward) |
-| `cong-1..5` | emerald-500 `#10b981` / lime-400 `#a3e635` / yellow-400 `#facc15` / orange-500 `#f97316` / red-500 `#ef4444` | thang ùn tắc 1→5 |
-| Start | chip nền emerald-500, chữ trắng, nhãn **"Đi"** | điểm xuất phát |
-| Goal | chip nền red-500, chữ trắng, nhãn **"Đến"** | điểm đích |
-| Stops | số thứ tự trong hình tròn amber-400 chữ đen | điểm giao multiroute |
-| So sánh | thuật toán A amber-400 liền, thuật toán B cyan-400 nét đứt | 2 tuyến chồng lớp |
+Nguyên tắc chuyển Sáng: giữ NGUYÊN sắc (hue), tăng đậm 1–2 nấc để đạt tương phản
+trên nền trắng; node đang expand đảo trắng→đen.
+
+| Token | Tối | Sáng | Ý nghĩa |
+|---|---|---|---|
+| `algo-node` | zinc-600 `#52525b` | zinc-400 `#a1a1aa` | node thường |
+| `algo-frontier` | cyan-400 `#22d3ee` | cyan-600 `#0891b2` | node trong frontier |
+| `algo-expanded` | violet-400 `#a78bfa` | violet-600 `#7c3aed` | node đã expand |
+| `algo-current` | white `#ffffff` + pulse trắng | zinc-950 `#09090b` + pulse đen | node đang expand |
+| `algo-path` | amber-400 `#fbbf24` | amber-500 `#f59e0b` | tuyến kết quả, nét dày 4px |
+| `bidi-forward` | cyan-400 `#22d3ee` | cyan-600 `#0891b2` | phía xuôi (side=forward) |
+| `bidi-backward` | rose-400 `#fb7185` | rose-600 `#e11d48` | phía ngược (side=backward) |
+| `edge-dim` | zinc-700 `#3f3f46` | zinc-300 `#d4d4d8` | cạnh thường |
+| `cong-1..5` | `#10b981 #a3e635 #facc15 #f97316 #ef4444` | `#059669 #65a30d #eab308 #ea580c #dc2626` | thang ùn tắc 1→5 |
+| Start | chip emerald-500, chữ trắng, **"Đi"** | chip emerald-600, chữ trắng | điểm xuất phát |
+| Goal | chip red-500, chữ trắng, **"Đến"** | chip red-600, chữ trắng | điểm đích |
+| Stops | số trong tròn `algo-path`, chữ nền tối | như Tối (chữ trắng trên amber-500) | điểm giao multiroute |
+| So sánh | A `algo-path` liền · B `algo-frontier` nét đứt (cả 2 chế độ) | | 2 tuyến chồng lớp |
+| Nhãn POI trên map | zinc-400 viền nền tối | zinc-700 viền trắng | TextLayer G_demo |
+| Basemap | Carto **dark-matter** | Carto **positron** | không cần key |
 
 **Legend:** cố định góc **dưới-trái** bản đồ, luôn hiển thị; nội dung theo ngữ cảnh
 (chạy 1 thuật toán → 5 mục thuật toán; bidijkstra → thêm 2 phía; bật lớp ùn tắc →

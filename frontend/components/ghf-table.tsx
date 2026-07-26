@@ -58,7 +58,7 @@ export function GhfTable() {
         </thead>
         <tbody>
           {cur && (
-            <tr ref={currentRef} className="bg-white/10 font-medium text-ink">
+            <tr ref={currentRef} className="bg-hl/10 font-medium text-ink">
               <td className="truncate px-2.5 py-1.5" title={nameOf(cur.expanded)}>
                 <span className="mr-1.5 inline-block size-2 rounded-full bg-algo-current align-middle" />
                 {nameOf(cur.expanded)}

@@ -25,8 +25,16 @@ export const ALGO_LABEL: Record<Algorithm, string> = {
 };
 
 export type DrawerTab = "metrics" | "explain" | "compare";
+export type Theme = "dark" | "light";
+
+const THEME_KEY = "traffic-theme";
 
 interface AppState {
+  // ---- giao diện Sáng/Tối (DESIGN.md §1 — mặc định Tối)
+  theme: Theme;
+  initTheme: () => void;
+  toggleTheme: () => void;
+
   // ---- cấu hình
   graph: GraphLevel;
   slot: TimeSlot;
@@ -74,6 +82,21 @@ interface AppState {
 }
 
 export const useApp = create<AppState>((set, get) => ({
+  theme: "dark",
+  initTheme: () => {
+    const saved = (typeof window !== "undefined"
+      ? window.localStorage.getItem(THEME_KEY) : null) as Theme | null;
+    const theme: Theme = saved === "light" ? "light" : "dark";
+    document.documentElement.setAttribute("data-theme", theme);
+    set({ theme });
+  },
+  toggleTheme: () => {
+    const theme: Theme = get().theme === "dark" ? "light" : "dark";
+    document.documentElement.setAttribute("data-theme", theme);
+    window.localStorage.setItem(THEME_KEY, theme);
+    set({ theme });
+  },
+
   graph: "demo",
   slot: "07:30",
   mode: "balanced",

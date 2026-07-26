@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Be_Vietnam_Pro, JetBrains_Mono } from "next/font/google";
-import { Toaster } from "sonner";
+import { AppShell } from "@/components/app-shell";
 import "./globals.css";
 
 const beVietnam = Be_Vietnam_Pro({
@@ -23,18 +23,18 @@ export const metadata: Metadata = {
     "Ứng dụng hỗ trợ shipper: 10 thuật toán tìm đường + tối ưu thứ tự giao hàng trên bản đồ TP.HCM",
 };
 
+// đặt data-theme TRƯỚC khi paint để không nháy theme (FOUC)
+const themeInit = `(function(){try{var t=localStorage.getItem("traffic-theme");document.documentElement.setAttribute("data-theme",t==="light"?"light":"dark");}catch(e){document.documentElement.setAttribute("data-theme","dark");}})();`;
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="vi" className={`${beVietnam.variable} ${jetbrains.variable}`}>
+    <html lang="vi" data-theme="dark" suppressHydrationWarning
+      className={`${beVietnam.variable} ${jetbrains.variable}`}>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeInit }} />
+      </head>
       <body className="h-screen overflow-hidden">
-        {children}
-        <Toaster
-          theme="dark"
-          position="top-center"
-          toastOptions={{
-            style: { background: "#18181b", border: "1px solid #27272a", color: "#f4f4f5" },
-          }}
-        />
+        <AppShell>{children}</AppShell>
       </body>
     </html>
   );

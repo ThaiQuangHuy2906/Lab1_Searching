@@ -1,6 +1,9 @@
 // Design tokens — the single source of truth is docs/DESIGN.md.
-// Every color used anywhere in the UI must resolve to a token below.
+// Colors resolve through CSS variables (app/globals.css) so the whole UI
+// switches Dark/Light by flipping [data-theme] on <html>.
 import type { Config } from "tailwindcss";
+
+const v = (name: string) => `rgb(var(--${name}) / <alpha-value>)`;
 
 const config: Config = {
   content: ["./app/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}", "./lib/**/*.{ts,tsx}"],
@@ -8,34 +11,22 @@ const config: Config = {
     extend: {
       colors: {
         surface: {
-          DEFAULT: "#09090b", // zinc-950 — page & offline-map background
-          panel: "#18181b", //   zinc-900 — panels, drawer, cards, timeline
-          border: "#27272a", //  zinc-800 — borders
+          DEFAULT: v("surface"),
+          panel: v("surface-panel"),
+          border: v("surface-border"),
         },
-        ink: {
-          DEFAULT: "#f4f4f5", // zinc-100 — primary text
-          dim: "#a1a1aa", //     zinc-400 — secondary text
-        },
+        ink: { DEFAULT: v("ink"), dim: v("ink-dim") },
+        hl: v("hl"),
         algo: {
-          node: "#52525b", //     zinc-600  — plain node
-          frontier: "#22d3ee", // cyan-400  — frontier node
-          expanded: "#a78bfa", // violet-400 — expanded node
-          current: "#ffffff", //  white     — node being expanded (with pulse ring)
-          path: "#fbbf24", //     amber-400 — final route
+          node: v("algo-node"),
+          frontier: v("algo-frontier"),
+          expanded: v("algo-expanded"),
+          current: v("algo-current"),
+          path: v("algo-path"),
         },
-        bidi: {
-          forward: "#22d3ee", //  cyan-400
-          backward: "#fb7185", // rose-400
-        },
-        cong: {
-          1: "#10b981", // emerald-500
-          2: "#a3e635", // lime-400
-          3: "#facc15", // yellow-400
-          4: "#f97316", // orange-500
-          5: "#ef4444", // red-500
-        },
-        start: "#10b981", // emerald-500 — "Đi" chip
-        goal: "#ef4444", //  red-500     — "Đến" chip
+        bidi: { forward: v("bidi-forward"), backward: v("bidi-backward") },
+        start: v("start"),
+        goal: v("goal"),
       },
       fontFamily: {
         sans: ["var(--font-be-vietnam)", "sans-serif"],

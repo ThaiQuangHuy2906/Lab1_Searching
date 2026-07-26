@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { BarChart3 } from "lucide-react";
 import { ControlPanel } from "@/components/control-panel";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { Drawer } from "@/components/drawer/drawer";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -35,12 +36,15 @@ export default function Home() {
         <ControlPanel />
         <div className="relative min-w-0 flex-1">
           <MapView />
-          <Link
-            href="/benchmark"
-            className="absolute right-3 top-3 z-10 flex items-center gap-1.5 rounded-lg border border-surface-border bg-surface-panel/95 px-3 py-1.5 text-xs text-ink-dim hover:text-ink"
-          >
-            <BarChart3 className="size-3.5" /> Benchmark
-          </Link>
+          <div className="absolute right-3 top-3 z-10 flex items-center gap-2">
+            <Link
+              href="/benchmark"
+              className="flex items-center gap-1.5 rounded-lg border border-surface-border bg-surface-panel/95 px-3 py-1.5 text-xs text-ink-dim hover:text-ink"
+            >
+              <BarChart3 className="size-3.5" /> Benchmark
+            </Link>
+            <ThemeToggle />
+          </div>
         </div>
         <Drawer />
       </main>

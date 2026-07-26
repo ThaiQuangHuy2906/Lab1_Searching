@@ -2,6 +2,45 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Token 2 chế độ (docs/DESIGN.md §2–3) — giá trị là RGB triplet cho
+   tailwind alpha modifier. Component KHÔNG dùng mã màu trực tiếp. */
+:root,
+:root[data-theme="dark"] {
+  --surface: 9 9 11; /*        zinc-950 */
+  --surface-panel: 24 24 27; /* zinc-900 */
+  --surface-border: 39 39 42; /* zinc-800 */
+  --ink: 244 244 245; /*        zinc-100 */
+  --ink-dim: 161 161 170; /*    zinc-400 */
+  --hl: 255 255 255; /*         row highlight base (dùng /10) */
+  --algo-node: 82 82 91; /*     zinc-600 */
+  --algo-frontier: 34 211 238; /* cyan-400 */
+  --algo-expanded: 167 139 250; /* violet-400 */
+  --algo-current: 255 255 255;
+  --algo-path: 251 191 36; /*   amber-400 */
+  --bidi-forward: 34 211 238;
+  --bidi-backward: 251 113 133; /* rose-400 */
+  --start: 16 185 129; /*       emerald-500 */
+  --goal: 239 68 68; /*         red-500 */
+}
+
+:root[data-theme="light"] {
+  --surface: 250 250 250; /*    zinc-50 */
+  --surface-panel: 255 255 255;
+  --surface-border: 228 228 231; /* zinc-200 */
+  --ink: 24 24 27; /*           zinc-900 */
+  --ink-dim: 113 113 122; /*    zinc-500 */
+  --hl: 9 9 11;
+  --algo-node: 161 161 170; /*  zinc-400 */
+  --algo-frontier: 8 145 178; /* cyan-600 */
+  --algo-expanded: 124 58 237; /* violet-600 */
+  --algo-current: 9 9 11;
+  --algo-path: 245 158 11; /*   amber-500 */
+  --bidi-forward: 8 145 178;
+  --bidi-backward: 225 29 72; /* rose-600 */
+  --start: 5 150 105; /*        emerald-600 */
+  --goal: 220 38 38; /*         red-600 */
+}
+
 @layer base {
   html { @apply bg-surface text-ink; }
   body { @apply font-sans antialiased; }

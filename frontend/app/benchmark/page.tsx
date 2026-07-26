@@ -13,19 +13,9 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { api, BackendError } from "@/lib/api";
+import { usePalette } from "@/lib/use-palette";
+import { ThemeToggle } from "@/components/theme-toggle";
 import type { ExperimentResult } from "@/lib/types";
-
-const INK_DIM = "#a1a1aa";
-const GRID = "#27272a";
-const PANEL = "#18181b";
-const CYAN = "#22d3ee";
-const AMBER = "#fbbf24";
-const VIOLET = "#a78bfa";
-
-const tooltipStyle = {
-  contentStyle: { background: PANEL, border: `1px solid ${GRID}`, borderRadius: 8, color: "#f4f4f5" },
-  labelStyle: { color: INK_DIM },
-};
 
 function useBenchmark() {
   const [data, setData] = React.useState<ExperimentResult[] | null>(null);
@@ -55,6 +45,19 @@ function mean(rows: Record<string, string>[], key: string): number {
 
 export default function BenchmarkPage() {
   const { data, state, errMsg } = useBenchmark();
+  const P = usePalette();
+  const INK_DIM = P.hex.inkDim;
+  const GRID = P.hex.grid;
+  const CYAN = P.hex.frontier;
+  const AMBER = P.hex.path;
+  const VIOLET = P.hex.expanded;
+  const tooltipStyle = {
+    contentStyle: {
+      background: P.hex.panel, border: `1px solid ${GRID}`,
+      borderRadius: 8, color: "rgb(var(--ink))",
+    },
+    labelStyle: { color: INK_DIM },
+  };
 
   const exp3 = data?.find((e) => e.experiment_id === 3);
   const exp5 = data?.find((e) => e.experiment_id === 5);
@@ -88,7 +91,8 @@ export default function BenchmarkPage() {
         <Link href="/" className="flex items-center gap-1.5 text-sm text-ink-dim hover:text-ink">
           <ArrowLeft className="size-4" /> Bản đồ
         </Link>
-        <h1 className="text-lg font-bold">Benchmark — 7 thí nghiệm</h1>
+        <h1 className="flex-1 text-lg font-bold">Benchmark — 7 thí nghiệm</h1>
+        <ThemeToggle />
       </div>
 
       {state === "loading" && (
@@ -127,7 +131,7 @@ export default function BenchmarkPage() {
                       <CartesianGrid stroke={GRID} vertical={false} />
                       <XAxis dataKey="algorithm" stroke={INK_DIM} fontSize={11} />
                       <YAxis stroke={INK_DIM} fontSize={11} />
-                      <RTooltip {...tooltipStyle} cursor={{ fill: "#27272a55" }} />
+                      <RTooltip {...tooltipStyle} cursor={{ fill: `${GRID}55` }} />
                       <Bar dataKey="expanded" name="Node expand" fill={CYAN} radius={[4, 4, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
@@ -141,7 +145,7 @@ export default function BenchmarkPage() {
                       <CartesianGrid stroke={GRID} vertical={false} />
                       <XAxis dataKey="algorithm" stroke={INK_DIM} fontSize={11} />
                       <YAxis stroke={INK_DIM} fontSize={11} />
-                      <RTooltip {...tooltipStyle} cursor={{ fill: "#27272a55" }} />
+                      <RTooltip {...tooltipStyle} cursor={{ fill: `${GRID}55` }} />
                       <Bar dataKey="runtime" name="Runtime (ms)" fill={VIOLET} radius={[4, 4, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>

@@ -3,11 +3,12 @@
 import { Info } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { useApp } from "@/lib/store";
-import { CONGESTION_HEX } from "@/lib/colors";
+import { usePalette } from "@/lib/use-palette";
 import { fmtKm, fmtMinutes } from "@/lib/format";
 
 export function ExplainTab() {
   const trace = useApp((s) => s.trace);
+  const P = usePalette();
 
   if (!trace) {
     return (
@@ -36,7 +37,7 @@ export function ExplainTab() {
             {ex.congested_segments.map((c) => (
               <div key={c.edge} className="flex items-center gap-2 text-xs">
                 <span className="size-2.5 shrink-0 rounded-full"
-                  style={{ background: CONGESTION_HEX[c.level] }} />
+                  style={{ background: P.congestionHex[c.level] }} />
                 <span className="min-w-0 flex-1 truncate">{c.name ?? c.edge}</span>
                 <span className="font-mono text-ink-dim">mức {c.level}/5</span>
               </div>

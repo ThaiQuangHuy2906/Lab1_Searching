@@ -12,14 +12,13 @@ import { WebMercatorViewport, type MapViewState, type PickingInfo } from "@deck.
 import { Map as MapLibre } from "react-map-gl/maplibre";
 import "maplibre-gl/dist/maplibre-gl.css";
 
-import { C, CONGESTION, type RGBA } from "@/lib/colors";
+import { type RGBA } from "@/lib/colors";
+import { usePalette } from "@/lib/use-palette";
 import { useApp } from "@/lib/store";
 import { useAnimation } from "@/lib/use-animation";
 import type { GraphNode } from "@/lib/types";
 import { Legend } from "./legend";
 import { Timeline } from "./timeline";
-
-const CARTO_DARK = "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json";
 
 export function MapView() {
   const graphData = useApp((s) => s.graphData);
@@ -37,6 +36,9 @@ export function MapView() {
   const pickTarget = useApp((s) => s.pickTarget);
   const set = useApp((s) => s.set);
   const anim = useAnimation();
+  const P = usePalette();
+  const C = P.deck;
+  const CONGESTION = P.congestion;
 
   const [viewState, setViewState] = React.useState<MapViewState | null>(null);
   const [pulse, setPulse] = React.useState(1);
@@ -93,7 +95,7 @@ export function MapView() {
       if (anim.frontierSet.has(n.id)) return C.frontier;
       return C.node;
     },
-    [anim],
+    [anim, C],
   );
 
   const isDemo = graph === "demo";
@@ -220,7 +222,7 @@ export function MapView() {
             getPosition: (d: { pos: [number, number] }) => d.pos,
             stroked: true,
             filled: false,
-            getLineColor: [255, 255, 255, 180] as RGBA,
+            getLineColor: C.pulse,
             lineWidthUnits: "pixels",
             getLineWidth: 2,
             getRadius: (isDemo ? 9 : 6) * pulse,
@@ -240,12 +242,12 @@ export function MapView() {
           getPosition: (n: GraphNode) => [n.lon, n.lat],
           getText: (n: GraphNode) => n.name ?? "",
           getSize: 11,
-          getColor: [161, 161, 170, 230] as RGBA,
+          getColor: C.label,
           getPixelOffset: [0, -14],
           fontFamily: "Be Vietnam Pro, sans-serif",
           characterSet: "auto",
           outlineWidth: 2,
-          outlineColor: [9, 9, 11, 220] as RGBA,
+          outlineColor: C.labelOutline,
           fontSettings: { sdf: true },
         }),
       );
@@ -253,12 +255,12 @@ export function MapView() {
 
     // start / goal chips + multiroute stop numbers
     const chips: { pos: [number, number]; text: string; bg: RGBA; fg: RGBA }[] = [];
-    if (start && coord.get(start)) chips.push({ pos: coord.get(start)!, text: "Đi", bg: C.start, fg: [255, 255, 255, 255] });
-    if (goal && coord.get(goal)) chips.push({ pos: coord.get(goal)!, text: "Đến", bg: C.goal, fg: [255, 255, 255, 255] });
+    if (start && coord.get(start)) chips.push({ pos: coord.get(start)!, text: "Đi", bg: C.start, fg: C.chipText });
+    if (goal && coord.get(goal)) chips.push({ pos: coord.get(goal)!, text: "Đến", bg: C.goal, fg: C.chipText });
     const orderedStops = multi?.found ? multi.order.slice(1) : stops;
     orderedStops.forEach((id, i) => {
       const pos = coord.get(id);
-      if (pos) chips.push({ pos, text: String(i + 1), bg: C.stop, fg: [24, 24, 27, 255] });
+      if (pos) chips.push({ pos, text: String(i + 1), bg: C.stop, fg: C.stopText });
     });
     if (chips.length) {
       out.push(
@@ -283,7 +285,7 @@ export function MapView() {
     return out;
   }, [graphData, coord, toPath, traffic, trafficLayer, congestedSet, trace, compare,
       multi, anim, nodeColor, pulse, isDemo, showLabels, start, goal, stops,
-      pickTarget, drawerTab]);
+      pickTarget, drawerTab, C, CONGESTION]);
 
   const onClick = React.useCallback(
     (info: PickingInfo) => {
@@ -321,7 +323,7 @@ export function MapView() {
           pickTarget ? "crosshair" : isDragging ? "grabbing" : "grab"
         }
       >
-        {!offline && <MapLibre mapStyle={CARTO_DARK} attributionControl={false} />}
+        {!offline && <MapLibre mapStyle={P.basemap} attributionControl={false} />}
       </DeckGL>
       {pickTarget && (
         <div className="absolute left-1/2 top-3 -translate-x-1/2 rounded-lg border border-surface-border bg-surface-panel/95 px-3 py-1.5 text-sm">

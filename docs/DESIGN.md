@@ -95,6 +95,12 @@ thang 1–5; so sánh → 2 tuyến). Nền `surface-panel/95`, chữ 12px.
 
 *(Drawer nới 360→400 px ở duyệt v5d: cột f của bảng g/h/f từng bị cắt mép.)*
 
+**Nút Xoá bản đồ — duyệt v9e:** cụm nút góc bản đồ (+/−/⌂) thêm vạch ngăn +
+nút **thùng rác** (ghost, hover đỏ `goal`): xoá MỌI THỨ trên bản đồ một chạm —
+kết quả (trace/so sánh/multiroute), lựa chọn Đi/Đến/điểm giao, animation;
+disabled khi không có gì để xoá; toast xác nhận. KHÔNG đụng cấu hình
+(đồ thị/khung giờ/tiêu chí/thuật toán giữ nguyên).
+
 **Khối Đi/Đến — duyệt v9d (kiểu app gọi xe, §1):** chấm vai trò nằm TRONG ô
 (trái, 10px): RỖNG (viền 2px màu vai trò) khi chưa chọn → ĐẦY khi đã chọn; viền ô
 nhuốm màu vai trò khi có giá trị (emerald-700 Đi · red-600 Đến — đúng cặp màu chip

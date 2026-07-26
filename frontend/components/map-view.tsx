@@ -14,7 +14,7 @@ import "maplibre-gl/dist/maplibre-gl.css";
 
 import { type RGBA } from "@/lib/colors";
 import { usePalette } from "@/lib/use-palette";
-import { Home, Minus, Plus } from "lucide-react";
+import { Home, Minus, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { useApp } from "@/lib/store";
 import { Button } from "./ui/button";
@@ -38,6 +38,7 @@ export function MapView() {
   const start = useApp((s) => s.start);
   const goal = useApp((s) => s.goal);
   const stops = useApp((s) => s.stops);
+  const clearMap = useApp((s) => s.clearMap);
   const pickTarget = useApp((s) => s.pickTarget);
   const theme = useApp((s) => s.theme);
   const set = useApp((s) => s.set);
@@ -451,6 +452,13 @@ export function MapView() {
             transitionInterpolator: new FlyToInterpolator(),
           })}>
           <Home />
+        </Button>
+        <div className="my-0.5 border-t border-surface-border" />
+        <Button variant="ghost" size="iconSm" aria-label="Xoá mọi thứ trên bản đồ"
+          className="hover:text-goal"
+          disabled={!trace && !compare && !multi && !start && !goal && stops.length === 0}
+          onClick={clearMap}>
+          <Trash2 />
         </Button>
       </div>
       {pickTarget && (

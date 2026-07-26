@@ -73,6 +73,7 @@ interface AppState {
   set: (patch: Partial<AppState>) => void;
   loadGraph: (level: GraphLevel) => Promise<void>;
   loadTraffic: () => Promise<void>;
+  clearMap: () => void;
   setSlot: (slot: TimeSlot) => void;
   runRoute: () => Promise<void>;
   runCompare: () => Promise<void>;
@@ -129,6 +130,12 @@ export const useApp = create<AppState>((set, get) => ({
   drawerTab: "metrics",
 
   set: (patch) => set(patch),
+
+  clearMap: () => {
+    set({ trace: null, compare: null, multi: null, start: null, goal: null,
+          stops: [], stepIdx: 0, playing: false, pickTarget: null });
+    toast.success("Đã xoá kết quả và lựa chọn trên bản đồ.");
+  },
 
   loadGraph: async (level) => {
     set({

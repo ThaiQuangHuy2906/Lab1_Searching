@@ -41,7 +41,24 @@ DEFAULT_SPEED_KMH = 30
 # highway types that imply the narrow_alley risk flag (DATA.md rule).
 NARROW_HIGHWAYS = {"living_street", "service", "alley", "track"}
 
+# Road classes treated as "main" (TomTom sample points sit on these; the
+# profile sanity checks in validate_data.py compare peak-vs-night on them).
+MAIN_CLASSES = {"motorway", "trunk", "primary", "secondary",
+                "motorway_link", "trunk_link", "primary_link", "secondary_link"}
+
 TIME_SLOTS = ("07:30", "12:00", "17:30", "22:00")
+
+
+def corridor_mean_level(
+    eids: list[str], slot_levels: dict[str, int], t_free_by_eid: dict[str, float]
+) -> int:
+    """Congestion of a contracted G_demo edge: free-flow-time-weighted mean
+    of the real levels under its corridor, half-up rounded to an int 1-5.
+    Shared by 03b (writes profiles) and 04 (checks the balanced invariant
+    at build time) — the two MUST agree, so the formula lives here."""
+    weights = [t_free_by_eid[i] for i in eids]
+    mean = sum(slot_levels[i] * w for i, w in zip(eids, weights)) / sum(weights)
+    return min(5, max(1, math.floor(mean + 0.5)))
 
 
 def ceil_dm(x: float) -> float:
@@ -93,16 +110,29 @@ def dump_json(payload: dict, path: Path) -> None:
                     encoding="utf-8")
 
 
-def risk_flags_for_nodes(
-    node_coords: list[tuple[float, float]], risks: list[dict]
+def risk_entry_flags(
+    u_coord: tuple[float, float], v_coord: tuple[float, float],
+    risks: list[dict],
 ) -> dict[str, int]:
-    """flood/construction flags: 1 if ANY given node lies inside a risk circle."""
+    """flood/construction flags: 1 iff the edge ENTERS a risk circle
+    (u outside, v inside), for any zone of that type.
+
+    Zone-based risks are paid ONCE PER CROSSING this way: a route that
+    traverses a zone pays the penalty exactly on the entering edge, no
+    matter how many micro-segments OSM splits the street into (fix for
+    audit finding L1-01 — the old any-endpoint-in-radius rule charged a
+    single flood point up to 17 times on one route). Cost stays strictly
+    edge-local. Known accepted limit (DATA.md §4/§8): a route STARTING
+    inside a zone has no entering edge for it, so that first zone is not
+    charged.
+    """
     flags = {"flood": 0, "construction": 0}
-    for lat, lon in node_coords:
-        for r in risks:
-            if flags[r["type"]] == 0 and \
-                    haversine_m(lat, lon, r["lat"], r["lon"]) <= r["radius_m"]:
-                flags[r["type"]] = 1
-        if flags["flood"] and flags["construction"]:
-            break
+    (ulat, ulon), (vlat, vlon) = u_coord, v_coord
+    for r in risks:
+        if flags[r["type"]]:
+            continue
+        u_in = haversine_m(ulat, ulon, r["lat"], r["lon"]) <= r["radius_m"]
+        v_in = haversine_m(vlat, vlon, r["lat"], r["lon"]) <= r["radius_m"]
+        if v_in and not u_in:
+            flags[r["type"]] = 1
     return flags

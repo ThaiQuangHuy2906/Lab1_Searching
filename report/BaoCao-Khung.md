@@ -100,7 +100,9 @@ mode=balanced → w = t_free · f_cong + penalty      [giây]  (MẶC ĐỊNH)
 
 [ĐIỀN: lập luận vì sao quy hết về giây thay vì tổng đa đơn vị: (1) mọi thành phần
 cùng thứ nguyên → cộng có nghĩa vật lý "thời gian tương đương"; (2) penalty đọc được
-("một điểm ngập đắt ngang 60 giây đi đường"); (3) heuristic admissible chứng minh
+("mỗi LƯỢT băng qua một vùng ngập đắt thêm 60 giây" — flag đặt tại cạnh ĐI VÀO vùng
+nên tuyến xuyên vùng trả đúng một lần, không cộng dồn theo từng đoạn OSM nhỏ,
+xem DATA.md §4); (3) heuristic admissible chứng minh
 được sạch sẽ trên cùng đơn vị. Nêu vì sao γ=1,5: trỏ [HÌNH → results/figs/exp5_gamma_curves.png]
 — thời gian tuyến đạt cực tiểu quanh γ=1,5 [SỐ LIỆU → results/exp5_gamma.csv:
 790,8 s tại γ=1,5 so với 811,8 s tại γ=0].]
@@ -125,9 +127,9 @@ cùng thứ nguyên → cộng có nghĩa vật lý "thời gian tương đươn
 | | G_real | G_demo |
 |---|---|---|
 | Node | 2 118 (raw 2 230, lấy SCC) | 51 địa danh thật |
-| Cạnh | 4 699 (1 433 một chiều) | 253 (51 một chiều) |
-| Đèn / ngập / lô cốt / hẻm | 185 / 402 / 107 / 8 | 122 / 39 / 31 / 0 |
-| Bất biến demo/real | — | time ≤1,5× · dist ≤1,8× mọi cặp POI (validator chặn) |
+| Cạnh | 4 699 (1 433 một chiều) | 292 (56 một chiều) |
+| Đèn / ngập / lô cốt / hẻm | 185 / 54 / 19 / 8 | 131 / 24 / 24 / 0 |
+| Bất biến demo/real | — | time ≤1,5× · dist ≤1,8× · balanced ≤1,5× cả 4 khung giờ, mọi cặp POI (validator chặn) |
 
 [ĐIỀN: kiến trúc 2 tầng — vì sao cần cả hai: G_demo để visualize/giảng/quay video
 (tên thật, cạnh co kế thừa hình học thật), G_real để benchmark/chứng minh scale.]

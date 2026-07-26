@@ -25,11 +25,12 @@
 - Đồ thị CÓ HƯỚNG; cạnh mang length/speed/congestion(4 khung giờ)/risk 0-1
 - `w = t_free·f_cong + penalty` — QUY HẾT VỀ GIÂY (điểm khác công thức mẫu của đề)
 - γ=1,5 chọn bằng THÍ NGHIỆM: cực tiểu thời gian tại γ=1,5 (exp5)
-> 🗣 60s: nhấn lý do "cùng đơn vị mới cộng có nghĩa"; một điểm ngập = +60 s tương đương.
+> 🗣 60s: nhấn lý do "cùng đơn vị mới cộng có nghĩa"; mỗi lượt băng qua vùng ngập = +60 s
+> (flag tại cạnh ĐI VÀO vùng — trả một lần mỗi lượt, không cộng dồn theo đoạn OSM).
 
 **Slide 4 — Dữ liệu 2 tầng** *(rubric: dataset trong 15đ modeling)*
 - G_real: 2 118 nút / 4 699 cạnh từ OSM (OSMnx v2, bbox trung tâm) — để benchmark
-- G_demo: 51 địa danh thật / 253 cạnh co kế thừa hình học thật (mọi cặp ≤1,5× thời gian thật) — để giảng + demo
+- G_demo: 51 địa danh thật / 292 cạnh co kế thừa hình học thật (mọi cặp ≤1,5× thời gian thật, ≤1,5× cả chi phí balanced 4 khung giờ) — để giảng + demo
 - Congestion: TomTom (tuỳ chọn) + synthetic có luật, seed 42 — demo OFFLINE 100%
 - Hình: `data/gdemo_preview.png`
 > 🗣 45s: vì sao 2 tầng (một để NHÌN, một để ĐO); mọi thứ tái lập được.

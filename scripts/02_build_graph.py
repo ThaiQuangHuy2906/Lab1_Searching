@@ -9,7 +9,9 @@ Rules applied (documented in data/DATA.md):
   airtight regardless of OSM tagging quirks.
 - traffic_light: edge ENDS at a node tagged highway=traffic_signals.
 - narrow_alley: highway type in NARROW_HIGHWAYS.
-- flood/construction: endpoint within radius of a data/manual_risks.json entry.
+- flood/construction: edge ENTERS the risk circle of a manual_risks.json
+  entry (u outside, v inside) -> one penalty per crossing (see
+  pipeline_common.risk_entry_flags; fix for audit finding L1-01).
 - Stable ids: nodes sorted by osmid -> n0001...; edges sorted by (u, v)
   -> e00001... (SCHEMA §A rule 7).
 """
@@ -22,7 +24,7 @@ import osmnx as ox
 
 from pipeline_common import (
     BBOX, DATA_DIR, RAW_DIR, NARROW_HIGHWAYS,
-    ceil_dm, clean_name, dump_json, first_of, load_json, risk_flags_for_nodes,
+    ceil_dm, clean_name, dump_json, first_of, load_json, risk_entry_flags,
     speed_for,
 )
 
@@ -67,8 +69,9 @@ def main() -> None:
         if key in best and best[key]["free_travel_time_s"] <= travel:
             continue
         name = clean_name(str(first_of(data.get("name"))) if data.get("name") else None)
-        risk = risk_flags_for_nodes(
-            [(g.nodes[u]["y"], g.nodes[u]["x"]), (g.nodes[v]["y"], g.nodes[v]["x"])],
+        risk = risk_entry_flags(
+            (g.nodes[u]["y"], g.nodes[u]["x"]),
+            (g.nodes[v]["y"], g.nodes[v]["x"]),
             risks,
         )
         best[key] = {

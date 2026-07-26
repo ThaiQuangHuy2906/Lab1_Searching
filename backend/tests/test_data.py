@@ -28,18 +28,25 @@ def test_built_data_valid(level: str):
 def test_regression_cvhld_ho_con_rua():
     """Named guard from the 2026-07-26 audit: this pair once measured
     10 159.8 m on demo vs 1 584.2 m on G_real (6.4x). Must stay <= 2x
-    in BOTH directions on BOTH weights, forever."""
+    in BOTH directions on BOTH weights, forever. Since the KIEMTOAN
+    batch the same call also asserts the six global invariants (time,
+    dist, balanced x 4 slots) internally."""
     if not (DATA / "graph_demo.json").exists():
         pytest.skip("graph_demo.json not built yet")
     import json
     from validate_data import check_demo_invariant
-    from app.models import GraphFile
+    from app.models import GraphFile, TrafficProfiles
 
-    demo = GraphFile.model_validate(
-        json.loads((DATA / "graph_demo.json").read_text(encoding="utf-8")))
-    real = GraphFile.model_validate(
-        json.loads((DATA / "graph_real.json").read_text(encoding="utf-8")))
-    stats = check_demo_invariant(demo, real)  # asserts internally
+    def load(name, model):
+        return model.model_validate(
+            json.loads((DATA / name).read_text(encoding="utf-8")))
+
+    stats = check_demo_invariant(  # asserts internally
+        load("graph_demo.json", GraphFile),
+        load("graph_real.json", GraphFile),
+        load("traffic_profiles_demo.json", TrafficProfiles),
+        load("traffic_profiles_real.json", TrafficProfiles),
+    )
     assert all(r <= 2.0 + 1e-6 for r in stats["regression"].values())
 
 

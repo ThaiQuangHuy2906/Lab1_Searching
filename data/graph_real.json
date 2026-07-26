@@ -8,7 +8,7 @@
       10.8
     ],
     "directed": true,
-    "created": "2026-07-26",
+    "created": "2026-07-27",
     "crs": "EPSG:4326",
     "node_count": 2118,
     "edge_count": 4699
@@ -15006,7 +15006,7 @@
       "free_speed_kmh": 35,
       "free_travel_time_s": 37.3,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -15023,7 +15023,7 @@
       "free_speed_kmh": 35,
       "free_travel_time_s": 28.6,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -15040,7 +15040,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 4.5,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -18288,7 +18288,7 @@
       "free_travel_time_s": 10.3,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
       }
@@ -18305,7 +18305,7 @@
       "free_travel_time_s": 9.8,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
       }
@@ -18322,7 +18322,7 @@
       "free_travel_time_s": 14.9,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
       }
@@ -18951,7 +18951,7 @@
       "free_travel_time_s": 3.9,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
       }
@@ -18968,7 +18968,7 @@
       "free_travel_time_s": 9.3,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
       }
@@ -19035,7 +19035,7 @@
       "free_speed_kmh": 35,
       "free_travel_time_s": 6.3,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -19052,7 +19052,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 26.9,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -19069,7 +19069,7 @@
       "free_speed_kmh": 35,
       "free_travel_time_s": 6.3,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -20157,7 +20157,7 @@
       "free_speed_kmh": 35,
       "free_travel_time_s": 0.8,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -20174,7 +20174,7 @@
       "free_speed_kmh": 35,
       "free_travel_time_s": 2.9,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -20191,7 +20191,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 7.0,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -21365,7 +21365,7 @@
       "free_travel_time_s": 2.6,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
       }
@@ -21382,7 +21382,7 @@
       "free_travel_time_s": 23.6,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 1
       }
@@ -21399,7 +21399,7 @@
       "free_travel_time_s": 2.8,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
       }
@@ -23099,7 +23099,7 @@
       "free_travel_time_s": 1.5,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
       }
@@ -23116,7 +23116,7 @@
       "free_travel_time_s": 3.7,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
       }
@@ -23133,7 +23133,7 @@
       "free_travel_time_s": 1.5,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
       }
@@ -23150,7 +23150,7 @@
       "free_travel_time_s": 17.9,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
       }
@@ -23167,7 +23167,7 @@
       "free_travel_time_s": 17.9,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
       }
@@ -24220,7 +24220,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 16.3,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -24645,7 +24645,7 @@
       "free_speed_kmh": 35,
       "free_travel_time_s": 17.0,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -24662,7 +24662,7 @@
       "free_speed_kmh": 35,
       "free_travel_time_s": 9.7,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -24679,7 +24679,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 12.1,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -24696,7 +24696,7 @@
       "free_speed_kmh": 35,
       "free_travel_time_s": 5.6,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -24713,7 +24713,7 @@
       "free_speed_kmh": 35,
       "free_travel_time_s": 6.4,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -25053,7 +25053,7 @@
       "free_speed_kmh": 40,
       "free_travel_time_s": 7.8,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -25070,7 +25070,7 @@
       "free_speed_kmh": 40,
       "free_travel_time_s": 5.2,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -25087,7 +25087,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 22.2,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -25342,7 +25342,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 16.3,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -25359,7 +25359,7 @@
       "free_speed_kmh": 40,
       "free_travel_time_s": 3.0,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -25376,7 +25376,7 @@
       "free_speed_kmh": 40,
       "free_travel_time_s": 14.4,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -26311,7 +26311,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 12.0,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -26328,7 +26328,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 16.4,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -26856,7 +26856,7 @@
       "free_travel_time_s": 7.9,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
       }
@@ -26873,7 +26873,7 @@
       "free_travel_time_s": 13.0,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
       }
@@ -26890,7 +26890,7 @@
       "free_travel_time_s": 16.7,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
       }
@@ -26906,7 +26906,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 9.4,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -27314,7 +27314,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 17.9,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -27331,7 +27331,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 6.1,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -27348,7 +27348,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 19.7,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -27892,7 +27892,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 8.7,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -27909,7 +27909,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 16.1,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -27926,7 +27926,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 9.0,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -27994,7 +27994,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 13.4,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -28011,7 +28011,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 24.3,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -28028,7 +28028,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 12.3,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -28454,7 +28454,7 @@
       "free_travel_time_s": 7.9,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
       }
@@ -30834,7 +30834,7 @@
       "free_travel_time_s": 7.4,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
       }
@@ -30851,7 +30851,7 @@
       "free_travel_time_s": 17.4,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
       }
@@ -30868,7 +30868,7 @@
       "free_travel_time_s": 7.3,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
       }
@@ -31072,7 +31072,7 @@
       "free_travel_time_s": 3.9,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
       }
@@ -31089,7 +31089,7 @@
       "free_travel_time_s": 13.0,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
       }
@@ -31106,7 +31106,7 @@
       "free_travel_time_s": 8.3,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
       }
@@ -32023,7 +32023,7 @@
       "free_speed_kmh": 40,
       "free_travel_time_s": 7.8,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -32040,7 +32040,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 23.5,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -32057,7 +32057,7 @@
       "free_speed_kmh": 40,
       "free_travel_time_s": 3.3,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -32381,7 +32381,7 @@
       "free_travel_time_s": 22.3,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
       }
@@ -32398,7 +32398,7 @@
       "free_travel_time_s": 5.5,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
       }
@@ -32686,7 +32686,7 @@
       "free_speed_kmh": 40,
       "free_travel_time_s": 14.4,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -32703,7 +32703,7 @@
       "free_speed_kmh": 40,
       "free_travel_time_s": 4.7,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -32720,7 +32720,7 @@
       "free_speed_kmh": 35,
       "free_travel_time_s": 8.3,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -33095,7 +33095,7 @@
       "free_travel_time_s": 1.8,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
       }
@@ -33112,7 +33112,7 @@
       "free_travel_time_s": 2.3,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
       }
@@ -33672,7 +33672,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 17.9,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -33689,7 +33689,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 4.1,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -33706,7 +33706,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 1.3,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -33826,7 +33826,7 @@
       "free_travel_time_s": 26.4,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
       }
@@ -33843,7 +33843,7 @@
       "free_travel_time_s": 8.3,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
       }
@@ -33860,7 +33860,7 @@
       "free_travel_time_s": 2.6,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
       }
@@ -34744,7 +34744,7 @@
       "free_travel_time_s": 6.4,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
       }
@@ -34761,7 +34761,7 @@
       "free_travel_time_s": 13.2,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 1
       }
@@ -35509,7 +35509,7 @@
       "free_travel_time_s": 6.1,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
       }
@@ -35526,7 +35526,7 @@
       "free_travel_time_s": 10.2,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
       }
@@ -35968,7 +35968,7 @@
       "free_travel_time_s": 7.4,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
       }
@@ -35985,7 +35985,7 @@
       "free_travel_time_s": 15.3,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
       }
@@ -36002,7 +36002,7 @@
       "free_travel_time_s": 12.6,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
       }
@@ -36477,7 +36477,7 @@
       "free_speed_kmh": 35,
       "free_travel_time_s": 0.8,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -36494,7 +36494,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 7.0,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -36511,7 +36511,7 @@
       "free_speed_kmh": 35,
       "free_travel_time_s": 1.0,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -37157,7 +37157,7 @@
       "free_speed_kmh": 35,
       "free_travel_time_s": 13.2,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -37174,7 +37174,7 @@
       "free_speed_kmh": 35,
       "free_travel_time_s": 13.7,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -37191,7 +37191,7 @@
       "free_speed_kmh": 35,
       "free_travel_time_s": 8.5,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -37208,7 +37208,7 @@
       "free_speed_kmh": 35,
       "free_travel_time_s": 12.5,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -39843,7 +39843,7 @@
       "free_speed_kmh": 40,
       "free_travel_time_s": 13.6,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -41849,7 +41849,7 @@
       "free_speed_kmh": 35,
       "free_travel_time_s": 13.2,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -41866,7 +41866,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 2.0,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -42581,7 +42581,7 @@
       "free_travel_time_s": 1.5,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
       }
@@ -42598,7 +42598,7 @@
       "free_travel_time_s": 1.2,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
       }
@@ -42615,7 +42615,7 @@
       "free_travel_time_s": 2.0,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
       }
@@ -42954,7 +42954,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 3.8,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -42971,7 +42971,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 3.6,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -42988,7 +42988,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 3.3,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -43736,7 +43736,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 3.2,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -43770,7 +43770,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 8.0,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -43787,7 +43787,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 2.2,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -43804,7 +43804,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 7.3,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -43821,7 +43821,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 0.9,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 1
@@ -43838,7 +43838,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 2.6,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 1
@@ -43872,7 +43872,7 @@
       "free_speed_kmh": 35,
       "free_travel_time_s": 13.7,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -43889,7 +43889,7 @@
       "free_speed_kmh": 35,
       "free_travel_time_s": 2.5,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -43940,7 +43940,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 1.6,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 1
@@ -43957,7 +43957,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 1.2,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -44450,7 +44450,7 @@
       "free_speed_kmh": 35,
       "free_travel_time_s": 30.8,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -44467,7 +44467,7 @@
       "free_speed_kmh": 35,
       "free_travel_time_s": 3.4,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -44484,7 +44484,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 26.0,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -44655,7 +44655,7 @@
       "free_travel_time_s": 37.0,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
       }
@@ -44672,7 +44672,7 @@
       "free_travel_time_s": 1.8,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
       }
@@ -44689,7 +44689,7 @@
       "free_travel_time_s": 15.4,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
       }
@@ -44875,7 +44875,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 21.0,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -44892,7 +44892,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 40.6,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -44909,7 +44909,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 13.2,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -45096,7 +45096,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 0.9,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -45113,7 +45113,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 0.8,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -45130,7 +45130,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 16.8,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -45147,7 +45147,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 1.0,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -45164,7 +45164,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 0.9,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -45181,7 +45181,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 1.0,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -45198,7 +45198,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 0.8,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -45215,7 +45215,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 5.4,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -45232,7 +45232,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 9.4,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -45776,7 +45776,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 6.8,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -45844,7 +45844,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 13.4,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -45861,7 +45861,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 10.4,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -45930,7 +45930,7 @@
       "free_travel_time_s": 12.1,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
       }
@@ -46439,7 +46439,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 13.1,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -46456,7 +46456,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 3.8,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -46473,7 +46473,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 5.4,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -46609,7 +46609,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 0.9,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -46626,7 +46626,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 7.6,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -46711,7 +46711,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 17.2,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -46728,7 +46728,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 6.4,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -46745,7 +46745,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 2.4,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -46915,7 +46915,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 8.1,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -46932,7 +46932,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 1.0,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -47238,7 +47238,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 1.9,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -47255,7 +47255,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 9.3,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -47272,7 +47272,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 8.8,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -47289,7 +47289,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 0.9,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -47340,7 +47340,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 17.0,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -47357,7 +47357,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 6.4,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -47374,7 +47374,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 6.9,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -47391,7 +47391,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 3.7,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -47493,7 +47493,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 17.5,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -47510,7 +47510,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 6.9,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -47680,7 +47680,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 13.1,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -47697,7 +47697,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 1.0,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -47714,7 +47714,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 3.2,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -47766,7 +47766,7 @@
       "free_travel_time_s": 15.9,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
       }
@@ -47783,7 +47783,7 @@
       "free_travel_time_s": 2.0,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 1
       }
@@ -47800,7 +47800,7 @@
       "free_travel_time_s": 5.2,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
       }
@@ -47868,7 +47868,7 @@
       "free_travel_time_s": 11.4,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
       }
@@ -47885,7 +47885,7 @@
       "free_travel_time_s": 10.2,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
       }
@@ -47902,7 +47902,7 @@
       "free_travel_time_s": 4.6,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
       }
@@ -47919,7 +47919,7 @@
       "free_travel_time_s": 1.2,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 1
       }
@@ -47936,7 +47936,7 @@
       "free_travel_time_s": 5.4,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
       }
@@ -47953,7 +47953,7 @@
       "free_travel_time_s": 5.0,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 1
       }
@@ -48089,7 +48089,7 @@
       "free_travel_time_s": 8.4,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
       }
@@ -48751,7 +48751,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 1.4,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -48768,7 +48768,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 1.5,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -48785,7 +48785,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 2.5,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 1
@@ -53750,7 +53750,7 @@
       "free_travel_time_s": 17.4,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
       }
@@ -53767,7 +53767,7 @@
       "free_travel_time_s": 8.2,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
       }
@@ -54378,7 +54378,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 2.0,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -54395,7 +54395,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 4.1,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -54599,7 +54599,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 1.8,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -54616,7 +54616,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 4.4,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -55500,7 +55500,7 @@
       "free_speed_kmh": 35,
       "free_travel_time_s": 32.3,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -55517,7 +55517,7 @@
       "free_speed_kmh": 35,
       "free_travel_time_s": 3.4,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -55534,7 +55534,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 7.4,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -55551,7 +55551,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 7.4,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -56435,7 +56435,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 5.1,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -56452,7 +56452,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 6.1,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -56469,7 +56469,7 @@
       "free_speed_kmh": 35,
       "free_travel_time_s": 6.5,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -56486,7 +56486,7 @@
       "free_speed_kmh": 35,
       "free_travel_time_s": 1.7,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -56537,7 +56537,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 16.4,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -56554,7 +56554,7 @@
       "free_speed_kmh": 35,
       "free_travel_time_s": 8.2,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -56571,7 +56571,7 @@
       "free_speed_kmh": 35,
       "free_travel_time_s": 8.5,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -56724,7 +56724,7 @@
       "free_speed_kmh": 35,
       "free_travel_time_s": 9.7,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -56741,7 +56741,7 @@
       "free_speed_kmh": 35,
       "free_travel_time_s": 0.9,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -56758,7 +56758,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 3.0,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -56775,7 +56775,7 @@
       "free_speed_kmh": 35,
       "free_travel_time_s": 0.9,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -56792,7 +56792,7 @@
       "free_speed_kmh": 35,
       "free_travel_time_s": 1.1,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -56809,7 +56809,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 2.8,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -56826,7 +56826,7 @@
       "free_speed_kmh": 35,
       "free_travel_time_s": 6.3,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -56843,7 +56843,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 4.7,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -56860,7 +56860,7 @@
       "free_speed_kmh": 35,
       "free_travel_time_s": 0.9,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -56928,7 +56928,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 24.3,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -56945,7 +56945,7 @@
       "free_speed_kmh": 40,
       "free_travel_time_s": 8.7,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -56962,7 +56962,7 @@
       "free_speed_kmh": 40,
       "free_travel_time_s": 7.2,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -56979,7 +56979,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 0.7,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -56996,7 +56996,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 7.3,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -57302,7 +57302,7 @@
       "free_speed_kmh": 35,
       "free_travel_time_s": 5.6,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -57319,7 +57319,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 23.5,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -57336,7 +57336,7 @@
       "free_speed_kmh": 35,
       "free_travel_time_s": 6.5,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -57353,7 +57353,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 26.9,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -57370,7 +57370,7 @@
       "free_speed_kmh": 35,
       "free_travel_time_s": 2.9,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -57387,7 +57387,7 @@
       "free_speed_kmh": 35,
       "free_travel_time_s": 23.3,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -58067,7 +58067,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 24.1,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -58084,7 +58084,7 @@
       "free_speed_kmh": 40,
       "free_travel_time_s": 4.7,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -58101,7 +58101,7 @@
       "free_speed_kmh": 40,
       "free_travel_time_s": 2.9,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -58118,7 +58118,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 1.7,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -58152,7 +58152,7 @@
       "free_speed_kmh": 40,
       "free_travel_time_s": 2.9,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -58169,7 +58169,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 8.7,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -58186,7 +58186,7 @@
       "free_speed_kmh": 40,
       "free_travel_time_s": 2.1,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -58390,7 +58390,7 @@
       "free_speed_kmh": 40,
       "free_travel_time_s": 1.0,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -58407,7 +58407,7 @@
       "free_speed_kmh": 40,
       "free_travel_time_s": 3.1,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -58424,7 +58424,7 @@
       "free_speed_kmh": 40,
       "free_travel_time_s": 1.0,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -58441,7 +58441,7 @@
       "free_speed_kmh": 40,
       "free_travel_time_s": 2.9,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -58577,7 +58577,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 8.7,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -58594,7 +58594,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 27.9,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -59019,7 +59019,7 @@
       "free_speed_kmh": 35,
       "free_travel_time_s": 2.2,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -59036,7 +59036,7 @@
       "free_speed_kmh": 35,
       "free_travel_time_s": 5.0,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -59053,7 +59053,7 @@
       "free_speed_kmh": 35,
       "free_travel_time_s": 13.2,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -59070,7 +59070,7 @@
       "free_speed_kmh": 35,
       "free_travel_time_s": 2.1,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -59292,7 +59292,7 @@
       "free_travel_time_s": 1.2,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
       }
@@ -59309,7 +59309,7 @@
       "free_travel_time_s": 1.5,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
       }
@@ -59326,7 +59326,7 @@
       "free_travel_time_s": 17.0,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
       }
@@ -59581,7 +59581,7 @@
       "free_travel_time_s": 2.5,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
       }
@@ -59598,7 +59598,7 @@
       "free_travel_time_s": 1.0,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
       }
@@ -59750,7 +59750,7 @@
       "free_speed_kmh": 40,
       "free_travel_time_s": 8.7,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -59767,7 +59767,7 @@
       "free_speed_kmh": 40,
       "free_travel_time_s": 0.8,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -59784,7 +59784,7 @@
       "free_speed_kmh": 40,
       "free_travel_time_s": 16.9,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -59801,7 +59801,7 @@
       "free_speed_kmh": 40,
       "free_travel_time_s": 1.7,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -59818,7 +59818,7 @@
       "free_speed_kmh": 35,
       "free_travel_time_s": 1.3,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -59835,7 +59835,7 @@
       "free_speed_kmh": 35,
       "free_travel_time_s": 2.6,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -60005,7 +60005,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 3.7,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -60022,7 +60022,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 8.8,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -60039,7 +60039,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 17.3,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -60056,7 +60056,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 8.8,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -60073,7 +60073,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 3.9,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -60090,7 +60090,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 5.2,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -60107,7 +60107,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 3.8,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -60124,7 +60124,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 2.4,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -60141,7 +60141,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 3.9,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -60158,7 +60158,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 17.3,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -60175,7 +60175,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 5.2,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -60192,7 +60192,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 2.9,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -60209,7 +60209,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 2.9,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -61586,7 +61586,7 @@
       "free_speed_kmh": 40,
       "free_travel_time_s": 0.8,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -61603,7 +61603,7 @@
       "free_speed_kmh": 35,
       "free_travel_time_s": 2.5,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -61620,7 +61620,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 2.6,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -61637,7 +61637,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 41.7,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -61654,7 +61654,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 16.1,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -61671,7 +61671,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 7.9,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -61688,7 +61688,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 2.2,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -61705,7 +61705,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 2.2,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -61722,7 +61722,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 0.8,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 1
@@ -63609,7 +63609,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 7.7,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -63626,7 +63626,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 7.3,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -65190,7 +65190,7 @@
       "free_speed_kmh": 40,
       "free_travel_time_s": 1.8,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -65207,7 +65207,7 @@
       "free_speed_kmh": 35,
       "free_travel_time_s": 41.4,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -65224,7 +65224,7 @@
       "free_speed_kmh": 40,
       "free_travel_time_s": 6.3,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -65241,7 +65241,7 @@
       "free_speed_kmh": 40,
       "free_travel_time_s": 7.2,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -65258,7 +65258,7 @@
       "free_speed_kmh": 40,
       "free_travel_time_s": 4.6,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -65275,7 +65275,7 @@
       "free_speed_kmh": 40,
       "free_travel_time_s": 19.4,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -65292,7 +65292,7 @@
       "free_speed_kmh": 40,
       "free_travel_time_s": 2.9,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -65309,7 +65309,7 @@
       "free_speed_kmh": 40,
       "free_travel_time_s": 3.4,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -65700,7 +65700,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 7.2,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -66091,7 +66091,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 1.8,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -66108,7 +66108,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 4.5,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -66125,7 +66125,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 26.0,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -66142,7 +66142,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 33.6,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -66448,7 +66448,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 14.1,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -66465,7 +66465,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 5.0,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -66482,7 +66482,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 2.4,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -66533,7 +66533,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 12.2,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -66550,7 +66550,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 1.8,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -66567,7 +66567,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 5.0,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -66584,7 +66584,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 8.8,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -66601,7 +66601,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 8.8,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -67655,7 +67655,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 9.0,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -67672,7 +67672,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 27.6,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -67842,7 +67842,7 @@
       "free_speed_kmh": 40,
       "free_travel_time_s": 2.2,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -67859,7 +67859,7 @@
       "free_speed_kmh": 40,
       "free_travel_time_s": 1.7,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -67944,7 +67944,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 35.6,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -67961,7 +67961,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 38.3,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -67978,7 +67978,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 3.6,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -67995,7 +67995,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 3.6,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -68148,7 +68148,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 10.3,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -70460,7 +70460,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 11.1,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -70477,7 +70477,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 5.1,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -70494,7 +70494,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 7.7,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -70511,7 +70511,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 11.0,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -70528,7 +70528,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 11.0,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -71429,7 +71429,7 @@
       "free_speed_kmh": 35,
       "free_travel_time_s": 6.3,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -71446,7 +71446,7 @@
       "free_speed_kmh": 35,
       "free_travel_time_s": 5.0,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -71463,7 +71463,7 @@
       "free_speed_kmh": 35,
       "free_travel_time_s": 31.8,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -71480,7 +71480,7 @@
       "free_speed_kmh": 35,
       "free_travel_time_s": 2.6,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -71497,7 +71497,7 @@
       "free_speed_kmh": 35,
       "free_travel_time_s": 11.8,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -71803,7 +71803,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 2.2,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 1
@@ -71820,7 +71820,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 1.4,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 1
@@ -73521,7 +73521,7 @@
       "free_travel_time_s": 26.6,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
       }
@@ -73538,7 +73538,7 @@
       "free_travel_time_s": 2.2,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
       }
@@ -73555,7 +73555,7 @@
       "free_travel_time_s": 2.9,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
       }
@@ -74183,7 +74183,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 24.1,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -74200,7 +74200,7 @@
       "free_speed_kmh": 40,
       "free_travel_time_s": 5.3,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -74217,7 +74217,7 @@
       "free_speed_kmh": 40,
       "free_travel_time_s": 1.8,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -74234,7 +74234,7 @@
       "free_speed_kmh": 40,
       "free_travel_time_s": 1.0,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -74285,7 +74285,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 22.2,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -74302,7 +74302,7 @@
       "free_speed_kmh": 35,
       "free_travel_time_s": 1.7,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -74319,7 +74319,7 @@
       "free_speed_kmh": 35,
       "free_travel_time_s": 17.7,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -74863,7 +74863,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 2.5,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -74880,7 +74880,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 1.8,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 1
@@ -74897,7 +74897,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 0.7,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -74914,7 +74914,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 0.8,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -74931,7 +74931,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 7.1,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -75033,7 +75033,7 @@
       "free_speed_kmh": 40,
       "free_travel_time_s": 2.0,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -75050,7 +75050,7 @@
       "free_speed_kmh": 40,
       "free_travel_time_s": 2.1,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -75067,7 +75067,7 @@
       "free_speed_kmh": 40,
       "free_travel_time_s": 18.2,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -75084,7 +75084,7 @@
       "free_speed_kmh": 40,
       "free_travel_time_s": 2.1,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -75441,7 +75441,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 0.8,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -75458,7 +75458,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 0.6,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -75475,7 +75475,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 5.3,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -75492,7 +75492,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 0.8,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -75509,7 +75509,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 0.8,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -75526,7 +75526,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 0.8,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -75543,7 +75543,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 2.3,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -75560,7 +75560,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 0.8,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -75577,7 +75577,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 0.6,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -75594,7 +75594,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 0.6,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -75934,7 +75934,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 6.0,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -75951,7 +75951,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 17.3,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -76121,7 +76121,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 0.6,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -76138,7 +76138,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 0.6,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -76155,7 +76155,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 2.3,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -76172,7 +76172,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 0.6,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -76189,7 +76189,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 3.1,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -76206,7 +76206,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 0.6,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -76223,7 +76223,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 0.6,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -76240,7 +76240,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 3.3,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -76257,7 +76257,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 2.6,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -76274,7 +76274,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 0.6,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -76291,7 +76291,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 2.6,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -76308,7 +76308,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 0.6,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -76325,7 +76325,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 0.6,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -76342,7 +76342,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 5.5,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -76359,7 +76359,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 0.6,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -76376,7 +76376,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 5.5,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -76393,7 +76393,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 6.1,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -76410,7 +76410,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 0.6,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -76427,7 +76427,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 6.0,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -76444,7 +76444,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 0.6,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -77005,7 +77005,7 @@
       "free_speed_kmh": 35,
       "free_travel_time_s": 24.1,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -77022,7 +77022,7 @@
       "free_speed_kmh": 35,
       "free_travel_time_s": 2.5,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -77039,7 +77039,7 @@
       "free_speed_kmh": 40,
       "free_travel_time_s": 3.1,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -77260,7 +77260,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 1.0,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 1
@@ -77311,7 +77311,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 7.9,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -77328,7 +77328,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 0.8,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 1
@@ -77345,7 +77345,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 1.7,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -82037,7 +82037,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 2.4,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -82241,7 +82241,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 5.3,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -82258,7 +82258,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 0.8,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -82275,7 +82275,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 0.8,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -82292,7 +82292,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 0.8,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -82309,7 +82309,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 4.1,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -82326,7 +82326,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 0.8,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -82343,7 +82343,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 4.0,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -82360,7 +82360,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 4.0,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -82377,7 +82377,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 0.7,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -82394,7 +82394,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 4.2,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -82411,7 +82411,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 0.7,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -82428,7 +82428,7 @@
       "free_speed_kmh": 35,
       "free_travel_time_s": 1.1,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -82445,7 +82445,7 @@
       "free_speed_kmh": 35,
       "free_travel_time_s": 0.9,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -82462,7 +82462,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 4.5,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -82479,7 +82479,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 0.7,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -82496,7 +82496,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 3.7,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -82513,7 +82513,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 0.7,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -82530,7 +82530,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 3.7,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -82547,7 +82547,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 3.1,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -82564,7 +82564,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 0.7,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -82581,7 +82581,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 0.7,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -82598,7 +82598,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 3.1,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -84435,7 +84435,7 @@
       "free_travel_time_s": 7.3,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
       }
@@ -84452,7 +84452,7 @@
       "free_travel_time_s": 1.5,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
       }
@@ -84469,7 +84469,7 @@
       "free_travel_time_s": 16.7,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
       }
@@ -84622,7 +84622,7 @@
       "free_travel_time_s": 1.2,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
       }
@@ -84639,7 +84639,7 @@
       "free_travel_time_s": 3.1,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
       }
@@ -84656,7 +84656,7 @@
       "free_travel_time_s": 4.6,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
       }
@@ -84673,7 +84673,7 @@
       "free_travel_time_s": 27.9,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
       }
@@ -84979,7 +84979,7 @@
       "free_travel_time_s": 14.9,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
       }
@@ -84996,7 +84996,7 @@
       "free_travel_time_s": 1.3,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
       }
@@ -85013,7 +85013,7 @@
       "free_travel_time_s": 14.9,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
       }
@@ -85030,7 +85030,7 @@
       "free_travel_time_s": 3.1,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
       }
@@ -86373,7 +86373,7 @@
       "free_travel_time_s": 9.9,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
       }
@@ -86390,7 +86390,7 @@
       "free_travel_time_s": 1.3,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
       }
@@ -88311,7 +88311,7 @@
       "free_travel_time_s": 1.3,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
       }
@@ -88328,7 +88328,7 @@
       "free_travel_time_s": 14.7,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
       }
@@ -89687,7 +89687,7 @@
       "free_speed_kmh": 40,
       "free_travel_time_s": 3.3,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -89704,7 +89704,7 @@
       "free_speed_kmh": 40,
       "free_travel_time_s": 3.1,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -90504,7 +90504,7 @@
       "free_travel_time_s": 1.7,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
       }
@@ -90521,7 +90521,7 @@
       "free_travel_time_s": 1.2,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 1
       }
@@ -90707,7 +90707,7 @@
       "free_speed_kmh": 35,
       "free_travel_time_s": 1.0,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -90724,7 +90724,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 7.4,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -90741,7 +90741,7 @@
       "free_speed_kmh": 35,
       "free_travel_time_s": 1.0,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -90758,7 +90758,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 7.3,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -90775,7 +90775,7 @@
       "free_speed_kmh": 35,
       "free_travel_time_s": 1.0,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -90792,7 +90792,7 @@
       "free_speed_kmh": 35,
       "free_travel_time_s": 20.3,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -90979,7 +90979,7 @@
       "free_speed_kmh": 30,
       "free_travel_time_s": 1.7,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -91234,7 +91234,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 16.6,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -91251,7 +91251,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 0.9,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -91268,7 +91268,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 16.9,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -91285,7 +91285,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 0.9,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -91302,7 +91302,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 21.6,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -91319,7 +91319,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 0.8,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -91336,7 +91336,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 48.4,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -91353,7 +91353,7 @@
       "free_speed_kmh": 45,
       "free_travel_time_s": 0.8,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -91625,7 +91625,7 @@
       "free_speed_kmh": 40,
       "free_travel_time_s": 0.9,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -91642,7 +91642,7 @@
       "free_speed_kmh": 40,
       "free_travel_time_s": 6.1,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -91659,7 +91659,7 @@
       "free_speed_kmh": 35,
       "free_travel_time_s": 1.2,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -91676,7 +91676,7 @@
       "free_speed_kmh": 40,
       "free_travel_time_s": 4.6,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -91693,7 +91693,7 @@
       "free_speed_kmh": 35,
       "free_travel_time_s": 1.1,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -91710,7 +91710,7 @@
       "free_speed_kmh": 35,
       "free_travel_time_s": 6.1,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -91727,7 +91727,7 @@
       "free_speed_kmh": 40,
       "free_travel_time_s": 0.9,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -91880,7 +91880,7 @@
       "free_speed_kmh": 40,
       "free_travel_time_s": 6.3,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -91897,7 +91897,7 @@
       "free_speed_kmh": 40,
       "free_travel_time_s": 3.7,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -92884,7 +92884,7 @@
       "free_travel_time_s": 2.6,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
       }
@@ -92901,7 +92901,7 @@
       "free_travel_time_s": 2.0,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
       }
@@ -92918,7 +92918,7 @@
       "free_travel_time_s": 2.8,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
       }
@@ -92935,7 +92935,7 @@
       "free_travel_time_s": 20.1,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
       }
@@ -92952,7 +92952,7 @@
       "free_travel_time_s": 0.8,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
       }
@@ -92969,7 +92969,7 @@
       "free_travel_time_s": 2.0,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
       }
@@ -92986,7 +92986,7 @@
       "free_travel_time_s": 0.8,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
       }
@@ -94549,7 +94549,7 @@
       "free_speed_kmh": 35,
       "free_travel_time_s": 23.3,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -94566,7 +94566,7 @@
       "free_speed_kmh": 35,
       "free_travel_time_s": 31.3,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -94583,7 +94583,7 @@
       "free_speed_kmh": 35,
       "free_travel_time_s": 1.1,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -94600,7 +94600,7 @@
       "free_speed_kmh": 35,
       "free_travel_time_s": 8.3,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -94617,7 +94617,7 @@
       "free_speed_kmh": 35,
       "free_travel_time_s": 1.1,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -94634,7 +94634,7 @@
       "free_speed_kmh": 35,
       "free_travel_time_s": 13.4,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -94651,7 +94651,7 @@
       "free_speed_kmh": 40,
       "free_travel_time_s": 22.6,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -94668,7 +94668,7 @@
       "free_speed_kmh": 35,
       "free_travel_time_s": 15.1,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -94685,7 +94685,7 @@
       "free_speed_kmh": 40,
       "free_travel_time_s": 1.3,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -94702,7 +94702,7 @@
       "free_speed_kmh": 40,
       "free_travel_time_s": 2.1,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
@@ -94719,7 +94719,7 @@
       "free_speed_kmh": 40,
       "free_travel_time_s": 1.3,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0

@@ -8,10 +8,10 @@
       10.8
     ],
     "directed": true,
-    "created": "2026-07-26",
+    "created": "2026-07-27",
     "crs": "EPSG:4326",
     "node_count": 51,
-    "edge_count": 253
+    "edge_count": 292
   },
   "nodes": [
     {
@@ -412,11 +412,11 @@
       "u": "n0001",
       "v": "n0034",
       "oneway": false,
-      "length_m": 274.8,
-      "name": "Ngô Thời Nhiệm",
-      "highway": "tertiary",
-      "free_speed_kmh": 35.0,
-      "free_travel_time_s": 28.3,
+      "length_m": 284.5,
+      "name": "Sư Thiện Chiếu",
+      "highway": "residential",
+      "free_speed_kmh": 31.7,
+      "free_travel_time_s": 32.3,
       "risk": {
         "flood": 0,
         "construction": 0,
@@ -443,6 +443,23 @@
     },
     {
       "id": "e00005",
+      "u": "n0001",
+      "v": "n0049",
+      "oneway": false,
+      "length_m": 1242.6,
+      "name": "Trương Định",
+      "highway": "tertiary",
+      "free_speed_kmh": 34.2,
+      "free_travel_time_s": 130.8,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 1
+      }
+    },
+    {
+      "id": "e00006",
       "u": "n0002",
       "v": "n0004",
       "oneway": false,
@@ -459,7 +476,7 @@
       }
     },
     {
-      "id": "e00006",
+      "id": "e00007",
       "u": "n0002",
       "v": "n0006",
       "oneway": false,
@@ -476,7 +493,7 @@
       }
     },
     {
-      "id": "e00007",
+      "id": "e00008",
       "u": "n0002",
       "v": "n0012",
       "oneway": false,
@@ -493,7 +510,7 @@
       }
     },
     {
-      "id": "e00008",
+      "id": "e00009",
       "u": "n0002",
       "v": "n0026",
       "oneway": false,
@@ -510,7 +527,41 @@
       }
     },
     {
-      "id": "e00009",
+      "id": "e00010",
+      "u": "n0003",
+      "v": "n0002",
+      "oneway": true,
+      "length_m": 1033.0,
+      "name": "Hai Bà Trưng",
+      "highway": "primary",
+      "free_speed_kmh": 42.5,
+      "free_travel_time_s": 87.5,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 1
+      }
+    },
+    {
+      "id": "e00011",
+      "u": "n0003",
+      "v": "n0008",
+      "oneway": true,
+      "length_m": 1959.1,
+      "name": "Trần Quốc Toản",
+      "highway": "primary",
+      "free_speed_kmh": 40.3,
+      "free_travel_time_s": 175.0,
+      "risk": {
+        "flood": 0,
+        "construction": 1,
+        "narrow_alley": 0,
+        "traffic_light": 1
+      }
+    },
+    {
+      "id": "e00012",
       "u": "n0003",
       "v": "n0009",
       "oneway": false,
@@ -527,7 +578,7 @@
       }
     },
     {
-      "id": "e00010",
+      "id": "e00013",
       "u": "n0003",
       "v": "n0032",
       "oneway": false,
@@ -544,7 +595,7 @@
       }
     },
     {
-      "id": "e00011",
+      "id": "e00014",
       "u": "n0003",
       "v": "n0042",
       "oneway": true,
@@ -561,7 +612,7 @@
       }
     },
     {
-      "id": "e00012",
+      "id": "e00015",
       "u": "n0003",
       "v": "n0046",
       "oneway": true,
@@ -572,13 +623,13 @@
       "free_travel_time_s": 92.6,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
       }
     },
     {
-      "id": "e00013",
+      "id": "e00016",
       "u": "n0003",
       "v": "n0050",
       "oneway": false,
@@ -589,13 +640,13 @@
       "free_travel_time_s": 29.6,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
       }
     },
     {
-      "id": "e00014",
+      "id": "e00017",
       "u": "n0004",
       "v": "n0002",
       "oneway": false,
@@ -612,7 +663,58 @@
       }
     },
     {
-      "id": "e00015",
+      "id": "e00018",
+      "u": "n0004",
+      "v": "n0006",
+      "oneway": false,
+      "length_m": 1245.3,
+      "name": "Nguyễn Đình Chiểu",
+      "highway": "secondary",
+      "free_speed_kmh": 38.5,
+      "free_travel_time_s": 116.4,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 1
+      }
+    },
+    {
+      "id": "e00019",
+      "u": "n0004",
+      "v": "n0008",
+      "oneway": true,
+      "length_m": 1683.7,
+      "name": "Võ Thị Sáu",
+      "highway": "primary",
+      "free_speed_kmh": 43.9,
+      "free_travel_time_s": 138.1,
+      "risk": {
+        "flood": 0,
+        "construction": 1,
+        "narrow_alley": 0,
+        "traffic_light": 1
+      }
+    },
+    {
+      "id": "e00020",
+      "u": "n0004",
+      "v": "n0009",
+      "oneway": true,
+      "length_m": 1388.3,
+      "name": "Nam Kỳ Khởi Nghĩa",
+      "highway": "primary",
+      "free_speed_kmh": 42.9,
+      "free_travel_time_s": 116.5,
+      "risk": {
+        "flood": 0,
+        "construction": 1,
+        "narrow_alley": 0,
+        "traffic_light": 1
+      }
+    },
+    {
+      "id": "e00021",
       "u": "n0004",
       "v": "n0031",
       "oneway": false,
@@ -629,7 +731,7 @@
       }
     },
     {
-      "id": "e00016",
+      "id": "e00022",
       "u": "n0004",
       "v": "n0042",
       "oneway": false,
@@ -646,7 +748,7 @@
       }
     },
     {
-      "id": "e00017",
+      "id": "e00023",
       "u": "n0004",
       "v": "n0050",
       "oneway": false,
@@ -663,7 +765,24 @@
       }
     },
     {
-      "id": "e00018",
+      "id": "e00024",
+      "u": "n0005",
+      "v": "n0016",
+      "oneway": false,
+      "length_m": 735.7,
+      "name": "Lê Duẩn",
+      "highway": "secondary",
+      "free_speed_kmh": 37.5,
+      "free_travel_time_s": 70.6,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00025",
       "u": "n0005",
       "v": "n0021",
       "oneway": false,
@@ -680,7 +799,24 @@
       }
     },
     {
-      "id": "e00019",
+      "id": "e00026",
+      "u": "n0005",
+      "v": "n0023",
+      "oneway": false,
+      "length_m": 518.0,
+      "name": "Lý Tự Trọng",
+      "highway": "tertiary",
+      "free_speed_kmh": 35.0,
+      "free_travel_time_s": 53.3,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 1
+      }
+    },
+    {
+      "id": "e00027",
       "u": "n0005",
       "v": "n0026",
       "oneway": false,
@@ -697,7 +833,7 @@
       }
     },
     {
-      "id": "e00020",
+      "id": "e00028",
       "u": "n0005",
       "v": "n0030",
       "oneway": false,
@@ -714,7 +850,7 @@
       }
     },
     {
-      "id": "e00021",
+      "id": "e00029",
       "u": "n0005",
       "v": "n0040",
       "oneway": false,
@@ -731,7 +867,7 @@
       }
     },
     {
-      "id": "e00022",
+      "id": "e00030",
       "u": "n0005",
       "v": "n0045",
       "oneway": false,
@@ -748,7 +884,7 @@
       }
     },
     {
-      "id": "e00023",
+      "id": "e00031",
       "u": "n0006",
       "v": "n0002",
       "oneway": false,
@@ -765,10 +901,10 @@
       }
     },
     {
-      "id": "e00024",
+      "id": "e00032",
       "u": "n0006",
       "v": "n0004",
-      "oneway": true,
+      "oneway": false,
       "length_m": 991.1,
       "name": "Pasteur",
       "highway": "secondary",
@@ -782,7 +918,7 @@
       }
     },
     {
-      "id": "e00025",
+      "id": "e00033",
       "u": "n0006",
       "v": "n0013",
       "oneway": false,
@@ -799,7 +935,7 @@
       }
     },
     {
-      "id": "e00026",
+      "id": "e00034",
       "u": "n0006",
       "v": "n0014",
       "oneway": false,
@@ -816,7 +952,7 @@
       }
     },
     {
-      "id": "e00027",
+      "id": "e00035",
       "u": "n0006",
       "v": "n0042",
       "oneway": false,
@@ -833,7 +969,7 @@
       }
     },
     {
-      "id": "e00028",
+      "id": "e00036",
       "u": "n0006",
       "v": "n0045",
       "oneway": false,
@@ -850,7 +986,7 @@
       }
     },
     {
-      "id": "e00029",
+      "id": "e00037",
       "u": "n0007",
       "v": "n0006",
       "oneway": true,
@@ -867,7 +1003,7 @@
       }
     },
     {
-      "id": "e00030",
+      "id": "e00038",
       "u": "n0007",
       "v": "n0013",
       "oneway": false,
@@ -884,7 +1020,7 @@
       }
     },
     {
-      "id": "e00031",
+      "id": "e00039",
       "u": "n0007",
       "v": "n0017",
       "oneway": false,
@@ -901,7 +1037,7 @@
       }
     },
     {
-      "id": "e00032",
+      "id": "e00040",
       "u": "n0007",
       "v": "n0045",
       "oneway": false,
@@ -918,14 +1054,31 @@
       }
     },
     {
-      "id": "e00033",
+      "id": "e00041",
       "u": "n0008",
       "v": "n0001",
       "oneway": false,
-      "length_m": 741.2,
-      "name": "Điện Biên Phủ",
+      "length_m": 747.4,
+      "name": "Tú Xương",
+      "highway": "tertiary",
+      "free_speed_kmh": 37.1,
+      "free_travel_time_s": 72.5,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00042",
+      "u": "n0008",
+      "v": "n0034",
+      "oneway": false,
+      "length_m": 646.0,
+      "name": "Cách Mạng Tháng Tám",
       "highway": "primary",
-      "free_speed_kmh": 43.8,
+      "free_speed_kmh": 38.2,
       "free_travel_time_s": 60.9,
       "risk": {
         "flood": 0,
@@ -935,24 +1088,7 @@
       }
     },
     {
-      "id": "e00034",
-      "u": "n0008",
-      "v": "n0034",
-      "oneway": false,
-      "length_m": 642.8,
-      "name": "Cách Mạng Tháng Tám",
-      "highway": "primary",
-      "free_speed_kmh": 42.3,
-      "free_travel_time_s": 54.7,
-      "risk": {
-        "flood": 0,
-        "construction": 0,
-        "narrow_alley": 0,
-        "traffic_light": 0
-      }
-    },
-    {
-      "id": "e00035",
+      "id": "e00043",
       "u": "n0008",
       "v": "n0041",
       "oneway": false,
@@ -969,7 +1105,7 @@
       }
     },
     {
-      "id": "e00036",
+      "id": "e00044",
       "u": "n0008",
       "v": "n0049",
       "oneway": false,
@@ -986,7 +1122,7 @@
       }
     },
     {
-      "id": "e00037",
+      "id": "e00045",
       "u": "n0009",
       "v": "n0003",
       "oneway": false,
@@ -1003,7 +1139,7 @@
       }
     },
     {
-      "id": "e00038",
+      "id": "e00046",
       "u": "n0009",
       "v": "n0042",
       "oneway": false,
@@ -1020,7 +1156,24 @@
       }
     },
     {
-      "id": "e00039",
+      "id": "e00047",
+      "u": "n0009",
+      "v": "n0046",
+      "oneway": false,
+      "length_m": 1761.1,
+      "name": "Trần Quang Khải",
+      "highway": "tertiary",
+      "free_speed_kmh": 38.0,
+      "free_travel_time_s": 166.8,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 1
+      }
+    },
+    {
+      "id": "e00048",
       "u": "n0009",
       "v": "n0049",
       "oneway": false,
@@ -1037,7 +1190,7 @@
       }
     },
     {
-      "id": "e00040",
+      "id": "e00049",
       "u": "n0010",
       "v": "n0011",
       "oneway": false,
@@ -1054,7 +1207,7 @@
       }
     },
     {
-      "id": "e00041",
+      "id": "e00050",
       "u": "n0010",
       "v": "n0036",
       "oneway": false,
@@ -1071,7 +1224,7 @@
       }
     },
     {
-      "id": "e00042",
+      "id": "e00051",
       "u": "n0010",
       "v": "n0051",
       "oneway": false,
@@ -1088,7 +1241,7 @@
       }
     },
     {
-      "id": "e00043",
+      "id": "e00052",
       "u": "n0011",
       "v": "n0010",
       "oneway": false,
@@ -1105,24 +1258,24 @@
       }
     },
     {
-      "id": "e00044",
+      "id": "e00053",
       "u": "n0011",
       "v": "n0013",
       "oneway": false,
-      "length_m": 1168.1,
+      "length_m": 1204.5,
       "name": "Nguyễn Thị Minh Khai",
       "highway": "primary",
-      "free_speed_kmh": 40.6,
-      "free_travel_time_s": 103.6,
+      "free_speed_kmh": 41.0,
+      "free_travel_time_s": 105.8,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 1
       }
     },
     {
-      "id": "e00045",
+      "id": "e00054",
       "u": "n0011",
       "v": "n0017",
       "oneway": false,
@@ -1132,31 +1285,31 @@
       "free_speed_kmh": 35.7,
       "free_travel_time_s": 117.1,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 1
       }
     },
     {
-      "id": "e00046",
+      "id": "e00055",
       "u": "n0011",
       "v": "n0034",
       "oneway": false,
-      "length_m": 1277.4,
-      "name": "Nguyễn Thị Minh Khai",
-      "highway": "primary",
-      "free_speed_kmh": 40.3,
-      "free_travel_time_s": 114.1,
+      "length_m": 1200.8,
+      "name": "Võ Văn Tần",
+      "highway": "tertiary",
+      "free_speed_kmh": 35.8,
+      "free_travel_time_s": 120.8,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
-        "traffic_light": 1
+        "traffic_light": 0
       }
     },
     {
-      "id": "e00047",
+      "id": "e00056",
       "u": "n0011",
       "v": "n0036",
       "oneway": false,
@@ -1166,14 +1319,14 @@
       "free_speed_kmh": 34.6,
       "free_travel_time_s": 105.5,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 1
       }
     },
     {
-      "id": "e00048",
+      "id": "e00057",
       "u": "n0011",
       "v": "n0043",
       "oneway": false,
@@ -1183,14 +1336,31 @@
       "free_speed_kmh": 42.2,
       "free_travel_time_s": 103.8,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 1
       }
     },
     {
-      "id": "e00049",
+      "id": "e00058",
+      "u": "n0011",
+      "v": "n0051",
+      "oneway": false,
+      "length_m": 899.5,
+      "name": "Nguyễn Trãi",
+      "highway": "secondary",
+      "free_speed_kmh": 36.3,
+      "free_travel_time_s": 89.2,
+      "risk": {
+        "flood": 1,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00059",
       "u": "n0012",
       "v": "n0002",
       "oneway": false,
@@ -1207,7 +1377,7 @@
       }
     },
     {
-      "id": "e00050",
+      "id": "e00060",
       "u": "n0012",
       "v": "n0015",
       "oneway": true,
@@ -1224,10 +1394,10 @@
       }
     },
     {
-      "id": "e00051",
+      "id": "e00061",
       "u": "n0012",
       "v": "n0016",
-      "oneway": true,
+      "oneway": false,
       "length_m": 1060.5,
       "name": "Mạc Đĩnh Chi",
       "highway": "secondary",
@@ -1241,24 +1411,24 @@
       }
     },
     {
-      "id": "e00052",
+      "id": "e00062",
       "u": "n0012",
       "v": "n0031",
       "oneway": false,
-      "length_m": 911.9,
-      "name": "Nguyễn Đình Chiểu",
-      "highway": "secondary",
-      "free_speed_kmh": 41.2,
-      "free_travel_time_s": 79.7,
+      "length_m": 920.0,
+      "name": "Nguyễn Văn Thủ",
+      "highway": "residential",
+      "free_speed_kmh": 35.5,
+      "free_travel_time_s": 93.3,
       "risk": {
         "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
-        "traffic_light": 1
+        "traffic_light": 0
       }
     },
     {
-      "id": "e00053",
+      "id": "e00063",
       "u": "n0012",
       "v": "n0033",
       "oneway": false,
@@ -1275,7 +1445,7 @@
       }
     },
     {
-      "id": "e00054",
+      "id": "e00064",
       "u": "n0012",
       "v": "n0046",
       "oneway": true,
@@ -1292,7 +1462,7 @@
       }
     },
     {
-      "id": "e00055",
+      "id": "e00065",
       "u": "n0013",
       "v": "n0006",
       "oneway": false,
@@ -1309,7 +1479,7 @@
       }
     },
     {
-      "id": "e00056",
+      "id": "e00066",
       "u": "n0013",
       "v": "n0007",
       "oneway": false,
@@ -1326,24 +1496,24 @@
       }
     },
     {
-      "id": "e00057",
+      "id": "e00067",
       "u": "n0013",
       "v": "n0011",
       "oneway": false,
-      "length_m": 1161.5,
-      "name": "Nguyễn Thị Minh Khai",
-      "highway": "primary",
-      "free_speed_kmh": 40.6,
-      "free_travel_time_s": 103.0,
+      "length_m": 1128.1,
+      "name": "Võ Văn Tần",
+      "highway": "tertiary",
+      "free_speed_kmh": 35.7,
+      "free_travel_time_s": 113.8,
       "risk": {
         "flood": 1,
         "construction": 0,
         "narrow_alley": 0,
-        "traffic_light": 1
+        "traffic_light": 0
       }
     },
     {
-      "id": "e00058",
+      "id": "e00068",
       "u": "n0013",
       "v": "n0014",
       "oneway": false,
@@ -1360,7 +1530,24 @@
       }
     },
     {
-      "id": "e00059",
+      "id": "e00069",
+      "u": "n0013",
+      "v": "n0026",
+      "oneway": true,
+      "length_m": 1496.1,
+      "name": "Nguyễn Thị Minh Khai",
+      "highway": "primary",
+      "free_speed_kmh": 42.8,
+      "free_travel_time_s": 125.8,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 1
+      }
+    },
+    {
+      "id": "e00070",
       "u": "n0013",
       "v": "n0034",
       "oneway": false,
@@ -1377,7 +1564,7 @@
       }
     },
     {
-      "id": "e00060",
+      "id": "e00071",
       "u": "n0013",
       "v": "n0037",
       "oneway": false,
@@ -1394,7 +1581,7 @@
       }
     },
     {
-      "id": "e00061",
+      "id": "e00072",
       "u": "n0013",
       "v": "n0045",
       "oneway": true,
@@ -1411,7 +1598,7 @@
       }
     },
     {
-      "id": "e00062",
+      "id": "e00073",
       "u": "n0013",
       "v": "n0049",
       "oneway": true,
@@ -1428,15 +1615,15 @@
       }
     },
     {
-      "id": "e00063",
+      "id": "e00074",
       "u": "n0014",
       "v": "n0001",
       "oneway": false,
-      "length_m": 1025.4,
-      "name": "Trương Định",
+      "length_m": 1035.6,
+      "name": "Trần Quốc Thảo",
       "highway": "tertiary",
-      "free_speed_kmh": 35.8,
-      "free_travel_time_s": 103.1,
+      "free_speed_kmh": 35.5,
+      "free_travel_time_s": 105.0,
       "risk": {
         "flood": 0,
         "construction": 0,
@@ -1445,7 +1632,7 @@
       }
     },
     {
-      "id": "e00064",
+      "id": "e00075",
       "u": "n0014",
       "v": "n0006",
       "oneway": false,
@@ -1462,7 +1649,7 @@
       }
     },
     {
-      "id": "e00065",
+      "id": "e00076",
       "u": "n0014",
       "v": "n0013",
       "oneway": false,
@@ -1479,15 +1666,15 @@
       }
     },
     {
-      "id": "e00066",
+      "id": "e00077",
       "u": "n0014",
-      "v": "n0041",
+      "v": "n0034",
       "oneway": false,
-      "length_m": 1037.3,
-      "name": "Trương Định",
+      "length_m": 711.6,
+      "name": "Ngô Thời Nhiệm",
       "highway": "tertiary",
-      "free_speed_kmh": 36.5,
-      "free_travel_time_s": 102.3,
+      "free_speed_kmh": 36.2,
+      "free_travel_time_s": 70.8,
       "risk": {
         "flood": 0,
         "construction": 0,
@@ -1496,7 +1683,24 @@
       }
     },
     {
-      "id": "e00067",
+      "id": "e00078",
+      "u": "n0014",
+      "v": "n0041",
+      "oneway": false,
+      "length_m": 1047.5,
+      "name": "Trần Quốc Thảo",
+      "highway": "tertiary",
+      "free_speed_kmh": 36.2,
+      "free_travel_time_s": 104.2,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00079",
       "u": "n0014",
       "v": "n0042",
       "oneway": false,
@@ -1513,7 +1717,24 @@
       }
     },
     {
-      "id": "e00068",
+      "id": "e00080",
+      "u": "n0014",
+      "v": "n0049",
+      "oneway": true,
+      "length_m": 1323.7,
+      "name": "Trần Quốc Thảo",
+      "highway": "secondary",
+      "free_speed_kmh": 36.4,
+      "free_travel_time_s": 130.9,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 1
+      }
+    },
+    {
+      "id": "e00081",
       "u": "n0014",
       "v": "n0050",
       "oneway": false,
@@ -1530,7 +1751,7 @@
       }
     },
     {
-      "id": "e00069",
+      "id": "e00082",
       "u": "n0015",
       "v": "n0048",
       "oneway": false,
@@ -1547,10 +1768,10 @@
       }
     },
     {
-      "id": "e00070",
+      "id": "e00083",
       "u": "n0016",
       "v": "n0005",
-      "oneway": true,
+      "oneway": false,
       "length_m": 427.2,
       "name": "Lê Duẩn",
       "highway": "secondary",
@@ -1564,15 +1785,32 @@
       }
     },
     {
-      "id": "e00071",
+      "id": "e00084",
+      "u": "n0016",
+      "v": "n0012",
+      "oneway": false,
+      "length_m": 1325.4,
+      "name": "Lê Duẩn",
+      "highway": "secondary",
+      "free_speed_kmh": 38.5,
+      "free_travel_time_s": 123.9,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 1
+      }
+    },
+    {
+      "id": "e00085",
       "u": "n0016",
       "v": "n0021",
       "oneway": false,
-      "length_m": 511.2,
-      "name": "Hai Bà Trưng",
-      "highway": "primary",
-      "free_speed_kmh": 40.3,
-      "free_travel_time_s": 45.7,
+      "length_m": 442.9,
+      "name": "Nguyễn Du",
+      "highway": "tertiary",
+      "free_speed_kmh": 33.2,
+      "free_travel_time_s": 48.0,
       "risk": {
         "flood": 0,
         "construction": 0,
@@ -1581,15 +1819,15 @@
       }
     },
     {
-      "id": "e00072",
+      "id": "e00086",
       "u": "n0016",
       "v": "n0023",
       "oneway": false,
-      "length_m": 526.7,
+      "length_m": 458.4,
       "name": "Hai Bà Trưng",
       "highway": "primary",
-      "free_speed_kmh": 43.5,
-      "free_travel_time_s": 43.6,
+      "free_speed_kmh": 36.0,
+      "free_travel_time_s": 45.8,
       "risk": {
         "flood": 0,
         "construction": 0,
@@ -1598,7 +1836,7 @@
       }
     },
     {
-      "id": "e00073",
+      "id": "e00087",
       "u": "n0016",
       "v": "n0026",
       "oneway": false,
@@ -1615,10 +1853,27 @@
       }
     },
     {
-      "id": "e00074",
+      "id": "e00088",
+      "u": "n0016",
+      "v": "n0031",
+      "oneway": false,
+      "length_m": 902.7,
+      "name": "Hai Bà Trưng",
+      "highway": "primary",
+      "free_speed_kmh": 44.1,
+      "free_travel_time_s": 73.7,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 1
+      }
+    },
+    {
+      "id": "e00089",
       "u": "n0016",
       "v": "n0047",
-      "oneway": true,
+      "oneway": false,
       "length_m": 1139.1,
       "name": "Tôn Đức Thắng",
       "highway": "primary",
@@ -1632,7 +1887,7 @@
       }
     },
     {
-      "id": "e00075",
+      "id": "e00090",
       "u": "n0016",
       "v": "n0048",
       "oneway": false,
@@ -1649,7 +1904,24 @@
       }
     },
     {
-      "id": "e00076",
+      "id": "e00091",
+      "u": "n0017",
+      "v": "n0006",
+      "oneway": true,
+      "length_m": 1367.2,
+      "name": "Nguyễn Thị Minh Khai",
+      "highway": "primary",
+      "free_speed_kmh": 42.2,
+      "free_travel_time_s": 116.6,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00092",
       "u": "n0017",
       "v": "n0007",
       "oneway": false,
@@ -1666,7 +1938,7 @@
       }
     },
     {
-      "id": "e00077",
+      "id": "e00093",
       "u": "n0017",
       "v": "n0011",
       "oneway": false,
@@ -1683,7 +1955,7 @@
       }
     },
     {
-      "id": "e00078",
+      "id": "e00094",
       "u": "n0017",
       "v": "n0019",
       "oneway": true,
@@ -1700,7 +1972,7 @@
       }
     },
     {
-      "id": "e00079",
+      "id": "e00095",
       "u": "n0017",
       "v": "n0020",
       "oneway": true,
@@ -1717,15 +1989,15 @@
       }
     },
     {
-      "id": "e00080",
+      "id": "e00096",
       "u": "n0017",
       "v": "n0034",
       "oneway": false,
-      "length_m": 1136.1,
+      "length_m": 1187.7,
       "name": "Cách Mạng Tháng Tám",
       "highway": "primary",
-      "free_speed_kmh": 40.9,
-      "free_travel_time_s": 100.0,
+      "free_speed_kmh": 41.9,
+      "free_travel_time_s": 102.0,
       "risk": {
         "flood": 0,
         "construction": 0,
@@ -1734,7 +2006,7 @@
       }
     },
     {
-      "id": "e00081",
+      "id": "e00097",
       "u": "n0017",
       "v": "n0037",
       "oneway": false,
@@ -1751,7 +2023,7 @@
       }
     },
     {
-      "id": "e00082",
+      "id": "e00098",
       "u": "n0017",
       "v": "n0040",
       "oneway": true,
@@ -1768,7 +2040,7 @@
       }
     },
     {
-      "id": "e00083",
+      "id": "e00099",
       "u": "n0018",
       "v": "n0019",
       "oneway": false,
@@ -1785,7 +2057,7 @@
       }
     },
     {
-      "id": "e00084",
+      "id": "e00100",
       "u": "n0018",
       "v": "n0022",
       "oneway": false,
@@ -1802,7 +2074,7 @@
       }
     },
     {
-      "id": "e00085",
+      "id": "e00101",
       "u": "n0019",
       "v": "n0018",
       "oneway": false,
@@ -1819,7 +2091,7 @@
       }
     },
     {
-      "id": "e00086",
+      "id": "e00102",
       "u": "n0019",
       "v": "n0020",
       "oneway": false,
@@ -1836,24 +2108,41 @@
       }
     },
     {
-      "id": "e00087",
+      "id": "e00103",
       "u": "n0019",
       "v": "n0024",
       "oneway": false,
-      "length_m": 678.8,
-      "name": "Nguyễn Công Trứ",
-      "highway": "tertiary",
-      "free_speed_kmh": 35.0,
-      "free_travel_time_s": 69.8,
+      "length_m": 660.3,
+      "name": "Lê Thị Hồng Gấm",
+      "highway": "residential",
+      "free_speed_kmh": 32.1,
+      "free_travel_time_s": 74.1,
       "risk": {
         "flood": 1,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00104",
+      "u": "n0019",
+      "v": "n0025",
+      "oneway": false,
+      "length_m": 1156.7,
+      "name": "Pasteur",
+      "highway": "secondary",
+      "free_speed_kmh": 39.6,
+      "free_travel_time_s": 105.2,
+      "risk": {
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 1
       }
     },
     {
-      "id": "e00088",
+      "id": "e00105",
       "u": "n0019",
       "v": "n0027",
       "oneway": false,
@@ -1870,7 +2159,7 @@
       }
     },
     {
-      "id": "e00089",
+      "id": "e00106",
       "u": "n0019",
       "v": "n0028",
       "oneway": true,
@@ -1887,7 +2176,41 @@
       }
     },
     {
-      "id": "e00090",
+      "id": "e00107",
+      "u": "n0019",
+      "v": "n0029",
+      "oneway": true,
+      "length_m": 1019.2,
+      "name": "Hàm Nghi",
+      "highway": "primary",
+      "free_speed_kmh": 39.1,
+      "free_travel_time_s": 93.8,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00108",
+      "u": "n0019",
+      "v": "n0036",
+      "oneway": true,
+      "length_m": 858.9,
+      "name": "Trần Hưng Đạo",
+      "highway": "residential",
+      "free_speed_kmh": 35.7,
+      "free_travel_time_s": 86.6,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00109",
       "u": "n0019",
       "v": "n0038",
       "oneway": false,
@@ -1904,7 +2227,7 @@
       }
     },
     {
-      "id": "e00091",
+      "id": "e00110",
       "u": "n0020",
       "v": "n0007",
       "oneway": true,
@@ -1921,7 +2244,7 @@
       }
     },
     {
-      "id": "e00092",
+      "id": "e00111",
       "u": "n0020",
       "v": "n0019",
       "oneway": false,
@@ -1938,7 +2261,7 @@
       }
     },
     {
-      "id": "e00093",
+      "id": "e00112",
       "u": "n0020",
       "v": "n0028",
       "oneway": false,
@@ -1955,7 +2278,24 @@
       }
     },
     {
-      "id": "e00094",
+      "id": "e00113",
+      "u": "n0020",
+      "v": "n0034",
+      "oneway": false,
+      "length_m": 1651.4,
+      "name": "Cách Mạng Tháng Tám",
+      "highway": "primary",
+      "free_speed_kmh": 40.0,
+      "free_travel_time_s": 148.6,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00114",
       "u": "n0020",
       "v": "n0038",
       "oneway": false,
@@ -1972,7 +2312,7 @@
       }
     },
     {
-      "id": "e00095",
+      "id": "e00115",
       "u": "n0020",
       "v": "n0040",
       "oneway": false,
@@ -1989,7 +2329,7 @@
       }
     },
     {
-      "id": "e00096",
+      "id": "e00116",
       "u": "n0021",
       "v": "n0005",
       "oneway": false,
@@ -2006,7 +2346,7 @@
       }
     },
     {
-      "id": "e00097",
+      "id": "e00117",
       "u": "n0021",
       "v": "n0016",
       "oneway": false,
@@ -2023,7 +2363,7 @@
       }
     },
     {
-      "id": "e00098",
+      "id": "e00118",
       "u": "n0021",
       "v": "n0023",
       "oneway": false,
@@ -2040,7 +2380,7 @@
       }
     },
     {
-      "id": "e00099",
+      "id": "e00119",
       "u": "n0021",
       "v": "n0025",
       "oneway": true,
@@ -2057,7 +2397,7 @@
       }
     },
     {
-      "id": "e00100",
+      "id": "e00120",
       "u": "n0021",
       "v": "n0026",
       "oneway": true,
@@ -2074,7 +2414,7 @@
       }
     },
     {
-      "id": "e00101",
+      "id": "e00121",
       "u": "n0021",
       "v": "n0030",
       "oneway": true,
@@ -2091,7 +2431,7 @@
       }
     },
     {
-      "id": "e00102",
+      "id": "e00122",
       "u": "n0021",
       "v": "n0040",
       "oneway": true,
@@ -2108,7 +2448,7 @@
       }
     },
     {
-      "id": "e00103",
+      "id": "e00123",
       "u": "n0021",
       "v": "n0045",
       "oneway": true,
@@ -2125,7 +2465,7 @@
       }
     },
     {
-      "id": "e00104",
+      "id": "e00124",
       "u": "n0022",
       "v": "n0018",
       "oneway": false,
@@ -2142,7 +2482,7 @@
       }
     },
     {
-      "id": "e00105",
+      "id": "e00125",
       "u": "n0022",
       "v": "n0020",
       "oneway": true,
@@ -2159,32 +2499,15 @@
       }
     },
     {
-      "id": "e00106",
-      "u": "n0022",
-      "v": "n0024",
-      "oneway": false,
-      "length_m": 1069.4,
-      "name": "Nguyễn Công Trứ",
-      "highway": "tertiary",
-      "free_speed_kmh": 34.5,
-      "free_travel_time_s": 111.6,
-      "risk": {
-        "flood": 1,
-        "construction": 0,
-        "narrow_alley": 0,
-        "traffic_light": 1
-      }
-    },
-    {
-      "id": "e00107",
+      "id": "e00126",
       "u": "n0022",
       "v": "n0025",
       "oneway": true,
-      "length_m": 797.2,
+      "length_m": 809.8,
       "name": "Lê Lợi",
       "highway": "residential",
-      "free_speed_kmh": 32.9,
-      "free_travel_time_s": 87.2,
+      "free_speed_kmh": 33.0,
+      "free_travel_time_s": 88.3,
       "risk": {
         "flood": 0,
         "construction": 0,
@@ -2193,7 +2516,24 @@
       }
     },
     {
-      "id": "e00108",
+      "id": "e00127",
+      "u": "n0022",
+      "v": "n0027",
+      "oneway": false,
+      "length_m": 1440.8,
+      "name": "Võ Văn Kiệt",
+      "highway": "primary",
+      "free_speed_kmh": 39.8,
+      "free_travel_time_s": 130.3,
+      "risk": {
+        "flood": 1,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 1
+      }
+    },
+    {
+      "id": "e00128",
       "u": "n0022",
       "v": "n0028",
       "oneway": false,
@@ -2210,7 +2550,7 @@
       }
     },
     {
-      "id": "e00109",
+      "id": "e00129",
       "u": "n0022",
       "v": "n0029",
       "oneway": false,
@@ -2227,15 +2567,15 @@
       }
     },
     {
-      "id": "e00110",
+      "id": "e00130",
       "u": "n0022",
       "v": "n0030",
       "oneway": false,
-      "length_m": 909.3,
+      "length_m": 921.9,
       "name": "Hồ Tùng Mậu",
       "highway": "tertiary",
       "free_speed_kmh": 33.2,
-      "free_travel_time_s": 98.6,
+      "free_travel_time_s": 100.0,
       "risk": {
         "flood": 0,
         "construction": 0,
@@ -2244,7 +2584,7 @@
       }
     },
     {
-      "id": "e00111",
+      "id": "e00131",
       "u": "n0022",
       "v": "n0038",
       "oneway": false,
@@ -2261,7 +2601,7 @@
       }
     },
     {
-      "id": "e00112",
+      "id": "e00132",
       "u": "n0022",
       "v": "n0044",
       "oneway": true,
@@ -2278,7 +2618,41 @@
       }
     },
     {
-      "id": "e00113",
+      "id": "e00133",
+      "u": "n0022",
+      "v": "n0047",
+      "oneway": true,
+      "length_m": 1507.6,
+      "name": "Tôn Đức Thắng",
+      "highway": "primary",
+      "free_speed_kmh": 37.7,
+      "free_travel_time_s": 144.0,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00134",
+      "u": "n0023",
+      "v": "n0005",
+      "oneway": false,
+      "length_m": 671.1,
+      "name": "Hai Bà Trưng",
+      "highway": "primary",
+      "free_speed_kmh": 41.9,
+      "free_travel_time_s": 57.7,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 1
+      }
+    },
+    {
+      "id": "e00135",
       "u": "n0023",
       "v": "n0016",
       "oneway": false,
@@ -2295,7 +2669,7 @@
       }
     },
     {
-      "id": "e00114",
+      "id": "e00136",
       "u": "n0023",
       "v": "n0021",
       "oneway": false,
@@ -2312,7 +2686,7 @@
       }
     },
     {
-      "id": "e00115",
+      "id": "e00137",
       "u": "n0023",
       "v": "n0025",
       "oneway": false,
@@ -2329,7 +2703,7 @@
       }
     },
     {
-      "id": "e00116",
+      "id": "e00138",
       "u": "n0023",
       "v": "n0030",
       "oneway": false,
@@ -2346,7 +2720,7 @@
       }
     },
     {
-      "id": "e00117",
+      "id": "e00139",
       "u": "n0023",
       "v": "n0044",
       "oneway": false,
@@ -2363,41 +2737,58 @@
       }
     },
     {
-      "id": "e00118",
+      "id": "e00140",
+      "u": "n0023",
+      "v": "n0047",
+      "oneway": false,
+      "length_m": 889.7,
+      "name": "Lý Tự Trọng",
+      "highway": "tertiary",
+      "free_speed_kmh": 38.3,
+      "free_travel_time_s": 83.6,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00141",
       "u": "n0024",
       "v": "n0019",
       "oneway": false,
-      "length_m": 678.8,
+      "length_m": 719.1,
       "name": "Nguyễn Công Trứ",
-      "highway": "tertiary",
-      "free_speed_kmh": 35.0,
-      "free_travel_time_s": 69.8,
+      "highway": "residential",
+      "free_speed_kmh": 32.7,
+      "free_travel_time_s": 79.2,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
-        "traffic_light": 1
+        "traffic_light": 0
       }
     },
     {
-      "id": "e00119",
+      "id": "e00142",
       "u": "n0024",
-      "v": "n0022",
-      "oneway": false,
-      "length_m": 1069.5,
-      "name": "Nguyễn Công Trứ",
+      "v": "n0020",
+      "oneway": true,
+      "length_m": 885.9,
+      "name": "Yersin",
       "highway": "tertiary",
-      "free_speed_kmh": 34.5,
-      "free_travel_time_s": 111.6,
+      "free_speed_kmh": 38.5,
+      "free_travel_time_s": 82.8,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
-        "traffic_light": 1
+        "traffic_light": 0
       }
     },
     {
-      "id": "e00120",
+      "id": "e00143",
       "u": "n0024",
       "v": "n0027",
       "oneway": false,
@@ -2407,48 +2798,14 @@
       "free_speed_kmh": 41.1,
       "free_travel_time_s": 41.5,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 1
       }
     },
     {
-      "id": "e00121",
-      "u": "n0024",
-      "v": "n0029",
-      "oneway": false,
-      "length_m": 1279.3,
-      "name": "Nguyễn Công Trứ",
-      "highway": "tertiary",
-      "free_speed_kmh": 34.2,
-      "free_travel_time_s": 134.7,
-      "risk": {
-        "flood": 1,
-        "construction": 0,
-        "narrow_alley": 0,
-        "traffic_light": 1
-      }
-    },
-    {
-      "id": "e00122",
-      "u": "n0024",
-      "v": "n0035",
-      "oneway": false,
-      "length_m": 1615.4,
-      "name": "Cầu Calmette",
-      "highway": "secondary",
-      "free_speed_kmh": 37.9,
-      "free_travel_time_s": 153.4,
-      "risk": {
-        "flood": 1,
-        "construction": 0,
-        "narrow_alley": 0,
-        "traffic_light": 1
-      }
-    },
-    {
-      "id": "e00123",
+      "id": "e00144",
       "u": "n0024",
       "v": "n0037",
       "oneway": false,
@@ -2458,14 +2815,14 @@
       "free_speed_kmh": 42.6,
       "free_travel_time_s": 57.5,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
       }
     },
     {
-      "id": "e00124",
+      "id": "e00145",
       "u": "n0024",
       "v": "n0038",
       "oneway": false,
@@ -2475,14 +2832,48 @@
       "free_speed_kmh": 42.1,
       "free_travel_time_s": 71.9,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
       }
     },
     {
-      "id": "e00125",
+      "id": "e00146",
+      "u": "n0024",
+      "v": "n0039",
+      "oneway": false,
+      "length_m": 1649.0,
+      "name": "Cầu Calmette",
+      "highway": "secondary",
+      "free_speed_kmh": 40.0,
+      "free_travel_time_s": 148.4,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 1
+      }
+    },
+    {
+      "id": "e00147",
+      "u": "n0025",
+      "v": "n0019",
+      "oneway": false,
+      "length_m": 1112.4,
+      "name": "Lê Lợi",
+      "highway": "tertiary",
+      "free_speed_kmh": 35.0,
+      "free_travel_time_s": 114.4,
+      "risk": {
+        "flood": 0,
+        "construction": 1,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00148",
       "u": "n0025",
       "v": "n0023",
       "oneway": false,
@@ -2499,15 +2890,15 @@
       }
     },
     {
-      "id": "e00126",
+      "id": "e00149",
       "u": "n0025",
       "v": "n0028",
       "oneway": false,
-      "length_m": 726.0,
+      "length_m": 729.5,
       "name": "Lê Lợi",
       "highway": "tertiary",
       "free_speed_kmh": 34.6,
-      "free_travel_time_s": 75.5,
+      "free_travel_time_s": 75.9,
       "risk": {
         "flood": 0,
         "construction": 1,
@@ -2516,7 +2907,7 @@
       }
     },
     {
-      "id": "e00127",
+      "id": "e00150",
       "u": "n0025",
       "v": "n0030",
       "oneway": false,
@@ -2533,15 +2924,15 @@
       }
     },
     {
-      "id": "e00128",
+      "id": "e00151",
       "u": "n0025",
       "v": "n0044",
       "oneway": false,
-      "length_m": 433.6,
+      "length_m": 443.1,
       "name": "Đồng Khởi",
-      "highway": "tertiary",
-      "free_speed_kmh": 33.4,
-      "free_travel_time_s": 46.7,
+      "highway": "residential",
+      "free_speed_kmh": 32.1,
+      "free_travel_time_s": 49.7,
       "risk": {
         "flood": 0,
         "construction": 0,
@@ -2550,7 +2941,7 @@
       }
     },
     {
-      "id": "e00129",
+      "id": "e00152",
       "u": "n0026",
       "v": "n0002",
       "oneway": false,
@@ -2567,7 +2958,7 @@
       }
     },
     {
-      "id": "e00130",
+      "id": "e00153",
       "u": "n0026",
       "v": "n0005",
       "oneway": false,
@@ -2584,7 +2975,7 @@
       }
     },
     {
-      "id": "e00131",
+      "id": "e00154",
       "u": "n0026",
       "v": "n0016",
       "oneway": false,
@@ -2601,7 +2992,7 @@
       }
     },
     {
-      "id": "e00132",
+      "id": "e00155",
       "u": "n0026",
       "v": "n0031",
       "oneway": true,
@@ -2618,15 +3009,15 @@
       }
     },
     {
-      "id": "e00133",
+      "id": "e00156",
       "u": "n0026",
       "v": "n0045",
       "oneway": false,
-      "length_m": 419.8,
-      "name": "Lê Duẩn",
-      "highway": "secondary",
-      "free_speed_kmh": 38.7,
-      "free_travel_time_s": 39.1,
+      "length_m": 422.2,
+      "name": "Alexandre de Rhodes",
+      "highway": "residential",
+      "free_speed_kmh": 31.8,
+      "free_travel_time_s": 47.8,
       "risk": {
         "flood": 0,
         "construction": 0,
@@ -2635,7 +3026,24 @@
       }
     },
     {
-      "id": "e00134",
+      "id": "e00157",
+      "u": "n0026",
+      "v": "n0050",
+      "oneway": false,
+      "length_m": 1199.7,
+      "name": "Phạm Ngọc Thạch",
+      "highway": "tertiary",
+      "free_speed_kmh": 38.4,
+      "free_travel_time_s": 112.5,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 1
+      }
+    },
+    {
+      "id": "e00158",
       "u": "n0027",
       "v": "n0019",
       "oneway": false,
@@ -2645,14 +3053,31 @@
       "free_speed_kmh": 36.4,
       "free_travel_time_s": 91.6,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 1
       }
     },
     {
-      "id": "e00135",
+      "id": "e00159",
+      "u": "n0027",
+      "v": "n0022",
+      "oneway": false,
+      "length_m": 1216.8,
+      "name": "Võ Văn Kiệt",
+      "highway": "primary",
+      "free_speed_kmh": 40.5,
+      "free_travel_time_s": 108.2,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00160",
       "u": "n0027",
       "v": "n0024",
       "oneway": false,
@@ -2669,41 +3094,41 @@
       }
     },
     {
-      "id": "e00136",
+      "id": "e00161",
       "u": "n0027",
-      "v": "n0025",
-      "oneway": true,
-      "length_m": 1674.4,
-      "name": "Võ Văn Kiệt",
-      "highway": "primary",
-      "free_speed_kmh": 40.9,
-      "free_travel_time_s": 147.4,
-      "risk": {
-        "flood": 1,
-        "construction": 0,
-        "narrow_alley": 0,
-        "traffic_light": 1
-      }
-    },
-    {
-      "id": "e00137",
-      "u": "n0027",
-      "v": "n0039",
+      "v": "n0035",
       "oneway": false,
-      "length_m": 1452.9,
-      "name": "Hoàng Diệu",
+      "length_m": 1419.3,
+      "name": "Nguyễn Trường Tộ",
       "highway": "secondary",
-      "free_speed_kmh": 41.8,
-      "free_travel_time_s": 125.1,
+      "free_speed_kmh": 39.3,
+      "free_travel_time_s": 130.0,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
       }
     },
     {
-      "id": "e00138",
+      "id": "e00162",
+      "u": "n0027",
+      "v": "n0037",
+      "oneway": false,
+      "length_m": 1091.4,
+      "name": "Ký Con",
+      "highway": "tertiary",
+      "free_speed_kmh": 38.8,
+      "free_travel_time_s": 101.3,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 1
+      }
+    },
+    {
+      "id": "e00163",
       "u": "n0028",
       "v": "n0018",
       "oneway": true,
@@ -2714,13 +3139,13 @@
       "free_travel_time_s": 29.7,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
       }
     },
     {
-      "id": "e00139",
+      "id": "e00164",
       "u": "n0028",
       "v": "n0020",
       "oneway": false,
@@ -2731,13 +3156,13 @@
       "free_travel_time_s": 56.7,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
       }
     },
     {
-      "id": "e00140",
+      "id": "e00165",
       "u": "n0028",
       "v": "n0022",
       "oneway": false,
@@ -2748,47 +3173,47 @@
       "free_travel_time_s": 66.7,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
       }
     },
     {
-      "id": "e00141",
+      "id": "e00166",
       "u": "n0028",
       "v": "n0025",
       "oneway": false,
-      "length_m": 796.8,
+      "length_m": 809.4,
       "name": "Lê Lợi",
       "highway": "secondary",
-      "free_speed_kmh": 36.0,
-      "free_travel_time_s": 79.7,
+      "free_speed_kmh": 36.1,
+      "free_travel_time_s": 80.7,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 1
       }
     },
     {
-      "id": "e00142",
+      "id": "e00167",
       "u": "n0028",
       "v": "n0030",
       "oneway": false,
-      "length_m": 908.9,
+      "length_m": 921.5,
       "name": "Pasteur",
       "highway": "tertiary",
-      "free_speed_kmh": 35.9,
-      "free_travel_time_s": 91.1,
+      "free_speed_kmh": 36.0,
+      "free_travel_time_s": 92.2,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
       }
     },
     {
-      "id": "e00143",
+      "id": "e00168",
       "u": "n0028",
       "v": "n0038",
       "oneway": false,
@@ -2799,13 +3224,13 @@
       "free_travel_time_s": 70.2,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0
       }
     },
     {
-      "id": "e00144",
+      "id": "e00169",
       "u": "n0028",
       "v": "n0040",
       "oneway": false,
@@ -2822,7 +3247,24 @@
       }
     },
     {
-      "id": "e00145",
+      "id": "e00170",
+      "u": "n0029",
+      "v": "n0018",
+      "oneway": true,
+      "length_m": 722.3,
+      "name": "Hàm Nghi",
+      "highway": "primary",
+      "free_speed_kmh": 43.3,
+      "free_travel_time_s": 60.1,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00171",
       "u": "n0029",
       "v": "n0022",
       "oneway": false,
@@ -2839,24 +3281,7 @@
       }
     },
     {
-      "id": "e00146",
-      "u": "n0029",
-      "v": "n0024",
-      "oneway": false,
-      "length_m": 1310.1,
-      "name": "Võ Văn Kiệt",
-      "highway": "primary",
-      "free_speed_kmh": 43.7,
-      "free_travel_time_s": 107.9,
-      "risk": {
-        "flood": 1,
-        "construction": 0,
-        "narrow_alley": 0,
-        "traffic_light": 1
-      }
-    },
-    {
-      "id": "e00147",
+      "id": "e00172",
       "u": "n0029",
       "v": "n0035",
       "oneway": true,
@@ -2873,7 +3298,7 @@
       }
     },
     {
-      "id": "e00148",
+      "id": "e00173",
       "u": "n0029",
       "v": "n0044",
       "oneway": false,
@@ -2890,7 +3315,7 @@
       }
     },
     {
-      "id": "e00149",
+      "id": "e00174",
       "u": "n0030",
       "v": "n0005",
       "oneway": false,
@@ -2907,7 +3332,7 @@
       }
     },
     {
-      "id": "e00150",
+      "id": "e00175",
       "u": "n0030",
       "v": "n0022",
       "oneway": false,
@@ -2924,7 +3349,7 @@
       }
     },
     {
-      "id": "e00151",
+      "id": "e00176",
       "u": "n0030",
       "v": "n0023",
       "oneway": false,
@@ -2941,7 +3366,7 @@
       }
     },
     {
-      "id": "e00152",
+      "id": "e00177",
       "u": "n0030",
       "v": "n0025",
       "oneway": false,
@@ -2958,7 +3383,7 @@
       }
     },
     {
-      "id": "e00153",
+      "id": "e00178",
       "u": "n0030",
       "v": "n0028",
       "oneway": false,
@@ -2975,24 +3400,24 @@
       }
     },
     {
-      "id": "e00154",
+      "id": "e00179",
       "u": "n0030",
       "v": "n0040",
       "oneway": false,
-      "length_m": 601.6,
-      "name": "Lê Thánh Tôn",
-      "highway": "tertiary",
-      "free_speed_kmh": 33.8,
-      "free_travel_time_s": 64.1,
+      "length_m": 693.4,
+      "name": "Pasteur",
+      "highway": "secondary",
+      "free_speed_kmh": 38.1,
+      "free_travel_time_s": 65.5,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 1
       }
     },
     {
-      "id": "e00155",
+      "id": "e00180",
       "u": "n0030",
       "v": "n0045",
       "oneway": true,
@@ -3009,7 +3434,7 @@
       }
     },
     {
-      "id": "e00156",
+      "id": "e00181",
       "u": "n0031",
       "v": "n0004",
       "oneway": false,
@@ -3026,7 +3451,7 @@
       }
     },
     {
-      "id": "e00157",
+      "id": "e00182",
       "u": "n0031",
       "v": "n0012",
       "oneway": false,
@@ -3043,7 +3468,24 @@
       }
     },
     {
-      "id": "e00158",
+      "id": "e00183",
+      "u": "n0031",
+      "v": "n0016",
+      "oneway": false,
+      "length_m": 1344.2,
+      "name": "Mạc Đĩnh Chi",
+      "highway": "tertiary",
+      "free_speed_kmh": 37.8,
+      "free_travel_time_s": 128.0,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 1
+      }
+    },
+    {
+      "id": "e00184",
       "u": "n0031",
       "v": "n0033",
       "oneway": false,
@@ -3060,7 +3502,24 @@
       }
     },
     {
-      "id": "e00159",
+      "id": "e00185",
+      "u": "n0031",
+      "v": "n0046",
+      "oneway": true,
+      "length_m": 1263.9,
+      "name": "Điện Biên Phủ",
+      "highway": "primary",
+      "free_speed_kmh": 42.1,
+      "free_travel_time_s": 108.1,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00186",
       "u": "n0031",
       "v": "n0050",
       "oneway": false,
@@ -3077,7 +3536,7 @@
       }
     },
     {
-      "id": "e00160",
+      "id": "e00187",
       "u": "n0032",
       "v": "n0003",
       "oneway": false,
@@ -3094,7 +3553,24 @@
       }
     },
     {
-      "id": "e00161",
+      "id": "e00188",
+      "u": "n0032",
+      "v": "n0046",
+      "oneway": false,
+      "length_m": 2549.6,
+      "name": "Trường Sa",
+      "highway": "tertiary",
+      "free_speed_kmh": 34.0,
+      "free_travel_time_s": 270.0,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00189",
       "u": "n0032",
       "v": "n0049",
       "oneway": false,
@@ -3111,7 +3587,7 @@
       }
     },
     {
-      "id": "e00162",
+      "id": "e00190",
       "u": "n0033",
       "v": "n0012",
       "oneway": false,
@@ -3128,7 +3604,7 @@
       }
     },
     {
-      "id": "e00163",
+      "id": "e00191",
       "u": "n0033",
       "v": "n0015",
       "oneway": true,
@@ -3145,7 +3621,7 @@
       }
     },
     {
-      "id": "e00164",
+      "id": "e00192",
       "u": "n0033",
       "v": "n0031",
       "oneway": false,
@@ -3162,7 +3638,7 @@
       }
     },
     {
-      "id": "e00165",
+      "id": "e00193",
       "u": "n0033",
       "v": "n0046",
       "oneway": false,
@@ -3179,7 +3655,7 @@
       }
     },
     {
-      "id": "e00166",
+      "id": "e00194",
       "u": "n0033",
       "v": "n0050",
       "oneway": true,
@@ -3196,7 +3672,7 @@
       }
     },
     {
-      "id": "e00167",
+      "id": "e00195",
       "u": "n0034",
       "v": "n0001",
       "oneway": false,
@@ -3213,7 +3689,7 @@
       }
     },
     {
-      "id": "e00168",
+      "id": "e00196",
       "u": "n0034",
       "v": "n0008",
       "oneway": false,
@@ -3230,7 +3706,7 @@
       }
     },
     {
-      "id": "e00169",
+      "id": "e00197",
       "u": "n0034",
       "v": "n0011",
       "oneway": false,
@@ -3247,7 +3723,7 @@
       }
     },
     {
-      "id": "e00170",
+      "id": "e00198",
       "u": "n0034",
       "v": "n0013",
       "oneway": false,
@@ -3264,7 +3740,24 @@
       }
     },
     {
-      "id": "e00171",
+      "id": "e00199",
+      "u": "n0034",
+      "v": "n0014",
+      "oneway": false,
+      "length_m": 708.5,
+      "name": "Ngô Thời Nhiệm",
+      "highway": "tertiary",
+      "free_speed_kmh": 35.0,
+      "free_travel_time_s": 72.9,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00200",
       "u": "n0034",
       "v": "n0017",
       "oneway": false,
@@ -3281,7 +3774,24 @@
       }
     },
     {
-      "id": "e00172",
+      "id": "e00201",
+      "u": "n0034",
+      "v": "n0020",
+      "oneway": false,
+      "length_m": 1703.1,
+      "name": "Cách Mạng Tháng Tám",
+      "highway": "primary",
+      "free_speed_kmh": 41.3,
+      "free_travel_time_s": 148.5,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00202",
       "u": "n0034",
       "v": "n0037",
       "oneway": false,
@@ -3298,7 +3808,7 @@
       }
     },
     {
-      "id": "e00173",
+      "id": "e00203",
       "u": "n0034",
       "v": "n0041",
       "oneway": true,
@@ -3315,32 +3825,49 @@
       }
     },
     {
-      "id": "e00174",
-      "u": "n0035",
-      "v": "n0019",
-      "oneway": true,
-      "length_m": 1335.4,
-      "name": "Bến Vân Đồn",
+      "id": "e00204",
+      "u": "n0034",
+      "v": "n0043",
+      "oneway": false,
+      "length_m": 2115.4,
+      "name": "Nguyễn Đình Chiểu",
       "highway": "secondary",
-      "free_speed_kmh": 38.2,
-      "free_travel_time_s": 125.8,
+      "free_speed_kmh": 41.1,
+      "free_travel_time_s": 185.3,
       "risk": {
         "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
-        "traffic_light": 1
+        "traffic_light": 0
       }
     },
     {
-      "id": "e00175",
+      "id": "e00205",
       "u": "n0035",
-      "v": "n0024",
-      "oneway": false,
-      "length_m": 1123.0,
+      "v": "n0019",
+      "oneway": true,
+      "length_m": 1347.6,
       "name": "Bến Vân Đồn",
       "highway": "secondary",
-      "free_speed_kmh": 38.8,
-      "free_travel_time_s": 104.2,
+      "free_speed_kmh": 37.9,
+      "free_travel_time_s": 128.0,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00206",
+      "u": "n0035",
+      "v": "n0027",
+      "oneway": false,
+      "length_m": 1567.0,
+      "name": "Võ Văn Kiệt",
+      "highway": "secondary",
+      "free_speed_kmh": 41.2,
+      "free_travel_time_s": 136.9,
       "risk": {
         "flood": 1,
         "construction": 0,
@@ -3349,7 +3876,7 @@
       }
     },
     {
-      "id": "e00176",
+      "id": "e00207",
       "u": "n0035",
       "v": "n0039",
       "oneway": false,
@@ -3366,7 +3893,7 @@
       }
     },
     {
-      "id": "e00177",
+      "id": "e00208",
       "u": "n0036",
       "v": "n0010",
       "oneway": false,
@@ -3383,7 +3910,7 @@
       }
     },
     {
-      "id": "e00178",
+      "id": "e00209",
       "u": "n0036",
       "v": "n0011",
       "oneway": false,
@@ -3400,7 +3927,7 @@
       }
     },
     {
-      "id": "e00179",
+      "id": "e00210",
       "u": "n0036",
       "v": "n0037",
       "oneway": false,
@@ -3417,7 +3944,7 @@
       }
     },
     {
-      "id": "e00180",
+      "id": "e00211",
       "u": "n0036",
       "v": "n0051",
       "oneway": false,
@@ -3434,7 +3961,7 @@
       }
     },
     {
-      "id": "e00181",
+      "id": "e00212",
       "u": "n0037",
       "v": "n0007",
       "oneway": true,
@@ -3451,7 +3978,7 @@
       }
     },
     {
-      "id": "e00182",
+      "id": "e00213",
       "u": "n0037",
       "v": "n0011",
       "oneway": true,
@@ -3468,7 +3995,7 @@
       }
     },
     {
-      "id": "e00183",
+      "id": "e00214",
       "u": "n0037",
       "v": "n0013",
       "oneway": false,
@@ -3485,7 +4012,7 @@
       }
     },
     {
-      "id": "e00184",
+      "id": "e00215",
       "u": "n0037",
       "v": "n0017",
       "oneway": false,
@@ -3502,7 +4029,7 @@
       }
     },
     {
-      "id": "e00185",
+      "id": "e00216",
       "u": "n0037",
       "v": "n0024",
       "oneway": false,
@@ -3519,10 +4046,10 @@
       }
     },
     {
-      "id": "e00186",
+      "id": "e00217",
       "u": "n0037",
       "v": "n0027",
-      "oneway": true,
+      "oneway": false,
       "length_m": 857.2,
       "name": "Nguyễn Thái Học",
       "highway": "primary",
@@ -3536,7 +4063,7 @@
       }
     },
     {
-      "id": "e00187",
+      "id": "e00218",
       "u": "n0037",
       "v": "n0034",
       "oneway": false,
@@ -3553,7 +4080,7 @@
       }
     },
     {
-      "id": "e00188",
+      "id": "e00219",
       "u": "n0037",
       "v": "n0036",
       "oneway": false,
@@ -3570,7 +4097,7 @@
       }
     },
     {
-      "id": "e00189",
+      "id": "e00220",
       "u": "n0037",
       "v": "n0038",
       "oneway": false,
@@ -3587,15 +4114,15 @@
       }
     },
     {
-      "id": "e00190",
+      "id": "e00221",
       "u": "n0038",
       "v": "n0019",
       "oneway": false,
-      "length_m": 535.2,
-      "name": "Trần Hưng Đạo",
-      "highway": "primary",
-      "free_speed_kmh": 42.2,
-      "free_travel_time_s": 45.7,
+      "length_m": 532.5,
+      "name": "Lê Thị Hồng Gấm",
+      "highway": "secondary",
+      "free_speed_kmh": 37.1,
+      "free_travel_time_s": 51.7,
       "risk": {
         "flood": 0,
         "construction": 0,
@@ -3604,7 +4131,7 @@
       }
     },
     {
-      "id": "e00191",
+      "id": "e00222",
       "u": "n0038",
       "v": "n0020",
       "oneway": false,
@@ -3621,7 +4148,7 @@
       }
     },
     {
-      "id": "e00192",
+      "id": "e00223",
       "u": "n0038",
       "v": "n0022",
       "oneway": false,
@@ -3638,7 +4165,7 @@
       }
     },
     {
-      "id": "e00193",
+      "id": "e00224",
       "u": "n0038",
       "v": "n0024",
       "oneway": false,
@@ -3655,7 +4182,7 @@
       }
     },
     {
-      "id": "e00194",
+      "id": "e00225",
       "u": "n0038",
       "v": "n0028",
       "oneway": false,
@@ -3672,7 +4199,7 @@
       }
     },
     {
-      "id": "e00195",
+      "id": "e00226",
       "u": "n0038",
       "v": "n0037",
       "oneway": false,
@@ -3689,15 +4216,15 @@
       }
     },
     {
-      "id": "e00196",
+      "id": "e00227",
       "u": "n0039",
-      "v": "n0027",
+      "v": "n0024",
       "oneway": false,
-      "length_m": 1637.5,
-      "name": "Võ Văn Kiệt",
+      "length_m": 1193.5,
+      "name": "Bến Vân Đồn",
       "highway": "secondary",
-      "free_speed_kmh": 41.2,
-      "free_travel_time_s": 143.1,
+      "free_speed_kmh": 38.9,
+      "free_travel_time_s": 110.5,
       "risk": {
         "flood": 1,
         "construction": 0,
@@ -3706,7 +4233,7 @@
       }
     },
     {
-      "id": "e00197",
+      "id": "e00228",
       "u": "n0039",
       "v": "n0035",
       "oneway": false,
@@ -3723,7 +4250,7 @@
       }
     },
     {
-      "id": "e00198",
+      "id": "e00229",
       "u": "n0039",
       "v": "n0044",
       "oneway": true,
@@ -3740,7 +4267,7 @@
       }
     },
     {
-      "id": "e00199",
+      "id": "e00230",
       "u": "n0040",
       "v": "n0005",
       "oneway": false,
@@ -3757,7 +4284,7 @@
       }
     },
     {
-      "id": "e00200",
+      "id": "e00231",
       "u": "n0040",
       "v": "n0020",
       "oneway": false,
@@ -3774,7 +4301,7 @@
       }
     },
     {
-      "id": "e00201",
+      "id": "e00232",
       "u": "n0040",
       "v": "n0023",
       "oneway": true,
@@ -3791,24 +4318,7 @@
       }
     },
     {
-      "id": "e00202",
-      "u": "n0040",
-      "v": "n0026",
-      "oneway": true,
-      "length_m": 833.6,
-      "name": "Pasteur",
-      "highway": "secondary",
-      "free_speed_kmh": 38.4,
-      "free_travel_time_s": 78.2,
-      "risk": {
-        "flood": 0,
-        "construction": 0,
-        "narrow_alley": 0,
-        "traffic_light": 1
-      }
-    },
-    {
-      "id": "e00203",
+      "id": "e00233",
       "u": "n0040",
       "v": "n0028",
       "oneway": false,
@@ -3825,7 +4335,7 @@
       }
     },
     {
-      "id": "e00204",
+      "id": "e00234",
       "u": "n0040",
       "v": "n0030",
       "oneway": false,
@@ -3842,7 +4352,7 @@
       }
     },
     {
-      "id": "e00205",
+      "id": "e00235",
       "u": "n0040",
       "v": "n0045",
       "oneway": false,
@@ -3859,7 +4369,7 @@
       }
     },
     {
-      "id": "e00206",
+      "id": "e00236",
       "u": "n0041",
       "v": "n0001",
       "oneway": false,
@@ -3876,7 +4386,7 @@
       }
     },
     {
-      "id": "e00207",
+      "id": "e00237",
       "u": "n0041",
       "v": "n0008",
       "oneway": false,
@@ -3893,7 +4403,7 @@
       }
     },
     {
-      "id": "e00208",
+      "id": "e00238",
       "u": "n0041",
       "v": "n0014",
       "oneway": false,
@@ -3910,10 +4420,10 @@
       }
     },
     {
-      "id": "e00209",
+      "id": "e00239",
       "u": "n0041",
       "v": "n0042",
-      "oneway": true,
+      "oneway": false,
       "length_m": 758.2,
       "name": "Điện Biên Phủ",
       "highway": "primary",
@@ -3927,7 +4437,7 @@
       }
     },
     {
-      "id": "e00210",
+      "id": "e00240",
       "u": "n0041",
       "v": "n0049",
       "oneway": false,
@@ -3944,7 +4454,7 @@
       }
     },
     {
-      "id": "e00211",
+      "id": "e00241",
       "u": "n0041",
       "v": "n0050",
       "oneway": false,
@@ -3961,7 +4471,7 @@
       }
     },
     {
-      "id": "e00212",
+      "id": "e00242",
       "u": "n0042",
       "v": "n0004",
       "oneway": false,
@@ -3978,7 +4488,7 @@
       }
     },
     {
-      "id": "e00213",
+      "id": "e00243",
       "u": "n0042",
       "v": "n0006",
       "oneway": false,
@@ -3995,49 +4505,49 @@
       }
     },
     {
-      "id": "e00214",
+      "id": "e00244",
       "u": "n0042",
       "v": "n0009",
       "oneway": false,
-      "length_m": 1702.2,
-      "name": "Nam Kỳ Khởi Nghĩa",
-      "highway": "primary",
-      "free_speed_kmh": 42.0,
-      "free_travel_time_s": 145.9,
+      "length_m": 1938.2,
+      "name": "Trần Quốc Thảo",
+      "highway": "secondary",
+      "free_speed_kmh": 38.8,
+      "free_travel_time_s": 179.8,
       "risk": {
         "flood": 0,
-        "construction": 1,
+        "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 1
       }
     },
     {
-      "id": "e00215",
+      "id": "e00245",
       "u": "n0042",
       "v": "n0014",
       "oneway": false,
-      "length_m": 551.6,
+      "length_m": 555.0,
       "name": "Nguyễn Đình Chiểu",
-      "highway": "secondary",
-      "free_speed_kmh": 40.0,
-      "free_travel_time_s": 49.6,
+      "highway": "tertiary",
+      "free_speed_kmh": 36.8,
+      "free_travel_time_s": 54.3,
       "risk": {
         "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
-        "traffic_light": 1
+        "traffic_light": 0
       }
     },
     {
-      "id": "e00216",
+      "id": "e00246",
       "u": "n0042",
-      "v": "n0026",
+      "v": "n0031",
       "oneway": true,
-      "length_m": 950.8,
-      "name": "Nam Kỳ Khởi Nghĩa",
-      "highway": "secondary",
-      "free_speed_kmh": 40.8,
-      "free_travel_time_s": 83.9,
+      "length_m": 1207.8,
+      "name": "Điện Biên Phủ",
+      "highway": "primary",
+      "free_speed_kmh": 41.6,
+      "free_travel_time_s": 104.5,
       "risk": {
         "flood": 0,
         "construction": 0,
@@ -4046,7 +4556,7 @@
       }
     },
     {
-      "id": "e00217",
+      "id": "e00247",
       "u": "n0042",
       "v": "n0034",
       "oneway": true,
@@ -4063,7 +4573,41 @@
       }
     },
     {
-      "id": "e00218",
+      "id": "e00248",
+      "u": "n0042",
+      "v": "n0041",
+      "oneway": false,
+      "length_m": 1240.7,
+      "name": "Ngô Thời Nhiệm",
+      "highway": "tertiary",
+      "free_speed_kmh": 35.6,
+      "free_travel_time_s": 125.5,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00249",
+      "u": "n0042",
+      "v": "n0045",
+      "oneway": true,
+      "length_m": 728.7,
+      "name": "Nam Kỳ Khởi Nghĩa",
+      "highway": "secondary",
+      "free_speed_kmh": 40.0,
+      "free_travel_time_s": 65.6,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 1
+      }
+    },
+    {
+      "id": "e00250",
       "u": "n0043",
       "v": "n0011",
       "oneway": false,
@@ -4080,7 +4624,24 @@
       }
     },
     {
-      "id": "e00219",
+      "id": "e00251",
+      "u": "n0043",
+      "v": "n0034",
+      "oneway": false,
+      "length_m": 2165.4,
+      "name": "Võ Văn Tần",
+      "highway": "tertiary",
+      "free_speed_kmh": 39.3,
+      "free_travel_time_s": 198.4,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 1
+      }
+    },
+    {
+      "id": "e00252",
       "u": "n0044",
       "v": "n0023",
       "oneway": false,
@@ -4097,7 +4658,7 @@
       }
     },
     {
-      "id": "e00220",
+      "id": "e00253",
       "u": "n0044",
       "v": "n0025",
       "oneway": false,
@@ -4114,15 +4675,15 @@
       }
     },
     {
-      "id": "e00221",
+      "id": "e00254",
       "u": "n0044",
       "v": "n0029",
       "oneway": false,
-      "length_m": 441.9,
+      "length_m": 449.9,
       "name": "Tôn Đức Thắng",
       "highway": "primary",
-      "free_speed_kmh": 44.4,
-      "free_travel_time_s": 35.8,
+      "free_speed_kmh": 35.9,
+      "free_travel_time_s": 45.1,
       "risk": {
         "flood": 0,
         "construction": 0,
@@ -4131,7 +4692,24 @@
       }
     },
     {
-      "id": "e00222",
+      "id": "e00255",
+      "u": "n0044",
+      "v": "n0030",
+      "oneway": true,
+      "length_m": 879.4,
+      "name": "Nguyễn Huệ",
+      "highway": "tertiary",
+      "free_speed_kmh": 33.3,
+      "free_travel_time_s": 95.1,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00256",
       "u": "n0044",
       "v": "n0047",
       "oneway": false,
@@ -4148,7 +4726,7 @@
       }
     },
     {
-      "id": "e00223",
+      "id": "e00257",
       "u": "n0045",
       "v": "n0004",
       "oneway": true,
@@ -4165,7 +4743,7 @@
       }
     },
     {
-      "id": "e00224",
+      "id": "e00258",
       "u": "n0045",
       "v": "n0005",
       "oneway": false,
@@ -4182,7 +4760,7 @@
       }
     },
     {
-      "id": "e00225",
+      "id": "e00259",
       "u": "n0045",
       "v": "n0006",
       "oneway": false,
@@ -4199,7 +4777,7 @@
       }
     },
     {
-      "id": "e00226",
+      "id": "e00260",
       "u": "n0045",
       "v": "n0007",
       "oneway": false,
@@ -4216,7 +4794,7 @@
       }
     },
     {
-      "id": "e00227",
+      "id": "e00261",
       "u": "n0045",
       "v": "n0026",
       "oneway": false,
@@ -4233,7 +4811,7 @@
       }
     },
     {
-      "id": "e00228",
+      "id": "e00262",
       "u": "n0045",
       "v": "n0040",
       "oneway": false,
@@ -4250,7 +4828,41 @@
       }
     },
     {
-      "id": "e00229",
+      "id": "e00263",
+      "u": "n0046",
+      "v": "n0009",
+      "oneway": false,
+      "length_m": 2045.0,
+      "name": "Trần Quang Khải",
+      "highway": "tertiary",
+      "free_speed_kmh": 36.9,
+      "free_travel_time_s": 199.5,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 1
+      }
+    },
+    {
+      "id": "e00264",
+      "u": "n0046",
+      "v": "n0032",
+      "oneway": false,
+      "length_m": 2558.0,
+      "name": "Trường Sa",
+      "highway": "tertiary",
+      "free_speed_kmh": 34.0,
+      "free_travel_time_s": 270.8,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00265",
       "u": "n0046",
       "v": "n0033",
       "oneway": false,
@@ -4267,7 +4879,7 @@
       }
     },
     {
-      "id": "e00230",
+      "id": "e00266",
       "u": "n0046",
       "v": "n0050",
       "oneway": true,
@@ -4284,7 +4896,7 @@
       }
     },
     {
-      "id": "e00231",
+      "id": "e00267",
       "u": "n0047",
       "v": "n0012",
       "oneway": true,
@@ -4301,7 +4913,41 @@
       }
     },
     {
-      "id": "e00232",
+      "id": "e00268",
+      "u": "n0047",
+      "v": "n0016",
+      "oneway": false,
+      "length_m": 1132.6,
+      "name": "Tôn Đức Thắng",
+      "highway": "primary",
+      "free_speed_kmh": 43.0,
+      "free_travel_time_s": 94.8,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00269",
+      "u": "n0047",
+      "v": "n0023",
+      "oneway": false,
+      "length_m": 1357.7,
+      "name": "Nguyễn Du",
+      "highway": "primary",
+      "free_speed_kmh": 40.0,
+      "free_travel_time_s": 122.2,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 1
+      }
+    },
+    {
+      "id": "e00270",
       "u": "n0047",
       "v": "n0044",
       "oneway": false,
@@ -4318,7 +4964,7 @@
       }
     },
     {
-      "id": "e00233",
+      "id": "e00271",
       "u": "n0047",
       "v": "n0048",
       "oneway": false,
@@ -4335,7 +4981,7 @@
       }
     },
     {
-      "id": "e00234",
+      "id": "e00272",
       "u": "n0048",
       "v": "n0012",
       "oneway": true,
@@ -4352,7 +4998,7 @@
       }
     },
     {
-      "id": "e00235",
+      "id": "e00273",
       "u": "n0048",
       "v": "n0015",
       "oneway": false,
@@ -4369,7 +5015,7 @@
       }
     },
     {
-      "id": "e00236",
+      "id": "e00274",
       "u": "n0048",
       "v": "n0016",
       "oneway": false,
@@ -4386,7 +5032,7 @@
       }
     },
     {
-      "id": "e00237",
+      "id": "e00275",
       "u": "n0048",
       "v": "n0047",
       "oneway": false,
@@ -4403,7 +5049,24 @@
       }
     },
     {
-      "id": "e00238",
+      "id": "e00276",
+      "u": "n0049",
+      "v": "n0001",
+      "oneway": false,
+      "length_m": 983.2,
+      "name": "Bà Huyện Thanh Quan",
+      "highway": "tertiary",
+      "free_speed_kmh": 33.1,
+      "free_travel_time_s": 106.9,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 1
+      }
+    },
+    {
+      "id": "e00277",
       "u": "n0049",
       "v": "n0008",
       "oneway": false,
@@ -4420,7 +5083,7 @@
       }
     },
     {
-      "id": "e00239",
+      "id": "e00278",
       "u": "n0049",
       "v": "n0009",
       "oneway": false,
@@ -4437,7 +5100,7 @@
       }
     },
     {
-      "id": "e00240",
+      "id": "e00279",
       "u": "n0049",
       "v": "n0032",
       "oneway": false,
@@ -4454,7 +5117,7 @@
       }
     },
     {
-      "id": "e00241",
+      "id": "e00280",
       "u": "n0049",
       "v": "n0041",
       "oneway": false,
@@ -4471,7 +5134,7 @@
       }
     },
     {
-      "id": "e00242",
+      "id": "e00281",
       "u": "n0050",
       "v": "n0002",
       "oneway": true,
@@ -4488,7 +5151,7 @@
       }
     },
     {
-      "id": "e00243",
+      "id": "e00282",
       "u": "n0050",
       "v": "n0003",
       "oneway": false,
@@ -4505,7 +5168,7 @@
       }
     },
     {
-      "id": "e00244",
+      "id": "e00283",
       "u": "n0050",
       "v": "n0004",
       "oneway": false,
@@ -4522,24 +5185,7 @@
       }
     },
     {
-      "id": "e00245",
-      "u": "n0050",
-      "v": "n0008",
-      "oneway": true,
-      "length_m": 1641.8,
-      "name": "Võ Thị Sáu",
-      "highway": "primary",
-      "free_speed_kmh": 45.0,
-      "free_travel_time_s": 131.3,
-      "risk": {
-        "flood": 0,
-        "construction": 1,
-        "narrow_alley": 0,
-        "traffic_light": 1
-      }
-    },
-    {
-      "id": "e00246",
+      "id": "e00284",
       "u": "n0050",
       "v": "n0009",
       "oneway": true,
@@ -4556,15 +5202,15 @@
       }
     },
     {
-      "id": "e00247",
+      "id": "e00285",
       "u": "n0050",
       "v": "n0014",
       "oneway": false,
-      "length_m": 1372.2,
+      "length_m": 1417.3,
       "name": "Nguyễn Đình Chiểu",
       "highway": "secondary",
-      "free_speed_kmh": 38.1,
-      "free_travel_time_s": 129.7,
+      "free_speed_kmh": 41.9,
+      "free_travel_time_s": 121.8,
       "risk": {
         "flood": 0,
         "construction": 0,
@@ -4573,15 +5219,15 @@
       }
     },
     {
-      "id": "e00248",
+      "id": "e00286",
       "u": "n0050",
-      "v": "n0016",
-      "oneway": true,
-      "length_m": 1242.2,
+      "v": "n0026",
+      "oneway": false,
+      "length_m": 1184.1,
       "name": "Hai Bà Trưng",
       "highway": "primary",
-      "free_speed_kmh": 44.4,
-      "free_travel_time_s": 100.7,
+      "free_speed_kmh": 41.8,
+      "free_travel_time_s": 102.0,
       "risk": {
         "flood": 0,
         "construction": 0,
@@ -4590,7 +5236,7 @@
       }
     },
     {
-      "id": "e00249",
+      "id": "e00287",
       "u": "n0050",
       "v": "n0031",
       "oneway": false,
@@ -4607,7 +5253,7 @@
       }
     },
     {
-      "id": "e00250",
+      "id": "e00288",
       "u": "n0050",
       "v": "n0041",
       "oneway": false,
@@ -4624,15 +5270,15 @@
       }
     },
     {
-      "id": "e00251",
+      "id": "e00289",
       "u": "n0050",
       "v": "n0049",
       "oneway": true,
-      "length_m": 1544.8,
-      "name": "Võ Thị Sáu",
+      "length_m": 1717.1,
+      "name": "Trần Quốc Thảo",
       "highway": "primary",
-      "free_speed_kmh": 40.2,
-      "free_travel_time_s": 138.3,
+      "free_speed_kmh": 38.4,
+      "free_travel_time_s": 161.0,
       "risk": {
         "flood": 0,
         "construction": 1,
@@ -4641,7 +5287,7 @@
       }
     },
     {
-      "id": "e00252",
+      "id": "e00290",
       "u": "n0051",
       "v": "n0010",
       "oneway": false,
@@ -4658,7 +5304,24 @@
       }
     },
     {
-      "id": "e00253",
+      "id": "e00291",
+      "u": "n0051",
+      "v": "n0011",
+      "oneway": false,
+      "length_m": 918.0,
+      "name": "Nguyễn Trãi",
+      "highway": "secondary",
+      "free_speed_kmh": 36.4,
+      "free_travel_time_s": 90.8,
+      "risk": {
+        "flood": 1,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00292",
       "u": "n0051",
       "v": "n0036",
       "oneway": false,
@@ -4668,7 +5331,7 @@
       "free_speed_kmh": 36.8,
       "free_travel_time_s": 109.4,
       "risk": {
-        "flood": 1,
+        "flood": 0,
         "construction": 0,
         "narrow_alley": 0,
         "traffic_light": 0

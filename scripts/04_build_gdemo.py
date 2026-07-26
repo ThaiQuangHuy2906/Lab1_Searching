@@ -16,19 +16,26 @@ Recipe now:
    direction's true path attributes (asymmetry is CORRECT and feeds
    ATSP). One-way demo edges now only arise from the third-POI rule or
    unreachability.
-3. REPAIR: enforce the global invariant — for EVERY ordered POI pair,
-   demo/real <= INVARIANT_TIME_RATIO on free-flow time AND
-   <= INVARIANT_DIST_RATIO on length. A violating pair is fixed by
-   adding the missing edges along its real shortest path (consecutive
-   POIs on that path are adjacent by construction). Iterate to a fixed
+3. REPAIR: enforce the global invariants — for EVERY ordered POI pair,
+   demo/real <= INVARIANT_TIME_RATIO on free-flow time, <=
+   INVARIANT_DIST_RATIO on length, AND (KIEMTOAN batch 2026-07-27) <=
+   INVARIANT_TIME_RATIO on the BALANCED weight at each of the 4 slots
+   (demo congestion = corridor weighted mean of the real levels; needs
+   traffic_profiles_real.json, hence the 03b-real-before-04 order). A
+   violating pair is fixed by adding the missing edges along its real
+   shortest path (consecutive POIs on that path are adjacent by
+   construction); for balanced kinds an EXISTING but
+   expensive-at-that-slot corridor may be swapped for the slot's real
+   path, kept only if time/dist still hold globally. Iterate to a fixed
    point; abort loudly if it will not converge.
 4. PRUNE (global-safe): try removing an undirected pair (all its
-   directions); recompute demo all-pairs (both weights) and keep the
-   removal ONLY if every ordered pair still satisfies the invariant;
+   directions); recompute demo all-pairs (all six weights) and keep the
+   removal ONLY if every ordered pair still satisfies every invariant;
    otherwise revert. Longest pairs are tried first.
 5. Keep the largest SCC, renumber ids, write data/graph_demo.json +
-   preview PNG. scripts/validate_data.py re-checks the same invariant
-   forever (build fails on violation).
+   data/gdemo_corridors.json (corridor -> real edge ids, consumed by 03b
+   demo) + preview PNG. scripts/validate_data.py re-checks the same
+   invariants forever (build fails on violation).
 
 NetworkX here is a BUILD TOOL only (PROMPT-MASTER rule 6).
 """
@@ -36,16 +43,22 @@ NetworkX here is a BUILD TOOL only (PROMPT-MASTER rule 6).
 from __future__ import annotations
 
 import datetime
+import sys
 from collections import defaultdict
 
 import networkx as nx
 
 from pipeline_common import (
-    BBOX, DATA_DIR, NARROW_HIGHWAYS, ceil_dm, dump_json, haversine_m, load_json,
+    BBOX, DATA_DIR, NARROW_HIGHWAYS, ROOT, TIME_SLOTS, ceil_dm,
+    corridor_mean_level, dump_json, haversine_m, load_json,
 )
+
+sys.path.insert(0, str(ROOT / "backend"))
+from app.costs import GAMMA, PENALTY_S  # noqa: E402 — locked constants (rule 4)
 
 OUT_JSON = DATA_DIR / "graph_demo.json"
 OUT_PNG = DATA_DIR / "gdemo_preview.png"
+OUT_CORRIDORS = DATA_DIR / "gdemo_corridors.json"
 NARROW_SHARE = 0.30
 SECOND_SNAP_M = 120  # if the nearest node is taken, try the next ones within this radius
 
@@ -129,16 +142,60 @@ def contract(path: list[str], real_edges: dict) -> dict:
         # re-derived from the ROUNDED speed so SCHEMA's formula check is exact
         "free_travel_time_s": round(length / (speed / 3.6), 1),
         "risk": flags,
+        # internal (stripped before writing graph_demo.json): the real edges
+        # under this corridor — written to data/gdemo_corridors.json so 03b
+        # derives demo congestion from the REAL profile underneath instead of
+        # rolling independent random levels (KIEMTOAN batch: makes the
+        # balanced <= 1.5x demo/real invariant hold and lets future TomTom
+        # levels propagate to G_demo automatically).
+        "_real_eids": [real_edges[(a, b)]["id"] for a, b in zip(path, path[1:])],
     }
 
 
 # --------------------------------------------------------- invariant tools
+#
+# SIX invariants over every ordered POI pair (validate_data.py re-checks
+# the same six forever; KIEMTOAN batch extended the original two):
+#   time       demo/real <= 1.5  on free-flow travel time
+#   dist       demo/real <= 1.8  on length
+#   bal@<slot> demo/real <= 1.5  on balanced weight (t_free*f_cong + penalty)
+#              for each of the 4 slots — demo congestion is the corridor
+#              weighted mean (pipeline_common.corridor_mean_level), so the
+#              two tiers tell the same cost story in the DEFAULT mode too
+#              (fixes the 0.64x balanced distortion of finding L1-01).
 
 
-def demo_digraph(demo_edges: dict[tuple[str, str], dict], key: str) -> "nx.DiGraph":
+def _edge_penalty(e: dict) -> float:
+    return sum(PENALTY_S[k] * e["risk"][k] for k in PENALTY_S)
+
+
+def _bal_slot(kind: str) -> str | None:
+    return kind.split("@", 1)[1] if kind.startswith("bal@") else None
+
+
+class InvariantCtx:
+    """Weighs demo edges under all six kinds (real side is prebuilt)."""
+
+    def __init__(self, real_edges: dict, real_levels: dict):
+        self.real_levels = real_levels
+        self.real_t_free = {e["id"]: e["length_m"] / (e["free_speed_kmh"] / 3.6)
+                            for e in real_edges.values()}
+
+    def demo_weight(self, e: dict, kind: str) -> float:
+        slot = _bal_slot(kind)
+        if slot is None:
+            return e["free_travel_time_s"] if kind == "time" else e["length_m"]
+        lvl = corridor_mean_level(e["_real_eids"], self.real_levels[slot],
+                                  self.real_t_free)
+        t = e["length_m"] / (e["free_speed_kmh"] / 3.6)
+        return t * (1.0 + GAMMA * (lvl - 1) / 4.0) + _edge_penalty(e)
+
+
+def demo_digraph(demo_edges: dict[tuple[str, str], dict], kind: str,
+                 ctx: InvariantCtx) -> "nx.DiGraph":
     g = nx.DiGraph()
     for (u, v), e in demo_edges.items():
-        g.add_edge(u, v, w=e[key])
+        g.add_edge(u, v, w=ctx.demo_weight(e, kind))
     return g
 
 
@@ -154,16 +211,16 @@ def all_pairs(g: "nx.DiGraph", sources: set[str]) -> dict[str, dict[str, float]]
 
 def invariant_violations(
     demo_edges: dict, poi_nodes: set[str],
-    real_time: dict, real_dist: dict,
+    refs: dict[str, tuple[dict, float]], ctx: InvariantCtx,
+    kinds: tuple[str, ...] | None = None,
 ) -> list[tuple[str, str, str, float]]:
-    """[(u, v, weight_kind, ratio)] for every ordered pair breaking the
-    invariant; unreachable pairs are reported with ratio = inf."""
+    """[(u, v, kind, ratio)] for every ordered pair breaking an invariant;
+    unreachable pairs are reported with ratio = inf.
+    refs: kind -> (real all-pairs from POI sources, ratio limit)."""
     bad = []
-    for kind, key, real_ap, limit in (
-        ("time", "free_travel_time_s", real_time, INVARIANT_TIME_RATIO),
-        ("dist", "length_m", real_dist, INVARIANT_DIST_RATIO),
-    ):
-        demo_ap = all_pairs(demo_digraph(demo_edges, key), poi_nodes)
+    for kind in (kinds if kinds is not None else refs):
+        real_ap, limit = refs[kind]
+        demo_ap = all_pairs(demo_digraph(demo_edges, kind, ctx), poi_nodes)
         for a in poi_nodes:
             for b in poi_nodes:
                 if a == b:
@@ -178,54 +235,67 @@ def invariant_violations(
 
 
 def repair_invariant(
-    demo_edges: dict, poi_nodes: set[str], g_real_time: "nx.DiGraph",
-    g_real_dist: "nx.DiGraph", real_time: dict, real_dist: dict,
-    real_edges: dict,
+    demo_edges: dict, poi_nodes: set[str], g_real: dict[str, "nx.DiGraph"],
+    refs: dict[str, tuple[dict, float]], ctx: InvariantCtx, real_edges: dict,
 ) -> None:
-    """Add edges along real shortest paths until the invariant holds.
+    """Add (and for balanced kinds, carefully swap) corridor edges along
+    real shortest paths until all six invariants hold.
 
-    For a violating ordered pair, walk its real shortest path (by the
-    violated weight); consecutive POIs along that path are adjacent by
-    construction (no third POI strictly between them), so each missing
-    consecutive pair becomes a new contracted demo edge. Repeats until
-    no violations remain (typically 1-2 rounds).
+    For a violating ordered pair, walk its real shortest path under the
+    violated weight; consecutive POIs along that path are adjacent by
+    construction (no third POI strictly between them). A missing
+    consecutive pair becomes a new contracted demo edge. If the pair
+    already exists but its corridor is expensive at a balanced slot
+    (e.g. it crosses a risk zone the real optimum detours around), the
+    corridor is REPLACED by this slot's path — kept only when the
+    time/dist invariants still hold globally afterwards, else reverted.
     """
+    core = ("time", "dist")
     for round_no in range(1, REPAIR_MAX_ROUNDS + 1):
-        bad = invariant_violations(demo_edges, poi_nodes, real_time, real_dist)
+        bad = invariant_violations(demo_edges, poi_nodes, refs, ctx)
         if not bad:
             if round_no > 1:
                 print(f"  repair: invariant OK sau {round_no - 1} vòng")
             return
-        added = 0
+        added = replaced = 0
         for a, b, kind, _r in bad:
-            g = g_real_time if kind == "time" else g_real_dist
-            path = nx.shortest_path(g, a, b, weight="w")
+            path = nx.shortest_path(g_real[kind], a, b, weight="w")
             waypoints = [n for n in path if n in poi_nodes]
             for x, y in zip(waypoints, waypoints[1:]):
-                if (x, y) in demo_edges:
-                    continue
                 seg = path[path.index(x):path.index(y) + 1]
-                demo_edges[(x, y)] = contract(seg, real_edges)
-                added += 1
-        print(f"  repair vòng {round_no}: {len(bad)} cặp vi phạm -> thêm {added} cạnh")
-        if added == 0:
+                if (x, y) not in demo_edges:
+                    demo_edges[(x, y)] = contract(seg, real_edges)
+                    added += 1
+                elif _bal_slot(kind):
+                    cand = contract(seg, real_edges)
+                    old = demo_edges[(x, y)]
+                    if ctx.demo_weight(cand, kind) < ctx.demo_weight(old, kind) - 1e-9:
+                        demo_edges[(x, y)] = cand
+                        if invariant_violations(demo_edges, poi_nodes, refs,
+                                                ctx, kinds=core):
+                            demo_edges[(x, y)] = old  # revert — would break time/dist
+                        else:
+                            replaced += 1
+        print(f"  repair vòng {round_no}: {len(bad)} vi phạm -> "
+              f"thêm {added} cạnh, thay {replaced} hành lang")
+        if added == 0 and replaced == 0:
             raise SystemExit(
-                "repair_invariant: còn vi phạm nhưng không thêm được cạnh mới — "
+                "repair_invariant: còn vi phạm nhưng không thêm/thay được cạnh — "
                 "kiểm tra lại ngưỡng INVARIANT_*")
     raise SystemExit("repair_invariant: không hội tụ sau REPAIR_MAX_ROUNDS vòng")
 
 
 def prune_redundant(
     demo_edges: dict, poi_nodes: set[str],
-    real_time: dict, real_dist: dict,
+    refs: dict[str, tuple[dict, float]], ctx: InvariantCtx,
 ) -> None:
     """Global-safe pruning (audit fix).
 
     Try removing an undirected pair (all of its directions at once);
-    KEEP the removal only if the FULL invariant still holds for every
+    KEEP the removal only if ALL SIX invariants still hold for every
     ordered pair afterwards (checked with fresh all-pairs runs on the
     reduced graph — no compounding local approximations). Longest pairs
-    are tried first. Distance mode is protected explicitly.
+    are tried first.
     """
     pairs: dict[frozenset, list[tuple[str, str]]] = defaultdict(list)
     for u, v in demo_edges:
@@ -238,12 +308,13 @@ def prune_redundant(
         if not directions:
             continue
         backup = {d: demo_edges.pop(d) for d in directions}
-        if invariant_violations(demo_edges, poi_nodes, real_time, real_dist):
-            demo_edges.update(backup)  # revert — invariant would break
+        if invariant_violations(demo_edges, poi_nodes, refs, ctx):
+            demo_edges.update(backup)  # revert — an invariant would break
         else:
             removed += len(backup)
     print(f"  pruned {removed} cạnh (global-safe: mọi cặp vẫn ≤ "
-          f"{INVARIANT_TIME_RATIO}x time / {INVARIANT_DIST_RATIO}x dist)")
+          f"{INVARIANT_TIME_RATIO}x time / {INVARIANT_DIST_RATIO}x dist "
+          f"/ {INVARIANT_TIME_RATIO}x balanced cả 4 khung giờ)")
 
 
 def main() -> None:
@@ -265,9 +336,32 @@ def main() -> None:
     node_of = {nm: snapped[nm]["node"]["id"] for nm in names}
     poi_nodes = set(node_of.values())
 
-    # real all-pairs between POIs — the reference for the invariant
+    # real references for all six invariants (time, dist, balanced x 4 slots)
+    prof_path = DATA_DIR / "traffic_profiles_real.json"
+    if not prof_path.exists():
+        raise SystemExit(
+            "04 needs data/traffic_profiles_real.json for the balanced "
+            "invariant — run '03b_build_profiles.py real' first (DATA.md §1)")
+    real_levels = load_json(prof_path)["profiles"]
+    ctx = InvariantCtx(real_edges, real_levels)
+
     real_time = all_pairs(g_real_time, poi_nodes)
     real_dist = all_pairs(g_real_dist, poi_nodes)
+    g_real: dict[str, "nx.DiGraph"] = {"time": g_real_time, "dist": g_real_dist}
+    refs: dict[str, tuple[dict, float]] = {
+        "time": (real_time, INVARIANT_TIME_RATIO),
+        "dist": (real_dist, INVARIANT_DIST_RATIO),
+    }
+    for slot in TIME_SLOTS:
+        g_bal = nx.DiGraph()
+        for (u, v), e in real_edges.items():
+            t = e["length_m"] / (e["free_speed_kmh"] / 3.6)
+            lvl = real_levels[slot][e["id"]]
+            g_bal.add_edge(u, v, w=t * (1.0 + GAMMA * (lvl - 1) / 4.0)
+                           + _edge_penalty(e))
+        kind = f"bal@{slot}"
+        g_real[kind] = g_bal
+        refs[kind] = (all_pairs(g_bal, poi_nodes), INVARIANT_TIME_RATIO)
 
     def poi_dist(a: str, b: str) -> float:
         (la, lo), (lb, lo2) = coord[node_of[a]], coord[node_of[b]]
@@ -302,9 +396,8 @@ def main() -> None:
         print(f"  k={k}: SCC only {len(scc)}/{len(names)} POIs — retrying with k+1")
 
     print(f"  adjacency: {len(demo_edges)} cạnh trước repair/prune")
-    repair_invariant(demo_edges, poi_nodes, g_real_time, g_real_dist,
-                     real_time, real_dist, real_edges)
-    prune_redundant(demo_edges, poi_nodes, real_time, real_dist)
+    repair_invariant(demo_edges, poi_nodes, g_real, refs, ctx, real_edges)
+    prune_redundant(demo_edges, poi_nodes, refs, ctx)
 
     g_demo = nx.DiGraph(list(demo_edges))
     scc = max(nx.strongly_connected_components(g_demo), key=len)
@@ -322,11 +415,15 @@ def main() -> None:
               "lat": coord[node_of[nm]][0], "lon": coord[node_of[nm]][1],
               "type": snapped[nm]["poi"]["type"]} for nm in kept]
     edges = []
+    corridors: dict[str, list[str]] = {}
     for i, ((u, v), e) in enumerate(sorted(
             ((nid[u], nid[v]), e) for (u, v), e in demo_edges.items())):
-        edges.append({"id": f"e{i + 1:05d}", "u": u, "v": v,
+        eid = f"e{i + 1:05d}"
+        corridors[eid] = e["_real_eids"]
+        public = {k: val for k, val in e.items() if not k.startswith("_")}
+        edges.append({"id": eid, "u": u, "v": v,
                       "oneway": (v, u) not in {(nid[x], nid[y]) for x, y in demo_edges},
-                      **e})
+                      **public})
 
     payload = {
         "meta": {"name": "G_demo", "bbox": list(BBOX), "directed": True,
@@ -335,8 +432,14 @@ def main() -> None:
         "nodes": nodes, "edges": edges,
     }
     dump_json(payload, OUT_JSON)
+    dump_json({"meta": {"graph": "G_demo",
+                        "note": "demo edge id -> real edge ids under the corridor; "
+                                "consumed by 03b to derive demo congestion from "
+                                "traffic_profiles_real.json"},
+               "corridors": corridors}, OUT_CORRIDORS)
     oneway = sum(1 for e in edges if e["oneway"])
     print(f"graph_demo.json: {len(nodes)} nodes, {len(edges)} edges ({oneway} oneway)")
+    print(f"gdemo_corridors.json: {len(corridors)} corridors")
 
     # --- visual sanity-check preview -----------------------------------------
     import matplotlib

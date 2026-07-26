@@ -69,11 +69,15 @@ export default function BenchmarkPage() {
       const rows = exp3.rows.filter((r) => r.algorithm === a);
       return {
         algorithm: a,
-        expanded: Math.round(mean(rows, "nodes_expanded")),
-        runtime: Number(mean(rows, "runtime_ms").toFixed(2)),
+        // log-scale axes reject 0 — clamp to the smallest visible value
+        expanded: Math.max(1, Math.round(mean(rows, "nodes_expanded"))),
+        runtime: Math.max(0.01, Number(mean(rows, "runtime_ms").toFixed(2))),
       };
     });
   }, [exp3]);
+
+  const fmtLogTick = (v: number) =>
+    v >= 1000 ? `${v / 1000}k` : String(v);
 
   const gamma = React.useMemo(
     () =>
@@ -124,13 +128,17 @@ export default function BenchmarkPage() {
           {byAlgo.length > 0 && (
             <>
               <Card>
-                <CardHeader><CardTitle>Số node expand trung bình theo thuật toán</CardTitle></CardHeader>
+                <CardHeader><CardTitle>Số node expand trung bình theo thuật toán (thang log)</CardTitle></CardHeader>
                 <CardContent className="h-72">
                   <ResponsiveContainer>
                     <BarChart data={byAlgo} margin={{ left: 4, right: 8 }}>
                       <CartesianGrid stroke={GRID} vertical={false} />
-                      <XAxis dataKey="algorithm" stroke={INK_DIM} fontSize={11} />
-                      <YAxis stroke={INK_DIM} fontSize={11} />
+                      {/* interval={0}: Recharts auto-skips crowded labels — with 10 bars
+                          that silently dropped dijkstra/greedy/idastar (v8c bug) */}
+                      <XAxis dataKey="algorithm" stroke={INK_DIM} fontSize={10}
+                        interval={0} angle={-30} textAnchor="end" height={48} tickMargin={2} />
+                      <YAxis stroke={INK_DIM} fontSize={11} scale="log"
+                        domain={[1, "auto"]} tickFormatter={fmtLogTick} />
                       <RTooltip {...tooltipStyle} cursor={{ fill: `${GRID}55` }} />
                       <Bar dataKey="expanded" name="Node expand" fill={CYAN} radius={[4, 4, 0, 0]} />
                     </BarChart>
@@ -138,13 +146,15 @@ export default function BenchmarkPage() {
                 </CardContent>
               </Card>
               <Card>
-                <CardHeader><CardTitle>Thời gian chạy trung bình (ms)</CardTitle></CardHeader>
+                <CardHeader><CardTitle>Thời gian chạy trung bình (ms, thang log)</CardTitle></CardHeader>
                 <CardContent className="h-72">
                   <ResponsiveContainer>
                     <BarChart data={byAlgo} margin={{ left: 4, right: 8 }}>
                       <CartesianGrid stroke={GRID} vertical={false} />
-                      <XAxis dataKey="algorithm" stroke={INK_DIM} fontSize={11} />
-                      <YAxis stroke={INK_DIM} fontSize={11} />
+                      <XAxis dataKey="algorithm" stroke={INK_DIM} fontSize={10}
+                        interval={0} angle={-30} textAnchor="end" height={48} tickMargin={2} />
+                      <YAxis stroke={INK_DIM} fontSize={11} scale="log"
+                        domain={[0.01, "auto"]} tickFormatter={fmtLogTick} />
                       <RTooltip {...tooltipStyle} cursor={{ fill: `${GRID}55` }} />
                       <Bar dataKey="runtime" name="Runtime (ms)" fill={VIOLET} radius={[4, 4, 0, 0]} />
                     </BarChart>

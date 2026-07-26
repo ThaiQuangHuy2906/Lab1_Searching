@@ -175,6 +175,13 @@ Thanh nổi giữa-đáy bản đồ, nền `surface-panel/95`, viền `surface-
 Có kết quả → recharts trên nền tối đúng token: bar `nodes_expanded` và `runtime_ms`
 theo thuật toán (màu `algo-frontier`, lưới `surface-border`, chữ `ink-dim`),
 line độ nhạy γ 2 đường (`algo-path` + `algo-expanded`).
+Luật trục (duyệt v8c — sửa lỗi user bắt được: Recharts tự ẩn nhãn khi chật, biểu đồ
+10 cột chỉ còn 7 nhãn khiến cột idastar bị đọc nhầm thành bidijkstra):
+- XAxis bar chart: `interval={0}` (CẤM auto-skip — mỗi cột một nhãn), nhãn nghiêng
+  −30°, cỡ 10, `height` đủ không cắt chữ.
+- YAxis 2 bar chart dùng **thang log** (tiêu đề card ghi rõ "thang log") — khớp kịch
+  bản video 20:00; tick viết tắt 1k/10k/100k. Giá trị đưa vào chart phải > 0
+  (expand chặn dưới 1, runtime chặn dưới 0,01 ms) vì log không nhận 0.
 
 ## 10. Kiểm định tương phản (tự động)
 

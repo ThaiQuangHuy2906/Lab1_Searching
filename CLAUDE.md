@@ -32,7 +32,15 @@ py -3.14 -m venv .venv
 # test
 .venv/Scripts/python.exe -m pytest backend/tests/ -v
 
-# (từ Phase 1) pipeline dữ liệu: scripts/01→04
+# pipeline dữ liệu (offline một lần; 01 cần mạng, có cache trong data/raw/)
+.venv/Scripts/python.exe scripts/01_download_osm.py
+.venv/Scripts/python.exe scripts/02_build_graph.py
+.venv/Scripts/python.exe scripts/03b_build_profiles.py real
+.venv/Scripts/python.exe scripts/04_build_gdemo.py
+.venv/Scripts/python.exe scripts/03b_build_profiles.py demo
+.venv/Scripts/python.exe scripts/validate_data.py
+# (03a_crawl_tomtom.py tuỳ chọn — cần TOMTOM_API_KEY trong .env, chạy 4 lần đúng 4 khung giờ)
+
 # (từ Phase 4) backend: .venv/Scripts/python.exe -m uvicorn app.main:app --port 8000 (cwd backend/)
 # (từ Phase 5) frontend: npm run dev (cwd frontend/)
 ```

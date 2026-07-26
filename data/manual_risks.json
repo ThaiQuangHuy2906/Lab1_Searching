@@ -1,0 +1,88 @@
+{
+  "meta": {
+    "description_vi": "Điểm ngập / lô cốt tiêu biểu khu trung tâm TP.HCM do nhóm định nghĩa (PROMPT-MASTER 6.1). Cạnh nào có đầu mút nằm trong radius_m của một mục sẽ nhận flag tương ứng (flood/construction = 1). ĐÂY LÀ DỮ LIỆU MINH HOẠ: vị trí đặt đúng các tuyến đường nổi tiếng về ngập/thi công, nhưng nhóm PHẢI dán link nguồn thật (cổng giao thông TP.HCM giaothong.hochiminhcity.gov.vn hoặc báo chí) vào source_url trước khi nộp.",
+    "created": "2026-07-26"
+  },
+  "risks": [
+    {
+      "id": "r01",
+      "type": "flood",
+      "name_vi": "Nguyễn Hữu Cảnh (đoạn gần cầu Sài Gòn)",
+      "lat": 10.7925,
+      "lon": 106.7190,
+      "radius_m": 400,
+      "source_url": "TODO: dán link cổng giao thông / báo về điểm ngập Nguyễn Hữu Cảnh",
+      "note_vi": "Điểm ngập kinh niên nổi tiếng nhất TP.HCM khi mưa lớn / triều cường."
+    },
+    {
+      "id": "r02",
+      "type": "flood",
+      "name_vi": "Đinh Tiên Hoàng (đoạn gần cầu Bông, Đa Kao)",
+      "lat": 10.7955,
+      "lon": 106.6985,
+      "radius_m": 250,
+      "source_url": "TODO: dán link nguồn",
+      "note_vi": "Ngập khi triều cường kênh Nhiêu Lộc - Thị Nghè."
+    },
+    {
+      "id": "r03",
+      "type": "flood",
+      "name_vi": "Cống Quỳnh (gần BV Từ Dũ)",
+      "lat": 10.7680,
+      "lon": 106.6870,
+      "radius_m": 250,
+      "source_url": "TODO: dán link nguồn",
+      "note_vi": "Ngập cục bộ khi mưa lớn."
+    },
+    {
+      "id": "r04",
+      "type": "flood",
+      "name_vi": "Calmette – Bến Chương Dương (phía Võ Văn Kiệt)",
+      "lat": 10.7648,
+      "lon": 106.6975,
+      "radius_m": 250,
+      "source_url": "TODO: dán link nguồn",
+      "note_vi": "Vùng trũng ven kênh Bến Nghé, ngập khi triều cường."
+    },
+    {
+      "id": "r05",
+      "type": "flood",
+      "name_vi": "Trần Hưng Đạo (đoạn Nguyễn Cư Trinh)",
+      "lat": 10.7625,
+      "lon": 106.6890,
+      "radius_m": 300,
+      "source_url": "TODO: dán link nguồn",
+      "note_vi": "Ngập mặt đường khi mưa kéo dài."
+    },
+    {
+      "id": "r06",
+      "type": "construction",
+      "name_vi": "Lê Thánh Tôn (đoạn trước chợ Bến Thành)",
+      "lat": 10.7730,
+      "lon": 106.6990,
+      "radius_m": 150,
+      "source_url": "TODO: dán link thông báo thi công",
+      "note_vi": "Minh hoạ lô cốt cải tạo vỉa hè khu trung tâm."
+    },
+    {
+      "id": "r07",
+      "type": "construction",
+      "name_vi": "Hai Bà Trưng (đoạn Tân Định)",
+      "lat": 10.7890,
+      "lon": 106.6905,
+      "radius_m": 200,
+      "source_url": "TODO: dán link thông báo thi công",
+      "note_vi": "Minh hoạ rào chắn thi công cống thoát nước."
+    },
+    {
+      "id": "r08",
+      "type": "construction",
+      "name_vi": "Võ Thị Sáu (Quận 3)",
+      "lat": 10.7860,
+      "lon": 106.6890,
+      "radius_m": 200,
+      "source_url": "TODO: dán link thông báo thi công",
+      "note_vi": "Minh hoạ công trình nâng cấp mặt đường."
+    }
+  ]
+}

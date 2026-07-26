@@ -1,5 +1,11 @@
-# Pinned versions verified on Python 3.14.0 / Windows 11 (Phase 0).
-# NOTE: PROMPT-MASTER specifies Python 3.11, but only 3.14 is installed on the
-# team machine — approved deviation, see docs/TIENDO.md (Phase 0 notes).
+# Pinned versions verified on Python 3.14.0 / Windows 11.
+# Python 3.14 is the project standard (PROMPT-MASTER 8, decided 2026-07-26).
 pydantic==2.13.4
 pytest==9.1.1
+
+# Offline data pipeline (scripts/01-04) — Phase 1
+osmnx==2.1.1
+networkx==3.6.1
+matplotlib==3.11.1
+python-dotenv==1.2.2
+requests==2.34.2

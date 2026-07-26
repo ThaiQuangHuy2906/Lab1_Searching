@@ -1,0 +1,2716 @@
+{
+  "meta": {
+    "name": "G_demo",
+    "bbox": [
+      106.68,
+      10.76,
+      106.72,
+      10.8
+    ],
+    "directed": true,
+    "created": "2026-07-26",
+    "crs": "EPSG:4326",
+    "node_count": 50,
+    "edge_count": 138
+  },
+  "nodes": [
+    {
+      "id": "n0001",
+      "name": "Chùa Xá Lợi",
+      "lat": 10.778537,
+      "lon": 106.6865528,
+      "type": "landmark"
+    },
+    {
+      "id": "n0002",
+      "name": "Hồ Con Rùa",
+      "lat": 10.7823428,
+      "lon": 106.695672,
+      "type": "landmark"
+    },
+    {
+      "id": "n0003",
+      "name": "Chợ Tân Định",
+      "lat": 10.7885505,
+      "lon": 106.6911219,
+      "type": "landmark"
+    },
+    {
+      "id": "n0004",
+      "name": "ĐH Kinh tế TP.HCM",
+      "lat": 10.783741,
+      "lon": 106.6923323,
+      "type": "school"
+    },
+    {
+      "id": "n0005",
+      "name": "Nhà thờ Đức Bà",
+      "lat": 10.7796124,
+      "lon": 106.6988256,
+      "type": "landmark"
+    },
+    {
+      "id": "n0006",
+      "name": "Bảo tàng Chứng tích Chiến tranh",
+      "lat": 10.7793943,
+      "lon": 106.6929296,
+      "type": "landmark"
+    },
+    {
+      "id": "n0007",
+      "name": "Cung Văn hoá Lao Động",
+      "lat": 10.7736186,
+      "lon": 106.6944794,
+      "type": "landmark"
+    },
+    {
+      "id": "n0008",
+      "name": "Vòng xoay Dân Chủ",
+      "lat": 10.7778512,
+      "lon": 106.6814148,
+      "type": "landmark"
+    },
+    {
+      "id": "n0009",
+      "name": "Chùa Vĩnh Nghiêm",
+      "lat": 10.7907393,
+      "lon": 106.6836072,
+      "type": "landmark"
+    },
+    {
+      "id": "n0010",
+      "name": "Chợ Thái Bình",
+      "lat": 10.7648639,
+      "lon": 106.6883082,
+      "type": "landmark"
+    },
+    {
+      "id": "n0011",
+      "name": "BV Từ Dũ",
+      "lat": 10.7691351,
+      "lon": 106.6871325,
+      "type": "hospital"
+    },
+    {
+      "id": "n0012",
+      "name": "Sân vận động Hoa Lư",
+      "lat": 10.7891062,
+      "lon": 106.7001939,
+      "type": "landmark"
+    },
+    {
+      "id": "n0013",
+      "name": "ĐH Mở TP.HCM",
+      "lat": 10.7757532,
+      "lon": 106.6895684,
+      "type": "school"
+    },
+    {
+      "id": "n0014",
+      "name": "THPT Lê Quý Đôn",
+      "lat": 10.7791401,
+      "lon": 106.6907264,
+      "type": "school"
+    },
+    {
+      "id": "n0015",
+      "name": "Thảo Cầm Viên",
+      "lat": 10.7872537,
+      "lon": 106.7050041,
+      "type": "landmark"
+    },
+    {
+      "id": "n0016",
+      "name": "Đài truyền hình HTV",
+      "lat": 10.7823516,
+      "lon": 106.7004492,
+      "type": "landmark"
+    },
+    {
+      "id": "n0017",
+      "name": "Công viên Tao Đàn",
+      "lat": 10.7729591,
+      "lon": 106.6935515,
+      "type": "landmark"
+    },
+    {
+      "id": "n0018",
+      "name": "Trạm trung chuyển Hàm Nghi",
+      "lat": 10.7704049,
+      "lon": 106.7009907,
+      "type": "landmark"
+    },
+    {
+      "id": "n0019",
+      "name": "Bảo tàng Mỹ thuật TP.HCM",
+      "lat": 10.7704406,
+      "lon": 106.6993107,
+      "type": "landmark"
+    },
+    {
+      "id": "n0020",
+      "name": "Chợ Bến Thành",
+      "lat": 10.7721929,
+      "lon": 106.6975561,
+      "type": "landmark"
+    },
+    {
+      "id": "n0021",
+      "name": "Bưu điện Thành phố",
+      "lat": 10.7791894,
+      "lon": 106.7001527,
+      "type": "warehouse"
+    },
+    {
+      "id": "n0022",
+      "name": "Bitexco Financial Tower",
+      "lat": 10.7718636,
+      "lon": 106.7039118,
+      "type": "landmark"
+    },
+    {
+      "id": "n0023",
+      "name": "BV Nhi Đồng 2",
+      "lat": 10.7791968,
+      "lon": 106.702175,
+      "type": "hospital"
+    },
+    {
+      "id": "n0024",
+      "name": "Cầu Ông Lãnh",
+      "lat": 10.7658757,
+      "lon": 106.6981643,
+      "type": "landmark"
+    },
+    {
+      "id": "n0025",
+      "name": "Nhà hát Thành phố",
+      "lat": 10.7761671,
+      "lon": 106.7029698,
+      "type": "landmark"
+    },
+    {
+      "id": "n0026",
+      "name": "Nhà văn hoá Thanh Niên",
+      "lat": 10.7809287,
+      "lon": 106.697816,
+      "type": "landmark"
+    },
+    {
+      "id": "n0027",
+      "name": "Cầu Calmette",
+      "lat": 10.764404,
+      "lon": 106.6989721,
+      "type": "landmark"
+    },
+    {
+      "id": "n0028",
+      "name": "Saigon Centre (Takashimaya)",
+      "lat": 10.7729233,
+      "lon": 106.7002992,
+      "type": "landmark"
+    },
+    {
+      "id": "n0029",
+      "name": "Bến Bạch Đằng",
+      "lat": 10.7714318,
+      "lon": 106.7062713,
+      "type": "landmark"
+    },
+    {
+      "id": "n0030",
+      "name": "UBND TP.HCM",
+      "lat": 10.7762943,
+      "lon": 106.7009788,
+      "type": "landmark"
+    },
+    {
+      "id": "n0031",
+      "name": "Công viên Lê Văn Tám",
+      "lat": 10.7860406,
+      "lon": 106.6943467,
+      "type": "landmark"
+    },
+    {
+      "id": "n0032",
+      "name": "Cầu Kiệu",
+      "lat": 10.7928774,
+      "lon": 106.6817525,
+      "type": "landmark"
+    },
+    {
+      "id": "n0033",
+      "name": "THPT Nguyễn Thị Minh Khai",
+      "lat": 10.7752429,
+      "lon": 106.6863514,
+      "type": "school"
+    },
+    {
+      "id": "n0034",
+      "name": "Chợ Đa Kao",
+      "lat": 10.790616,
+      "lon": 106.6975675,
+      "type": "landmark"
+    },
+    {
+      "id": "n0035",
+      "name": "BV Mắt TP.HCM",
+      "lat": 10.7767966,
+      "lon": 106.6861495,
+      "type": "hospital"
+    },
+    {
+      "id": "n0036",
+      "name": "Cầu Mống",
+      "lat": 10.7682059,
+      "lon": 106.7053811,
+      "type": "landmark"
+    },
+    {
+      "id": "n0037",
+      "name": "Phố đi bộ Bùi Viện",
+      "lat": 10.7674234,
+      "lon": 106.6939962,
+      "type": "landmark"
+    },
+    {
+      "id": "n0038",
+      "name": "Công viên 23/9",
+      "lat": 10.769207,
+      "lon": 106.6946504,
+      "type": "landmark"
+    },
+    {
+      "id": "n0039",
+      "name": "Đền Bà Mariamman",
+      "lat": 10.7698062,
+      "lon": 106.696162,
+      "type": "landmark"
+    },
+    {
+      "id": "n0040",
+      "name": "Bảo tàng Hồ Chí Minh (Bến Nhà Rồng)",
+      "lat": 10.7680655,
+      "lon": 106.705993,
+      "type": "landmark"
+    },
+    {
+      "id": "n0041",
+      "name": "Bảo tàng TP.HCM",
+      "lat": 10.7758208,
+      "lon": 106.6990461,
+      "type": "landmark"
+    },
+    {
+      "id": "n0042",
+      "name": "Trường Marie Curie",
+      "lat": 10.778619,
+      "lon": 106.6842145,
+      "type": "school"
+    },
+    {
+      "id": "n0043",
+      "name": "ĐH Khoa học Tự nhiên (Nguyễn Văn Cừ)",
+      "lat": 10.7628393,
+      "lon": 106.6825233,
+      "type": "school"
+    },
+    {
+      "id": "n0044",
+      "name": "Công trường Mê Linh",
+      "lat": 10.7749157,
+      "lon": 106.7059388,
+      "type": "landmark"
+    },
+    {
+      "id": "n0045",
+      "name": "Dinh Độc Lập",
+      "lat": 10.7781953,
+      "lon": 106.6964878,
+      "type": "landmark"
+    },
+    {
+      "id": "n0046",
+      "name": "Chùa Ngọc Hoàng",
+      "lat": 10.7922067,
+      "lon": 106.6947299,
+      "type": "landmark"
+    },
+    {
+      "id": "n0047",
+      "name": "Cầu Ba Son",
+      "lat": 10.7811845,
+      "lon": 106.7077438,
+      "type": "landmark"
+    },
+    {
+      "id": "n0048",
+      "name": "Bảo tàng Lịch sử Việt Nam",
+      "lat": 10.787102,
+      "lon": 106.7048614,
+      "type": "landmark"
+    },
+    {
+      "id": "n0049",
+      "name": "ĐH Kiến trúc TP.HCM",
+      "lat": 10.7833574,
+      "lon": 106.6834638,
+      "type": "school"
+    },
+    {
+      "id": "n0050",
+      "name": "Chợ Nancy",
+      "lat": 10.762526,
+      "lon": 106.6865261,
+      "type": "landmark"
+    }
+  ],
+  "edges": [
+    {
+      "id": "e00001",
+      "u": "n0001",
+      "v": "n0013",
+      "name": null,
+      "oneway": true,
+      "length_m": 452.0,
+      "highway": "tertiary",
+      "free_speed_kmh": 35.1,
+      "free_travel_time_s": 46.4,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00002",
+      "u": "n0001",
+      "v": "n0014",
+      "name": null,
+      "oneway": true,
+      "length_m": 640.7,
+      "highway": "tertiary",
+      "free_speed_kmh": 35.1,
+      "free_travel_time_s": 65.7,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00003",
+      "u": "n0001",
+      "v": "n0035",
+      "name": null,
+      "oneway": false,
+      "length_m": 274.7,
+      "highway": "tertiary",
+      "free_speed_kmh": 35.1,
+      "free_travel_time_s": 28.2,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00004",
+      "u": "n0001",
+      "v": "n0042",
+      "name": null,
+      "oneway": false,
+      "length_m": 405.4,
+      "highway": "tertiary",
+      "free_speed_kmh": 32.6,
+      "free_travel_time_s": 44.8,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00005",
+      "u": "n0002",
+      "v": "n0004",
+      "name": null,
+      "oneway": true,
+      "length_m": 506.0,
+      "highway": "secondary",
+      "free_speed_kmh": 40.0,
+      "free_travel_time_s": 45.5,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 1
+      }
+    },
+    {
+      "id": "e00006",
+      "u": "n0002",
+      "v": "n0006",
+      "name": null,
+      "oneway": true,
+      "length_m": 444.2,
+      "highway": "secondary",
+      "free_speed_kmh": 40.1,
+      "free_travel_time_s": 39.9,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 1
+      }
+    },
+    {
+      "id": "e00007",
+      "u": "n0002",
+      "v": "n0026",
+      "name": null,
+      "oneway": true,
+      "length_m": 303.9,
+      "highway": "tertiary",
+      "free_speed_kmh": 36.0,
+      "free_travel_time_s": 30.4,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 1
+      }
+    },
+    {
+      "id": "e00008",
+      "u": "n0002",
+      "v": "n0031",
+      "name": null,
+      "oneway": false,
+      "length_m": 901.5,
+      "highway": "primary",
+      "free_speed_kmh": 43.2,
+      "free_travel_time_s": 75.1,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 1
+      }
+    },
+    {
+      "id": "e00009",
+      "u": "n0003",
+      "v": "n0009",
+      "name": null,
+      "oneway": false,
+      "length_m": 1335.1,
+      "highway": "primary",
+      "free_speed_kmh": 41.3,
+      "free_travel_time_s": 116.4,
+      "risk": {
+        "flood": 0,
+        "construction": 1,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00010",
+      "u": "n0003",
+      "v": "n0031",
+      "name": null,
+      "oneway": false,
+      "length_m": 584.9,
+      "highway": "primary",
+      "free_speed_kmh": 45.1,
+      "free_travel_time_s": 46.7,
+      "risk": {
+        "flood": 0,
+        "construction": 1,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00011",
+      "u": "n0003",
+      "v": "n0032",
+      "name": null,
+      "oneway": false,
+      "length_m": 2776.4,
+      "highway": "primary",
+      "free_speed_kmh": 38.2,
+      "free_travel_time_s": 261.7,
+      "risk": {
+        "flood": 0,
+        "construction": 1,
+        "narrow_alley": 0,
+        "traffic_light": 1
+      }
+    },
+    {
+      "id": "e00012",
+      "u": "n0003",
+      "v": "n0046",
+      "name": null,
+      "oneway": false,
+      "length_m": 868.6,
+      "highway": "residential",
+      "free_speed_kmh": 33.8,
+      "free_travel_time_s": 92.5,
+      "risk": {
+        "flood": 0,
+        "construction": 1,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00013",
+      "u": "n0004",
+      "v": "n0014",
+      "name": null,
+      "oneway": false,
+      "length_m": 1273.5,
+      "highway": "secondary",
+      "free_speed_kmh": 39.2,
+      "free_travel_time_s": 117.0,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 1
+      }
+    },
+    {
+      "id": "e00014",
+      "u": "n0004",
+      "v": "n0031",
+      "name": null,
+      "oneway": true,
+      "length_m": 643.2,
+      "highway": "primary",
+      "free_speed_kmh": 44.1,
+      "free_travel_time_s": 52.5,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 1
+      }
+    },
+    {
+      "id": "e00015",
+      "u": "n0005",
+      "v": "n0021",
+      "name": null,
+      "oneway": true,
+      "length_m": 202.5,
+      "highway": "tertiary",
+      "free_speed_kmh": 35.0,
+      "free_travel_time_s": 20.8,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00016",
+      "u": "n0005",
+      "v": "n0045",
+      "name": null,
+      "oneway": false,
+      "length_m": 369.5,
+      "highway": "secondary",
+      "free_speed_kmh": 35.3,
+      "free_travel_time_s": 37.7,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00017",
+      "u": "n0006",
+      "v": "n0004",
+      "name": null,
+      "oneway": true,
+      "length_m": 990.9,
+      "highway": "secondary",
+      "free_speed_kmh": 40.5,
+      "free_travel_time_s": 88.1,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 1
+      }
+    },
+    {
+      "id": "e00018",
+      "u": "n0006",
+      "v": "n0014",
+      "name": null,
+      "oneway": true,
+      "length_m": 340.6,
+      "highway": "secondary",
+      "free_speed_kmh": 37.5,
+      "free_travel_time_s": 32.7,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00019",
+      "u": "n0006",
+      "v": "n0045",
+      "name": null,
+      "oneway": true,
+      "length_m": 546.6,
+      "highway": "secondary",
+      "free_speed_kmh": 39.8,
+      "free_travel_time_s": 49.4,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 1
+      }
+    },
+    {
+      "id": "e00020",
+      "u": "n0007",
+      "v": "n0017",
+      "name": null,
+      "oneway": true,
+      "length_m": 125.1,
+      "highway": "tertiary",
+      "free_speed_kmh": 34.9,
+      "free_travel_time_s": 12.9,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00021",
+      "u": "n0008",
+      "v": "n0033",
+      "name": null,
+      "oneway": false,
+      "length_m": 637.3,
+      "highway": "primary",
+      "free_speed_kmh": 45.1,
+      "free_travel_time_s": 50.9,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00022",
+      "u": "n0008",
+      "v": "n0042",
+      "name": null,
+      "oneway": false,
+      "length_m": 411.3,
+      "highway": "tertiary",
+      "free_speed_kmh": 39.0,
+      "free_travel_time_s": 38.0,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00023",
+      "u": "n0009",
+      "v": "n0003",
+      "name": null,
+      "oneway": false,
+      "length_m": 1426.7,
+      "highway": "primary",
+      "free_speed_kmh": 42.7,
+      "free_travel_time_s": 120.3,
+      "risk": {
+        "flood": 0,
+        "construction": 1,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00024",
+      "u": "n0009",
+      "v": "n0049",
+      "name": null,
+      "oneway": false,
+      "length_m": 1639.0,
+      "highway": "tertiary",
+      "free_speed_kmh": 35.2,
+      "free_travel_time_s": 167.6,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00025",
+      "u": "n0010",
+      "v": "n0011",
+      "name": null,
+      "oneway": false,
+      "length_m": 687.5,
+      "highway": "residential",
+      "free_speed_kmh": 34.2,
+      "free_travel_time_s": 72.4,
+      "risk": {
+        "flood": 1,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00026",
+      "u": "n0010",
+      "v": "n0037",
+      "name": null,
+      "oneway": false,
+      "length_m": 1032.1,
+      "highway": "secondary",
+      "free_speed_kmh": 37.2,
+      "free_travel_time_s": 99.9,
+      "risk": {
+        "flood": 1,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00027",
+      "u": "n0010",
+      "v": "n0050",
+      "name": null,
+      "oneway": false,
+      "length_m": 386.7,
+      "highway": "secondary",
+      "free_speed_kmh": 37.4,
+      "free_travel_time_s": 37.2,
+      "risk": {
+        "flood": 1,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00028",
+      "u": "n0011",
+      "v": "n0010",
+      "name": null,
+      "oneway": false,
+      "length_m": 668.9,
+      "highway": "residential",
+      "free_speed_kmh": 34.1,
+      "free_travel_time_s": 70.6,
+      "risk": {
+        "flood": 1,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00029",
+      "u": "n0011",
+      "v": "n0033",
+      "name": null,
+      "oneway": false,
+      "length_m": 1053.8,
+      "highway": "primary",
+      "free_speed_kmh": 41.6,
+      "free_travel_time_s": 91.2,
+      "risk": {
+        "flood": 1,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 1
+      }
+    },
+    {
+      "id": "e00030",
+      "u": "n0011",
+      "v": "n0037",
+      "name": null,
+      "oneway": false,
+      "length_m": 1013.1,
+      "highway": "secondary",
+      "free_speed_kmh": 34.6,
+      "free_travel_time_s": 105.4,
+      "risk": {
+        "flood": 1,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 1
+      }
+    },
+    {
+      "id": "e00031",
+      "u": "n0011",
+      "v": "n0043",
+      "name": null,
+      "oneway": false,
+      "length_m": 1216.2,
+      "highway": "primary",
+      "free_speed_kmh": 42.1,
+      "free_travel_time_s": 104.0,
+      "risk": {
+        "flood": 1,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 1
+      }
+    },
+    {
+      "id": "e00032",
+      "u": "n0012",
+      "v": "n0015",
+      "name": null,
+      "oneway": true,
+      "length_m": 1051.5,
+      "highway": "primary",
+      "free_speed_kmh": 38.3,
+      "free_travel_time_s": 98.8,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 1
+      }
+    },
+    {
+      "id": "e00033",
+      "u": "n0012",
+      "v": "n0046",
+      "name": null,
+      "oneway": true,
+      "length_m": 990.1,
+      "highway": "primary",
+      "free_speed_kmh": 40.9,
+      "free_travel_time_s": 87.1,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00034",
+      "u": "n0013",
+      "v": "n0033",
+      "name": null,
+      "oneway": false,
+      "length_m": 451.1,
+      "highway": "primary",
+      "free_speed_kmh": 42.3,
+      "free_travel_time_s": 38.4,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00035",
+      "u": "n0014",
+      "v": "n0004",
+      "name": null,
+      "oneway": false,
+      "length_m": 1675.2,
+      "highway": "secondary",
+      "free_speed_kmh": 38.6,
+      "free_travel_time_s": 156.2,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 1
+      }
+    },
+    {
+      "id": "e00036",
+      "u": "n0014",
+      "v": "n0013",
+      "name": null,
+      "oneway": true,
+      "length_m": 517.4,
+      "highway": "secondary",
+      "free_speed_kmh": 38.3,
+      "free_travel_time_s": 48.6,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00037",
+      "u": "n0015",
+      "v": "n0048",
+      "name": null,
+      "oneway": false,
+      "length_m": 23.0,
+      "highway": "primary",
+      "free_speed_kmh": 46.0,
+      "free_travel_time_s": 1.8,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00038",
+      "u": "n0016",
+      "v": "n0021",
+      "name": null,
+      "oneway": false,
+      "length_m": 510.9,
+      "highway": "primary",
+      "free_speed_kmh": 40.2,
+      "free_travel_time_s": 45.8,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 1
+      }
+    },
+    {
+      "id": "e00039",
+      "u": "n0016",
+      "v": "n0023",
+      "name": null,
+      "oneway": false,
+      "length_m": 526.3,
+      "highway": "primary",
+      "free_speed_kmh": 43.6,
+      "free_travel_time_s": 43.5,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 1
+      }
+    },
+    {
+      "id": "e00040",
+      "u": "n0016",
+      "v": "n0026",
+      "name": null,
+      "oneway": false,
+      "length_m": 421.4,
+      "highway": "secondary",
+      "free_speed_kmh": 38.7,
+      "free_travel_time_s": 39.2,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00041",
+      "u": "n0016",
+      "v": "n0048",
+      "name": null,
+      "oneway": false,
+      "length_m": 716.0,
+      "highway": "secondary",
+      "free_speed_kmh": 42.0,
+      "free_travel_time_s": 61.4,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 1
+      }
+    },
+    {
+      "id": "e00042",
+      "u": "n0017",
+      "v": "n0020",
+      "name": null,
+      "oneway": true,
+      "length_m": 661.5,
+      "highway": "residential",
+      "free_speed_kmh": 32.8,
+      "free_travel_time_s": 72.6,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00043",
+      "u": "n0017",
+      "v": "n0039",
+      "name": null,
+      "oneway": false,
+      "length_m": 946.4,
+      "highway": "primary",
+      "free_speed_kmh": 37.9,
+      "free_travel_time_s": 89.9,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00044",
+      "u": "n0018",
+      "v": "n0019",
+      "name": null,
+      "oneway": false,
+      "length_m": 183.6,
+      "highway": "residential",
+      "free_speed_kmh": 30.0,
+      "free_travel_time_s": 22.0,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00045",
+      "u": "n0018",
+      "v": "n0022",
+      "name": null,
+      "oneway": false,
+      "length_m": 749.9,
+      "highway": "tertiary",
+      "free_speed_kmh": 35.0,
+      "free_travel_time_s": 77.1,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00046",
+      "u": "n0019",
+      "v": "n0018",
+      "name": null,
+      "oneway": false,
+      "length_m": 183.6,
+      "highway": "residential",
+      "free_speed_kmh": 30.0,
+      "free_travel_time_s": 22.0,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00047",
+      "u": "n0019",
+      "v": "n0020",
+      "name": null,
+      "oneway": true,
+      "length_m": 610.7,
+      "highway": "primary",
+      "free_speed_kmh": 36.8,
+      "free_travel_time_s": 59.7,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00048",
+      "u": "n0019",
+      "v": "n0024",
+      "name": null,
+      "oneway": false,
+      "length_m": 678.5,
+      "highway": "tertiary",
+      "free_speed_kmh": 34.9,
+      "free_travel_time_s": 70.0,
+      "risk": {
+        "flood": 1,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 1
+      }
+    },
+    {
+      "id": "e00049",
+      "u": "n0019",
+      "v": "n0028",
+      "name": null,
+      "oneway": true,
+      "length_m": 758.9,
+      "highway": "tertiary",
+      "free_speed_kmh": 35.9,
+      "free_travel_time_s": 76.1,
+      "risk": {
+        "flood": 0,
+        "construction": 1,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00050",
+      "u": "n0020",
+      "v": "n0007",
+      "name": null,
+      "oneway": true,
+      "length_m": 474.5,
+      "highway": "tertiary",
+      "free_speed_kmh": 34.0,
+      "free_travel_time_s": 50.2,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 1
+      }
+    },
+    {
+      "id": "e00051",
+      "u": "n0020",
+      "v": "n0018",
+      "name": null,
+      "oneway": true,
+      "length_m": 1103.9,
+      "highway": "primary",
+      "free_speed_kmh": 39.2,
+      "free_travel_time_s": 101.4,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00052",
+      "u": "n0020",
+      "v": "n0038",
+      "name": null,
+      "oneway": true,
+      "length_m": 909.2,
+      "highway": "primary",
+      "free_speed_kmh": 39.3,
+      "free_travel_time_s": 83.3,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00053",
+      "u": "n0021",
+      "v": "n0016",
+      "name": null,
+      "oneway": false,
+      "length_m": 479.9,
+      "highway": "secondary",
+      "free_speed_kmh": 37.5,
+      "free_travel_time_s": 46.1,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 1
+      }
+    },
+    {
+      "id": "e00054",
+      "u": "n0021",
+      "v": "n0023",
+      "name": null,
+      "oneway": false,
+      "length_m": 383.7,
+      "highway": "tertiary",
+      "free_speed_kmh": 35.0,
+      "free_travel_time_s": 39.5,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 1
+      }
+    },
+    {
+      "id": "e00055",
+      "u": "n0021",
+      "v": "n0026",
+      "name": null,
+      "oneway": true,
+      "length_m": 335.5,
+      "highway": "tertiary",
+      "free_speed_kmh": 35.1,
+      "free_travel_time_s": 34.4,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 1
+      }
+    },
+    {
+      "id": "e00056",
+      "u": "n0021",
+      "v": "n0030",
+      "name": null,
+      "oneway": true,
+      "length_m": 451.6,
+      "highway": "tertiary",
+      "free_speed_kmh": 35.0,
+      "free_travel_time_s": 46.5,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 1
+      }
+    },
+    {
+      "id": "e00057",
+      "u": "n0021",
+      "v": "n0041",
+      "name": null,
+      "oneway": true,
+      "length_m": 515.2,
+      "highway": "tertiary",
+      "free_speed_kmh": 36.4,
+      "free_travel_time_s": 51.0,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 1
+      }
+    },
+    {
+      "id": "e00058",
+      "u": "n0022",
+      "v": "n0018",
+      "name": null,
+      "oneway": false,
+      "length_m": 554.8,
+      "highway": "primary",
+      "free_speed_kmh": 39.1,
+      "free_travel_time_s": 51.1,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00059",
+      "u": "n0022",
+      "v": "n0028",
+      "name": null,
+      "oneway": false,
+      "length_m": 722.3,
+      "highway": "residential",
+      "free_speed_kmh": 33.1,
+      "free_travel_time_s": 78.6,
+      "risk": {
+        "flood": 0,
+        "construction": 1,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00060",
+      "u": "n0022",
+      "v": "n0029",
+      "name": null,
+      "oneway": false,
+      "length_m": 359.7,
+      "highway": "tertiary",
+      "free_speed_kmh": 32.9,
+      "free_travel_time_s": 39.4,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00061",
+      "u": "n0022",
+      "v": "n0044",
+      "name": null,
+      "oneway": true,
+      "length_m": 1040.9,
+      "highway": "residential",
+      "free_speed_kmh": 35.0,
+      "free_travel_time_s": 107.1,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00062",
+      "u": "n0023",
+      "v": "n0016",
+      "name": null,
+      "oneway": false,
+      "length_m": 507.6,
+      "highway": "primary",
+      "free_speed_kmh": 43.7,
+      "free_travel_time_s": 41.8,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 1
+      }
+    },
+    {
+      "id": "e00063",
+      "u": "n0023",
+      "v": "n0021",
+      "name": null,
+      "oneway": false,
+      "length_m": 313.0,
+      "highway": "primary",
+      "free_speed_kmh": 39.7,
+      "free_travel_time_s": 28.4,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 1
+      }
+    },
+    {
+      "id": "e00064",
+      "u": "n0023",
+      "v": "n0025",
+      "name": null,
+      "oneway": false,
+      "length_m": 473.3,
+      "highway": "tertiary",
+      "free_speed_kmh": 37.0,
+      "free_travel_time_s": 46.1,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 1
+      }
+    },
+    {
+      "id": "e00065",
+      "u": "n0023",
+      "v": "n0030",
+      "name": null,
+      "oneway": false,
+      "length_m": 437.5,
+      "highway": "tertiary",
+      "free_speed_kmh": 37.1,
+      "free_travel_time_s": 42.5,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 1
+      }
+    },
+    {
+      "id": "e00066",
+      "u": "n0023",
+      "v": "n0047",
+      "name": null,
+      "oneway": true,
+      "length_m": 889.3,
+      "highway": "tertiary",
+      "free_speed_kmh": 38.3,
+      "free_travel_time_s": 83.6,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00067",
+      "u": "n0024",
+      "v": "n0019",
+      "name": null,
+      "oneway": false,
+      "length_m": 678.5,
+      "highway": "tertiary",
+      "free_speed_kmh": 34.9,
+      "free_travel_time_s": 70.0,
+      "risk": {
+        "flood": 1,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 1
+      }
+    },
+    {
+      "id": "e00068",
+      "u": "n0024",
+      "v": "n0027",
+      "name": null,
+      "oneway": false,
+      "length_m": 473.0,
+      "highway": "primary",
+      "free_speed_kmh": 41.2,
+      "free_travel_time_s": 41.3,
+      "risk": {
+        "flood": 1,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 1
+      }
+    },
+    {
+      "id": "e00069",
+      "u": "n0024",
+      "v": "n0037",
+      "name": null,
+      "oneway": false,
+      "length_m": 787.8,
+      "highway": "primary",
+      "free_speed_kmh": 41.2,
+      "free_travel_time_s": 68.8,
+      "risk": {
+        "flood": 1,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00070",
+      "u": "n0025",
+      "v": "n0023",
+      "name": null,
+      "oneway": false,
+      "length_m": 507.8,
+      "highway": "primary",
+      "free_speed_kmh": 37.4,
+      "free_travel_time_s": 48.9,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 1
+      }
+    },
+    {
+      "id": "e00071",
+      "u": "n0025",
+      "v": "n0044",
+      "name": null,
+      "oneway": true,
+      "length_m": 433.4,
+      "highway": "tertiary",
+      "free_speed_kmh": 33.4,
+      "free_travel_time_s": 46.7,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00072",
+      "u": "n0026",
+      "v": "n0005",
+      "name": null,
+      "oneway": true,
+      "length_m": 197.7,
+      "highway": "tertiary",
+      "free_speed_kmh": 35.2,
+      "free_travel_time_s": 20.2,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00073",
+      "u": "n0026",
+      "v": "n0016",
+      "name": null,
+      "oneway": false,
+      "length_m": 443.6,
+      "highway": "secondary",
+      "free_speed_kmh": 38.8,
+      "free_travel_time_s": 41.2,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00074",
+      "u": "n0026",
+      "v": "n0045",
+      "name": null,
+      "oneway": false,
+      "length_m": 419.3,
+      "highway": "secondary",
+      "free_speed_kmh": 38.7,
+      "free_travel_time_s": 39.0,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00075",
+      "u": "n0027",
+      "v": "n0024",
+      "name": null,
+      "oneway": false,
+      "length_m": 489.0,
+      "highway": "tertiary",
+      "free_speed_kmh": 40.9,
+      "free_travel_time_s": 43.0,
+      "risk": {
+        "flood": 1,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 1
+      }
+    },
+    {
+      "id": "e00076",
+      "u": "n0028",
+      "v": "n0018",
+      "name": null,
+      "oneway": true,
+      "length_m": 314.7,
+      "highway": "secondary",
+      "free_speed_kmh": 38.3,
+      "free_travel_time_s": 29.6,
+      "risk": {
+        "flood": 0,
+        "construction": 1,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00077",
+      "u": "n0028",
+      "v": "n0020",
+      "name": null,
+      "oneway": true,
+      "length_m": 648.5,
+      "highway": "primary",
+      "free_speed_kmh": 41.2,
+      "free_travel_time_s": 56.7,
+      "risk": {
+        "flood": 0,
+        "construction": 1,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00078",
+      "u": "n0028",
+      "v": "n0022",
+      "name": null,
+      "oneway": false,
+      "length_m": 746.1,
+      "highway": "primary",
+      "free_speed_kmh": 40.3,
+      "free_travel_time_s": 66.6,
+      "risk": {
+        "flood": 0,
+        "construction": 1,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00079",
+      "u": "n0029",
+      "v": "n0022",
+      "name": null,
+      "oneway": false,
+      "length_m": 373.7,
+      "highway": "primary",
+      "free_speed_kmh": 39.0,
+      "free_travel_time_s": 34.5,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00080",
+      "u": "n0029",
+      "v": "n0040",
+      "name": null,
+      "oneway": true,
+      "length_m": 1136.5,
+      "highway": "primary",
+      "free_speed_kmh": 44.7,
+      "free_travel_time_s": 91.5,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00081",
+      "u": "n0030",
+      "v": "n0023",
+      "name": null,
+      "oneway": false,
+      "length_m": 593.0,
+      "highway": "tertiary",
+      "free_speed_kmh": 36.1,
+      "free_travel_time_s": 59.1,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 1
+      }
+    },
+    {
+      "id": "e00082",
+      "u": "n0030",
+      "v": "n0025",
+      "name": null,
+      "oneway": true,
+      "length_m": 306.2,
+      "highway": "tertiary",
+      "free_speed_kmh": 35.0,
+      "free_travel_time_s": 31.5,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 1
+      }
+    },
+    {
+      "id": "e00083",
+      "u": "n0030",
+      "v": "n0041",
+      "name": null,
+      "oneway": false,
+      "length_m": 601.3,
+      "highway": "tertiary",
+      "free_speed_kmh": 33.8,
+      "free_travel_time_s": 64.0,
+      "risk": {
+        "flood": 0,
+        "construction": 1,
+        "narrow_alley": 0,
+        "traffic_light": 1
+      }
+    },
+    {
+      "id": "e00084",
+      "u": "n0031",
+      "v": "n0002",
+      "name": null,
+      "oneway": false,
+      "length_m": 1009.3,
+      "highway": "primary",
+      "free_speed_kmh": 42.5,
+      "free_travel_time_s": 85.5,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 1
+      }
+    },
+    {
+      "id": "e00085",
+      "u": "n0031",
+      "v": "n0003",
+      "name": null,
+      "oneway": false,
+      "length_m": 449.7,
+      "highway": "primary",
+      "free_speed_kmh": 45.0,
+      "free_travel_time_s": 36.0,
+      "risk": {
+        "flood": 0,
+        "construction": 1,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00086",
+      "u": "n0031",
+      "v": "n0034",
+      "name": null,
+      "oneway": false,
+      "length_m": 1287.4,
+      "highway": "primary",
+      "free_speed_kmh": 40.4,
+      "free_travel_time_s": 114.7,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00087",
+      "u": "n0032",
+      "v": "n0003",
+      "name": null,
+      "oneway": false,
+      "length_m": 2046.0,
+      "highway": "primary",
+      "free_speed_kmh": 41.1,
+      "free_travel_time_s": 179.2,
+      "risk": {
+        "flood": 0,
+        "construction": 1,
+        "narrow_alley": 0,
+        "traffic_light": 1
+      }
+    },
+    {
+      "id": "e00088",
+      "u": "n0032",
+      "v": "n0049",
+      "name": null,
+      "oneway": false,
+      "length_m": 1622.9,
+      "highway": "tertiary",
+      "free_speed_kmh": 33.4,
+      "free_travel_time_s": 174.9,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00089",
+      "u": "n0033",
+      "v": "n0008",
+      "name": null,
+      "oneway": false,
+      "length_m": 671.2,
+      "highway": "primary",
+      "free_speed_kmh": 45.0,
+      "free_travel_time_s": 53.7,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00090",
+      "u": "n0033",
+      "v": "n0011",
+      "name": null,
+      "oneway": false,
+      "length_m": 871.3,
+      "highway": "tertiary",
+      "free_speed_kmh": 36.0,
+      "free_travel_time_s": 87.1,
+      "risk": {
+        "flood": 1,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00091",
+      "u": "n0033",
+      "v": "n0013",
+      "name": null,
+      "oneway": false,
+      "length_m": 473.1,
+      "highway": "residential",
+      "free_speed_kmh": 34.3,
+      "free_travel_time_s": 49.7,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00092",
+      "u": "n0033",
+      "v": "n0035",
+      "name": null,
+      "oneway": false,
+      "length_m": 236.1,
+      "highway": "tertiary",
+      "free_speed_kmh": 35.0,
+      "free_travel_time_s": 24.3,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00093",
+      "u": "n0034",
+      "v": "n0003",
+      "name": null,
+      "oneway": true,
+      "length_m": 983.5,
+      "highway": "primary",
+      "free_speed_kmh": 45.0,
+      "free_travel_time_s": 78.7,
+      "risk": {
+        "flood": 0,
+        "construction": 1,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00094",
+      "u": "n0034",
+      "v": "n0012",
+      "name": null,
+      "oneway": true,
+      "length_m": 397.1,
+      "highway": "residential",
+      "free_speed_kmh": 32.3,
+      "free_travel_time_s": 44.3,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00095",
+      "u": "n0034",
+      "v": "n0031",
+      "name": null,
+      "oneway": false,
+      "length_m": 1340.1,
+      "highway": "primary",
+      "free_speed_kmh": 45.0,
+      "free_travel_time_s": 107.2,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00096",
+      "u": "n0034",
+      "v": "n0046",
+      "name": null,
+      "oneway": false,
+      "length_m": 593.7,
+      "highway": "primary",
+      "free_speed_kmh": 39.2,
+      "free_travel_time_s": 54.5,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00097",
+      "u": "n0035",
+      "v": "n0001",
+      "name": null,
+      "oneway": false,
+      "length_m": 284.4,
+      "highway": "residential",
+      "free_speed_kmh": 31.7,
+      "free_travel_time_s": 32.3,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00098",
+      "u": "n0035",
+      "v": "n0033",
+      "name": null,
+      "oneway": false,
+      "length_m": 236.1,
+      "highway": "tertiary",
+      "free_speed_kmh": 35.0,
+      "free_travel_time_s": 24.3,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00099",
+      "u": "n0035",
+      "v": "n0042",
+      "name": null,
+      "oneway": false,
+      "length_m": 336.0,
+      "highway": "tertiary",
+      "free_speed_kmh": 35.0,
+      "free_travel_time_s": 34.6,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00100",
+      "u": "n0036",
+      "v": "n0018",
+      "name": null,
+      "oneway": true,
+      "length_m": 1362.6,
+      "highway": "secondary",
+      "free_speed_kmh": 37.3,
+      "free_travel_time_s": 131.5,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 1
+      }
+    },
+    {
+      "id": "e00101",
+      "u": "n0036",
+      "v": "n0040",
+      "name": null,
+      "oneway": false,
+      "length_m": 126.9,
+      "highway": "secondary",
+      "free_speed_kmh": 40.1,
+      "free_travel_time_s": 11.4,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00102",
+      "u": "n0037",
+      "v": "n0010",
+      "name": null,
+      "oneway": false,
+      "length_m": 1053.9,
+      "highway": "residential",
+      "free_speed_kmh": 33.0,
+      "free_travel_time_s": 115.0,
+      "risk": {
+        "flood": 1,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00103",
+      "u": "n0037",
+      "v": "n0011",
+      "name": null,
+      "oneway": false,
+      "length_m": 1140.9,
+      "highway": "residential",
+      "free_speed_kmh": 32.0,
+      "free_travel_time_s": 128.4,
+      "risk": {
+        "flood": 1,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00104",
+      "u": "n0037",
+      "v": "n0024",
+      "name": null,
+      "oneway": false,
+      "length_m": 750.6,
+      "highway": "primary",
+      "free_speed_kmh": 38.1,
+      "free_travel_time_s": 70.9,
+      "risk": {
+        "flood": 1,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00105",
+      "u": "n0037",
+      "v": "n0038",
+      "name": null,
+      "oneway": false,
+      "length_m": 319.1,
+      "highway": "secondary",
+      "free_speed_kmh": 34.4,
+      "free_travel_time_s": 33.4,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00106",
+      "u": "n0038",
+      "v": "n0007",
+      "name": null,
+      "oneway": true,
+      "length_m": 700.1,
+      "highway": "tertiary",
+      "free_speed_kmh": 38.5,
+      "free_travel_time_s": 65.5,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 1
+      }
+    },
+    {
+      "id": "e00107",
+      "u": "n0038",
+      "v": "n0037",
+      "name": null,
+      "oneway": false,
+      "length_m": 302.1,
+      "highway": "residential",
+      "free_speed_kmh": 35.5,
+      "free_travel_time_s": 30.6,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00108",
+      "u": "n0038",
+      "v": "n0039",
+      "name": null,
+      "oneway": false,
+      "length_m": 178.1,
+      "highway": "secondary",
+      "free_speed_kmh": 40.1,
+      "free_travel_time_s": 16.0,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00109",
+      "u": "n0039",
+      "v": "n0017",
+      "name": null,
+      "oneway": false,
+      "length_m": 725.0,
+      "highway": "primary",
+      "free_speed_kmh": 38.2,
+      "free_travel_time_s": 68.3,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 1
+      }
+    },
+    {
+      "id": "e00110",
+      "u": "n0039",
+      "v": "n0019",
+      "name": null,
+      "oneway": true,
+      "length_m": 534.6,
+      "highway": "primary",
+      "free_speed_kmh": 42.2,
+      "free_travel_time_s": 45.6,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00111",
+      "u": "n0039",
+      "v": "n0020",
+      "name": null,
+      "oneway": true,
+      "length_m": 546.4,
+      "highway": "primary",
+      "free_speed_kmh": 41.8,
+      "free_travel_time_s": 47.1,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00112",
+      "u": "n0039",
+      "v": "n0024",
+      "name": null,
+      "oneway": true,
+      "length_m": 489.4,
+      "highway": "tertiary",
+      "free_speed_kmh": 35.8,
+      "free_travel_time_s": 49.2,
+      "risk": {
+        "flood": 1,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00113",
+      "u": "n0039",
+      "v": "n0038",
+      "name": null,
+      "oneway": false,
+      "length_m": 178.1,
+      "highway": "secondary",
+      "free_speed_kmh": 40.1,
+      "free_travel_time_s": 16.0,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00114",
+      "u": "n0040",
+      "v": "n0036",
+      "name": null,
+      "oneway": false,
+      "length_m": 123.3,
+      "highway": "secondary",
+      "free_speed_kmh": 40.0,
+      "free_travel_time_s": 11.1,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00115",
+      "u": "n0041",
+      "v": "n0028",
+      "name": null,
+      "oneway": true,
+      "length_m": 350.3,
+      "highway": "secondary",
+      "free_speed_kmh": 39.9,
+      "free_travel_time_s": 31.6,
+      "risk": {
+        "flood": 0,
+        "construction": 1,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00116",
+      "u": "n0041",
+      "v": "n0030",
+      "name": null,
+      "oneway": false,
+      "length_m": 575.6,
+      "highway": "tertiary",
+      "free_speed_kmh": 35.0,
+      "free_travel_time_s": 59.2,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 1
+      }
+    },
+    {
+      "id": "e00117",
+      "u": "n0042",
+      "v": "n0001",
+      "name": null,
+      "oneway": false,
+      "length_m": 335.3,
+      "highway": "tertiary",
+      "free_speed_kmh": 35.0,
+      "free_travel_time_s": 34.5,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00118",
+      "u": "n0042",
+      "v": "n0008",
+      "name": null,
+      "oneway": false,
+      "length_m": 397.3,
+      "highway": "primary",
+      "free_speed_kmh": 40.6,
+      "free_travel_time_s": 35.2,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 1
+      }
+    },
+    {
+      "id": "e00119",
+      "u": "n0042",
+      "v": "n0035",
+      "name": null,
+      "oneway": false,
+      "length_m": 336.0,
+      "highway": "tertiary",
+      "free_speed_kmh": 35.0,
+      "free_travel_time_s": 34.6,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00120",
+      "u": "n0042",
+      "v": "n0049",
+      "name": null,
+      "oneway": false,
+      "length_m": 962.3,
+      "highway": "tertiary",
+      "free_speed_kmh": 35.7,
+      "free_travel_time_s": 97.0,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 1
+      }
+    },
+    {
+      "id": "e00121",
+      "u": "n0043",
+      "v": "n0011",
+      "name": null,
+      "oneway": false,
+      "length_m": 1173.4,
+      "highway": "primary",
+      "free_speed_kmh": 42.3,
+      "free_travel_time_s": 99.9,
+      "risk": {
+        "flood": 1,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 1
+      }
+    },
+    {
+      "id": "e00122",
+      "u": "n0044",
+      "v": "n0029",
+      "name": null,
+      "oneway": true,
+      "length_m": 441.7,
+      "highway": "primary",
+      "free_speed_kmh": 44.5,
+      "free_travel_time_s": 35.7,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00123",
+      "u": "n0044",
+      "v": "n0030",
+      "name": null,
+      "oneway": true,
+      "length_m": 1051.7,
+      "highway": "primary",
+      "free_speed_kmh": 41.2,
+      "free_travel_time_s": 91.9,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 1
+      }
+    },
+    {
+      "id": "e00124",
+      "u": "n0044",
+      "v": "n0047",
+      "name": null,
+      "oneway": true,
+      "length_m": 814.5,
+      "highway": "primary",
+      "free_speed_kmh": 44.7,
+      "free_travel_time_s": 65.6,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00125",
+      "u": "n0045",
+      "v": "n0005",
+      "name": null,
+      "oneway": false,
+      "length_m": 361.9,
+      "highway": "secondary",
+      "free_speed_kmh": 38.5,
+      "free_travel_time_s": 33.8,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00126",
+      "u": "n0045",
+      "v": "n0026",
+      "name": null,
+      "oneway": false,
+      "length_m": 450.3,
+      "highway": "secondary",
+      "free_speed_kmh": 38.7,
+      "free_travel_time_s": 41.9,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00127",
+      "u": "n0045",
+      "v": "n0041",
+      "name": null,
+      "oneway": true,
+      "length_m": 384.5,
+      "highway": "secondary",
+      "free_speed_kmh": 40.1,
+      "free_travel_time_s": 34.5,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 1
+      }
+    },
+    {
+      "id": "e00128",
+      "u": "n0046",
+      "v": "n0003",
+      "name": null,
+      "oneway": false,
+      "length_m": 1062.3,
+      "highway": "primary",
+      "free_speed_kmh": 41.7,
+      "free_travel_time_s": 91.7,
+      "risk": {
+        "flood": 0,
+        "construction": 1,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00129",
+      "u": "n0046",
+      "v": "n0034",
+      "name": null,
+      "oneway": false,
+      "length_m": 736.4,
+      "highway": "tertiary",
+      "free_speed_kmh": 34.8,
+      "free_travel_time_s": 76.2,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00130",
+      "u": "n0047",
+      "v": "n0048",
+      "name": null,
+      "oneway": false,
+      "length_m": 954.1,
+      "highway": "primary",
+      "free_speed_kmh": 45.1,
+      "free_travel_time_s": 76.2,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00131",
+      "u": "n0048",
+      "v": "n0012",
+      "name": null,
+      "oneway": true,
+      "length_m": 1157.2,
+      "highway": "primary",
+      "free_speed_kmh": 39.1,
+      "free_travel_time_s": 106.5,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00132",
+      "u": "n0048",
+      "v": "n0015",
+      "name": null,
+      "oneway": false,
+      "length_m": 23.0,
+      "highway": "primary",
+      "free_speed_kmh": 46.0,
+      "free_travel_time_s": 1.8,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00133",
+      "u": "n0048",
+      "v": "n0016",
+      "name": null,
+      "oneway": false,
+      "length_m": 726.1,
+      "highway": "secondary",
+      "free_speed_kmh": 41.8,
+      "free_travel_time_s": 62.5,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00134",
+      "u": "n0048",
+      "v": "n0047",
+      "name": null,
+      "oneway": false,
+      "length_m": 1021.8,
+      "highway": "primary",
+      "free_speed_kmh": 45.0,
+      "free_travel_time_s": 81.7,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00135",
+      "u": "n0049",
+      "v": "n0009",
+      "name": null,
+      "oneway": false,
+      "length_m": 1250.1,
+      "highway": "secondary",
+      "free_speed_kmh": 38.0,
+      "free_travel_time_s": 118.4,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 1
+      }
+    },
+    {
+      "id": "e00136",
+      "u": "n0049",
+      "v": "n0032",
+      "name": null,
+      "oneway": false,
+      "length_m": 1616.9,
+      "highway": "tertiary",
+      "free_speed_kmh": 33.4,
+      "free_travel_time_s": 174.3,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    },
+    {
+      "id": "e00137",
+      "u": "n0049",
+      "v": "n0042",
+      "name": null,
+      "oneway": false,
+      "length_m": 938.0,
+      "highway": "tertiary",
+      "free_speed_kmh": 33.0,
+      "free_travel_time_s": 102.3,
+      "risk": {
+        "flood": 0,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 1
+      }
+    },
+    {
+      "id": "e00138",
+      "u": "n0050",
+      "v": "n0010",
+      "name": null,
+      "oneway": false,
+      "length_m": 386.7,
+      "highway": "secondary",
+      "free_speed_kmh": 37.4,
+      "free_travel_time_s": 37.2,
+      "risk": {
+        "flood": 1,
+        "construction": 0,
+        "narrow_alley": 0,
+        "traffic_light": 0
+      }
+    }
+  ]
+}

@@ -103,6 +103,8 @@ Một định dạng duy nhất dùng chung cho `data/graph_demo.json` (G_demo) 
 
 **Ràng buộc:** đủ đúng 4 khung giờ; mỗi khung giờ phủ **100% edge id** của graph đi kèm (không thiếu, không thừa id lạ); giá trị congestion là **số nguyên 1–5** (1 = thông thoáng, 5 = kẹt cứng).
 
+**File trên đĩa (chốt Phase 1):** mỗi graph có file profiles **riêng** vì không gian edge id của G_demo và G_real trùng nhau (`e00001` tồn tại ở cả hai): `data/traffic_profiles_real.json` và `data/traffic_profiles_demo.json` (mock: `data/mock/traffic_profiles_mock.json`). Đây là thay đổi so với tên gộp `traffic_profiles.json` trong cây thư mục PROMPT-MASTER §2.
+
 ---
 
 ## §B. `trace` — cấu trúc trả về CHUNG của mọi thuật toán tìm đường

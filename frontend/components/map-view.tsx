@@ -131,51 +131,6 @@ export function MapView() {
       }),
     ];
 
-    // direction arrows at edge midpoints (DESIGN 6, review v5):
-    // two-way pairs shift right of travel like traffic lanes
-    if (isDemo || (viewState?.zoom ?? 0) >= 14) {
-      const pairSet = new Set(graphData.edges.map((e) => `${e.u}|${e.v}`));
-      const arrows = graphData.edges.map((e) => {
-        const [x1, y1] = coord.get(e.u)!;
-        const [x2, y2] = coord.get(e.v)!;
-        const latMid = (y1 + y2) / 2;
-        const dxm = (x2 - x1) * Math.cos((latMid * Math.PI) / 180);
-        const dym = y2 - y1;
-        const len = Math.hypot(dxm, dym) || 1;
-        const twoWay = pairSet.has(`${e.v}|${e.u}`);
-        // right-of-travel normal (screen sense), ~6.5 m in degrees
-        const off = twoWay ? 0.00006 : 0;
-        const nx = (dym / len) * off;
-        const ny = (-dxm / len) * off;
-        return {
-          id: e.id,
-          pos: [(x1 + x2) / 2 + nx, latMid + ny] as [number, number],
-          angle: (Math.atan2(dym, dxm) * 180) / Math.PI,
-          level: traffic?.[e.id] ?? 1,
-        };
-      });
-      out.push(
-        new TextLayer({
-          id: "edge-arrows",
-          data: arrows,
-          getPosition: (d: (typeof arrows)[number]) => d.pos,
-          getText: () => "▶",
-          getAngle: (d: (typeof arrows)[number]) => d.angle,
-          getSize: isDemo ? 15 : 11,
-          getColor: (d: (typeof arrows)[number]) =>
-            trafficLayer ? CONGESTION[d.level] : C.label,
-          characterSet: ["▶"],
-          fontFamily: "sans-serif",
-          billboard: false,
-          // SDF outline: mũi tên nổi rõ trên mọi nền (DESIGN 6, review v5b)
-          fontSettings: { sdf: true },
-          outlineWidth: 3,
-          outlineColor: C.labelOutline,
-          updateTriggers: { getColor: [trafficLayer, traffic, theme] },
-        }),
-      );
-    }
-
     if (congestedSet.size) {
       out.push(
         new LineLayer({
@@ -208,10 +163,58 @@ export function MapView() {
         }),
       );
     };
+    // ▶ arrows ALONG a result route only (DESIGN 6, v5c): spaced >= ~220 m,
+    // dark glyph with an SDF outline in the route color
+    const M_PER_DEG_LAT = 110_540;
+    const routeArrows = (id: string, paths: [number, number][][], outline: RGBA) => {
+      const pts: { pos: [number, number]; angle: number }[] = [];
+      for (const path of paths) {
+        let since = Infinity; // always place one on the first hop
+        for (let i = 0; i + 1 < path.length; i += 1) {
+          const [x1, y1] = path[i];
+          const [x2, y2] = path[i + 1];
+          const latMid = (y1 + y2) / 2;
+          const dxm = (x2 - x1) * M_PER_DEG_LAT * Math.cos((latMid * Math.PI) / 180);
+          const dym = (y2 - y1) * M_PER_DEG_LAT;
+          const hop = Math.hypot(dxm, dym);
+          since += hop;
+          if (since >= 220) {
+            pts.push({
+              pos: [(x1 + x2) / 2, latMid],
+              angle: (Math.atan2(dym, dxm) * 180) / Math.PI,
+            });
+            since = 0;
+          }
+        }
+      }
+      out.push(
+        new TextLayer({
+          id,
+          data: pts,
+          getPosition: (d: (typeof pts)[number]) => d.pos,
+          getText: () => "▶",
+          getAngle: (d: (typeof pts)[number]) => d.angle,
+          getSize: 14,
+          getColor: C.stopText,
+          characterSet: ["▶"],
+          fontFamily: "sans-serif",
+          billboard: false,
+          fontSettings: { sdf: true },
+          outlineWidth: 4,
+          outlineColor: outline,
+          updateTriggers: { getColor: [theme] },
+        }),
+      );
+    };
+
     if (multi?.found) {
-      casedPath("multi-path", multi.legs.map((l) => ({ path: toPath(l.path) })), C.path);
+      const legPaths = multi.legs.map((l) => toPath(l.path));
+      casedPath("multi-path", legPaths.map((path) => ({ path })), C.path);
+      routeArrows("multi-arrows", legPaths, C.path);
     } else if (trace?.found && anim.showPath) {
-      casedPath("route", [{ path: toPath(trace.path) }], C.path);
+      const routePath = toPath(trace.path);
+      casedPath("route", [{ path: routePath }], C.path);
+      routeArrows("route-arrows", [routePath], C.path);
     }
     if (compare?.found && drawerTab === "compare") {
       out.push(
@@ -229,6 +232,7 @@ export function MapView() {
           extensions: [new PathStyleExtension({ dash: true })],
         }),
       );
+      routeArrows("compare-arrows", [toPath(compare.path)], C.compareB);
     }
 
     // nodes (pickable for G_real start/goal picking)

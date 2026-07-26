@@ -73,23 +73,46 @@ def prune_redundant(demo_edges: dict[tuple[str, str], dict]) -> None:
     print(f"  pruned {removed} redundant edges (detour <= {PRUNE_RATIO}x)")
 
 
+SECOND_SNAP_M = 120  # if the nearest node is taken, try the next ones within this radius
+
+
 def snap_pois(pois: list[dict], nodes: list[dict]) -> dict[str, dict]:
-    """POI name -> {node_id, osmid_order, poi}; dedup on the snapped node."""
+    """POI name -> {node, osmid_order, poi}.
+
+    Each POI snaps to its nearest G_real node. If that node is already
+    taken by an earlier POI, the next-nearest FREE node within
+    SECOND_SNAP_M is used instead (keeps both landmark names on the map).
+    Only when no free node exists inside that radius is the POI merged
+    into the earlier one (documented in DATA.md, e.g. Nhà thờ Tân Định).
+    """
     snapped: dict[str, dict] = {}
     used: dict[str, str] = {}
     for poi in pois:
-        best, best_d = None, float("inf")
-        for i, n in enumerate(nodes):
-            d = haversine_m(poi["lat"], poi["lon"], n["lat"], n["lon"])
-            if d < best_d:
-                best, best_d = (i, n), d
-        idx, node = best
-        if node["id"] in used:
-            print(f"  WARN: '{poi['name']}' snaps to the same node as "
-                  f"'{used[node['id']]}' ({node['id']}) — dropped")
+        ranked = sorted(
+            range(len(nodes)),
+            key=lambda i: haversine_m(poi["lat"], poi["lon"],
+                                      nodes[i]["lat"], nodes[i]["lon"]),
+        )
+        chosen = None
+        for rank, i in enumerate(ranked):
+            d = haversine_m(poi["lat"], poi["lon"], nodes[i]["lat"], nodes[i]["lon"])
+            if rank > 0 and d > SECOND_SNAP_M:
+                break
+            if nodes[i]["id"] not in used:
+                chosen = (i, nodes[i], d, rank)
+                break
+        if chosen is None:
+            near = ranked[0]
+            print(f"  WARN: '{poi['name']}' merged into "
+                  f"'{used[nodes[near]['id']]}' ({nodes[near]['id']}) — no free "
+                  f"node within {SECOND_SNAP_M} m")
             continue
-        if best_d > 500:
-            print(f"  WARN: '{poi['name']}' snapped {best_d:.0f} m away — check coords")
+        idx, node, d, rank = chosen
+        if rank > 0:
+            print(f"  note: '{poi['name']}' -> node thứ {rank + 1} ({node['id']}, {d:.0f} m) "
+                  f"vì node gần nhất đã thuộc '{used[nodes[ranked[0]]['id']]}'")
+        if d > 500:
+            print(f"  WARN: '{poi['name']}' snapped {d:.0f} m away — check coords")
         used[node["id"]] = poi["name"]
         snapped[poi["name"]] = {"node": node, "order": idx, "poi": poi}
     return snapped

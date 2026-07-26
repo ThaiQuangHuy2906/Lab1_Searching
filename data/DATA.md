@@ -70,8 +70,11 @@ Bản build hiện tại: `source = "synthetic"` (chưa có key TomTom). Có key
 
 ## 6. G_demo — 2 tầng đồ thị và cách co cạnh
 
-- **Snap:** mỗi POI gắn vào node G_real gần nhất (haversine); 2 POI trùng node → bỏ POI sau
-  (bản build này: *Nhà thờ Tân Định* trùng node với *Chợ Tân Định* → còn **50 node**).
+- **Snap:** mỗi POI gắn vào node G_real gần nhất (haversine). Nếu node đó đã thuộc POI trước,
+  thử **node trống gần kế tiếp trong bán kính 120 m** để giữ đủ tên địa danh; hết cách mới gộp
+  vào POI trước. Bản build hiện tại (sau khi nhóm review toạ độ bằng Google Maps 2026-07-26):
+  *Nhà thờ Tân Định* dùng node thứ 2 cách 72 m (node gần nhất thuộc *Chợ Tân Định*) —
+  **không còn POI nào bị gộp, đủ 51 node**.
 - **Chọn cặp kề:** mỗi POI nối k POI gần nhất (k tăng 3→5 đến khi liên thông mạnh ≥90% POI;
   bản build này dừng ở k=4). Một hướng chỉ được giữ nếu đường ngắn nhất trên G_real
   (theo `free_travel_time_s`) **không xuyên qua POI thứ ba**.
@@ -90,12 +93,16 @@ Bản build hiện tại: `source = "synthetic"` (chưa có key TomTom). Có key
 
 | | G_real | G_demo |
 |---|---|---|
-| Node | **2 118** (raw 2 230, SCC 2 118) | **50** (từ 51 POI, 1 trùng node) |
-| Cạnh | **4 699** (raw 4 922; gộp 22 cạnh song song, bỏ self-loop) | **138** (191 trước khi tỉa) |
-| Một chiều | 1 433 | 44 |
-| Đèn tín hiệu | 185 cạnh / 77 node | 48 cạnh |
+| Node | **2 118** (raw 2 230, SCC 2 118) | **51** (đủ 51 POI sau review, không POI nào bị gộp) |
+| Cạnh | **4 699** (raw 4 922; gộp 22 cạnh song song, bỏ self-loop) | **140** (185 trước khi tỉa) |
+| Một chiều | 1 433 | 54 |
+| Đèn tín hiệu | 185 cạnh / 77 node | 53 cạnh |
 | Ngập / lô cốt / hẻm | 402 / 107 / 8 | 19 / 16 / 0 |
 | Yêu cầu đề (≥20 node, ≥30 cạnh) | vượt xa | vượt xa ✓ |
+
+POI đã được nhóm review trên Google Maps (2026-07-26): đổi tên *Bảo tàng Lịch sử TP.HCM*
+(tên chính thức), *Điểm trung chuyển Hàm Nghi* (khớp thực địa); sửa toạ độ *Trường Marie
+Curie* (lệch ~900 m), *THPT Nguyễn Thị Minh Khai* (~445 m), *ĐH Mở TP.HCM* (tinh chỉnh).
 
 ## 8. Giả định & hạn chế đã biết
 

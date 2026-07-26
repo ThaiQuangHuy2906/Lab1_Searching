@@ -149,7 +149,7 @@ function NodePicker({ kind }: { kind: "start" | "goal" }) {
 function SwapButton() {
   const s = useApp();
   return (
-    <div className="z-10 -my-2.5 flex justify-center">
+    <div className="z-10 -mt-1.5 -mb-3.5 flex justify-center">
       <Button
         variant="ghost" size="iconSm" aria-label="Đảo chiều Đi ↔ Đến"
         className="h-7 w-7 rounded-full border border-surface-border bg-surface shadow-sm"

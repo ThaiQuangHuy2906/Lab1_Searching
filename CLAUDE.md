@@ -49,8 +49,10 @@ py -3.14 -m venv .venv
 
 ## Ghi chú môi trường (đã duyệt Phase 0)
 
-- **Python 3.14.0** thay vì 3.11 như PROMPT-MASTER §8 — máy chỉ có 3.14, đã được duyệt;
-  version pin trong `backend/requirements.txt` kiểm chứng trên 3.14/Win11.
+- **Python 3.14 là chuẩn của dự án** (PROMPT-MASTER §8 đã cập nhật từ 3.11 ngày 2026-07-26).
+  Đã kiểm chứng: 8 gói khoa học (osmnx, geopandas, shapely, pyproj, numpy, scipy, pandas,
+  matplotlib) đều có wheel `cp314 win_amd64` / `py3-none-any` trên PyPI — cài không cần build.
+  Version pin trong `backend/requirements.txt` kiểm chứng trên 3.14/Win11. Cả nhóm cài đúng 3.14.
 - File đề bài tên thật là `docs/Lab 1 - Searching.pdf` (dấu cách, không phải `Lab_1_-_Searching.pdf`).
 - Console Windows mặc định cp1252 — script Python in tiếng Việt phải wrap stdout UTF-8
   (hoặc chỉ print ASCII); mọi file đọc/ghi với `encoding="utf-8"`.

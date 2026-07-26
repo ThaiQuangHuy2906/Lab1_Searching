@@ -316,7 +316,7 @@ Mục tiêu: 10 mục **a–j đúng đề**, khi hoàn thiện đạt 35–50 t
 
 ## 8. Chất lượng & kiểm thử
 
-- Python 3.11, type hints đầy đủ, Pydantic v2 cho models, cấu trúc thuần `heapq`/`dict` cho thuật toán. TypeScript `strict: true`.
+- **Python 3.14** (đổi từ 3.11 — duyệt 2026-07-26 sau khi kiểm chứng cả 8 gói osmnx/geopandas/shapely/pyproj/numpy/scipy/pandas/matplotlib đều có wheel cp314 win_amd64 trên PyPI, không gói nào phải build từ sdist; cả nhóm cài đúng 3.14), type hints đầy đủ, Pydantic v2 cho models, cấu trúc thuần `heapq`/`dict` cho thuật toán. TypeScript `strict: true`.
 - `pytest` bắt buộc: validate schema; unit cost/heuristic; từng thuật toán vs NetworkX (G_demo toàn bộ cặp, G_real 50 cặp mẫu); Held-Karp vs brute force n≤8; sanity ATSP (heuristic ≥ Held-Karp); API TestClient smoke; kiểm tra trace hợp lệ (mọi node trong path đều từng ở frontier/expanded).
 - Không nuốt lỗi: fail rõ ràng, message tiếng Anh có ngữ cảnh.
 - README gốc: yêu cầu môi trường, 5 lệnh dựng lại toàn bộ (venv → pip → scripts 01–04 → uvicorn → npm run dev), bảng cổng, troubleshooting ngắn.

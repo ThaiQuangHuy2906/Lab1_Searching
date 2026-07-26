@@ -198,6 +198,9 @@ class TraceStep(StrictModel):
     h: dict[str, float] | None = None
     f: dict[str, float] | None = None
     depth_limit: Annotated[int, Field(ge=0)] | None = None  # iddfs only
+    # bidijkstra only: which search direction expanded at this step. A node
+    # present in both frontiers shows the SMALLER of its two g values.
+    side: Literal["forward", "backward"] | None = None
 
 
 class Metrics(StrictModel):
@@ -279,6 +282,11 @@ class Trace(StrictModel):
                     raise ValueError(f"step {st.step}: iddfs requires depth_limit")
             elif st.depth_limit is not None:
                 raise ValueError(f"step {st.step}: depth_limit is iddfs-only")
+            if self.algorithm == "bidijkstra":
+                if st.side is None:
+                    raise ValueError(f"step {st.step}: bidijkstra requires side")
+            elif st.side is not None:
+                raise ValueError(f"step {st.step}: side is bidijkstra-only")
         return self
 
 

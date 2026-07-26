@@ -45,6 +45,11 @@ def trace(graph) -> Trace:
 
 
 @pytest.fixture(scope="module")
+def bidi_trace(graph) -> Trace:
+    return Trace.model_validate(load("trace_bidijkstra_mock.json"))
+
+
+@pytest.fixture(scope="module")
 def multiroute(graph) -> MultirouteResponse:
     return MultirouteResponse.model_validate(load("multiroute_mock.json"))
 
@@ -154,6 +159,60 @@ def test_trace_explanation_filled(trace: Trace):
 
 
 # --------------------------------------------------------------------------
+# trace_bidijkstra_mock.json (SCHEMA §B.3 — `side` field)
+# --------------------------------------------------------------------------
+
+
+def test_bidijkstra_trace_valid(graph: GraphFile, profiles: TrafficProfiles, bidi_trace: Trace):
+    assert bidi_trace.algorithm == "bidijkstra" and bidi_trace.found
+    sides = {st.side for st in bidi_trace.trace}
+    assert sides == {"forward", "backward"}, "mock must exercise both directions"
+    edge_pairs = {(e.u, e.v) for e in graph.edges}
+    for a, b in zip(bidi_trace.path, bidi_trace.path[1:]):
+        assert (a, b) in edge_pairs
+    for st in bidi_trace.trace:
+        assert st.g is not None and set(st.g.keys()) == set(st.frontier)
+        assert st.h is None and st.f is None  # per-algorithm table, SCHEMA §B.3
+    assert bidi_trace.metrics.nodes_expanded == len(bidi_trace.trace)
+    assert bidi_trace.metrics.max_frontier == max(len(s.frontier) for s in bidi_trace.trace)
+
+
+def test_bidijkstra_cost_matches_one_directional_dijkstra(
+    graph: GraphFile, profiles: TrafficProfiles, bidi_trace: Trace
+):
+    """The meeting rule must still yield the optimal cost: compare against a
+    plain Dijkstra run over the same weights, and against the path itself."""
+    import heapq
+
+    cong = profiles.profiles[bidi_trace.time_slot]
+    adj: dict[str, list[tuple[str, float]]] = {n.id: [] for n in graph.nodes}
+    lookup = {}
+    for e in graph.edges:
+        adj[e.u].append((e.v, balanced_weight(e, cong[e.id])))
+        lookup[(e.u, e.v)] = e
+    start, goal = bidi_trace.path[0], bidi_trace.path[-1]
+    dist = {start: 0.0}
+    pq, done = [(0.0, start)], set()
+    while pq:
+        d, node = heapq.heappop(pq)
+        if node in done:
+            continue
+        done.add(node)
+        if node == goal:
+            break
+        for v, w in adj[node]:
+            if d + w < dist.get(v, float("inf")):
+                dist[v] = d + w
+                heapq.heappush(pq, (dist[v], v))
+    assert bidi_trace.metrics.total_cost == pytest.approx(dist[goal], abs=0.11)
+    path_cost = sum(
+        balanced_weight(lookup[(a, b)], cong[lookup[(a, b)].id])
+        for a, b in zip(bidi_trace.path, bidi_trace.path[1:])
+    )
+    assert bidi_trace.metrics.total_cost == pytest.approx(path_cost, abs=0.11)
+
+
+# --------------------------------------------------------------------------
 # multiroute_mock.json (SCHEMA §C.5)
 # --------------------------------------------------------------------------
 
@@ -221,4 +280,18 @@ def test_rejects_found_false_with_path():
     raw = copy.deepcopy(load("trace_mock.json"))
     raw["found"] = False
     with pytest.raises(ValidationError, match="path"):
+        Trace.model_validate(raw)
+
+
+def test_rejects_bidijkstra_step_missing_side():
+    raw = copy.deepcopy(load("trace_bidijkstra_mock.json"))
+    raw["trace"][0]["side"] = None
+    with pytest.raises(ValidationError, match="requires side"):
+        Trace.model_validate(raw)
+
+
+def test_rejects_side_on_non_bidijkstra():
+    raw = copy.deepcopy(load("trace_mock.json"))  # astar
+    raw["trace"][0]["side"] = "forward"
+    with pytest.raises(ValidationError, match="bidijkstra-only"):
         Trace.model_validate(raw)

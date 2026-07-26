@@ -156,9 +156,12 @@ run(graph_store, start, goal, mode, time_slot, include_trace, **params) -> Trace
   "g": {"n0002": 43.3, "n0005": 61.0},   // map node→giá trị cho các node trong frontier — hoặc null (bảng dưới)
   "h": {"n0002": 120.5, "n0005": 98.2},  // null nếu thuật toán không dùng h
   "f": {"n0002": 163.8, "n0005": 159.2}, // null nếu thuật toán không dùng f
-  "depth_limit": 3                // CHỈ iddfs (giới hạn độ sâu của vòng hiện tại); thuật toán khác: null/vắng mặt
+  "depth_limit": 3,               // CHỈ iddfs (giới hạn độ sâu của vòng hiện tại); thuật toán khác: null/vắng mặt
+  "side": "forward"               // CHỈ bidijkstra (phía vừa expand ở bước này: "forward" | "backward"); thuật toán khác: null/vắng mặt
 }
 ```
+
+**Trường `side` (bidijkstra):** bắt buộc mỗi bước với `bidijkstra`, cấm với mọi thuật toán khác — để GUI tô 2 màu 2 phía khi demo bidirectional. `frontier` là **hợp** của 2 frontier; node nằm trong cả 2 frontier thì map `g` hiển thị **giá trị nhỏ hơn** của 2 phía.
 
 **Bảng quy định g/h/f theo thuật toán** (`✓` = bắt buộc có, `–` = null):
 
@@ -167,7 +170,7 @@ run(graph_store, start, goal, mode, time_slot, include_trace, **params) -> Trace
 | bfs, dfs | – | – | – | |
 | iddfs | – | – | – | có thêm `depth_limit` mỗi bước |
 | ucs, dijkstra | ✓ | – | – | g = chi phí tích luỹ theo `weight(mode)` |
-| bidijkstra | ✓ | – | – | frontier = hợp 2 phía; g của phía tương ứng |
+| bidijkstra | ✓ | – | – | bắt buộc `side` mỗi bước; frontier = hợp 2 phía; node ở cả 2 frontier → `g` = min 2 phía |
 | greedy | – | ✓ | – | g vẫn được tính nội bộ để ra metrics, nhưng không xuất trong trace |
 | astar, idastar | ✓ | ✓ | ✓ | f = g + h; A* tie-break theo h nhỏ hơn |
 | beam | ✓ | ✓ | ✓ | frontier = beam hiện tại (≤ k phần tử) |
@@ -355,6 +358,7 @@ Xem 4 file mock sinh bởi `scripts/00_generate_mock.py` (seed 42, tái lập 10
 | `data/mock/graph_mock.json` | §A graph 8 node / 16 cạnh, địa danh thật Q1 |
 | `data/mock/traffic_profiles_mock.json` | §A.4 đủ 4 khung giờ × 16 cạnh |
 | `data/mock/trace_mock.json` | §B trace A* đầy đủ từng bước g/h/f |
+| `data/mock/trace_bidijkstra_mock.json` | §B trace Bidirectional Dijkstra với `side` từng bước (GUI tô 2 màu) |
 | `data/mock/multiroute_mock.json` | §C.5 response multiroute nn_2opt |
 
 > ⚠️ Mock chỉ để frontend làm song song + test schema. Chiều một chiều của vài đường trong mock là **đơn giản hoá**, không cam kết đúng thực địa — G_demo thật (Phase 1) lấy `oneway` từ OSM.

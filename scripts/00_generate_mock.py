@@ -291,6 +291,98 @@ def build_trace(graph: dict, prof: dict) -> dict:
     }
 
 
+def build_bidijkstra_trace(graph: dict, prof: dict) -> dict:
+    """Bidirectional Dijkstra sample: Bitexco -> Hồ Con Rùa, 07:30 balanced.
+
+    Ships a per-step `side` so the frontend can two-tone the animation
+    (SCHEMA §B.3). Frontier is the union of both open lists; a node in
+    both shows the smaller of its two g values.
+    """
+    slot, start, goal = "07:30", "n0007", "n0005"
+    adj = make_adj(graph, prof, slot)
+    radj: dict[str, list[tuple[str, float, dict]]] = {n["id"]: [] for n in graph["nodes"]}
+    for u, lst in adj.items():
+        for v, w, e in lst:
+            radj[v].append((u, w, e))
+
+    g_f, g_b = {start: 0.0}, {goal: 0.0}
+    par_f: dict[str, tuple[str, dict]] = {}
+    par_b: dict[str, tuple[str, dict]] = {}
+    pq_f, pq_b = [(0.0, start)], [(0.0, goal)]
+    done_f: set[str] = set()
+    done_b: set[str] = set()
+    mu, meet = math.inf, None
+    steps, max_frontier = [], 0
+
+    def peek(pq: list, done: set) -> float:
+        while pq and pq[0][1] in done:
+            heapq.heappop(pq)
+        return pq[0][0] if pq else math.inf
+
+    while True:
+        top_f, top_b = peek(pq_f, done_f), peek(pq_b, done_b)
+        if top_f + top_b >= mu or (top_f == math.inf and top_b == math.inf):
+            break  # standard stopping rule: best possible meeting >= best seen
+        side = "forward" if top_f <= top_b else "backward"
+        pq, done, g_this, g_other, par, edges_of = (
+            (pq_f, done_f, g_f, g_b, par_f, adj) if side == "forward"
+            else (pq_b, done_b, g_b, g_f, par_b, radj))
+        _, node = heapq.heappop(pq)
+        done.add(node)
+        if node in g_other and g_f.get(node, math.inf) + g_b.get(node, math.inf) < mu:
+            mu, meet = g_f[node] + g_b[node], node
+        for v, w, e in edges_of[node]:
+            if v in done:
+                continue
+            ng = g_this[node] + w
+            if ng < g_this.get(v, math.inf):
+                g_this[v] = ng
+                par[v] = (node, e)
+                heapq.heappush(pq, (ng, v))
+                if v in g_other and g_f.get(v, math.inf) + g_b.get(v, math.inf) < mu:
+                    mu, meet = g_f[v] + g_b[v], v
+        front_f = {n for _, n in pq_f if n not in done_f}
+        front_b = {n for _, n in pq_b if n not in done_b}
+        frontier = sorted(front_f | front_b)
+        max_frontier = max(max_frontier, len(frontier))
+        steps.append({
+            "step": len(steps) + 1, "expanded": node, "frontier": frontier,
+            "g": {n: round(min(g_f.get(n, math.inf), g_b.get(n, math.inf)), 1)
+                  for n in frontier},
+            "h": None, "f": None, "side": side,
+        })
+
+    assert meet is not None, "mock graph must connect start and goal"
+    left, dist = [meet], 0.0
+    while left[-1] != start:
+        prev, e = par_f[left[-1]]
+        dist += e["length_m"]
+        left.append(prev)
+    left.reverse()
+    right = []
+    cur = meet
+    while cur != goal:
+        nxt, e = par_b[cur]
+        dist += e["length_m"]
+        right.append(nxt)
+        cur = nxt
+    path = left + right
+    return {
+        "algorithm": "bidijkstra", "mode": "balanced", "time_slot": slot, "graph": "demo",
+        "found": True, "path": path,
+        "metrics": {
+            "total_cost": round(mu, 1), "total_distance_m": round(dist, 1),
+            "total_time_s": round(mu, 1),
+            "nodes_expanded": len(steps), "max_frontier": max_frontier,
+            "runtime_ms": 1.5,  # fixed mock value; real measurement in Phase 3
+            "optimal_guarantee": True, "epsilon_bound": None, "beam_width": None,
+            "trace_truncated": False,
+        },
+        "trace": steps,
+        "explanation": {"summary_vi": "", "congested_segments": [], "alternatives": []},
+    }
+
+
 def build_multiroute(graph: dict, prof: dict) -> dict:
     """NN + improvement mock: Bến Thành -> {Hồ Con Rùa, Bitexco, Nhà thờ Đức Bà}."""
     slot, start = "07:30", "n0001"
@@ -349,6 +441,7 @@ def main() -> None:
         "graph_mock.json": graph,
         "traffic_profiles_mock.json": prof,
         "trace_mock.json": build_trace(graph, prof),
+        "trace_bidijkstra_mock.json": build_bidijkstra_trace(graph, prof),
         "multiroute_mock.json": build_multiroute(graph, prof),
     }
     for fname, payload in files.items():
@@ -358,6 +451,7 @@ def main() -> None:
         print(f"wrote {out.relative_to(OUT_DIR.parents[1])}")
     print(f"nodes={graph['meta']['node_count']} edges={graph['meta']['edge_count']} "
           f"trace_steps={len(files['trace_mock.json']['trace'])} "
+          f"bidi_steps={len(files['trace_bidijkstra_mock.json']['trace'])} "
           f"tsp_savings={files['multiroute_mock.json']['savings_pct']}%")
 
 

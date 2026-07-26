@@ -1,0 +1,146 @@
+{
+  "algorithm": "bidijkstra",
+  "mode": "balanced",
+  "time_slot": "07:30",
+  "graph": "demo",
+  "found": true,
+  "path": [
+    "n0007",
+    "n0001",
+    "n0006",
+    "n0004",
+    "n0005"
+  ],
+  "metrics": {
+    "total_cost": 641.4,
+    "total_distance_m": 2880.3,
+    "total_time_s": 641.4,
+    "nodes_expanded": 7,
+    "max_frontier": 3,
+    "runtime_ms": 1.5,
+    "optimal_guarantee": true,
+    "epsilon_bound": null,
+    "beam_width": null,
+    "trace_truncated": false
+  },
+  "trace": [
+    {
+      "step": 1,
+      "expanded": "n0007",
+      "frontier": [
+        "n0001",
+        "n0005"
+      ],
+      "g": {
+        "n0001": 162.9,
+        "n0005": 0.0
+      },
+      "h": null,
+      "f": null,
+      "side": "forward"
+    },
+    {
+      "step": 2,
+      "expanded": "n0005",
+      "frontier": [
+        "n0001",
+        "n0003",
+        "n0004"
+      ],
+      "g": {
+        "n0001": 162.9,
+        "n0003": 128.1,
+        "n0004": 132.6
+      },
+      "h": null,
+      "f": null,
+      "side": "backward"
+    },
+    {
+      "step": 3,
+      "expanded": "n0003",
+      "frontier": [
+        "n0001",
+        "n0002",
+        "n0004"
+      ],
+      "g": {
+        "n0001": 162.9,
+        "n0002": 146.6,
+        "n0004": 132.6
+      },
+      "h": null,
+      "f": null,
+      "side": "backward"
+    },
+    {
+      "step": 4,
+      "expanded": "n0004",
+      "frontier": [
+        "n0001",
+        "n0002",
+        "n0006"
+      ],
+      "g": {
+        "n0001": 162.9,
+        "n0002": 146.6,
+        "n0006": 297.5
+      },
+      "h": null,
+      "f": null,
+      "side": "backward"
+    },
+    {
+      "step": 5,
+      "expanded": "n0002",
+      "frontier": [
+        "n0001",
+        "n0006"
+      ],
+      "g": {
+        "n0001": 162.9,
+        "n0006": 297.5
+      },
+      "h": null,
+      "f": null,
+      "side": "backward"
+    },
+    {
+      "step": 6,
+      "expanded": "n0001",
+      "frontier": [
+        "n0006",
+        "n0008"
+      ],
+      "g": {
+        "n0006": 297.5,
+        "n0008": 343.9
+      },
+      "h": null,
+      "f": null,
+      "side": "forward"
+    },
+    {
+      "step": 7,
+      "expanded": "n0006",
+      "frontier": [
+        "n0001",
+        "n0006",
+        "n0008"
+      ],
+      "g": {
+        "n0001": 162.9,
+        "n0006": 297.5,
+        "n0008": 343.9
+      },
+      "h": null,
+      "f": null,
+      "side": "backward"
+    }
+  ],
+  "explanation": {
+    "summary_vi": "",
+    "congested_segments": [],
+    "alternatives": []
+  }
+}

@@ -1,5 +1,9 @@
 # KỊCH BẢN VIDEO DEMO — 18–25 phút (bám đề mục 4.10)
 
+> ⚠️ **SỐ BENCHMARK LÀ TẠM (2026-07-26):** mọi con số exp1–exp7 trong tài liệu này lấy
+> từ lượt chạy congestion **synthetic**. Nhóm sẽ chạy lại TOÀN BỘ benchmark MỘT lượt
+> duy nhất sau khi có dữ liệu TomTom — khi đó thay số theo `results/` mới rồi mới nộp.
+
 > **Chuẩn bị trước khi quay:** backend + frontend chạy sẵn (localhost:8000/3000, chế độ
 > TỐI); mở sẵn `docs/GIAI-THICH-THUAT-TOAN.md` để dẫn bảng; OBS quay 1920×1080; mic rõ.
 > Người nói theo phân công phương án §8 — MỖI THÀNH VIÊN giảng ít nhất một thuật toán

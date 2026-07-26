@@ -58,11 +58,13 @@ export function Legend() {
           )}
           <span className="flex items-center gap-2"><Dot color={H.current} ring /> Đang expand</span>
           <span className="flex items-center gap-2"><Line color={H.path} /> Tuyến kết quả</span>
+          <span className="flex items-center gap-2"><span className="w-4 text-center text-[10px] leading-none">▶</span> Hướng di chuyển</span>
         </>
       )}
       {multi?.found && (
         <>
           <span className="flex items-center gap-2"><Line color={H.path} /> Lộ trình giao hàng</span>
+          <span className="flex items-center gap-2"><span className="w-4 text-center text-[10px] leading-none">▶</span> Hướng di chuyển</span>
           <span className="flex items-center gap-2">
             <span className="flex size-3.5 items-center justify-center rounded-full bg-algo-path font-mono text-[9px] font-bold text-surface">1</span>
             Thứ tự giao tối ưu

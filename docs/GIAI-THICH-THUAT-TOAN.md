@@ -5,6 +5,9 @@
 > **dữ liệu thật của nhóm**, mọi bảng từng-bước được SINH TỰ ĐỘNG từ chính code
 > (`python scripts/gen_teaching_doc.py`) nên khớp 100% với những gì GUI chiếu.
 > **Đừng đọc nguyên văn** — hiểu bảng, tự nói bằng lời của mình.
+> ⚠️ Các số BENCHMARK được trích (expand trung bình, exp7…) thuộc lượt synthetic
+> 2026-07-26 — sẽ cập nhật sau lượt chạy TomTom cuối; bảng chạy tay bên dưới KHÔNG
+> phụ thuộc benchmark (sinh trực tiếp từ đồ thị + thuật toán).
 
 ## 0. Đồ thị ví dụ dùng xuyên suốt (trích từ G_demo, khu Chợ Bến Thành)
 

@@ -1,18 +1,42 @@
 "use client";
 
-import { Info } from "lucide-react";
+import {
+  Clock, Gauge, Layers, MousePointerClick, Network, Route as RouteIcon,
+  Sigma, Timer,
+} from "lucide-react";
 import { Badge } from "../ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import { InfoTip } from "../ui/info-tip";
 import { GhfTable } from "../ghf-table";
 import { useApp } from "@/lib/store";
 import { fmtInt, fmtKm, fmtMinutes, fmtMs, fmtPct, fmtVi } from "@/lib/format";
 
-function Stat({ label, value, sub }: { label: string; value: string; sub?: string }) {
+function Stat({ icon: Icon, label, value, sub, tip }: {
+  icon: React.ComponentType<{ className?: string }>;
+  label: string; value: string; sub?: string; tip?: string;
+}) {
   return (
     <div className="rounded-lg border border-surface-border p-2.5">
-      <div className="text-[11px] text-ink-dim">{label}</div>
-      <div className="font-mono text-sm font-bold text-ink">{value}</div>
+      <div className="flex items-center gap-1.5 text-[11px] text-ink-dim">
+        <Icon className="size-3.5 shrink-0" />
+        <span className="truncate">{label}</span>
+        {tip && <InfoTip text={tip} />}
+      </div>
+      <div className="mt-1 font-mono text-[15px] font-bold leading-tight text-ink">{value}</div>
       {sub && <div className="font-mono text-[10px] text-ink-dim">{sub}</div>}
+    </div>
+  );
+}
+
+export function EmptyState({ icon: Icon, title, hint }: {
+  icon: React.ComponentType<{ className?: string }>;
+  title: string; hint: React.ReactNode;
+}) {
+  return (
+    <div className="flex flex-col items-center gap-2 rounded-lg border border-dashed border-surface-border px-4 py-10 text-center">
+      <Icon className="size-6 text-ink-dim" />
+      <p className="text-sm font-medium text-ink">{title}</p>
+      <p className="text-xs leading-relaxed text-ink-dim">{hint}</p>
     </div>
   );
 }
@@ -42,9 +66,11 @@ export function MetricsTab() {
           </CardContent>
         </Card>
         <div className="grid grid-cols-2 gap-2">
-          <Stat label="Theo thứ tự nhập" value={fmtMinutes(multi.original_order_totals.total_time_s)}
+          <Stat icon={Clock} label="Theo thứ tự nhập"
+            value={fmtMinutes(multi.original_order_totals.total_time_s)}
             sub={fmtKm(multi.original_order_totals.total_distance_m)} />
-          <Stat label="Sau tối ưu" value={fmtMinutes(multi.totals.total_time_s)}
+          <Stat icon={Clock} label="Sau tối ưu"
+            value={fmtMinutes(multi.totals.total_time_s)}
             sub={fmtKm(multi.totals.total_distance_m)} />
         </div>
         <div className="rounded-lg bg-start/10 p-3 text-center">
@@ -62,10 +88,9 @@ export function MetricsTab() {
 
   if (!trace) {
     return (
-      <div className="flex flex-col items-center gap-2 py-10 text-center text-sm text-ink-dim">
-        <Info className="size-5" />
-        <p>Chọn điểm Đi/Đến ở panel trái rồi bấm<br /><b className="text-ink">Chạy thuật toán</b> để xem số liệu.</p>
-      </div>
+      <EmptyState icon={MousePointerClick} title="Chưa có kết quả"
+        hint={<>Chọn điểm <b>Đi</b> / <b>Đến</b> ở panel trái rồi bấm{" "}
+          <b className="text-ink">Chạy thuật toán</b>.</>} />
     );
   }
 
@@ -93,18 +118,24 @@ export function MetricsTab() {
         {m.trace_truncated && <Badge variant="danger">Trace bị cắt ở 5 000 bước</Badge>}
       </div>
       <div className="grid grid-cols-2 gap-2">
-        <Stat label={`Tổng chi phí (${costUnit})`} value={fmtVi(m.total_cost ?? 0, 1)} />
-        <Stat label="Thời gian ước tính" value={fmtMinutes(m.total_time_s ?? 0)}
-          sub={`${fmtVi(m.total_time_s ?? 0, 1)} s`} />
-        <Stat label="Quãng đường" value={fmtKm(m.total_distance_m ?? 0)} />
-        <Stat label="Node đã expand" value={fmtInt(m.nodes_expanded)} />
-        <Stat label="Frontier lớn nhất" value={fmtInt(m.max_frontier)} />
-        <Stat label="Thời gian chạy" value={fmtMs(m.runtime_ms)} />
+        <Stat icon={Sigma} label={`Tổng chi phí (${costUnit})`}
+          value={fmtVi(m.total_cost ?? 0, 1)}
+          tip="Giá trị hàm chi phí theo tiêu chí đang chọn — thuật toán tối ưu hoá con số này." />
+        <Stat icon={Clock} label="Thời gian ước tính"
+          value={fmtMinutes(m.total_time_s ?? 0)} sub={`${fmtVi(m.total_time_s ?? 0, 1)} s`} />
+        <Stat icon={RouteIcon} label="Quãng đường" value={fmtKm(m.total_distance_m ?? 0)} />
+        <Stat icon={Network} label="Node đã expand" value={fmtInt(m.nodes_expanded)}
+          tip="Số node thuật toán phải mở ra xem xét — càng ít càng hiệu quả." />
+        <Stat icon={Layers} label="Frontier lớn nhất" value={fmtInt(m.max_frontier)}
+          tip="Kích thước lớn nhất của tập node đang chờ xét — phản ánh bộ nhớ cần dùng." />
+        <Stat icon={Timer} label="Thời gian chạy" value={fmtMs(m.runtime_ms)} />
       </div>
       {graph === "demo" ? (
         <div>
-          <div className="mb-1.5 text-[11px] font-bold uppercase tracking-wider text-ink-dim">
+          <div className="mb-1.5 flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-ink-dim">
+            <Gauge className="size-3.5" />
             Bảng g / h / f — frontier tại bước hiện tại
+            <InfoTip text="Giá trị của các node đang chờ xét tại bước animation hiện tại; kéo timeline để xem từng bước." />
           </div>
           <GhfTable />
         </div>

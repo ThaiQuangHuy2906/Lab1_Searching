@@ -46,6 +46,7 @@ export function GhfTable() {
   };
 
   return (
+    <div className="flex flex-col gap-1">
     <div className="max-h-72 overflow-y-auto rounded-lg border border-surface-border">
       <table className="w-full text-xs">
         <thead className="sticky top-0 bg-surface-panel text-left text-ink-dim">
@@ -89,6 +90,10 @@ export function GhfTable() {
           ))}
         </tbody>
       </table>
+    </div>
+    <p className="font-mono text-[10px] text-ink-dim">
+      g: chi phí đã đi · h: ước lượng còn lại · f = g + h
+    </p>
     </div>
   );
 }

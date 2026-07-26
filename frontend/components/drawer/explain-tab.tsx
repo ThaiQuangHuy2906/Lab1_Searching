@@ -1,6 +1,7 @@
 "use client";
 
-import { Info } from "lucide-react";
+import { MessageSquareText } from "lucide-react";
+import { EmptyState } from "./metrics-tab";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { useApp } from "@/lib/store";
 import { usePalette } from "@/lib/use-palette";
@@ -12,10 +13,8 @@ export function ExplainTab() {
 
   if (!trace) {
     return (
-      <div className="flex flex-col items-center gap-2 py-10 text-center text-sm text-ink-dim">
-        <Info className="size-5" />
-        <p>Chạy một thuật toán để đọc phần giải thích lộ trình bằng tiếng Việt.</p>
-      </div>
+      <EmptyState icon={MessageSquareText} title="Chưa có giải thích"
+        hint="Chạy một thuật toán để đọc phần giải thích lộ trình bằng tiếng Việt." />
     );
   }
   const ex = trace.explanation;

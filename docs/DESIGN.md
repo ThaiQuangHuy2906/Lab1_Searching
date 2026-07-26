@@ -126,8 +126,17 @@ Thanh nổi giữa-đáy bản đồ, nền `surface-panel/95`, viền `surface-
   **empty** (icon + 1 câu hướng dẫn hành động kế) / **error** (toast đỏ, vùng giữ nguyên).
 - Component từ **shadcn/ui**: Button, Select, Tabs, Slider, Tooltip, Card, Switch,
   Badge, Skeleton — không tự chế primitive.
-- Tooltip thuật ngữ (1 câu, hover các từ): UCS, heuristic, frontier, expanded,
-  admissible, beam width, ε (IDA*), ATSP, 2-opt.
+- Tooltip thuật ngữ (1 câu): icon **?** (CircleHelp 14px, `ink-dim`, hover/focus mới
+  hiện) đặt NGAY SAU label — KHÔNG gạch chấm dưới label (duyệt vòng 2: gạch chấm
+  gây rối). Icon phải focus được bằng bàn phím.
+- Hàng công tắc (SwitchRow): label + icon ? bên trái, switch bên phải, thẳng hàng
+  giữa theo trục dọc; không dùng label rỗng để căn.
+- Không lặp label: heading nhóm đã nói rõ thì control đầu nhóm không cần label
+  trùng tên (vd nhóm "Thuật toán" → select đứng trực tiếp).
+- Stat card (drawer Số liệu): icon lucide 14px `ink-dim` cạnh label, giá trị
+  `font-mono` 15px đậm, đơn vị/chú thích 10px `ink-dim`.
+- Bảng g/h/f có chú thích cột cố định dưới bảng: "g: chi phí đã đi · h: ước lượng
+  còn lại · f = g + h".
 - **G_real guardrails:** ẩn bảng g/h/f, `include_trace` mặc định tắt, cảnh báo khi
   bật trace ("Trace trên G_real có thể rất lớn — bật khi thật cần").
 

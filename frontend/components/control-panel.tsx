@@ -2,15 +2,16 @@
 
 // Panel trái 320px — thứ tự nhóm CỐ ĐỊNH theo DESIGN.md §4:
 // Bối cảnh -> Thuật toán -> Hành trình -> nút CHẠY lớn.
+// Tooltip = icon ? cạnh label (InfoTip); switch rows thẳng hàng (§8).
 
 import * as React from "react";
-import { Crosshair, ListOrdered, Loader2, Play, X } from "lucide-react";
+import { Crosshair, ListOrdered, Loader2, Play, Route, X } from "lucide-react";
 import { Button } from "./ui/button";
 import { Switch } from "./ui/switch";
+import { InfoTip } from "./ui/info-tip";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "./ui/select";
-import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 import { Skeleton } from "./ui/skeleton";
 import { ALGO_LABEL, useApp } from "@/lib/store";
 import type { Algorithm, Mode, TimeSlot, TspMethod } from "@/lib/types";
@@ -22,29 +23,49 @@ const MODES: { v: Mode; label: string }[] = [
   { v: "distance", label: "Ngắn nhất" },
 ];
 
-function Row({ label, children, tip }: {
-  label: string; children: React.ReactNode; tip?: string;
+function FieldLabel({ children, tip, dot }: {
+  children: React.ReactNode; tip?: string; dot?: string;
 }) {
-  const lab = <span className="text-xs font-medium text-ink-dim">{label}</span>;
   return (
-    <label className="flex flex-col gap-1.5">
-      {tip ? (
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <span className="w-fit cursor-help underline decoration-dotted underline-offset-2">{lab}</span>
-          </TooltipTrigger>
-          <TooltipContent>{tip}</TooltipContent>
-        </Tooltip>
-      ) : lab}
+    <span className="flex items-center gap-1.5 text-xs font-medium text-ink-dim">
+      {dot && <span className="size-2 rounded-full" style={{ background: dot }} />}
       {children}
-    </label>
+      {tip && <InfoTip text={tip} />}
+    </span>
   );
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function Field({ label, tip, dot, children }: {
+  label: string; tip?: string; dot?: string; children: React.ReactNode;
+}) {
+  return (
+    <div className="flex flex-col gap-1.5">
+      <FieldLabel tip={tip} dot={dot}>{label}</FieldLabel>
+      {children}
+    </div>
+  );
+}
+
+function SwitchRow({ label, tip, checked, onChange }: {
+  label: string; tip?: string; checked: boolean; onChange: (v: boolean) => void;
+}) {
+  return (
+    <div className="flex min-h-8 items-center justify-between gap-2">
+      <FieldLabel tip={tip}>{label}</FieldLabel>
+      <Switch checked={checked} onCheckedChange={onChange} aria-label={label} />
+    </div>
+  );
+}
+
+function Section({ title, tip, children }: {
+  title: string; tip?: string; children: React.ReactNode;
+}) {
   return (
     <div className="flex flex-col gap-3 border-b border-surface-border px-4 py-4">
-      <div className="text-[11px] font-bold uppercase tracking-wider text-ink-dim">{title}</div>
+      <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-ink-dim">
+        {title}
+        {tip && <InfoTip text={tip} />}
+      </div>
       {children}
     </div>
   );
@@ -94,13 +115,18 @@ export function ControlPanel() {
 
   return (
     <aside className="flex h-full w-80 shrink-0 flex-col overflow-y-auto border-r border-surface-border bg-surface-panel">
-      <div className="border-b border-surface-border px-4 py-3">
-        <h1 className="text-sm font-bold">Định tuyến giao thông TP.HCM</h1>
-        <p className="text-xs text-ink-dim">Shipper giao hàng đa điểm — Lab 1 AI</p>
+      <div className="flex items-center gap-2.5 border-b border-surface-border px-4 py-3">
+        <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-algo-frontier/15 text-algo-frontier">
+          <Route className="size-4" />
+        </span>
+        <div className="min-w-0">
+          <h1 className="truncate text-sm font-bold">Định tuyến giao thông TP.HCM</h1>
+          <p className="truncate text-xs text-ink-dim">Shipper giao hàng đa điểm — Lab 1 AI</p>
+        </div>
       </div>
 
       <Section title="Bối cảnh">
-        <Row label="Đồ thị">
+        <Field label="Đồ thị">
           <Select value={s.graph} onValueChange={(v) => void s.loadGraph(v as "demo" | "real")}>
             <SelectTrigger aria-label="Đồ thị"><SelectValue /></SelectTrigger>
             <SelectContent>
@@ -108,8 +134,8 @@ export function ControlPanel() {
               <SelectItem value="real">G_real — 2 118 nút OSM</SelectItem>
             </SelectContent>
           </Select>
-        </Row>
-        <Row label="Khung giờ">
+        </Field>
+        <Field label="Khung giờ" tip="Mức ùn tắc của từng đoạn đường thay đổi theo 4 mốc giờ chụp.">
           <div className="grid grid-cols-4 gap-1">
             {SLOTS.map((slot) => (
               <Button
@@ -123,40 +149,41 @@ export function ControlPanel() {
               </Button>
             ))}
           </div>
-        </Row>
-        <Row label="Chế độ tối ưu">
+        </Field>
+        <Field label="Tiêu chí tối ưu"
+          tip="Cân bằng = thời gian + phạt rủi ro (giây); Nhanh nhất = chỉ thời gian; Ngắn nhất = chỉ quãng đường.">
           <Select value={s.mode} onValueChange={(v) => s.set({ mode: v as Mode })}>
-            <SelectTrigger aria-label="Chế độ tối ưu"><SelectValue /></SelectTrigger>
+            <SelectTrigger aria-label="Tiêu chí tối ưu"><SelectValue /></SelectTrigger>
             <SelectContent>
               {MODES.map((m) => (
                 <SelectItem key={m.v} value={m.v}>{m.label}</SelectItem>
               ))}
             </SelectContent>
           </Select>
-        </Row>
-        <div className="flex items-center justify-between">
-          <Row label="Lớp ùn tắc" tip="Tô màu cạnh theo mức ùn tắc 1→5 của khung giờ đang chọn."><span /></Row>
-          <Switch checked={s.trafficLayer} onCheckedChange={(v) => s.set({ trafficLayer: v })} aria-label="Lớp ùn tắc" />
-        </div>
-        <div className="flex items-center justify-between">
-          <Row label="Chế độ offline" tip="Tắt bản đồ nền, vẽ thuần đồ thị — bảo hiểm khi wifi chập chờn."><span /></Row>
-          <Switch checked={s.offlineMode} onCheckedChange={(v) => s.set({ offlineMode: v })} aria-label="Chế độ offline" />
+        </Field>
+        <div className="flex flex-col">
+          <SwitchRow label="Lớp ùn tắc"
+            tip="Tô màu từng đoạn đường theo mức ùn tắc 1→5 của khung giờ đang chọn."
+            checked={s.trafficLayer} onChange={(v) => s.set({ trafficLayer: v })} />
+          <SwitchRow label="Chế độ offline"
+            tip="Tắt bản đồ nền, vẽ thuần đồ thị — bảo hiểm khi wifi chập chờn."
+            checked={s.offlineMode} onChange={(v) => s.set({ offlineMode: v })} />
         </div>
       </Section>
 
-      <Section title="Thuật toán">
-        <Row label="Thuật toán" tip="UCS/Dijkstra/A*/Bidirectional/IDA* đảm bảo tối ưu; BFS/DFS/IDDFS/Greedy/Beam thì không.">
-          <Select value={s.algorithm} onValueChange={(v) => s.set({ algorithm: v as Algorithm })}>
-            <SelectTrigger aria-label="Thuật toán"><SelectValue /></SelectTrigger>
-            <SelectContent>
-              {(Object.keys(ALGO_LABEL) as Algorithm[]).map((a) => (
-                <SelectItem key={a} value={a}>{ALGO_LABEL[a]}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </Row>
+      <Section title="Thuật toán"
+        tip="UCS, Dijkstra, A*, Hai chiều, IDA* đảm bảo tuyến tối ưu; BFS, DFS, IDDFS, Greedy, Beam thì không.">
+        <Select value={s.algorithm} onValueChange={(v) => s.set({ algorithm: v as Algorithm })}>
+          <SelectTrigger aria-label="Thuật toán"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            {(Object.keys(ALGO_LABEL) as Algorithm[]).map((a) => (
+              <SelectItem key={a} value={a}>{ALGO_LABEL[a]}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
         {s.algorithm === "beam" && (
-          <Row label="Beam width (k)" tip="Số node tốt nhất giữ lại mỗi lớp — k nhỏ chạy nhanh nhưng có thể không tìm thấy đường.">
+          <Field label="Beam width (k)"
+            tip="Số node tốt nhất giữ lại mỗi lớp — k nhỏ chạy nhanh nhưng có thể không tìm thấy đường.">
             <input
               type="number" min={1}
               className="h-9 rounded-lg border border-surface-border bg-surface-panel px-3 font-mono text-sm"
@@ -164,10 +191,11 @@ export function ControlPanel() {
               value={s.beamWidth}
               onChange={(e) => s.set({ beamWidth: e.target.value === "" ? "" : Number(e.target.value) })}
             />
-          </Row>
+          </Field>
         )}
         {s.algorithm === "idastar" && (
-          <Row label="ε — nới ngưỡng (giây)" tip="Mỗi vòng IDA* nới ngưỡng thêm ε giây; nghiệm nằm trong C* + ε.">
+          <Field label="ε — nới ngưỡng (giây)"
+            tip="Mỗi vòng IDA* nới ngưỡng thêm ε giây; nghiệm nằm trong khoảng tối ưu + ε.">
             <input
               type="number" min={0.1} step={0.5}
               className="h-9 rounded-lg border border-surface-border bg-surface-panel px-3 font-mono text-sm"
@@ -175,20 +203,24 @@ export function ControlPanel() {
               value={s.epsilon}
               onChange={(e) => s.set({ epsilon: e.target.value === "" ? "" : Number(e.target.value) })}
             />
-          </Row>
+          </Field>
         )}
         {!isDemo && (
-          <div className="flex items-center justify-between">
-            <Row label="Trace trên G_real" tip="Trace trên G_real có thể rất lớn — bật khi thật cần."><span /></Row>
-            <Switch checked={s.traceOnReal} onCheckedChange={(v) => s.set({ traceOnReal: v })} aria-label="Trace trên G_real" />
-          </div>
+          <SwitchRow label="Trace trên G_real"
+            tip="Trace từng bước trên G_real có thể rất lớn — chỉ bật khi thật cần."
+            checked={s.traceOnReal} onChange={(v) => s.set({ traceOnReal: v })} />
         )}
       </Section>
 
       <Section title="Hành trình">
-        <Row label="Đi (điểm xuất phát)"><NodePicker kind="start" /></Row>
-        <Row label="Đến (điểm đích)"><NodePicker kind="goal" /></Row>
-        <Row label={`Điểm giao hàng (${s.stops.length}/15)`} tip="Danh sách điểm cần ghé — bài toán ATSP tối ưu thứ tự ghé.">
+        <Field label="Đi — điểm xuất phát" dot="#047857">
+          <NodePicker kind="start" />
+        </Field>
+        <Field label="Đến — điểm đích" dot="#dc2626">
+          <NodePicker kind="goal" />
+        </Field>
+        <Field label={`Điểm giao hàng (${s.stops.length}/15)`}
+          tip="Danh sách điểm cần ghé — bài toán ATSP tìm thứ tự ghé tốt nhất (có đường một chiều nên chi phí đi–về khác nhau).">
           <div className="flex flex-col gap-1.5">
             {s.stops.map((id, i) => {
               const name = s.graphData?.nodes.find((n) => n.id === id)?.name ?? id;
@@ -230,11 +262,12 @@ export function ControlPanel() {
               </Button>
             )}
           </div>
-        </Row>
+        </Field>
         {s.stops.length > 0 && (
-          <Row label="Phương pháp tối ưu thứ tự" tip="Held-Karp cho nghiệm tối ưu tuyệt đối (≤15 điểm); NN+2-opt và SA là xấp xỉ nhanh.">
+          <Field label="Phương pháp tối ưu thứ tự"
+            tip="Held-Karp cho nghiệm tối ưu tuyệt đối (tối đa 15 điểm); NN + 2-opt và SA là xấp xỉ nhanh.">
             <MultiButtons />
-          </Row>
+          </Field>
         )}
       </Section>
 

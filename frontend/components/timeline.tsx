@@ -75,7 +75,7 @@ export function Timeline() {
           <SkipBack />
         </Button>
         <Button
-          variant="secondary" size="icon"
+          size="icon"
           aria-label={playing ? "Tạm dừng" : "Phát"}
           onClick={togglePlay}
         >

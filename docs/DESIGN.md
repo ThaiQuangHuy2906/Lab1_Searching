@@ -103,7 +103,8 @@ panel trái và drawer phải đổi NỀN xuống `surface`; mỗi NHÓM nội 
 **segmented control**: khối `surface` p-0.5 viền, nút active variant default
 (cyan), nút thường ghost — một khối liền thay 4 nút rời. Switch track OFF đổi
 `surface-border` → `ink-dim/35` (track cũ tàng hình trên nền trắng). Nút ⇅
-thành nút TRÒN viền nền `surface` chồng nhẹ giữa 2 ô (kiểu app gọi xe).
+thành nút TRÒN viền nền `surface` chồng nhẹ giữa 2 ô, CĂN GIỮA ngang
+(v10b — user chỉnh từ lệch phải; kiểu app gọi xe).
 
 **Nút Xoá bản đồ — duyệt v9e:** cụm nút góc bản đồ (+/−/⌂) thêm vạch ngăn +
 nút **thùng rác** (ghost, hover đỏ `goal`): xoá MỌI THỨ trên bản đồ một chạm —

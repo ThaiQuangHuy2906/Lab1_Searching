@@ -112,6 +112,7 @@ function NodePicker({ kind }: { kind: "start" | "goal" }) {
 export function ControlPanel() {
   const s = useApp();
   const isDemo = s.graph === "demo";
+  const busy = s.running || s.comparing || s.multiRunning;
 
   return (
     <aside className="flex h-full w-80 shrink-0 flex-col border-r border-surface-border bg-surface-panel">
@@ -128,7 +129,8 @@ export function ControlPanel() {
       <div className="min-h-0 flex-1 overflow-y-auto">
       <Section title="Bối cảnh">
         <Field label="Đồ thị">
-          <Select value={s.graph} onValueChange={(v) => void s.loadGraph(v as "demo" | "real")}>
+          <Select value={s.graph} disabled={busy}
+            onValueChange={(v) => void s.loadGraph(v as "demo" | "real")}>
             <SelectTrigger aria-label="Đồ thị"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="demo">G_demo — 51 địa danh thật</SelectItem>
@@ -142,6 +144,7 @@ export function ControlPanel() {
               <Button
                 key={slot}
                 size="sm"
+                disabled={busy}
                 variant={s.slot === slot ? "default" : "secondary"}
                 className="px-0 font-mono text-xs"
                 onClick={() => s.setSlot(slot)}

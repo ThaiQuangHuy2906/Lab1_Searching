@@ -151,6 +151,8 @@ export const useApp = create<AppState>((set, get) => ({
     const { slot, graph } = get();
     try {
       const t = await api.traffic(slot, graph);
+      // config changed while the request was in flight -> drop stale data
+      if (get().slot !== slot || get().graph !== graph) return;
       set({ traffic: t.congestion });
     } catch (e) {
       toast.error(e instanceof BackendError ? e.message : "Không tải được lớp ùn tắc.");
@@ -179,6 +181,8 @@ export const useApp = create<AppState>((set, get) => ({
         time_slot: s.slot, graph: s.graph, include_trace: includeTrace,
         params: Object.keys(params).length ? params : undefined,
       });
+      // graph/slot switched mid-flight -> a stale trace would draw wrong paths
+      if (get().graph !== s.graph || get().slot !== s.slot) return;
       set({ trace: t, stepIdx: Math.max(0, t.trace.length - 1), drawerTab: "metrics" });
       if (t.found) {
         toast.success(`Đã chạy ${ALGO_LABEL[s.algorithm]} — ${t.trace.length > 0
@@ -205,6 +209,7 @@ export const useApp = create<AppState>((set, get) => ({
         start: s.start, goal: s.goal, algorithm: s.compareAlgo, mode: s.mode,
         time_slot: s.slot, graph: s.graph, include_trace: false,
       });
+      if (get().graph !== s.graph || get().slot !== s.slot) return;
       set({ compare: t, drawerTab: "compare" });
       toast.success(`Đã so sánh với ${ALGO_LABEL[s.compareAlgo]}.`);
     } catch (e) {
@@ -226,6 +231,7 @@ export const useApp = create<AppState>((set, get) => ({
         start: s.start, stops: s.stops, method, mode: s.mode,
         time_slot: s.slot, graph: s.graph, return_to_start: false,
       });
+      if (get().graph !== s.graph || get().slot !== s.slot) return;
       set({ multi: m, drawerTab: "metrics" });
       if (m.found && m.savings_pct !== null) {
         toast.success(`Đã tối ưu thứ tự ${s.stops.length} điểm giao — tiết kiệm ${m.savings_pct

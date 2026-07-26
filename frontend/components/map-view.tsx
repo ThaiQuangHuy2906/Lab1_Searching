@@ -14,7 +14,9 @@ import "maplibre-gl/dist/maplibre-gl.css";
 
 import { type RGBA } from "@/lib/colors";
 import { usePalette } from "@/lib/use-palette";
+import { toast } from "sonner";
 import { useApp } from "@/lib/store";
+import { Button } from "./ui/button";
 import { useAnimation } from "@/lib/use-animation";
 import type { GraphNode } from "@/lib/types";
 import { Legend } from "./legend";
@@ -22,6 +24,8 @@ import { Timeline } from "./timeline";
 
 export function MapView() {
   const graphData = useApp((s) => s.graphData);
+  const graphLoading = useApp((s) => s.graphLoading);
+  const loadGraph = useApp((s) => s.loadGraph);
   const graph = useApp((s) => s.graph);
   const offline = useApp((s) => s.offlineMode);
   const trafficLayer = useApp((s) => s.trafficLayer);
@@ -43,6 +47,7 @@ export function MapView() {
 
   const [viewState, setViewState] = React.useState<MapViewState | null>(null);
   const [pulse, setPulse] = React.useState(1);
+  const basemapErrorShown = React.useRef(false);
 
   // initial camera: fit the graph bbox
   React.useEffect(() => {
@@ -71,9 +76,10 @@ export function MapView() {
     return m;
   }, [graphData]);
 
+  // drop ids missing from the current graph (never draw a path to [0,0])
   const toPath = React.useCallback(
     (ids: string[]): [number, number][] =>
-      ids.map((id) => coord.get(id) ?? ([0, 0] as [number, number])),
+      ids.map((id) => coord.get(id)).filter((c): c is [number, number] => !!c),
     [coord],
   );
 
@@ -305,8 +311,19 @@ export function MapView() {
 
   if (!viewState) {
     return (
-      <div className="flex h-full items-center justify-center bg-surface text-ink-dim">
-        Đang tải đồ thị…
+      <div className="flex h-full flex-col items-center justify-center gap-3 bg-surface text-ink-dim">
+        {graphLoading ? (
+          <span>Đang tải đồ thị…</span>
+        ) : (
+          <>
+            <span className="max-w-sm text-center text-sm">
+              Không tải được đồ thị — backend (localhost:8000) đã chạy chưa?
+            </span>
+            <Button variant="secondary" onClick={() => void loadGraph(graph)}>
+              Thử lại
+            </Button>
+          </>
+        )}
       </div>
     );
   }
@@ -336,7 +353,20 @@ export function MapView() {
             : null
         }
       >
-        {!offline && <MapLibre mapStyle={P.basemap} attributionControl={false} />}
+        {!offline && (
+          <MapLibre
+            mapStyle={P.basemap}
+            attributionControl={false}
+            onError={() => {
+              if (!basemapErrorShown.current) {
+                basemapErrorShown.current = true;
+                toast.warning(
+                  "Không tải được bản đồ nền (mạng chập chờn?) — bật \"Chế độ offline\" để demo tiếp.",
+                );
+              }
+            }}
+          />
+        )}
       </DeckGL>
       {!offline && (
         <div className="pointer-events-none absolute bottom-1 right-1.5 z-10 text-[10px] text-ink-dim/80">

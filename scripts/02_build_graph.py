@@ -22,7 +22,7 @@ import osmnx as ox
 
 from pipeline_common import (
     BBOX, DATA_DIR, RAW_DIR, NARROW_HIGHWAYS,
-    dump_json, first_of, load_json, risk_flags_for_nodes, speed_for,
+    ceil_dm, dump_json, first_of, load_json, risk_flags_for_nodes, speed_for,
 )
 
 IN_GRAPHML = RAW_DIR / "graph_raw.graphml"
@@ -60,7 +60,7 @@ def main() -> None:
             continue  # self-loop (SCHEMA forbids)
         highway = str(first_of(data.get("highway", "unclassified")))
         speed = speed_for(highway)
-        length = round(float(data["length"]), 1)
+        length = ceil_dm(float(data["length"]))  # round UP: keep length >= haversine
         travel = round(length / (speed / 3.6), 1)
         key = (nid[u], nid[v])
         if key in best and best[key]["free_travel_time_s"] <= travel:

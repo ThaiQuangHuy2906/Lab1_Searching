@@ -37,7 +37,11 @@ Thứ tự chạy đầy đủ: `01 → 02 → 03b real → 04 → 03b demo → 
 
 Mặc định khi không nhận diện được: 30 km/h. Lý do: tốc độ **thực tế lưu thông** nội đô
 TP.HCM thấp hơn nhiều tốc độ giới hạn pháp lý; bảng phản ánh trải nghiệm chạy xe máy
-khi đường thoáng. `free_travel_time_s = length_m / (v_free/3.6)`, làm tròn 0.1 s.
+khi đường thoáng. `free_travel_time_s = length_m / (v_free/3.6)`, làm tròn 0.1 s (chỉ để hiển thị — trọng số tính lại chính xác từ length/speed).
+
+**Làm tròn chiều dài:** `length_m` luôn làm tròn **LÊN** 0.1 m (`ceil_dm`) để bảo toàn
+bất đẳng thức `length ≥ haversine(u,v)` mà chứng minh admissible cần (xem
+`docs/HEURISTIC-PROOF.md` §6b — test consistency từng bắt được vi phạm ~3 cm khi làm tròn thường).
 
 ## 4. Luật gán risk flags (0/1 trên từng cạnh)
 
@@ -94,8 +98,8 @@ Bản build hiện tại: `source = "synthetic"` (chưa có key TomTom). Có key
 | | G_real | G_demo |
 |---|---|---|
 | Node | **2 118** (raw 2 230, SCC 2 118) | **51** (đủ 51 POI sau review, không POI nào bị gộp) |
-| Cạnh | **4 699** (raw 4 922; gộp 22 cạnh song song, bỏ self-loop) | **140** (185 trước khi tỉa) |
-| Một chiều | 1 433 | 54 |
+| Cạnh | **4 699** (raw 4 922; gộp 22 cạnh song song, bỏ self-loop) | **141** (185 trước khi tỉa) |
+| Một chiều | 1 433 | 55 |
 | Đèn tín hiệu | 185 cạnh / 77 node | 53 cạnh |
 | Ngập / lô cốt / hẻm | 402 / 107 / 8 | 19 / 16 / 0 |
 | Yêu cầu đề (≥20 node, ≥30 cạnh) | vượt xa | vượt xa ✓ |

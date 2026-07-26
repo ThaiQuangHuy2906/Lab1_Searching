@@ -28,7 +28,7 @@ from collections import defaultdict
 import networkx as nx
 
 from pipeline_common import (
-    BBOX, DATA_DIR, NARROW_HIGHWAYS, dump_json, haversine_m, load_json,
+    BBOX, DATA_DIR, NARROW_HIGHWAYS, ceil_dm, dump_json, haversine_m, load_json,
 )
 
 OUT_JSON = DATA_DIR / "graph_demo.json"
@@ -127,20 +127,22 @@ def contract(path: list[str], real_edges: dict, coord: dict) -> dict:
     for a, b in zip(path, path[1:]):
         e = real_edges[(a, b)]
         length += e["length_m"]
-        t_free += e["free_travel_time_s"]
+        # exact per-edge free time (stored free_travel_time_s is display-rounded)
+        t_free += e["length_m"] / (e["free_speed_kmh"] / 3.6)
         by_highway[e["highway"]] += e["length_m"]
         if e["highway"] in NARROW_HIGHWAYS:
             narrow_len += e["length_m"]
         for k in ("flood", "construction", "traffic_light"):
             flags[k] |= e["risk"][k]
     flags["narrow_alley"] = 1 if narrow_len / length > NARROW_SHARE else 0
+    length = ceil_dm(length)  # round UP: keep length >= haversine (proof, Bổ đề 1)
     speed = round(length / t_free * 3.6, 1)  # weighted average, km/h
     return {
-        "length_m": round(length, 1),
+        "length_m": length,
         "highway": max(by_highway.items(), key=lambda kv: kv[1])[0],
         "free_speed_kmh": speed,
         # re-derived from the ROUNDED speed so SCHEMA's formula check is exact
-        "free_travel_time_s": round(round(length, 1) / (speed / 3.6), 1),
+        "free_travel_time_s": round(length / (speed / 3.6), 1),
         "risk": flags,
     }
 

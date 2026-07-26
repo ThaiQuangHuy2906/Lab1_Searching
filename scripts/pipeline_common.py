@@ -43,6 +43,16 @@ NARROW_HIGHWAYS = {"living_street", "service", "alley", "track"}
 TIME_SLOTS = ("07:30", "12:00", "17:30", "22:00")
 
 
+def ceil_dm(x: float) -> float:
+    """Round a length UP to 0.1 m (guarding float noise first).
+
+    Lengths must never round BELOW the true value: the admissibility
+    proof needs length_m >= haversine(u, v) on every edge
+    (docs/HEURISTIC-PROOF.md, Bổ đề 1).
+    """
+    return math.ceil(round(x * 10, 6)) / 10
+
+
 def haversine_m(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
     r = 6371000.0
     p1, p2 = math.radians(lat1), math.radians(lat2)

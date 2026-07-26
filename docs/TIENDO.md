@@ -13,12 +13,17 @@
 | 6 | benchmark.py — 7 thí nghiệm → results/ | ✅ | Chạy đủ 7 thí nghiệm (~7 phút, seed 42): **exp1 1200/1200 khớp NetworkX 1e-6**; exp2 **0 vi phạm admissible / 21 170 điểm** (h/h* max 0,565); exp3 đủ **10 thuật toán × 200 cặp × 2 khung giờ** (4 000 dòng — cả iddfs/idastar chạy full sau khi đo khả thi); exp4 **83,5% cặp đổi tuyến** 07:30 vs 22:00 + 3 GeoJSON; exp5 đường cong γ có **cực tiểu thời gian quanh γ=1,5** (ủng hộ mặc định); exp6 5 tuyến + link Google Maps; exp7 TSP 10 điểm **tiết kiệm 53,6%**, NN+2opt & SA đều đạt nghiệm Held-Karp (SA mean 3564,6±9,7). 78/78 test; /api/benchmark trả 200 với 4 000 rows | `phase-6: benchmark suite` |
 | 7 | Deliverables: BaoCao-Khung, Slide-Outline, Video-KichBan, GIAI-THICH-THUAT-TOAN, README | ✅ | GIAI-THICH sinh TỰ ĐỘNG từ trace thật (`scripts/gen_teaching_doc.py` — đồ thị con 7 node khu Bến Thành + phản ví dụ BX→BT khiến BFS/Greedy sai +52%); BaoCao-Khung 10 mục a–j đủ marker, bảng benchmark điền số ĐÃ VERIFY từ CSV; Slide 14 trang map rubric; Video 18–25 phút đúng checklist 4.10 + nhắc tab ẩn danh; README 5 bước dựng từ zero + troubleshooting. pytest 78/78 | `phase-7: deliverables` |
 
-## Câu hỏi mở (không tự quyết — PROMPT-MASTER §9)
+## Câu hỏi mở
 
-- **Bbox cuối cùng:** G_real thực tế = 2 118 node / 4 699 cạnh, NẰM TRONG mục tiêu 2 000–6 000 → đề xuất giữ bbox `(106.680, 10.760, 106.720, 10.800)`. Chờ user chốt.
-- **Danh sách 51 POI** (`data/gdemo_pois.json`) + preview `data/gdemo_preview.png`: chờ nhóm/giảng viên review.
-- Nhóm tự gửi mail giảng viên (`vntan.work@gmail.com`): xác nhận kịch bản shipper + việc dùng NetworkX làm baseline test.
-- Điền tên thành viên A–E vào bảng phân công (phương án §8) + chốt người nộp bài.
+**Đã chốt:**
+- ✅ Bbox cuối: GIỮ `(106.680, 10.760, 106.720, 10.800)` — user chốt sau Phase 1 (G_real 2 118 node nằm trong mục tiêu 2 000–6 000).
+- ✅ Danh sách 51 POI: user đã review trên Google Maps (sửa 2 tên + 3 toạ độ, áp dụng + rebuild).
+
+**Còn lại — việc của nhóm trước khi nộp:**
+- Gửi mail giảng viên (`vntan.work@gmail.com`): xác nhận kịch bản shipper + việc dùng NetworkX làm baseline test (code đã cô lập NetworkX trong test theo luật 6 nên không chặn).
+- Điền tên thành viên A–E (bảng phân công + mục a báo cáo) + chốt người nộp bài.
+- Dán `source_url` thật vào `data/manual_risks.json`.
+- Chụp 8 screenshot + 5 ảnh Google Maps đối chứng; quay video; đóng gói `[GroupID].zip`.
 
 ## Nhật ký quyết định
 

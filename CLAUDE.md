@@ -41,6 +41,11 @@ py -3.14 -m venv .venv
 .venv/Scripts/python.exe scripts/validate_data.py
 # (03a_crawl_tomtom.py tuỳ chọn — cần TOMTOM_API_KEY trong .env, chạy 4 lần đúng 4 khung giờ)
 
+# benchmark 7 thí nghiệm (cwd backend/, ~7 phút, seed 42, KHÔNG chạy song song việc khác):
+#   ../.venv/Scripts/python.exe -m app.benchmark
+# sinh lại tài liệu giảng từ data thật: .venv/Scripts/python.exe scripts/gen_teaching_doc.py
+# kiểm tương phản WCAG 2 theme (cần mạng đọc style Carto): .venv/Scripts/python.exe scripts/check_contrast.py
+
 # backend API (cwd backend/): ../.venv/Scripts/python.exe -m uvicorn app.main:app --port 8000
 # frontend (cwd frontend/):   npm install && npm run dev   → http://localhost:3000
 #   (thiết kế bám docs/DESIGN.md — token trong frontend/tailwind.config.ts)

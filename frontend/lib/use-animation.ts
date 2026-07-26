@@ -27,8 +27,15 @@ export interface AnimationState {
 export function useAnimation(): AnimationState {
   const trace = useApp((s) => s.trace);
   const stepIdx = useApp((s) => s.stepIdx);
+  const graph = useApp((s) => s.graph);
+  const traceOnReal = useApp((s) => s.traceOnReal);
 
-  const steps = useMemo(() => trace?.trace ?? [], [trace]);
+  // the G_real trace toggle acts on the CURRENT view too (DESIGN v10c):
+  // switching it off hides the step layers instantly, keeping the route
+  const steps = useMemo(
+    () => (graph === "real" && !traceOnReal ? [] : trace?.trace ?? []),
+    [trace, graph, traceOnReal],
+  );
 
   const stepOfNode = useMemo(() => {
     const m = new Map<string, number>();

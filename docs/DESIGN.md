@@ -95,6 +95,13 @@ thang 1–5; so sánh → 2 tuyến). Nền `surface-panel/95`, chữ 12px.
 
 *(Drawer nới 360→400 px ở duyệt v5d: cột f của bảng g/h/f từng bị cắt mép.)*
 
+**Công tắc "Trace trên G_real" phản hồi TỨC THÌ — duyệt v10c (user bắt được
+độ trễ):** công tắc điều khiển cả HIỂN THỊ hiện tại, không chỉ request lần sau:
+OFF → timeline + lớp bước (frontier/expanded/current) biến mất NGAY (tuyến kết
+quả + chip Đi/Đến giữ nguyên); ON → nếu kết quả đang có sẵn dữ liệu bước thì
+timeline hiện lại ngay, nếu kết quả được chạy lúc OFF (không có bước) thì toast
+nhắc "bấm Chạy thuật toán lại để xem từng bước".
+
 **CARD HOÁ panel — duyệt v10 (nước lớn, panel bị chê "phẳng đều"):**
 panel trái và drawer phải đổi NỀN xuống `surface`; mỗi NHÓM nội dung là một
 **card** `surface-panel` bo `rounded-xl` + viền — ba tầng rõ: nền `surface`

@@ -13,6 +13,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "./ui/select";
 import { Skeleton } from "./ui/skeleton";
+import { toast } from "sonner";
 import { ALGO_LABEL, useApp } from "@/lib/store";
 import type { Algorithm, Mode, TimeSlot, TspMethod } from "@/lib/types";
 
@@ -265,7 +266,11 @@ export function ControlPanel() {
         {!isDemo && (
           <SwitchRow label="Trace trên G_real"
             tip="Trace từng bước trên G_real có thể rất lớn — chỉ bật khi thật cần."
-            checked={s.traceOnReal} onChange={(v) => s.set({ traceOnReal: v })} />
+            checked={s.traceOnReal} onChange={(v) => {
+              s.set({ traceOnReal: v });
+              if (v && s.graph === "real" && s.trace?.found && s.trace.trace.length === 0)
+                toast.info("Đã bật trace — bấm Chạy thuật toán lại để xem từng bước.");
+            }} />
         )}
       </Section>
 

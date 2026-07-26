@@ -24,8 +24,11 @@ export function Timeline() {
   const setStep = useApp((s) => s.setStep);
   const togglePlay = useApp((s) => s.togglePlay);
   const set = useApp((s) => s.set);
+  const graph = useApp((s) => s.graph);
+  const traceOnReal = useApp((s) => s.traceOnReal);
 
-  const n = trace?.trace.length ?? 0;
+  // mirror useAnimation: toggling trace off on G_real hides the player NOW
+  const n = graph === "real" && !traceOnReal ? 0 : trace?.trace.length ?? 0;
 
   // playback clock
   React.useEffect(() => {

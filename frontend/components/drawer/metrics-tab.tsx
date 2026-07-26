@@ -8,7 +8,7 @@ import { Badge } from "../ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { InfoTip } from "../ui/info-tip";
 import { GhfTable } from "../ghf-table";
-import { useApp } from "@/lib/store";
+import { ALGO_LABEL, useApp } from "@/lib/store";
 import { fmtInt, fmtKm, fmtMinutes, fmtMs, fmtPct, fmtVi } from "@/lib/format";
 
 function Stat({ icon: Icon, label, value, sub, tip }: {
@@ -104,8 +104,13 @@ export function MetricsTab() {
     );
   }
   const costUnit = trace.mode === "distance" ? "m" : "s";
+  const modeVi = { balanced: "Cân bằng", time: "Nhanh nhất", distance: "Ngắn nhất" }[trace.mode];
   return (
     <div className="flex flex-col gap-3">
+      <p className="font-mono text-[11px] text-ink-dim">
+        {ALGO_LABEL[trace.algorithm].split(" — ")[0]} · {modeVi} · {trace.time_slot} ·{" "}
+        {trace.graph === "demo" ? "G_demo" : "G_real"}
+      </p>
       <div className="flex flex-wrap items-center gap-1.5">
         <Badge variant={m.optimal_guarantee ? "ok" : "warn"}>
           {m.optimal_guarantee

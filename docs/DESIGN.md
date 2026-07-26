@@ -84,6 +84,8 @@ thang 1–5; so sánh → 2 tuyến). Nền `surface-panel/95`, chữ 12px.
 + Công tắc "Chế độ offline" (vẽ thuần deck.gl trên nền `surface`) và "Lớp ùn tắc".
 
 **Drawer phải — 3 tab:** `Số liệu` | `Giải thích` | `So sánh`
+- Đầu tab Số liệu có **dòng nguồn kết quả**: "A* · Cân bằng · 07:30 · G_demo" —
+  kết quả đang xem thuộc cấu hình nào (tránh nhầm khi user đã đổi lựa chọn ở panel).
 - Số liệu: card metrics (cost/time/km/expanded/max frontier/runtime + badge
   "Đảm bảo tối ưu"/"Không đảm bảo") + **bảng g/h/f** của frontier tại bước hiện tại.
 - Giải thích: `summary_vi`, danh sách đoạn ùn tắc (màu theo mức), card alternatives
@@ -110,6 +112,12 @@ Thanh nổi giữa-đáy bản đồ, nền `surface-panel/95`, viền `surface-
 - Chế độ **Offline**: tắt basemap, vẽ thuần đồ thị bằng deck.gl trên nền `surface`
   — bảo hiểm wifi phòng bảo vệ; mọi lớp thuật toán giữ nguyên.
 - G_demo: node có nhãn tên POI (ẩn dần khi zoom xa); G_real: không nhãn.
+- **Hover node** → tooltip tên POI (G_demo) / id nút (G_real) — nền `surface-panel`.
+- **Tuyến kết quả có viền (casing)**: lớp nền màu `surface` rộng 7px dưới lớp màu
+  6px — tuyến nổi trên mọi nền bản đồ (kỹ thuật casing bản đồ chuẩn); áp dụng cho
+  route chính, multiroute và tuyến so sánh.
+- **Attribution** "© CARTO · © OpenStreetMap contributors" chữ 10px góc dưới-phải
+  khi dùng basemap (bắt buộc theo license; ẩn ở chế độ Offline).
 - Lớp ùn tắc: tô cạnh theo `cong-1..5` của khung giờ đang chọn.
 
 ## 7. Copy & lỗi

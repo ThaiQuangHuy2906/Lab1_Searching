@@ -50,7 +50,7 @@ export function MapView() {
     const [left, bottom, right, top] = graphData.meta.bbox;
     const vp = new WebMercatorViewport({ width: 800, height: 800 }).fitBounds(
       [[left, bottom], [right, top]],
-      { padding: 40 },
+      { padding: 72 },
     );
     setViewState({ longitude: vp.longitude, latitude: vp.latitude, zoom: vp.zoom });
   }, [graphData]);
@@ -72,7 +72,8 @@ export function MapView() {
   }, [graphData]);
 
   const toPath = React.useCallback(
-    (ids: string[]) => ids.map((id) => coord.get(id) ?? [0, 0]),
+    (ids: string[]): [number, number][] =>
+      ids.map((id) => coord.get(id) ?? ([0, 0] as [number, number])),
     [coord],
   );
 
@@ -138,33 +139,28 @@ export function MapView() {
       );
     }
 
-    // final route / compare / multiroute
+    // final route / compare / multiroute — casing (nền) + màu (DESIGN 6)
+    const casedPath = (id: string, data: { path: [number, number][] }[],
+                       color: RGBA, width = 6) => {
+      out.push(
+        new PathLayer({
+          id: `${id}-casing`, data,
+          getPath: (d: { path: [number, number][] }) => d.path,
+          getColor: C.labelOutline, getWidth: width + 2.5,
+          widthUnits: "pixels", jointRounded: true, capRounded: true,
+        }),
+        new PathLayer({
+          id, data,
+          getPath: (d: { path: [number, number][] }) => d.path,
+          getColor: color, getWidth: width,
+          widthUnits: "pixels", jointRounded: true, capRounded: true,
+        }),
+      );
+    };
     if (multi?.found) {
-      out.push(
-        new PathLayer({
-          id: "multi-path",
-          data: multi.legs.map((l) => ({ path: toPath(l.path) })),
-          getPath: (d: { path: [number, number][] }) => d.path,
-          getColor: C.path,
-          getWidth: 4,
-          widthUnits: "pixels",
-          jointRounded: true,
-          capRounded: true,
-        }),
-      );
+      casedPath("multi-path", multi.legs.map((l) => ({ path: toPath(l.path) })), C.path);
     } else if (trace?.found && anim.showPath) {
-      out.push(
-        new PathLayer({
-          id: "route",
-          data: [{ path: toPath(trace.path) }],
-          getPath: (d: { path: [number, number][] }) => d.path,
-          getColor: C.path,
-          getWidth: 4,
-          widthUnits: "pixels",
-          jointRounded: true,
-          capRounded: true,
-        }),
-      );
+      casedPath("route", [{ path: toPath(trace.path) }], C.path);
     }
     if (compare?.found && drawerTab === "compare") {
       out.push(
@@ -189,7 +185,7 @@ export function MapView() {
       new ScatterplotLayer({
         id: "nodes",
         data: graphData.nodes,
-        pickable: !isDemo && pickTarget !== null,
+        pickable: true,
         getPosition: (n: GraphNode) => [n.lon, n.lat],
         getFillColor: nodeColor,
         getRadius: isDemo ? 5.5 : 3,
@@ -323,9 +319,27 @@ export function MapView() {
         getCursor={({ isDragging }) =>
           pickTarget ? "crosshair" : isDragging ? "grabbing" : "grab"
         }
+        getTooltip={({ object }) =>
+          object && "id" in (object as GraphNode)
+            ? {
+                text: (object as GraphNode).name ?? `nút ${(object as GraphNode).id}`,
+                style: {
+                  background: "rgb(var(--surface-panel))",
+                  color: "rgb(var(--ink))",
+                  border: "1px solid rgb(var(--surface-border))",
+                  borderRadius: "8px", fontSize: "12px", padding: "4px 8px",
+                },
+              }
+            : null
+        }
       >
         {!offline && <MapLibre mapStyle={P.basemap} attributionControl={false} />}
       </DeckGL>
+      {!offline && (
+        <div className="pointer-events-none absolute bottom-1 right-1.5 z-10 text-[10px] text-ink-dim/80">
+          © CARTO · © OpenStreetMap contributors
+        </div>
+      )}
       {pickTarget && (
         <div className="absolute left-1/2 top-3 -translate-x-1/2 rounded-lg border border-surface-border bg-surface-panel/95 px-3 py-1.5 text-sm">
           Bấm vào một nút giao trên bản đồ để chọn{" "}

@@ -1,8 +1,10 @@
 # KỊCH BẢN VIDEO DEMO — 18–25 phút (bám đề mục 4.10)
 
-> ⚠️ **SỐ BENCHMARK LÀ TẠM (2026-07-26):** mọi con số exp1–exp7 trong tài liệu này lấy
-> từ lượt chạy congestion **synthetic**. Nhóm sẽ chạy lại TOÀN BỘ benchmark MỘT lượt
-> duy nhất sau khi có dữ liệu TomTom — khi đó thay số theo `results/` mới rồi mới nộp.
+> ⚠️ **SỐ TẠM (2026-07-27):** mọi con số exp1–exp7 trong tài liệu này lấy từ lượt chạy
+> congestion **synthetic** — và CẢ CÁC SỐ VÍ DỤ CHẠY TAY (446/341/+31%/+104 s/ma trận
+> 304/120/beam 415…) cũng đổi theo profiles, không riêng số benchmark. Sau khi có
+> TomTom, làm mới MỘT lượt: 03b real+demo → benchmark → `scripts/gen_teaching_doc.py`
+> → thay số theo Phụ lục A của `docs/KIEMTOAN.md` (cột "Đổi sau TomTom?") rồi mới nộp.
 
 > **Chuẩn bị trước khi quay:** backend + frontend chạy sẵn (localhost:8000/3000, chế độ
 > TỐI); mở sẵn `docs/GIAI-THICH-THUAT-TOAN.md` để dẫn bảng; OBS quay 1920×1080; mic rõ.
@@ -34,7 +36,7 @@
   BX→BT (Công trường Quách Thị Trang) + bảng h (haversine/v_max). Nêu bài toán chính
   BT → BX: "có đường trực tiếp nhưng chỉ chiều VỀ — chiều đi phải vòng".
 - (3:00) **BFS** [người B]: chạy GUI bước-một NGAY trên BT→BX: BFS chọn tuyến ít cạnh
-  nhưng kẹt (498 s) vs tối ưu (341 s) — đắt hơn +46%; chốt "ít cạnh ≠ rẻ".
+  nhưng đắt (446 s) vs tối ưu (341 s) — đắt hơn +31%; chốt "ít cạnh ≠ rẻ".
 - (4:00) **DFS + IDDFS** [người B]: DFS lao sâu (chỉ thứ tự expand); IDDFS cột
   "giới hạn d" tăng dần, số expand CỘNG DỒN — cái giá của chạy lại.
 - (5:00) **UCS** [người B]: chỉ cột g tăng dần theo hàng đợi ưu tiên; goal-test khi POP.
@@ -45,7 +47,7 @@
   vs Dijkstra 1 226 trên G_real (benchmark).
   Nói 1 câu về admissible: "h là thời gian bay thẳng ở tốc độ lớn nhất của đồ thị (45 km/h) — không bao giờ đoán quá."
 - (7:15) **Greedy** [người C]: cùng cặp BT→BX — lao theo h "nhìn gần đích" nên sập
-  cùng bẫy với BFS (+157 s, +46%); đối chiếu với A* cũng dùng h nhưng CÓ g nên không bị.
+  cùng bẫy với BFS (+104 s, +31%); đối chiếu với A* cũng dùng h nhưng CÓ g nên không bị.
 - (8:00) **Dijkstra hai chiều** [người C]: GUI 2 màu lan từ 2 phía (cột "Phía" trong
   bảng); nêu chiều ngược chạy trên đồ thị ĐẢO CẠNH vì một chiều; luật dừng
   top_xuôi + top_ngược ≥ μ.
@@ -53,8 +55,8 @@
   đổi bộ nhớ lấy thời gian (expand 630k trên G_real!).
 - (9:45) **Beam** [người C]: chạy k=2 rồi k=5 trên GUI; nói "incomplete" +
   số benchmark: k=50 vẫn lỡ 1,5% ca trên G_real.
-- (10:30) **Held-Karp/TSP mini** [người C]: ma trận 4×4 bất đối xứng (BT→SC 266 vs
-  SC→BT 232 — chỉ vào 2 ô), đọc tour tối ưu; hẹn demo 10 điểm ở phần sau.
+- (10:30) **Held-Karp/TSP mini** [người C]: ma trận 4×4 bất đối xứng (BT→SC 304 vs
+  SC→BT 120 — chỉ vào 2 ô), đọc tour tối ưu; hẹn demo 10 điểm ở phần sau.
 
 ## 11:00 – 20:00 · Demo sản phẩm đầy đủ (đề 4.10b)
 
@@ -70,7 +72,8 @@
 - (15:45) **So sánh 2 thuật toán**: A* (vàng liền) vs BFS (lam đứt) cùng OD — bảng
   đối chiếu expand/chi phí; 1 câu kết luận.
 - (16:45) **G_real**: đổi đồ thị, click chọn 2 điểm trên bản đồ 2 118 nút, chạy
-  Dijkstra hai chiều → nói "2 118 nút, ~7 ms".
+  Dijkstra hai chiều → nói "2 118 nút, vài mili-giây" và ĐỌC ĐÚNG số runtime đang
+  hiện trên màn hình (exp3: mean ~2,7 ms — đừng đọc số đuôi phân bố).
 - (17:30) **Multiroute 9 điểm** [người D]: thêm 9 điểm giao → Held-Karp → thứ tự đánh
   số trên bản đồ + card "Tiết kiệm 53,6%"; đổi sang NN+2-opt → so kết quả.
 - (19:00) **Chế độ Offline**: tắt wifi thật trên màn hình → bật công tắc → app vẫn
@@ -78,8 +81,9 @@
 
 ## 20:00 – 23:00 · Benchmark & phân tích
 
-- (20:00) Trang /benchmark: 2 biểu đồ cột (log) — đọc: nhóm tối ưu ~1 000 expand,
-  A*/BiDijkstra ~750, IDA*/IDDFS hàng trăm nghìn (cái giá tiết kiệm bộ nhớ).
+- (20:00) Trang /benchmark: 2 biểu đồ cột (log) — đọc: nhóm tối ưu ~1 200 expand,
+  A*/BiDijkstra ~750, IDA*/IDDFS hàng trăm nghìn (cái giá tiết kiệm bộ nhớ);
+  số nói to phải khớp số trên màn hình cùng khung hình.
 - (21:00) Chiếu `admissibility_scatter.png` (0 vi phạm/21 170 điểm) + kể bài học
   làm tròn 3 cm suýt phá admissible (test tự bắt được).
 - (22:00) `exp5_gamma_curves.png`: PHÂN TÍCH ĐỘ NHẠY γ — nói rõ "γ=1,5 là hằng số

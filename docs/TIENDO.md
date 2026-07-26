@@ -27,6 +27,33 @@
 
 ## Nhật ký quyết định
 
+- **2026-07-27 (FIX BATCH theo docs/KIEMTOAN.md — user duyệt, 4 commit A/B/C/D, TRƯỚC
+  lượt benchmark TomTom):** (a) **L1-01**: risk vùng (ngập/lô cốt) đổi từ "mọi cạnh
+  trong bán kính" sang "cạnh ĐI VÀO vùng (u ngoài, v trong)" — mỗi lượt băng qua trả
+  penalty đúng 1 lần, cost vẫn edge-local; real flood 402→54, construction 107→19.
+  (b) **Quyết định tự đưa (báo rõ):** congestion G_demo KHÔNG quay RNG riêng nữa —
+  cạnh co kế thừa trung bình trọng số mức của các cạnh thật dọc hành lang
+  (`data/gdemo_corridors.json` mới, 04 sinh, 03b đọc); hệ quả: bất biến balanced kiểm
+  được VÀ TomTom sau này tự lan sang demo. (c) 04 nâng lên **6 bất biến** (time ≤1,5 ·
+  dist ≤1,8 · balanced ≤1,5 ×4 khung giờ, repair được phép thay hành lang có guard
+  toàn cục) → G_demo 253→**292 cạnh / 56 oneway**; số ví dụ giảng đổi theo
+  (BFS 446/+31%, beam k=5 415, ma trận mini 304/120, HK 397/−14%) — đã đồng bộ
+  GIAI-THICH (regen) + Slide/Video/BaoCao. (d) validate_data vá 6 lớp lỗ audit
+  (length≥haversine, bảng speed, sanity profile, SÀN ratio, risk counts ±20%,
+  meta.source vs data/raw) + kiểm 6 bất biến vĩnh viễn. (e) Chùm 2-click L3: start==goal
+  hết 500 (explain early-return + UI chặn trùng); `_Recorder.active` chặn CPU sau cap
+  5000 (idastar+trace real 41,9s→4,3s); updateTriggers layer nodes; stale-guard so đủ
+  hành trình + khoá panel khi đang bay; HELD_KARP_LIMIT hết match nhầm; 404/405 về
+  envelope §C.7; /benchmark format số VN. (f) Hồ sơ γ: 4 vị trí lập luận vòng viết lại
+  theo khung ĐỘ NHẠY; tiêu đề hình exp5 hết nói ngược data; **scripts/05_calibrate_gamma.py**
+  mới (fit f=1+γ(c−1)/4 từ TomTom, chạy sau 03a). (g) Chống L6-01 tái phát:
+  gen_teaching_doc đọc exp3/exp7 từ results/*.csv (hết hardcode) + caveat exp7; cảnh báo
+  SỐ TẠM 4 file mở rộng phủ cả số chạy tay; results/README.md mới. (h) SCHEMA: ghi rõ ε
+  theo đơn vị của mode; §A.4 không đổi cấu trúc (corridors là file build phụ trợ, không
+  thuộc hợp đồng §A). pytest 79→**82** test (3 regression API mới), validate ALL VALID,
+  regen byte-idempotent. **Benchmark exp1–7 CHƯA chạy lại — results/ vẫn là số synthetic
+  lượt 2026-07-26, chờ đủ 4 mốc TomTom (results/README.md cảnh báo).**
+
 - **2026-07-27 (repo GitHub + duyệt v8c–v9):** (a) Push toàn bộ lên
   `github.com/ThaiQuangHuy2906/Lab1_Searching` (khuyến nghị để Private tới khi chấm
   xong); thêm `.gitattributes` chuẩn hoá LF; README sửa 78→79 test. (b) v8c: biểu đồ

@@ -205,7 +205,7 @@ Do `explain.py` điền ở Phase 4. **Phase 2–3 trả đúng shape rỗng:** 
 | dfs, iddfs | `false` | không theo chi phí |
 | ucs, dijkstra, bidijkstra | `true` | chứng minh chuẩn với weight ≥ 0 |
 | astar | `true` | heuristic admissible + consistent (docs/HEURISTIC-PROOF.md) |
-| idastar | `true` | trong ngưỡng ε = 5 s (`epsilon_bound`) |
+| idastar | `true` | trong ngưỡng ε = 5 (`epsilon_bound`) — ε tính theo **đơn vị chi phí của mode đang chạy**: giây với time/balanced, mét với distance |
 | greedy, beam | `false` | greedy theo h / cắt frontier, không complete (beam) |
 
 ---
@@ -247,7 +247,7 @@ Request:
   "include_trace": null,          // null → theo mặc định (demo:true, real:false)
   "params": {                     // tuỳ chọn theo thuật toán, bỏ qua nếu không liên quan
     "beam_width": 5,              // beam; mặc định 5 (demo) / 50 (real)
-    "epsilon": 5.0                // idastar; mặc định 5.0 giây — đổi phải hỏi (PROMPT-MASTER luật 4)
+    "epsilon": 5.0                // idastar; mặc định 5.0 theo ĐƠN VỊ của mode (giây với time/balanced, mét với distance) — đổi phải hỏi (PROMPT-MASTER luật 4)
   }
 }
 ```

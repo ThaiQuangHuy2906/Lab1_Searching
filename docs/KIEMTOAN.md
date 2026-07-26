@@ -24,14 +24,21 @@
 | C9 | L4-04 tiêu đề hình exp5 trung tính | L4-04 | ✅ XONG — benchmark.py: 'Độ nhạy γ: thời gian & quãng đường tuyến được chọn'; PNG sẽ tự đúng ở lượt benchmark TomTom duy nhất |
 | C10 | L4-02 viết scripts/05_calibrate_gamma.py + dòng γ̂ vào BaoCao c | L4-02 | ✅ XONG — fit f=1+γ(c−1)/4 least-squares trên inflation freeFlow/current, level lấy đúng mapping ratio_to_level dùng chung với 03b (chuyển vào pipeline_common); xuất results/gamma_calibration.csv; chưa có snapshot → thông báo rõ + exit 1 (đã smoke); BaoCao mục c có sẵn dòng trích γ̂; DATA.md §1 thêm bước 05 |
 | C11 | L4-03 caveat exp7 vào template gen_teaching_doc | L4-03 | ✅ XONG — thêm 'Caveat bắt buộc khi nói: … kết quả trên INSTANCE 10 điểm này, KHÔNG phải bảo đảm tổng quát' ngay dưới câu exp7 trong template; GIAI-THICH tái sinh ở D12 |
-| D12 | gen_teaching_doc bỏ hardcode exp3/exp7 — đọc results/*.csv | L6-01/L4-05 | ⬜ |
-| D13 | Mở rộng cảnh báo SỐ TẠM 4 file (kể cả số chạy tay) | L6-01 | ⬜ |
-| D14 | results/README.md nguồn synthetic + seed + lệnh tái sinh | L6-02 | ⬜ |
-| D15 | SCHEMA câu đơn vị ε theo mode · Video sửa ~7 ms/~1 000 | L2-01/L6-03 | ⬜ |
+| D12 | gen_teaching_doc bỏ hardcode exp3/exp7 — đọc results/*.csv | L6-01/L4-05 | ✅ XONG — load_benchmark_numbers() đọc exp3 (expand A*/Dijkstra + % tiết kiệm) và exp7 (% tiết kiệm, câu 'đạt nghiệm HK' giờ ĐIỀU KIỆN theo ratio_optimal, SA mean±std) từ CSV mỗi lần tái sinh; regen 2 lần byte-idempotent; số ví dụ mới sau rebuild A1 (BFS 446/+31%, beam k=5 415, ma trận 304/120, HK 397/−14%) đã đồng bộ vào Slide/Video/BaoCao |
+| D13 | Mở rộng cảnh báo SỐ TẠM 4 file (kể cả số chạy tay) | L6-01 | ✅ XONG — banner 3 file report + header GIAI-THICH (trong template) đều nêu rõ: số chạy tay cũng đổi theo profiles, quy trình làm mới MỘT lượt (03b→benchmark→gen_teaching_doc→Phụ lục A) |
+| D14 | results/README.md nguồn synthetic + seed + lệnh tái sinh | L6-02 | ✅ XONG — kèm ghi chú quan trọng: graph đã rebuild 2026-07-27 nên CSV hiện tại là số của lượt data CŨ, càng phải thay trọn sau TomTom |
+| D15 | SCHEMA câu đơn vị ε theo mode · Video sửa ~7 ms/~1 000 | L2-01/L6-03 | ✅ XONG — SCHEMA §B.5 + §C.4 ghi 'ε theo đơn vị chi phí của mode'; Video 16:45 → 'vài mili-giây, đọc đúng số màn hình (mean ~2,7 ms)', 20:00 → '~1 200 expand' + dặn khớp số cùng khung hình |
 
-> Ghi chú A1: số cấu trúc mới đã đồng bộ vào DATA.md §4/§5/§6/§7/§8, BaoCao mục c+d,
-> Slide 3+4. Số ví dụ chạy tay (498/341/…) sẽ đổi theo data mới — đồng bộ ở D12/D13
-> sau khi regen GIAI-THICH. Benchmark **CHƯA chạy lại** (chờ đủ 4 mốc TomTom).
+> **KẾT THÚC BATCH (15/15 ✅):** verify cuối — pytest **82 passed** (79 cũ + 3 regression
+> mới) · validate_data **ALL DATA VALID** (6 bất biến + 6 assert mới) · gen_teaching_doc
+> regen **byte-idempotent** · check_contrast **ALL PASS**. 4 commit: A `7d3cc55` ·
+> B `45b42ab` · C `886a5ce` · D (commit này). Benchmark **CHƯA chạy lại** — results/ vẫn
+> là synthetic 2026-07-26 (đợi đủ 4 mốc TomTom; results/README.md cảnh báo).
+>
+> ⚠️ Phụ lục A bên dưới lập TRƯỚC batch: cột "Giá trị/Vị trí" của các số ví dụ chạy tay
+> và cấu trúc demo đã đổi theo batch (446/341/+31%/+104 s/304/120/415/397/−14%;
+> G_demo 292 cạnh/56 oneway; risk real 54/19/8/185, demo 24/24/0/131). Cột **"Đổi sau
+> TomTom?"** — mục đích chính của sổ — vẫn dùng nguyên làm checklist thay số cuối.
 
 ---
 

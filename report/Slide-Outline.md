@@ -1,8 +1,10 @@
 # OUTLINE SLIDE THUYẾT TRÌNH — 14 slide (map thẳng vào rubric)
 
-> ⚠️ **SỐ BENCHMARK LÀ TẠM (2026-07-26):** mọi con số exp1–exp7 trong tài liệu này lấy
-> từ lượt chạy congestion **synthetic**. Nhóm sẽ chạy lại TOÀN BỘ benchmark MỘT lượt
-> duy nhất sau khi có dữ liệu TomTom — khi đó thay số theo `results/` mới rồi mới nộp.
+> ⚠️ **SỐ TẠM (2026-07-27):** mọi con số exp1–exp7 trong tài liệu này lấy từ lượt chạy
+> congestion **synthetic** — và CẢ CÁC SỐ VÍ DỤ CHẠY TAY (446/341/+31%/+104 s/ma trận
+> 304/120/beam 415…) cũng đổi theo profiles, không riêng số benchmark. Sau khi có
+> TomTom, làm mới MỘT lượt: 03b real+demo → benchmark → `scripts/gen_teaching_doc.py`
+> → thay số theo Phụ lục A của `docs/KIEMTOAN.md` (cột "Đổi sau TomTom?") rồi mới nộp.
 
 > Mỗi slide: tối đa 3 bullet nội dung + ghi chú **"Nói gì trong 45–60 s"**.
 > Quy ước hình: screenshot GUI ở chế độ TỐI (DESIGN.md §1); biểu đồ lấy từ `results/figs/`.
@@ -37,7 +39,7 @@
 
 **Slide 5 — Thuật toán vô hướng: BFS/DFS/IDDFS + UCS** *(rubric: 4 bắt buộc 20đ)*
 - Bảng chạy tay BFS trên đồ thị 7 node thật (GIAI-THICH-THUAT-TOAN §1)
-- BẪY ngay bài chính BT→BX: BFS chọn tuyến ít cạnh KẸT (498 s) thay vì tuyến thoáng (341 s) — +46%
+- BẪY ngay bài chính BT→BX: BFS chọn tuyến ít cạnh ĐẮT (446 s) thay vì tuyến tối ưu (341 s) — +31%
 - UCS: lan theo CHI PHÍ → tối ưu (khớp NetworkX 1200/1200 — exp1)
 > 🗣 60s: đứng ở phản ví dụ — "ít cạnh nhất ≠ rẻ nhất" là lý do cần thuật toán có trọng số.
 
@@ -60,7 +62,7 @@
 > 🗣 60s: mỗi thuật toán một câu "đánh đổi cái gì lấy cái gì".
 
 **Slide 9 — TSP đa điểm** *(rubric: multi-location 10đ)*
-- ATSP vì ma trận BẤT đối xứng (một chiều): BT→SC 266 s nhưng SC→BT 232 s
+- ATSP vì ma trận BẤT đối xứng (một chiều): BT→SC 304 s nhưng SC→BT 120 s
 - Held-Karp = tối ưu tuyệt đối (≤15 điểm); NN+2-opt, SA = xấp xỉ
 - Kịch bản 10 điểm: tiết kiệm **53,6%** so thứ tự nhập; hình `exp7_tsp_map.png`
 > 🗣 60s: nói rõ cái nào đảm bảo tối ưu, cái nào không — đề yêu cầu tuyên bố điều này.

@@ -12,6 +12,7 @@ Re-run after any data rebuild:  python scripts/gen_teaching_doc.py
 
 from __future__ import annotations
 
+import csv
 import sys
 from pathlib import Path
 
@@ -67,6 +68,57 @@ def build_substore(demo: GraphStore) -> tuple[GraphStore, dict[str, str]]:
     # (a larger v_max only shrinks h -> admissibility is preserved)
     sub.v_max_ms = demo.v_max_ms
     return sub, label
+
+
+def _vi_thousands(x: float, digits: int = 0) -> str:
+    """1226 -> '1 226'; 3564.6 -> '3 564,6' (space groups, comma decimal)."""
+    return f"{x:,.{digits}f}".replace(",", " ").replace(".", ",")
+
+
+def load_benchmark_numbers() -> dict[str, str]:
+    """Benchmark figures quoted in the doc, read from results/*.csv at
+    GENERATE time (audit fix L6-01/L4-05: these were hardcoded literals, so
+    a TomTom re-run + regenerate silently kept the stale synthetic numbers;
+    now the single re-run workflow — rebuild, benchmark, regenerate — also
+    refreshes them)."""
+    n: dict[str, str] = {}
+    with (ROOT / "results" / "exp3_benchmark.csv").open(encoding="utf-8",
+                                                        newline="") as fh:
+        rows = list(csv.DictReader(fh))
+
+    def mean_expanded(algo: str) -> float:
+        vals = [float(r["nodes_expanded"]) for r in rows if r["algorithm"] == algo]
+        return sum(vals) / len(vals)
+
+    astar, dijkstra = mean_expanded("astar"), mean_expanded("dijkstra")
+    n["astar_expand"] = _vi_thousands(round(astar))
+    n["dijkstra_expand"] = _vi_thousands(round(dijkstra))
+    n["astar_saving_pct"] = f"{100 * (1 - astar / dijkstra):.0f}"
+
+    with (ROOT / "results" / "exp7_tsp.csv").open(encoding="utf-8",
+                                                  newline="") as fh:
+        t = {r["method"]: r for r in csv.DictReader(fh)}
+    n["tsp_saving"] = _vi_thousands(
+        float(t["held_karp"]["savings_vs_original_pct"]), 1)
+
+    def hit(method: str) -> bool:
+        return abs(float(t[method]["ratio_optimal"]) - 1.0) < 1e-9
+
+    def gap_txt(method: str) -> str:
+        return f"+{_vi_thousands((float(t[method]['ratio_optimal']) - 1) * 100, 1)}%"
+
+    if hit("nn_2opt") and hit("sa_best_of_5_seeds"):
+        n["tsp_claim"] = "NN+2-opt và SA đều đạt đúng nghiệm Held-Karp"
+    else:
+        parts = []
+        for label, method in (("NN+2-opt", "nn_2opt"), ("SA", "sa_best_of_5_seeds")):
+            parts.append(f"{label} " + ("đạt đúng nghiệm Held-Karp" if hit(method)
+                                        else f"cách nghiệm Held-Karp {gap_txt(method)}"))
+        n["tsp_claim"] = ", ".join(parts)
+
+    mean_s, std_s = t["sa_mean±std"]["total_cost_s"].split("±")
+    n["sa_mean_std"] = f"{_vi_thousands(float(mean_s), 1)} ± {_vi_thousands(float(std_s), 1)}"
+    return n
 
 
 def fmt_map(m: dict[str, float] | None, lab: dict[str, str]) -> str:
@@ -165,6 +217,7 @@ def main() -> None:
         return " → ".join(lab[x] for x in o)
 
     d = runs  # alias
+    N = load_benchmark_numbers()
 
     doc = f"""# GIẢI THÍCH THUẬT TOÁN — tài liệu ôn tập & quay video
 
@@ -173,9 +226,12 @@ def main() -> None:
 > **dữ liệu thật của nhóm**, mọi bảng từng-bước được SINH TỰ ĐỘNG từ chính code
 > (`python scripts/gen_teaching_doc.py`) nên khớp 100% với những gì GUI chiếu.
 > **Đừng đọc nguyên văn** — hiểu bảng, tự nói bằng lời của mình.
-> ⚠️ Các số BENCHMARK được trích (expand trung bình, exp7…) thuộc lượt synthetic
-> 2026-07-26 — sẽ cập nhật sau lượt chạy TomTom cuối; bảng chạy tay bên dưới KHÔNG
-> phụ thuộc benchmark (sinh trực tiếp từ đồ thị + thuật toán).
+> ⚠️ **SỐ TẠM (profiles đang synthetic):** MỌI con số ở đây sẽ đổi sau lượt TomTom —
+> KỂ CẢ các bảng chạy tay và số ví dụ (chi phí BFS/A*, ma trận ATSP mini… đều phụ
+> thuộc congestion của profiles) chứ không riêng số benchmark. Quy trình làm mới
+> MỘT lượt: 03b real + demo → benchmark → **chạy lại script này** (số exp3/exp7
+> bên dưới đọc tự động từ `results/*.csv`) → đồng bộ các số ví dụ đã chép sang
+> Slide/Video/BaoCao theo Phụ lục A của `docs/KIEMTOAN.md`.
 
 ## 0. Đồ thị ví dụ dùng xuyên suốt (trích từ G_demo, khu Chợ Bến Thành)
 
@@ -305,8 +361,9 @@ Tie-break: f bằng nhau → h nhỏ hơn trước. Complete ✔ · Tối ưu �
 khi hai node cùng f, A* chọn node có h nhỏ hơn (luật tie-break của nhóm); (2) đồ thị
 7 node quá bé để thấy A* tiết kiệm expand ({d['astar'].metrics.nodes_expanded} so với
 {d['ucs'].metrics.nodes_expanded} của UCS) — trên G_real 200 cặp, A* expand trung bình
-**771** so với **1 226** của Dijkstra/UCS, tức tiết kiệm ~37% nhờ heuristic định hướng
-(results/exp3_benchmark.csv — số của lượt synthetic, sẽ cập nhật theo lượt TomTom).
+**{N['astar_expand']}** so với **{N['dijkstra_expand']}** của Dijkstra/UCS, tức tiết kiệm
+~{N['astar_saving_pct']}% nhờ heuristic định hướng (số đọc tự động từ
+results/exp3_benchmark.csv mỗi lần tái sinh tài liệu này).
 
 ---
 
@@ -393,11 +450,12 @@ Shipper xuất phát từ **BT**, giao tại **HN, MT, SC** (không quay về). 
 - **Nearest Neighbour** (tham lam từ BT): `{tour(nn_order)}` = `{nn_cost:.0f} s`.
 - **Held-Karp** (QHĐ bitmask, tối ưu tuyệt đối): `{tour(hk_order)}` = **`{hk_cost:.0f} s`**
   — tiết kiệm {100 * (orig_cost - hk_cost) / orig_cost:.0f}% so thứ tự nhập.
-- Trên kịch bản 10 điểm thật (benchmark exp7): tiết kiệm 53,6%, NN+2-opt và SA
-  đều đạt đúng nghiệm Held-Karp; SA trung bình 5 seed = 3 564,6 ± 9,7 s.
-  **Caveat bắt buộc khi nói:** việc NN+2-opt/SA chạm nghiệm Held-Karp là kết quả
-  trên INSTANCE 10 điểm này (không gian nhỏ), KHÔNG phải bảo đảm tổng quát —
-  hai thuật toán này vẫn là xấp xỉ, không có chứng minh tối ưu.
+- Trên kịch bản 10 điểm thật (benchmark exp7, số đọc tự động từ results/exp7_tsp.csv):
+  tiết kiệm {N['tsp_saving']}%, {N['tsp_claim']};
+  SA trung bình 5 seed = {N['sa_mean_std']} s.
+  **Caveat bắt buộc khi nói:** việc heuristic chạm nghiệm Held-Karp (nếu xảy ra) là
+  kết quả trên INSTANCE 10 điểm này (không gian nhỏ), KHÔNG phải bảo đảm tổng quát —
+  NN+2-opt/SA vẫn là xấp xỉ, không có chứng minh tối ưu.
 
 **Held-Karp nói ngắn gọn trong video:** dp[S][i] = chi phí rẻ nhất xuất phát BT, thăm
 đúng tập S, đứng ở i. Điền dần theo kích thước S (2^n trạng thái) — với n=4 chỉ có

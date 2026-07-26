@@ -1,8 +1,10 @@
 # KHUNG BÁO CÁO KỸ THUẬT — Lab 1: Search Algorithms for Vietnamese Traffic
 
-> ⚠️ **SỐ BENCHMARK LÀ TẠM (2026-07-26):** mọi con số exp1–exp7 trong tài liệu này lấy
-> từ lượt chạy congestion **synthetic**. Nhóm sẽ chạy lại TOÀN BỘ benchmark MỘT lượt
-> duy nhất sau khi có dữ liệu TomTom — khi đó thay số theo `results/` mới rồi mới nộp.
+> ⚠️ **SỐ TẠM (2026-07-27):** mọi con số exp1–exp7 trong tài liệu này lấy từ lượt chạy
+> congestion **synthetic** — và CẢ CÁC SỐ VÍ DỤ CHẠY TAY (446/341/+31%/+104 s/ma trận
+> 304/120/beam 415…) cũng đổi theo profiles, không riêng số benchmark. Sau khi có
+> TomTom, làm mới MỘT lượt: 03b real+demo → benchmark → `scripts/gen_teaching_doc.py`
+> → thay số theo Phụ lục A của `docs/KIEMTOAN.md` (cột "Đổi sau TomTom?") rồi mới nộp.
 
 > **Đích:** hoàn thiện thành PDF 35–50 trang, đủ 10 mục a–j đúng đề. Khung này điền sẵn
 > mọi thứ máy làm được (công thức, bảng, số liệu benchmark, hình); phần lập luận để
@@ -285,7 +287,7 @@ real-time, ta dùng snapshot 4 khung giờ)].
 
 > ✍️ Phụ trách: **C**
 > 💡 Gợi ý: mục ăn điểm "Multi-location" (10đ). Nhấn: vì sao ATSP (bất đối xứng do
-> một chiều — ví dụ ngay trong GIAI-THICH-THUAT-TOAN §11: BT→SC = 266 nhưng SC→BT = 232);
+> một chiều — ví dụ ngay trong GIAI-THICH-THUAT-TOAN §11: BT→SC = 304 nhưng SC→BT = 120);
 > Held-Karp là ground truth ≤15 điểm; tuyên bố rõ cái nào TỐI ƯU cái nào XẤP XỈ.
 
 **Phát biểu bài toán** [ĐIỀN: shipper từ kho (Bưu điện TP), thăm k điểm giao đúng 1 lần,

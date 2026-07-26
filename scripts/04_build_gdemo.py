@@ -122,6 +122,7 @@ def contract(path: list[str], real_edges: dict, coord: dict) -> dict:
     """Merge a G_real node path into one demo edge's attributes."""
     length = t_free = 0.0
     by_highway: dict[str, float] = defaultdict(float)
+    by_name: dict[str, float] = defaultdict(float)
     narrow_len = 0.0
     flags = {"flood": 0, "construction": 0, "narrow_alley": 0, "traffic_light": 0}
     for a, b in zip(path, path[1:]):
@@ -130,6 +131,8 @@ def contract(path: list[str], real_edges: dict, coord: dict) -> dict:
         # exact per-edge free time (stored free_travel_time_s is display-rounded)
         t_free += e["length_m"] / (e["free_speed_kmh"] / 3.6)
         by_highway[e["highway"]] += e["length_m"]
+        if e["name"]:
+            by_name[e["name"]] += e["length_m"]
         if e["highway"] in NARROW_HIGHWAYS:
             narrow_len += e["length_m"]
         for k in ("flood", "construction", "traffic_light"):
@@ -139,6 +142,8 @@ def contract(path: list[str], real_edges: dict, coord: dict) -> dict:
     speed = round(length / t_free * 3.6, 1)  # weighted average, km/h
     return {
         "length_m": length,
+        # a contracted edge is named after its dominant real street (by length)
+        "name": max(by_name.items(), key=lambda kv: kv[1])[0] if by_name else None,
         "highway": max(by_highway.items(), key=lambda kv: kv[1])[0],
         "free_speed_kmh": speed,
         # re-derived from the ROUNDED speed so SCHEMA's formula check is exact
@@ -228,7 +233,7 @@ def main() -> None:
     edges = []
     for i, ((u, v), e) in enumerate(sorted(
             ((nid[u], nid[v]), e) for (u, v), e in demo_edges.items())):
-        edges.append({"id": f"e{i + 1:05d}", "u": u, "v": v, "name": None,
+        edges.append({"id": f"e{i + 1:05d}", "u": u, "v": v,
                       "oneway": (v, u) not in {(nid[x], nid[y]) for x, y in demo_edges},
                       **e})
 

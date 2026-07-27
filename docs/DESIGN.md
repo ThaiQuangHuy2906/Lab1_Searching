@@ -148,6 +148,10 @@ mét 4 chữ số); bảng So sánh overflow-x-auto + map tên ngắn thật (Bi
 Greedy…); `pickingRadius` 8px cho node G_real 2px; toast khi click thêm điểm giao
 bị nuốt (trùng/trùng-Đi); khu hint CTA min-h cố định hết nhảy layout; footer g/h/f
 hết mâu thuẫn với hướng dẫn bật trace; kicker alternatives font-bold đồng hệ.
+(k) **Camera fit theo KHỐI NODE THẬT** thay vì meta.bbox (bbox phủ cả sông + bờ đông
+trống nên G_demo bị lệch trái khung, drawer mở càng rõ — user bắt); đo đúng kích
+thước khung bản đồ tại thời điểm fit, nút ⌂ re-fit theo bề rộng hiện tại (drawer
+mở/đóng khác nhau).
 
 **Panel trái v11 (redesign sau góp ý UI):** Tiêu chí tối ưu đổi dropdown →
 **segmented 3 nút** cùng pattern Khung giờ (thấy đủ 3 mode một lúc, đỡ 1 click

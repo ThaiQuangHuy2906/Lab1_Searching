@@ -51,23 +51,40 @@ export function MapView() {
   const [pulse, setPulse] = React.useState(1);
   const basemapErrorShown = React.useRef(false);
   const homeView = React.useRef<MapViewState | null>(null);
+  const containerRef = React.useRef<HTMLDivElement>(null);
+  const nodeBounds = React.useRef<[[number, number], [number, number]] | null>(null);
 
   // v11: quantized zoom (half-steps) — the G_real marker sizes scale with it
   // below, and quantizing keeps the layers memo from rebuilding every frame
   const zoomBucket = Math.round((viewState?.zoom ?? 14) * 2) / 2;
 
-  // initial camera: fit the graph bbox
+  // Fit the camera to the ACTUAL node cloud with the REAL canvas size.
+  // meta.bbox covers the river + the empty east bank, so bbox-fitting left
+  // G_demo hugging the west side of the frame — especially with the drawer
+  // open (user feedback v11). Measured at call time so the ⌂ button
+  // re-centers correctly for whatever width the map currently has.
+  const fitToGraph = React.useCallback((): MapViewState | null => {
+    if (!nodeBounds.current) return null;
+    const el = containerRef.current;
+    const vp = new WebMercatorViewport({
+      width: el?.clientWidth || 800,
+      height: el?.clientHeight || 800,
+    }).fitBounds(nodeBounds.current, { padding: 64 });
+    return { longitude: vp.longitude, latitude: vp.latitude, zoom: vp.zoom };
+  }, []);
+
   React.useEffect(() => {
     if (!graphData) return;
-    const [left, bottom, right, top] = graphData.meta.bbox;
-    const vp = new WebMercatorViewport({ width: 800, height: 800 }).fitBounds(
-      [[left, bottom], [right, top]],
-      { padding: 72 },
-    );
-    const home = { longitude: vp.longitude, latitude: vp.latitude, zoom: vp.zoom };
+    const lons = graphData.nodes.map((n) => n.lon);
+    const lats = graphData.nodes.map((n) => n.lat);
+    nodeBounds.current = [
+      [Math.min(...lons), Math.min(...lats)],
+      [Math.max(...lons), Math.max(...lats)],
+    ];
+    const home = fitToGraph();
     homeView.current = home;
     setViewState(home);
-  }, [graphData]);
+  }, [graphData, fitToGraph]);
 
   // the ONLY decorative motion allowed: pulse ring on the current node
   React.useEffect(() => {
@@ -406,7 +423,8 @@ export function MapView() {
 
   if (!viewState) {
     return (
-      <div className="flex h-full flex-col items-center justify-center gap-3 bg-surface text-ink-dim">
+      <div ref={containerRef}
+        className="flex h-full flex-col items-center justify-center gap-3 bg-surface text-ink-dim">
         {graphLoading ? (
           <span>Đang tải đồ thị…</span>
         ) : (
@@ -424,7 +442,7 @@ export function MapView() {
   }
 
   return (
-    <div className="relative h-full w-full bg-surface">
+    <div ref={containerRef} className="relative h-full w-full bg-surface">
       <DeckGL
         viewState={viewState}
         onViewStateChange={({ viewState: vs }) => setViewState(vs as MapViewState)}
@@ -482,11 +500,18 @@ export function MapView() {
           <Minus />
         </Button>
         <Button variant="ghost" size="iconSm" aria-label="Về toàn cảnh"
-          onClick={() => homeView.current && setViewState({
-            ...homeView.current,
-            transitionDuration: 500,
-            transitionInterpolator: new FlyToInterpolator(),
-          })}>
+          onClick={() => {
+            // re-fit theo kích thước khung HIỆN TẠI (drawer mở/đóng đổi bề
+            // rộng) — homeView cũ có thể được fit lúc khung khác cỡ
+            const home = fitToGraph() ?? homeView.current;
+            if (!home) return;
+            homeView.current = home;
+            setViewState({
+              ...home,
+              transitionDuration: 500,
+              transitionInterpolator: new FlyToInterpolator(),
+            });
+          }}>
           <Home />
         </Button>
         <div className="my-0.5 border-t border-surface-border" />

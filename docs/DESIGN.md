@@ -42,7 +42,10 @@ chỉ dùng tên token, KHÔNG dùng mã màu trực tiếp.
 
 **Font:** `Be Vietnam Pro` (400/500/700) toàn UI — đủ dấu Việt đẹp. `JetBrains Mono`
 cho **mọi con số** (metrics, g/h/f, bước, toạ độ) với `tabular-nums`.
-**Số kiểu VN:** dấu phẩy thập phân — `812,4 s` · `3,12 km` · `41,0 %` (helper `fmtVi`).
+**Số kiểu VN:** dấu phẩy thập phân + NHÓM NGHÌN bằng non-breaking space (v11) —
+`2 000,5 s` · `3,12 km` · `1 226` · `41 %` (helper `fmtVi`; tự cắt đuôi `,0`;
+`fmtInt` quy về `fmtVi(n, 0)` — KHÔNG dùng `toLocaleString("vi-VN")` vì dấu chấm
+nghìn của nó đá dấu phẩy thập phân).
 
 ## 3. Bảng màu ngữ nghĩa — CỐ ĐỊNH theo chế độ (map + legend + bảng + chart dùng chung)
 
@@ -103,9 +106,57 @@ thứ tự biến mất cùng animation (bản đồ không bao giờ hiển th�
 với panel). Chặn TẬP TRUNG một chỗ trong `store.set` — mọi đường mutate
 (dropdown, click bản đồ, ✕, ⇅) đều đi qua. Đổi thuật toán/tiêu chí KHÔNG xoá
 kết quả (dòng nguồn kết quả trong drawer ghi rõ cấu hình đã chạy).
-Kèm yêu cầu user: khối "Phương pháp tối ưu thứ tự" LUÔN HIỆN thay vì ẩn —
-chưa có điểm giao thì select + nút MỜ (disabled), icon ? đổi tooltip thành
-"Thêm ít nhất 1 điểm giao để mở phần này."
+Kèm yêu cầu user (v10f): khối "Phương pháp tối ưu thứ tự" LUÔN HIỆN thay vì ẩn —
+chưa có điểm giao thì select + nút MỜ (disabled).
+→ **v11 SỬA LẠI điểm này (chờ user duyệt khi rà UI):** label khối đổi thành
+"Tối ưu thứ tự ghé (ATSP)" và VẪN luôn hiện (giữ discoverability đúng tinh thần
+v10f), nhưng 2 control disabled được thay bằng MỘT dòng hint viền đứt "Thêm ít
+nhất 1 điểm giao ở trên để mở phần tối ưu thứ tự ghé (bài toán ATSP)" — hết
+control chết, panel ngắn bớt ~70px. Có điểm giao → select + nút hiện như cũ.
+
+**v11 đợt 2 (user duyệt "làm full"):** (a) **Legend tự ẩn** khi không có gì đáng
+giải mã (không kết quả, không so sánh, không lớp ùn tắc) — bỏ hẳn dòng "Nút giao"
+đơn độc; (b) **marker G_real co giãn theo zoom** (node 2→3 px, cạnh 1,1→1,6 px,
+lượng tử hoá nửa-mức-zoom để layer không rebuild mỗi frame) — MÀU giữ nguyên v8,
+zoom sát trả lại đúng cỡ cũ; (c) **chuỗi chọn nối tiếp trên bản đồ**: chọn Đi xong
+tự chờ chọn Đến (banner báo trước "xong sẽ chọn tiếp…"), chế độ thêm điểm giao
+GIỮ NGUYÊN sau mỗi click (đếm n/15 trên banner, nút "Xong" để thoát, tự thoát khi
+chạm 15) — phục vụ cảnh thêm 9 điểm của video; (d) **empty state drawer theo ngữ
+cảnh đồ thị** (G_real: nhắc nút "Chọn trên bản đồ" + bật trace nếu muốn timeline)
++ khối "MẸO DEMO" 3 dòng (không nhúng số benchmark để khỏi lệch sau TomTom);
+(e) **Section panel thu gọn được** (chevron xoay, aria-expanded, mặc định mở,
+không persist; state control sống trong store — `tspMethod` được nâng lên store
+để không reset khi section unmount).
+
+**v11 đợt 3 (fix theo góp ý user trực tiếp + hội đồng review 3 lăng kính):**
+(f) **Luật tour-mode (user yêu cầu):** THÊM điểm giao ⇒ tự BỎ điểm Đến (xử lý tập
+trung trong `store.set`, kèm toast giải thích) — tour ATSP chỉ cần Đi + điểm giao;
+XOÁ điểm giao không đụng Đến; chiều ngược (chọn lại Đến khi đang có điểm giao)
+CHO PHÉP CÓ CHỦ ĐÍCH — không auto-xoá nhiều điểm giao vì một misclick. Hint CTA có
+2 chuỗi tour-mode riêng; toast của nút Chạy cũng tour-aware ("dùng Tối ưu thứ tự,
+hoặc xoá các điểm giao…"); chuỗi chọn nối tiếp không auto-chuyển sang Đến khi đang
+có điểm giao. (g) **Label nhóm dropdown thuật toán** 10→11px + màu ngữ nghĩa
+(`start`/`algo-path` như Badge ok/warn) + chấm tròn `bg-current`. (h) **ui/select
+sửa bug cắt cụt im lặng:** cuộn chuyển về Viewport + ScrollUp/DownButton chevron
+tự hiện khi tràn, `max-h min(20rem, available-height)` — chữa luôn dropdown 51 địa
+danh. (i) **Legend né timeline:** tự nâng `bottom-[5.5rem]` CHỈ khi timeline hiện
+VÀ drawer phải đang mở (map hẹp mới va), transition 200ms. (j) **Fix theo review:**
+So sánh chạy B bằng ĐÚNG mode/slot/graph của tuyến A (đổi Tiêu chí sau khi chạy
+không còn làm B lệch đơn vị); hàng "Thời gian đi" một đơn vị cho cả hàng, balanced
+LUÔN phút; bảng g/h/f bỏ thập phân khi ≥1 000 + cột h w-14 (mode Ngắn nhất h là
+mét 4 chữ số); bảng So sánh overflow-x-auto + map tên ngắn thật (BiDijkstra,
+Greedy…); `pickingRadius` 8px cho node G_real 2px; toast khi click thêm điểm giao
+bị nuốt (trùng/trùng-Đi); khu hint CTA min-h cố định hết nhảy layout; footer g/h/f
+hết mâu thuẫn với hướng dẫn bật trace; kicker alternatives font-bold đồng hệ.
+
+**Panel trái v11 (redesign sau góp ý UI):** Tiêu chí tối ưu đổi dropdown →
+**segmented 3 nút** cùng pattern Khung giờ (thấy đủ 3 mode một lúc, đỡ 1 click
+khi demo); dropdown Thuật toán nhóm 2 nhóm `SelectGroup/SelectLabel` theo bảng
+SCHEMA §B.5 ("Đảm bảo tối ưu" / "Không đảm bảo — đánh đổi"); dưới CTA thêm dòng
+trạng thái khi thiếu input ("Còn thiếu điểm Đi." / "…Đến."); nút chọn-trên-bản-đồ
+hiện id node bằng font-mono; Section p-3 + vùng cuộn gap-2 p-2.5 (nén ~40px);
+toàn bộ control hành trình + 3 nút chạy khoá chéo khi đang có request bay
+(fix L3-04, batch KIEMTOAN B).
 
 **Công tắc "Trace trên G_real" phản hồi TỨC THÌ — duyệt v10c (user bắt được
 độ trễ):** công tắc điều khiển cả HIỂN THỊ hiện tại, không chỉ request lần sau:
@@ -166,9 +217,39 @@ Button/SelectTrigger/Switch/input. Switch: thumb TRẮNG cố định + viền
   kết quả đang xem thuộc cấu hình nào (tránh nhầm khi user đã đổi lựa chọn ở panel).
 - Số liệu: card metrics (cost/time/km/expanded/max frontier/runtime + badge
   "Đảm bảo tối ưu"/"Không đảm bảo") + **bảng g/h/f** của frontier tại bước hiện tại.
+  (v11 — redesign sau góp ý UI): stat card chia 2 TẦNG có kicker — "TUYẾN TÌM ĐƯỢC"
+  (card Tổng chi phí bản rộng col-span-2 + Thời gian đi + Quãng đường) và "CÔNG SỨC
+  TÌM KIẾM" (Đã expand · Frontier max · Runtime, lưới 3 cột gọn); card chi phí mang
+  sub-line theo mode nói thẳng vì sao có thể trùng số card khác ("= thời gian đi +
+  phạt rủi ro…", "= quãng đường, tính bằng mét") — hết cảnh 2 card cùng "2 000,5"
+  không lời giải thích. `fmtVi` toàn cục thêm PHÂN NHÓM NGHÌN bằng space ("2 000,5 s",
+  "1 226" — khớp phong cách docs/GIAI-THICH; fmtInt quy về fmtVi, bỏ toLocaleString
+  vi-VN vì dấu chấm nghìn đá dấu phẩy thập phân). Bảng g/h/f: `table-fixed` + cột số
+  bề rộng cố định (g/f w-16, h w-12) — tên node dài hết đẩy cột f tràn khỏi drawer
+  (bug cắt cụt v10), tên tự truncate kèm title tooltip; "mức x/5" ở card ùn tắc tô
+  congestionHex (chỉ xuất hiện mức ≥4 nên tương phản cao, cần mắt người xác nhận).
 - Giải thích: `summary_vi`, danh sách đoạn ùn tắc (màu theo mức), card alternatives
   (label + số liệu + why_not). Khi tab mở → tô các cạnh `congested_segments` trên map.
-- So sánh: chọn thuật toán B → chạy cùng OD → bảng 2 cột chỉ số + 2 tuyến trên map.
+  (v11 — redesign sau góp ý UI, KHÔNG đổi text backend): tên Đi/Đến WRAP thay vì
+  truncate ("Chùa X…" hết cắt cụt); summary tách câu đầu làm LEAD in đậm `ink`, phần
+  còn lại `ink-dim` (tách tại ". " — an toàn vì số liệu tiếng Việt dùng dấu phẩy thập
+  phân); hàng chips thêm Badge ok/warn "Đảm bảo tối ưu" đồng bộ 2 tab kia; thời gian
+  <90 s đọc bằng giây thay vì "0,x phút"; card ùn tắc: badge đếm tổng đoạn + caption
+  "gộp theo tên đường, lấy mức cao nhất" + chữ "mức x/5" tô đúng `congestionHex` của
+  mức; nhóm alternatives có kicker "Tuyến thay thế đã xét — và vì sao bị loại", mỗi
+  card thêm **Δ so tuyến chính** (thời gian + km, `start` nhanh/ngắn hơn · `goal`
+  chậm/dài hơn — cùng ngữ nghĩa màu với cột Δ tab So sánh).
+- So sánh (v11 — redesign sau góp ý UI): **câu kết luận** đứng trước bảng ("Tuyến của
+  Greedy đắt hơn A* 337,4 s (+17 %)… Về công sức, Greedy expand ít hơn" — Δ ≥ 10 %
+  in 0 chữ số lẻ, < 10 % in 1 chữ số), tự phân
+  nhánh: cùng chi phí / một bên found=false. Bảng 4 cột `Chỉ số · A · B · Δ B/A`:
+  (a) dòng theo mode — không bao giờ có 2 dòng trùng số (balanced bỏ dòng thời gian
+  giây thô, thay bằng "Thời gian đi" đọc theo PHÚT khi ≥90 s; distance bỏ dòng quãng
+  đường trùng); (b) **màu tuyến chỉ nằm ở header** (kèm vạch swatch liền vàng / đứt
+  lam trùng chú giải bản đồ) — bên THẮNG in đậm `ink`, bên thua `ink-dim`, không dùng
+  màu tuyến tô giá trị (hết lẫn "màu của ai" với "ai tốt hơn"); (c) cột Δ = % B so A,
+  `start` khi B tốt hơn / `goal` khi kém (mọi chỉ số càng thấp càng tốt), caption ghi
+  chú quy ước; (d) "Đảm bảo tối ưu" dùng Badge ok/warn như tab Số liệu.
 
 ## 5. SIGNATURE — Timeline trình phát
 

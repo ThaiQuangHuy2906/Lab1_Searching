@@ -87,15 +87,36 @@ export function MetricsTab() {
   }
 
   if (!trace) {
+    const isDemo = graph === "demo";
     return (
-      <EmptyState icon={MousePointerClick} title="Chưa có kết quả"
-        hint={
-          <span className="mx-auto block max-w-56 text-left">
-            1. Chọn điểm <b>Đi</b> và <b>Đến</b><br />
-            2. Bấm <b className="text-ink">Chạy thuật toán</b><br />
-            3. Bấm ▶ trên timeline để xem từng bước
-          </span>
-        } />
+      <div className="flex flex-col gap-3">
+        <EmptyState icon={MousePointerClick} title="Chưa có kết quả"
+          hint={
+            // các bước theo đúng đồ thị đang chọn (v11): G_real không có
+            // dropdown tên, và timeline chỉ có khi bật trace
+            <span className="mx-auto block max-w-60 text-left">
+              1. Chọn điểm <b>Đi</b> và <b>Đến</b>{" "}
+              {isDemo ? "theo tên địa danh" : <>bằng nút <b>Chọn trên bản đồ</b></>}<br />
+              2. Bấm <b className="text-ink">Chạy thuật toán</b><br />
+              3. {isDemo
+                ? <>Bấm ▶ trên timeline để xem từng bước</>
+                : <>Muốn xem từng bước: bật <b>Trace trên G_real</b> trước khi chạy</>}
+            </span>
+          } />
+        <div className="flex flex-col gap-1.5 rounded-lg border border-surface-border bg-surface-panel/60 p-3">
+          <p className="text-[11px] font-bold uppercase tracking-wider text-ink-dim">
+            Mẹo demo
+          </p>
+          <ul className="flex list-disc flex-col gap-1 pl-4 text-[11px] leading-relaxed text-ink-dim">
+            <li>Chạy xong hãy đổi <b className="text-ink">Khung giờ</b> rồi chạy lại —
+              nhiều cặp Đi/Đến đổi hẳn tuyến giữa 07:30 và 22:00.</li>
+            <li>Tab <b className="text-ink">So sánh</b>: chạy A* rồi so với Greedy/BFS
+              để thấy đánh đổi chất lượng ↔ công sức tìm kiếm.</li>
+            <li>Thêm ≥2 <b className="text-ink">điểm giao</b> rồi Tối ưu thứ tự — chi
+              phí đi/về khác nhau vì đường một chiều (bài toán ATSP).</li>
+          </ul>
+        </div>
+      </div>
     );
   }
 
@@ -110,6 +131,13 @@ export function MetricsTab() {
   }
   const costUnit = trace.mode === "distance" ? "m" : "s";
   const modeVi = { balanced: "Cân bằng", time: "Nhanh nhất", distance: "Ngắn nhất" }[trace.mode];
+  // vì sao chi phí có thể trùng số card khác: nói thẳng trên card (v11) —
+  // balanced: cost == thời gian đi; distance: cost == quãng đường (mét)
+  const costSub = {
+    balanced: "= thời gian chạy xe + phạt rủi ro — đúng bằng số giây ở card Thời gian đi",
+    time: "thời gian chạy xe thuần, CHƯA cộng phạt rủi ro",
+    distance: "= quãng đường, tính bằng mét",
+  }[trace.mode];
   return (
     <div className="flex flex-col gap-3">
       <p className="font-mono text-[11px] text-ink-dim">
@@ -128,18 +156,34 @@ export function MetricsTab() {
         {m.beam_width != null && <Badge>k = {m.beam_width}</Badge>}
         {m.trace_truncated && <Badge variant="danger">Trace bị cắt ở 5 000 bước</Badge>}
       </div>
-      <div className="grid grid-cols-2 gap-2">
-        <Stat icon={Sigma} label={`Tổng chi phí (${costUnit})`}
-          value={fmtVi(m.total_cost ?? 0, 1)}
-          tip="Giá trị hàm chi phí theo tiêu chí đang chọn — thuật toán tối ưu hoá con số này." />
-        <Stat icon={Clock} label="Thời gian ước tính"
-          value={fmtMinutes(m.total_time_s ?? 0)} sub={`${fmtVi(m.total_time_s ?? 0, 1)} s`} />
-        <Stat icon={RouteIcon} label="Quãng đường" value={fmtKm(m.total_distance_m ?? 0)} />
-        <Stat icon={Network} label="Node đã expand" value={fmtInt(m.nodes_expanded)}
-          tip="Số node thuật toán phải mở ra xem xét — càng ít càng hiệu quả." />
-        <Stat icon={Layers} label="Frontier lớn nhất" value={fmtInt(m.max_frontier)}
-          tip="Kích thước lớn nhất của tập node đang chờ xét — phản ánh bộ nhớ cần dùng." />
-        <Stat icon={Timer} label="Thời gian chạy" value={fmtMs(m.runtime_ms)} />
+
+      <div className="flex flex-col gap-1.5">
+        <p className="text-[11px] font-bold uppercase tracking-wider text-ink-dim">
+          Tuyến tìm được
+        </p>
+        <div className="grid grid-cols-2 gap-2">
+          <div className="col-span-2">
+            <Stat icon={Sigma} label={`Tổng chi phí (${costUnit}) — tiêu chí ${modeVi}`}
+              value={fmtVi(m.total_cost ?? 0, 1)} sub={costSub}
+              tip="Giá trị hàm chi phí theo tiêu chí đang chọn — thuật toán tối ưu hoá đúng con số này." />
+          </div>
+          <Stat icon={Clock} label="Thời gian đi"
+            value={fmtMinutes(m.total_time_s ?? 0)} sub={`${fmtVi(m.total_time_s ?? 0, 1)} s`} />
+          <Stat icon={RouteIcon} label="Quãng đường" value={fmtKm(m.total_distance_m ?? 0)} />
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-1.5">
+        <p className="text-[11px] font-bold uppercase tracking-wider text-ink-dim">
+          Công sức tìm kiếm
+        </p>
+        <div className="grid grid-cols-3 gap-2">
+          <Stat icon={Network} label="Đã expand" value={fmtInt(m.nodes_expanded)}
+            tip="Số node thuật toán phải mở ra xem xét — càng ít càng hiệu quả." />
+          <Stat icon={Layers} label="Frontier max" value={fmtInt(m.max_frontier)}
+            tip="Kích thước lớn nhất của tập node đang chờ xét — phản ánh bộ nhớ cần dùng." />
+          <Stat icon={Timer} label="Runtime" value={fmtMs(m.runtime_ms)} />
+        </div>
       </div>
       {graph === "demo" ? (
         <div>
@@ -152,7 +196,8 @@ export function MetricsTab() {
         </div>
       ) : (
         <p className="text-xs text-ink-dim">
-          Bảng g/h/f chỉ hiển thị trên G_demo (G_real quá lớn để xem từng bước).
+          Bảng g/h/f chỉ có trên G_demo — trên G_real vẫn xem được từng bước
+          bằng timeline khi bật &quot;Trace trên G_real&quot; trước khi chạy.
         </p>
       )}
     </div>

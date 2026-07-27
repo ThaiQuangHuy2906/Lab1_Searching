@@ -12,7 +12,9 @@ import { fmtVi } from "@/lib/format";
 
 function val(m: Record<string, number> | null, id: string): string {
   const v = m?.[id];
-  return v === undefined || v === null ? "–" : fmtVi(v, 1);
+  // ≥1000 bỏ thập phân: mode Ngắn nhất g/h/f tính bằng MÉT (4-5 chữ số) —
+  // "5 246,8" từng tràn cột h đè lên cột f (review v11)
+  return v === undefined || v === null ? "–" : fmtVi(v, v >= 1000 ? 0 : 1);
 }
 
 export function GhfTable() {
@@ -48,13 +50,16 @@ export function GhfTable() {
   return (
     <div className="flex flex-col gap-1">
     <div className="max-h-72 overflow-y-auto rounded-lg border border-surface-border">
-      <table className="w-full text-xs">
+      {/* table-fixed là bắt buộc: layout auto để tên node dài (Bảo tàng Hồ
+          Chí Minh…) đẩy bảng rộng hơn drawer và CẮT CỤT cột f (bug v10);
+          với fixed, cột số giữ đúng bề rộng còn tên tự truncate. */}
+      <table className="w-full table-fixed text-xs">
         <thead className="sticky top-0 bg-surface-panel text-left text-ink-dim">
           <tr>
             <th className="px-2.5 py-1.5 font-medium">Node</th>
-            {usesG && <th className="whitespace-nowrap px-1.5 py-1.5 text-right font-medium">g</th>}
-            {usesH && <th className="whitespace-nowrap px-1.5 py-1.5 text-right font-medium">h</th>}
-            {usesF && <th className="whitespace-nowrap px-1.5 py-1.5 text-right font-medium">f</th>}
+            {usesG && <th className="w-16 px-1.5 py-1.5 text-right font-medium">g</th>}
+            {usesH && <th className="w-14 px-1.5 py-1.5 text-right font-medium">h</th>}
+            {usesF && <th className="w-16 px-1.5 py-1.5 text-right font-medium">f</th>}
           </tr>
         </thead>
         <tbody>
@@ -65,9 +70,9 @@ export function GhfTable() {
                 {nameOf(cur.expanded)}
                 <span className="ml-1 text-[10px] text-ink-dim">đang expand</span>
               </td>
-              {usesG && <td className="px-2 py-1.5 text-right font-mono">–</td>}
-              {usesH && <td className="px-2 py-1.5 text-right font-mono">–</td>}
-              {usesF && <td className="px-2 py-1.5 text-right font-mono">–</td>}
+              {usesG && <td className="px-1.5 py-1.5 text-right font-mono">–</td>}
+              {usesH && <td className="px-1.5 py-1.5 text-right font-mono">–</td>}
+              {usesF && <td className="px-1.5 py-1.5 text-right font-mono">–</td>}
             </tr>
           )}
           {cur?.frontier.map((id) => (
@@ -75,17 +80,19 @@ export function GhfTable() {
               key={id}
               onClick={() => jump(id)}
               className="cursor-pointer border-t border-surface-border/50 text-ink-dim hover:bg-surface-border/40"
-              title={anim.stepOfNode.has(id)
-                ? "Bấm để nhảy tới bước node này được expand"
-                : "Node này chưa từng được expand"}
             >
-              <td className="truncate px-2.5 py-1.5">
+              {/* tooltip gộp tên + affordance: title trên td từng ĐÈ mất
+                  hint "bấm để nhảy" của tr (review v11) */}
+              <td className="truncate px-2.5 py-1.5"
+                title={anim.stepOfNode.has(id)
+                  ? `${nameOf(id)} — bấm để nhảy tới bước node này được expand`
+                  : `${nameOf(id)} — node này chưa từng được expand`}>
                 <span className="mr-1.5 inline-block size-2 rounded-full bg-algo-frontier align-middle" />
                 {nameOf(id)}
               </td>
-              {usesG && <td className="whitespace-nowrap px-1.5 py-1.5 text-right font-mono">{val(cur.g, id)}</td>}
-              {usesH && <td className="whitespace-nowrap px-1.5 py-1.5 text-right font-mono">{val(cur.h, id)}</td>}
-              {usesF && <td className="whitespace-nowrap px-1.5 py-1.5 text-right font-mono">{val(cur.f, id)}</td>}
+              {usesG && <td className="px-1.5 py-1.5 text-right font-mono">{val(cur.g, id)}</td>}
+              {usesH && <td className="px-1.5 py-1.5 text-right font-mono">{val(cur.h, id)}</td>}
+              {usesF && <td className="px-1.5 py-1.5 text-right font-mono">{val(cur.f, id)}</td>}
             </tr>
           ))}
         </tbody>

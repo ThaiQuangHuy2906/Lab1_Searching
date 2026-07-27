@@ -1,36 +1,122 @@
 "use client";
 
 import { GitCompareArrows, Loader2 } from "lucide-react";
+import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "../ui/select";
 import { ALGO_LABEL, useApp } from "@/lib/store";
-import { fmtInt, fmtKm, fmtMs, fmtVi } from "@/lib/format";
+import { fmtInt, fmtKm, fmtMinutes, fmtMs, fmtSeconds, fmtVi } from "@/lib/format";
 import type { Algorithm, Trace } from "@/lib/types";
 
-function CompareRow({ label, a, b, better }: {
-  label: string; a: string; b: string; better?: "a" | "b" | null;
-}) {
+/** Real short names for the tight 4-column header — splitting ALGO_LABEL on
+ * " — " left "Greedy Best-First"/"Dijkstra hai chiều" full-length and the Δ
+ * column got clipped (review v11). */
+const SHORT: Record<Algorithm, string> = {
+  bfs: "BFS", dfs: "DFS", iddfs: "IDDFS", ucs: "UCS", dijkstra: "Dijkstra",
+  astar: "A*", greedy: "Greedy", bidijkstra: "BiDijkstra", idastar: "IDA*",
+  beam: "Beam",
+};
+const shortName = (a: Algorithm) => SHORT[a];
+
+type Row = {
+  label: string;
+  fa: number | null;
+  fb: number | null;
+  fmt: (x: number) => string;
+};
+
+/** Rows depend on the mode so no two rows ever show the same number twice
+ * (the old table printed "Tổng chi phí" and "Thời gian (s)" as identical
+ * lines in balanced mode). */
+function metricRows(a: Trace, b: Trace): Row[] {
+  const costLabel = a.mode === "distance" ? "Chi phí (quãng đường)"
+    : a.mode === "time" ? "Chi phí (thời gian chạy)"
+    : "Chi phí (giây, gồm phạt)";
+  const fmtCost = a.mode === "distance" ? fmtKm : fmtSeconds;
+  // one unit for the WHOLE row: per-value picking once showed "85,0 s" next
+  // to "1,6 phút" and read backwards at a glance (review v11). Balanced is
+  // ALWAYS minutes: cost == time there, and two identical "60,0 s" rows
+  // would resurrect the duplicate-row bug this table was rebuilt to kill.
+  const timeMax = Math.max(a.metrics.total_time_s ?? 0, b.metrics.total_time_s ?? 0);
+  const fmtTime = (x: number) =>
+    (a.mode === "balanced" || timeMax >= 90 ? fmtMinutes(x) : fmtSeconds(x));
+  const rows: Row[] = [
+    { label: costLabel, fa: a.metrics.total_cost, fb: b.metrics.total_cost, fmt: fmtCost },
+    { label: "Thời gian đi", fa: a.metrics.total_time_s, fb: b.metrics.total_time_s,
+      fmt: fmtTime },
+  ];
+  if (a.mode !== "distance")
+    rows.push({ label: "Quãng đường", fa: a.metrics.total_distance_m,
+                fb: b.metrics.total_distance_m, fmt: fmtKm });
+  rows.push(
+    { label: "Node expand", fa: a.metrics.nodes_expanded, fb: b.metrics.nodes_expanded, fmt: fmtInt },
+    { label: "Frontier max", fa: a.metrics.max_frontier, fb: b.metrics.max_frontier, fmt: fmtInt },
+    { label: "Runtime", fa: a.metrics.runtime_ms, fb: b.metrics.runtime_ms, fmt: fmtMs },
+  );
+  return rows;
+}
+
+/** Signed % of B relative to A; lower is better for every numeric row. */
+function DeltaCell({ fa, fb }: { fa: number | null; fb: number | null }) {
+  if (fa === null || fb === null || fa <= 0)
+    return <td className="px-2 py-1.5 text-right font-mono text-ink-dim">—</td>;
+  const pct = ((fb - fa) / fa) * 100;
+  if (Math.abs(pct) < 0.05)
+    return <td className="px-2 py-1.5 text-right font-mono text-ink-dim">0 %</td>;
+  const cls = pct > 0 ? "text-goal" : "text-start";
   return (
-    <tr className="border-t border-surface-border/60">
-      <td className="px-2.5 py-1.5 text-ink-dim">{label}</td>
-      <td className={`px-2 py-1.5 text-right font-mono ${better === "a" ? "font-bold text-start" : ""}`}>{a}</td>
-      <td className={`px-2 py-1.5 text-right font-mono ${better === "b" ? "font-bold text-start" : ""}`}>{b}</td>
-    </tr>
+    <td className={`whitespace-nowrap px-2 py-1.5 text-right font-mono ${cls}`}>
+      {pct > 0 ? "+" : "−"}{fmtVi(Math.abs(pct), Math.abs(pct) < 10 ? 1 : 0)} %
+    </td>
   );
 }
 
-function metricRows(a: Trace, b: Trace) {
-  const rows: { label: string; fa: number | null; fb: number | null; lowerBetter: boolean; fmt: (x: number) => string }[] = [
-    { label: "Tổng chi phí", fa: a.metrics.total_cost, fb: b.metrics.total_cost, lowerBetter: true, fmt: (x) => fmtVi(x, 1) },
-    { label: "Thời gian (s)", fa: a.metrics.total_time_s, fb: b.metrics.total_time_s, lowerBetter: true, fmt: (x) => fmtVi(x, 1) },
-    { label: "Quãng đường", fa: a.metrics.total_distance_m, fb: b.metrics.total_distance_m, lowerBetter: true, fmt: fmtKm },
-    { label: "Node expand", fa: a.metrics.nodes_expanded, fb: b.metrics.nodes_expanded, lowerBetter: true, fmt: fmtInt },
-    { label: "Frontier max", fa: a.metrics.max_frontier, fb: b.metrics.max_frontier, lowerBetter: true, fmt: fmtInt },
-    { label: "Runtime", fa: a.metrics.runtime_ms, fb: b.metrics.runtime_ms, lowerBetter: true, fmt: fmtMs },
-  ];
-  return rows;
+/** One-sentence takeaway: who pays more, and what the loser buys instead. */
+function Verdict({ a, b }: { a: Trace; b: Trace }) {
+  const nameA = shortName(a.algorithm);
+  const nameB = shortName(b.algorithm);
+  const fmtCost = a.mode === "distance" ? fmtKm : fmtSeconds;
+  const ca = a.metrics.total_cost;
+  const cb = b.metrics.total_cost;
+
+  if (cb === null || ca === null) {
+    return (
+      <p className="rounded-lg border border-surface-border bg-surface px-3 py-2.5 text-xs leading-relaxed">
+        {ca === null && cb === null
+          ? <>Cả <b>{nameA}</b> lẫn <b>{nameB}</b> đều không tìm được đường ở cấu hình này</>
+          : <><b>{cb === null ? nameB : nameA}</b> không tìm được đường ở cấu hình này</>}
+        {" "}(found=false) — xem tab Giải thích. Bảng dưới vẫn so được công sức tìm kiếm.
+      </p>
+    );
+  }
+
+  const expA = a.metrics.nodes_expanded;
+  const expB = b.metrics.nodes_expanded;
+  const expClause = expA === expB ? null : (
+    <> Về công sức, <b>{expB < expA ? nameB : nameA}</b> expand ít hơn
+      ({fmtInt(Math.min(expA, expB))} so với {fmtInt(Math.max(expA, expB))} node).</>
+  );
+
+  if (Math.abs(ca - cb) < 0.05) {
+    return (
+      <p className="rounded-lg border border-surface-border bg-surface px-3 py-2.5 text-xs leading-relaxed">
+        Hai thuật toán tìm được tuyến <b>cùng chi phí</b> ({fmtCost(ca)}).{expClause}
+      </p>
+    );
+  }
+  const [wName, lName, wCost, lCost] = ca < cb
+    ? [nameA, nameB, ca, cb] : [nameB, nameA, cb, ca];
+  const pct = ((lCost - wCost) / wCost) * 100;
+  return (
+    <p className="rounded-lg border border-surface-border bg-surface px-3 py-2.5 text-xs leading-relaxed">
+      Tuyến của <b>{lName}</b> đắt hơn <b>{wName}</b>{" "}
+      <b className="font-mono">{fmtCost(lCost - wCost)}</b>
+      <span className="font-mono"> (+{fmtVi(pct, pct < 10 ? 1 : 0)} %)</span> trên
+      cùng cặp Đi/Đến.{expClause}
+    </p>
+  );
 }
 
 export function CompareTab() {
@@ -72,39 +158,74 @@ export function CompareTab() {
           Tuyến A ({ALGO_LABEL[a.algorithm]}) đã sẵn sàng — bấm <b className="text-ink">So sánh</b> để chạy thuật toán B.
         </p>
       )}
+
       {a && b && (
-        <div className="overflow-hidden rounded-lg border border-surface-border">
-          <table className="w-full text-xs">
-            <thead className="bg-surface text-ink-dim">
-              <tr>
-                <th className="px-2.5 py-2 text-left font-medium">Chỉ số</th>
-                <th className="px-2 py-2 text-right font-medium text-algo-path">A · {a.algorithm}</th>
-                <th className="px-2 py-2 text-right font-medium text-algo-frontier">B · {b.algorithm}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {metricRows(a, b).map((r) => {
-                const better = r.fa === null || r.fb === null ? null
-                  : Math.abs(r.fa - r.fb) < 1e-9 ? null
-                  : (r.fa < r.fb) === r.lowerBetter ? "a" : "b";
-                return (
-                  <CompareRow key={r.label} label={r.label}
-                    a={r.fa === null ? "—" : r.fmt(r.fa)}
-                    b={r.fb === null ? "—" : r.fmt(r.fb)}
-                    better={better} />
-                );
-              })}
-              <CompareRow label="Đảm bảo tối ưu"
-                a={a.metrics.optimal_guarantee ? "Có" : "Không"}
-                b={b.metrics.optimal_guarantee ? "Có" : "Không"} />
-            </tbody>
-          </table>
-        </div>
-      )}
-      {a && b && (
-        <p className="text-[11px] text-ink-dim">
-          Trên bản đồ: tuyến A màu vàng liền, tuyến B màu lam nét đứt.
-        </p>
+        <>
+          <Verdict a={a} b={b} />
+
+          {/* overflow-x-auto chứ không hidden: 4 cột + tên dài không bao giờ
+              được phép CẮT CỤT cột Δ (bug class v10, review v11 bắt lại) */}
+          <div className="overflow-x-auto rounded-lg border border-surface-border">
+            <table className="w-full text-xs">
+              <thead className="bg-surface text-ink-dim">
+                <tr>
+                  <th className="px-2.5 py-2 text-left font-medium">Chỉ số</th>
+                  <th className="whitespace-nowrap px-2 py-2 text-right font-medium text-algo-path">
+                    {/* swatch = map legend: A solid amber */}
+                    <span aria-hidden className="mr-1 inline-block h-0.5 w-3.5 rounded bg-algo-path align-middle" />
+                    A · {shortName(a.algorithm)}
+                  </th>
+                  <th className="whitespace-nowrap px-2 py-2 text-right font-medium text-algo-frontier">
+                    {/* swatch = map legend: B dashed cyan */}
+                    <span aria-hidden className="mr-1 inline-block w-3.5 border-t-2 border-dashed border-algo-frontier align-middle" />
+                    B · {shortName(b.algorithm)}
+                  </th>
+                  <th className="px-2 py-2 text-right font-medium">Δ B/A</th>
+                </tr>
+              </thead>
+              <tbody>
+                {metricRows(a, b).map((r) => {
+                  // lower is better on every numeric row; winner in solid ink,
+                  // the other side dimmed — route colors stay in the header so
+                  // "màu tuyến" and "ai thắng" never mix (audit of v10 UI)
+                  const tie = r.fa === null || r.fb === null || Math.abs(r.fa - r.fb) < 1e-9;
+                  const aWins = !tie && (r.fa as number) < (r.fb as number);
+                  const cell = (v: number | null, wins: boolean) => (
+                    <td className={`whitespace-nowrap px-2 py-1.5 text-right font-mono ${
+                      tie ? "" : wins ? "font-semibold text-ink" : "text-ink-dim"}`}>
+                      {v === null ? "—" : r.fmt(v)}
+                    </td>
+                  );
+                  return (
+                    <tr key={r.label} className="border-t border-surface-border/60">
+                      <td className="px-2.5 py-1.5 text-ink-dim">{r.label}</td>
+                      {cell(r.fa, aWins)}
+                      {cell(r.fb, !aWins)}
+                      <DeltaCell fa={r.fa} fb={r.fb} />
+                    </tr>
+                  );
+                })}
+                <tr className="border-t border-surface-border/60">
+                  <td className="px-2.5 py-1.5 text-ink-dim">Đảm bảo tối ưu</td>
+                  {[a, b].map((t, i) => (
+                    <td key={i} className="px-2 py-1.5 text-right">
+                      <Badge variant={t.metrics.optimal_guarantee ? "ok" : "warn"}
+                        className="px-1.5 py-0 text-[10px]">
+                        {t.metrics.optimal_guarantee ? "Có" : "Không"}
+                      </Badge>
+                    </td>
+                  ))}
+                  <td className="px-2 py-1.5 text-right font-mono text-ink-dim">—</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p className="text-[11px] text-ink-dim">
+            Δ = B so với A (xanh: B tốt hơn, đỏ: B kém hơn — mọi chỉ số càng thấp càng
+            tốt). Vạch màu ở tiêu đề trùng chú giải tuyến trên bản đồ.
+          </p>
+        </>
       )}
     </div>
   );

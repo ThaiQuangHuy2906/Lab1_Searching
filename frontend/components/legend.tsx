@@ -34,14 +34,30 @@ export function Legend() {
   const compare = useApp((s) => s.compare);
   const drawerTab = useApp((s) => s.drawerTab);
   const multi = useApp((s) => s.multi);
+  const graph = useApp((s) => s.graph);
+  const traceOnReal = useApp((s) => s.traceOnReal);
+  const drawerOpen = useApp((s) => s.drawerOpen);
   const P = usePalette();
   const H = P.hex;
 
   const isBidi = trace?.algorithm === "bidijkstra";
   const comparing = drawerTab === "compare" && compare;
 
+  // v11: chưa có gì đáng giải mã (không kết quả, không lớp ùn tắc) thì đừng
+  // chiếm góc bản đồ chỉ để chú giải mỗi "Nút giao"
+  if (!trace && !multi?.found && !comparing && !trafficLayer) return null;
+
+  // Thanh trình phát nổi giữa-đáy chỉ đè lên chú giải khi bản đồ BỊ THU HẸP
+  // (drawer phải đang mở) — chỉ khi đó mới nâng chú giải lên trên thanh
+  // (timeline cao ~58px + bottom-4 + khe thở); drawer đóng thì bản đồ đủ
+  // rộng, chú giải nằm yên ở góc như cũ.
+  const timelineVisible =
+    (graph === "real" && !traceOnReal ? 0 : trace?.trace.length ?? 0) > 0;
+  const lift = timelineVisible && drawerOpen;
+
   return (
-    <div className="absolute bottom-4 left-4 z-10 flex flex-col gap-1.5 rounded-lg border border-surface-border bg-surface-panel px-3 py-2.5 text-xs text-ink-dim shadow-float">
+    <div className={`absolute left-4 z-10 flex flex-col gap-1.5 rounded-lg border border-surface-border bg-surface-panel px-3 py-2.5 text-xs text-ink-dim shadow-float transition-[bottom] duration-200 ${
+      lift ? "bottom-[5.5rem]" : "bottom-4"}`}>
       <span className="text-[10px] font-bold uppercase tracking-wider">Chú giải</span>
       {trace && !multi && (
         <>
@@ -76,9 +92,6 @@ export function Legend() {
           <span className="flex items-center gap-2"><Line color={H.path} /> Thuật toán A</span>
           <span className="flex items-center gap-2"><Line color={H.frontier} dashed /> Thuật toán B</span>
         </>
-      )}
-      {!trace && !multi && !comparing && (
-        <span className="flex items-center gap-2"><Dot color={H.node} /> Nút giao</span>
       )}
       {trafficLayer && (
         <div className="mt-0.5 flex items-center gap-1.5 border-t border-surface-border pt-1.5">

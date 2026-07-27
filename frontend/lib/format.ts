@@ -1,7 +1,13 @@
-// Vietnamese number formatting (DESIGN.md §2): decimal comma, "812,4 s".
+// Vietnamese number formatting (DESIGN.md §2): decimal comma + non-breaking
+// space thousands groups — "2 000,5 s", "1 226" (the docs/teaching-doc style;
+// vi-VN toLocaleString would use dots and clash with the decimal comma).
 
 export function fmtVi(x: number, digits = 1): string {
-  const s = x.toFixed(digits).replace(".", ",");
+  const fixed = x.toFixed(digits);
+  const neg = fixed.startsWith("-");
+  const [intPart, frac] = fixed.replace("-", "").split(".");
+  const grouped = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+  const s = (neg ? "-" : "") + grouped + (frac ? "," + frac : "");
   return s.endsWith(",0") ? s.slice(0, -2) : s;
 }
 
@@ -10,4 +16,4 @@ export const fmtMinutes = (s: number) => `${fmtVi(s / 60, 1)} phút`;
 export const fmtKm = (m: number) => `${fmtVi(m / 1000, 2)} km`;
 export const fmtMs = (ms: number) => `${fmtVi(ms, 1)} ms`;
 export const fmtPct = (p: number) => `${fmtVi(p, 1)} %`;
-export const fmtInt = (n: number) => n.toLocaleString("vi-VN");
+export const fmtInt = (n: number) => fmtVi(n, 0);

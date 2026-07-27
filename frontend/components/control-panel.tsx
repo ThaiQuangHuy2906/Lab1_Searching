@@ -5,12 +5,15 @@
 // Tooltip = icon ? cạnh label (InfoTip); switch rows thẳng hàng (§8).
 
 import * as React from "react";
-import { ArrowDownUp, Crosshair, ListOrdered, Loader2, Play, Route, X } from "lucide-react";
+import {
+  ArrowDownUp, ChevronDown, Crosshair, ListOrdered, Loader2, Play, Route, X,
+} from "lucide-react";
 import { Button } from "./ui/button";
 import { Switch } from "./ui/switch";
 import { InfoTip } from "./ui/info-tip";
 import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+  Select, SelectContent, SelectGroup, SelectItem, SelectLabel,
+  SelectTrigger, SelectValue,
 } from "./ui/select";
 import { Skeleton } from "./ui/skeleton";
 import { toast } from "sonner";
@@ -19,9 +22,18 @@ import type { Algorithm, Mode, TimeSlot, TspMethod } from "@/lib/types";
 
 const SLOTS: TimeSlot[] = ["07:30", "12:00", "17:30", "22:00"];
 const MODES: { v: Mode; label: string }[] = [
-  { v: "balanced", label: "Cân bằng (mặc định)" },
+  { v: "balanced", label: "Cân bằng" },
   { v: "time", label: "Nhanh nhất" },
   { v: "distance", label: "Ngắn nhất" },
+];
+// nhóm dropdown thuật toán theo bảo đảm lý thuyết (SCHEMA §B.5) — người chấm
+// nhìn menu là thấy ngay nhóm nào cam kết tối ưu, nhóm nào đánh đổi.
+// Màu label = đúng ngữ nghĩa Badge ok/warn dùng khắp drawer (start / algo-path).
+const ALGO_GROUPS: { label: string; cls: string; algos: Algorithm[] }[] = [
+  { label: "Đảm bảo tối ưu", cls: "text-start",
+    algos: ["ucs", "dijkstra", "astar", "bidijkstra", "idastar"] },
+  { label: "Không đảm bảo — đánh đổi", cls: "text-algo-path",
+    algos: ["bfs", "dfs", "iddfs", "greedy", "beam"] },
 ];
 
 function FieldLabel({ children, tip, dot }: {
@@ -61,14 +73,28 @@ function SwitchRow({ label, tip, checked, onChange }: {
 function Section({ title, tip, children }: {
   title: string; tip?: string; children: React.ReactNode;
 }) {
+  // v11: thu gọn được — 1080p từng phải cuộn mới thấy trọn Hành trình;
+  // mặc định MỞ hết, trạng thái chỉ sống trong phiên (không persist)
+  const [open, setOpen] = React.useState(true);
   return (
-    <div className="flex shrink-0 flex-col gap-3 rounded-xl border border-surface-border bg-surface-panel px-3.5 py-3.5">
-      <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider text-ink">
-        <span className="h-3 w-0.5 shrink-0 rounded-full bg-algo-frontier" />
-        {title}
+    <div className="flex shrink-0 flex-col gap-2.5 rounded-xl border border-surface-border bg-surface-panel p-3">
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          aria-expanded={open}
+          onClick={() => setOpen(!open)}
+          className="flex min-w-0 flex-1 items-center gap-2 text-[11px] font-bold uppercase tracking-wider text-ink"
+        >
+          <span className="h-3 w-0.5 shrink-0 rounded-full bg-algo-frontier" />
+          <span className="truncate">{title}</span>
+          <ChevronDown
+            className={"ml-auto size-3.5 shrink-0 text-ink-dim transition-transform " +
+              (open ? "" : "-rotate-90")}
+          />
+        </button>
         {tip && <InfoTip text={tip} />}
       </div>
-      {children}
+      {open && children}
     </div>
   );
 }
@@ -146,7 +172,9 @@ function NodePicker({ kind }: { kind: "start" | "goal" }) {
           onClick={() => set({ pickTarget: active ? null : kind })}
         >
           <Crosshair />
-          {value ? `Đã chọn: ${value}` : active ? "Bấm vào bản đồ…" : "Chọn trên bản đồ"}
+          {value
+            ? <>Đã chọn: <span className="font-mono">{value}</span></>
+            : active ? "Bấm vào bản đồ…" : "Chọn trên bản đồ"}
         </Button>
       </div>
       {clear}
@@ -188,7 +216,7 @@ export function ControlPanel() {
         </div>
       </div>
 
-      <div className="flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto p-3">
+      <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto p-2.5">
       <Section title="Bối cảnh">
         <Field label="Đồ thị">
           <Select value={s.graph} disabled={busy}
@@ -217,15 +245,23 @@ export function ControlPanel() {
           </div>
         </Field>
         <Field label="Tiêu chí tối ưu"
-          tip="Cân bằng = thời gian + phạt rủi ro (giây); Nhanh nhất = chỉ thời gian; Ngắn nhất = chỉ quãng đường.">
-          <Select value={s.mode} onValueChange={(v) => s.set({ mode: v as Mode })}>
-            <SelectTrigger aria-label="Tiêu chí tối ưu"><SelectValue /></SelectTrigger>
-            <SelectContent>
-              {MODES.map((m) => (
-                <SelectItem key={m.v} value={m.v}>{m.label}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          tip="Cân bằng (mặc định) = thời gian + phạt rủi ro (giây); Nhanh nhất = chỉ thời gian; Ngắn nhất = chỉ quãng đường.">
+          {/* segmented thay dropdown (v11): thấy đủ 3 tiêu chí một lúc — đúng
+              điểm nhấn "3 mode" khi demo chấm, đỡ một cú click */}
+          <div className="grid grid-cols-3 gap-0.5 rounded-lg border border-surface-border bg-surface p-0.5">
+            {MODES.map((m) => (
+              <Button
+                key={m.v}
+                size="sm"
+                disabled={busy}
+                variant={s.mode === m.v ? "default" : "ghost"}
+                className="h-7 px-0 text-xs"
+                onClick={() => s.set({ mode: m.v })}
+              >
+                {m.label}
+              </Button>
+            ))}
+          </div>
         </Field>
         <div className="flex flex-col">
           <SwitchRow label="Lớp ùn tắc"
@@ -239,11 +275,20 @@ export function ControlPanel() {
 
       <Section title="Thuật toán"
         tip="UCS, Dijkstra, A*, Hai chiều, IDA* đảm bảo tuyến tối ưu; BFS, DFS, IDDFS, Greedy, Beam thì không.">
-        <Select value={s.algorithm} onValueChange={(v) => s.set({ algorithm: v as Algorithm })}>
+        <Select value={s.algorithm} disabled={busy}
+          onValueChange={(v) => s.set({ algorithm: v as Algorithm })}>
           <SelectTrigger aria-label="Thuật toán"><SelectValue /></SelectTrigger>
           <SelectContent>
-            {(Object.keys(ALGO_LABEL) as Algorithm[]).map((a) => (
-              <SelectItem key={a} value={a}>{ALGO_LABEL[a]}</SelectItem>
+            {ALGO_GROUPS.map((g) => (
+              <SelectGroup key={g.label}>
+                <SelectLabel className={`flex items-center gap-1.5 ${g.cls}`}>
+                  <span className="size-1.5 rounded-full bg-current" />
+                  {g.label}
+                </SelectLabel>
+                {g.algos.map((a) => (
+                  <SelectItem key={a} value={a}>{ALGO_LABEL[a]}</SelectItem>
+                ))}
+              </SelectGroup>
             ))}
           </SelectContent>
         </Select>
@@ -335,21 +380,34 @@ export function ControlPanel() {
             )}
           </div>
         </Field>
-        <Field label="Phương pháp tối ưu thứ tự"
-          tip={s.stops.length === 0
-            ? "Thêm ít nhất 1 điểm giao để mở phần này."
-            : "Held-Karp cho nghiệm tối ưu tuyệt đối (tối đa 15 điểm); NN + 2-opt và SA là xấp xỉ nhanh."}>
+        <Field label="Tối ưu thứ tự ghé (ATSP)"
+          tip="Held-Karp cho nghiệm tối ưu tuyệt đối (tối đa 15 điểm); NN + 2-opt và SA là xấp xỉ nhanh. Ma trận chi phí bất đối xứng vì đường một chiều.">
           <MultiButtons />
         </Field>
       </Section>
 
       </div>
       {/* CTA ghim đáy panel — luôn nhìn thấy (DESIGN 4, duyệt v4) */}
-      <div className="flex shrink-0 flex-col gap-2 border-t border-surface-border bg-surface-panel px-4 py-3">
+      <div className="flex shrink-0 flex-col gap-1.5 border-t border-surface-border bg-surface-panel px-4 py-3">
         <Button size="lg" className="w-full" disabled={busy} onClick={() => void s.runRoute()}>
           {s.running ? <Loader2 className="animate-spin" /> : <Play />}
           {s.running ? "Đang chạy…" : "Chạy thuật toán"}
         </Button>
+        {/* min-h cố định 1 dòng: hint xuất hiện/biến mất không làm nút Chạy
+            nhảy lên xuống (review v11) */}
+        {!s.graphLoading && (
+          <p className="min-h-4 text-center text-[11px] leading-4 text-ink-dim">
+            {!s.start || !s.goal
+              ? s.stops.length > 0
+                // tour mode: Đến không cần — đừng đòi (v11, stops tự bỏ Đến)
+                ? (!s.start
+                    ? "Chọn điểm Đi rồi dùng nút Tối ưu thứ tự."
+                    : "Chế độ nhiều điểm — dùng nút Tối ưu thứ tự (không cần điểm Đến).")
+                : !s.start && !s.goal ? "Chọn điểm Đi và Đến ở mục Hành trình trước."
+                : !s.start ? "Còn thiếu điểm Đi." : "Còn thiếu điểm Đến."
+              : ""}
+          </p>
+        )}
         {s.graphLoading && <Skeleton className="h-4 w-full" />}
       </div>
     </aside>
@@ -358,14 +416,22 @@ export function ControlPanel() {
 
 function MultiButtons() {
   const s = useApp();
-  const [method, setMethod] = React.useState<TspMethod>("held_karp");
+  const method = s.tspMethod; // store-backed: sống sót qua thu gọn Section (v11)
   const busy = s.running || s.comparing || s.multiRunning;
   const tooMany = method === "held_karp" && s.stops.length > 14;
-  const empty = s.stops.length === 0;
+  // chưa có điểm giao: đừng bày 2 control chết — một dòng hint là đủ, panel
+  // ngắn lại đáng kể trên màn hình laptop (v11)
+  if (s.stops.length === 0) {
+    return (
+      <p className="rounded-lg border border-dashed border-surface-border px-2.5 py-2 text-[11px] leading-relaxed text-ink-dim">
+        Thêm ít nhất 1 điểm giao ở trên để mở phần tối ưu thứ tự ghé (bài toán ATSP).
+      </p>
+    );
+  }
   return (
     <div className="flex flex-col gap-1.5">
-      <Select value={method} disabled={empty}
-        onValueChange={(v) => setMethod(v as TspMethod)}>
+      <Select value={method}
+        onValueChange={(v) => s.set({ tspMethod: v as TspMethod })}>
         <SelectTrigger aria-label="Phương pháp TSP"><SelectValue /></SelectTrigger>
         <SelectContent>
           <SelectItem value="held_karp">Held-Karp — tối ưu tuyệt đối</SelectItem>
@@ -378,7 +444,7 @@ function MultiButtons() {
           Held-Karp nhận tối đa 15 điểm (kể cả điểm Đi) — hãy dùng NN+2-opt hoặc SA.
         </p>
       )}
-      <Button variant="secondary" disabled={busy || tooMany || empty}
+      <Button variant="secondary" disabled={busy || tooMany}
         onClick={() => void s.runMulti(method)}>
         {s.multiRunning ? <Loader2 className="animate-spin" /> : <ListOrdered />}
         {s.multiRunning ? "Đang tối ưu…" : "Tối ưu thứ tự"}

@@ -52,6 +52,10 @@ export function MapView() {
   const basemapErrorShown = React.useRef(false);
   const homeView = React.useRef<MapViewState | null>(null);
 
+  // v11: quantized zoom (half-steps) — the G_real marker sizes scale with it
+  // below, and quantizing keeps the layers memo from rebuilding every frame
+  const zoomBucket = Math.round((viewState?.zoom ?? 14) * 2) / 2;
+
   // initial camera: fit the graph bbox
   React.useEffect(() => {
     if (!graphData) return;
@@ -117,6 +121,11 @@ export function MapView() {
 
   const layers = React.useMemo(() => {
     if (!graphData) return [];
+    // v11: G_real đọc như "cầu tóc rối" khi zoom xa — marker co giãn theo
+    // zoom (2→3 px node, 1.1→1.6 px cạnh). MÀU giữ nguyên như duyệt v8;
+    // zoom sát trở về đúng kích thước cũ.
+    const realNodeR = zoomBucket < 13 ? 2 : zoomBucket < 14 ? 2.5 : 3;
+    const realEdgeW = zoomBucket < 13 ? 1.1 : zoomBucket < 14 ? 1.4 : 1.6;
     const edgeData = graphData.edges.map((e) => ({
       id: e.id,
       source: coord.get(e.u)!,
@@ -131,7 +140,7 @@ export function MapView() {
         getTargetPosition: (d: (typeof edgeData)[number]) => d.target,
         getColor: (d: (typeof edgeData)[number]) =>
           trafficLayer ? CONGESTION[d.level] : C.edgeDim,
-        getWidth: isDemo ? 3 : 1.6,
+        getWidth: isDemo ? 3 : realEdgeW,
         widthUnits: "pixels",
         updateTriggers: { getColor: [trafficLayer, traffic, theme] },
       }),
@@ -242,7 +251,7 @@ export function MapView() {
         pickable: true,
         getPosition: (n: GraphNode) => [n.lon, n.lat],
         getFillColor: nodeColor,
-        getRadius: isDemo ? 5.5 : 3,
+        getRadius: isDemo ? 5.5 : realNodeR,
         radiusUnits: "pixels",
         stroked: false,
         // anim.steps.length is load-bearing: toggling "Trace trên G_real" OFF
@@ -350,7 +359,7 @@ export function MapView() {
     return out;
   }, [graphData, coord, toPath, traffic, trafficLayer, congestedSet, trace, compare,
       multi, anim, nodeColor, pulse, isDemo, showLabels, start, goal, stops,
-      pickTarget, drawerTab, C, CONGESTION, theme]);
+      pickTarget, drawerTab, C, CONGESTION, theme, zoomBucket]);
 
   const onClick = React.useCallback(
     (info: PickingInfo) => {
@@ -359,21 +368,37 @@ export function MapView() {
       const target = st.pickTarget;
       if (!target || !info.object) return;
       const node = info.object as GraphNode;
+      // v11: chuỗi chọn nối tiếp — chọn Đi xong tự chờ chọn Đến (và ngược
+      // lại); chế độ thêm điểm giao GIỮ NGUYÊN để gõ liên tục 9 điểm cho
+      // cảnh multiroute của video, tự thoát khi chạm trần 15.
       if (target === "start") {
         if (node.id === st.goal) {
           toast.error("Điểm Đi phải khác điểm Đến.");
           return;
         }
-        set({ start: node.id, pickTarget: null });
+        // tour mode (đã có điểm giao) không cần Đến -> đừng auto-chuyển
+        set({ start: node.id,
+              pickTarget: st.goal || st.stops.length > 0 ? null : "goal" });
       } else if (target === "goal") {
         if (node.id === st.start) {
           toast.error("Điểm Đến phải khác điểm Đi.");
           return;
         }
-        set({ goal: node.id, pickTarget: null });
+        set({ goal: node.id, pickTarget: st.start ? null : "start" });
       } else {
-        if (!st.stops.includes(node.id) && node.id !== st.start && st.stops.length < 15)
-          set({ stops: [...st.stops, node.id], pickTarget: null });
+        // đừng nuốt im lặng: đang gõ liên tục 9 điểm cho video, click không
+        // ăn mà không nói gì thì người quay tưởng app đơ (review v11)
+        if (node.id === st.start) {
+          toast.info("Điểm Đi không thể đồng thời là điểm giao.");
+          return;
+        }
+        if (st.stops.includes(node.id)) {
+          toast.info("Điểm này đã có trong danh sách giao.");
+          return;
+        }
+        if (st.stops.length >= 15) return;
+        const next = [...st.stops, node.id];
+        set({ stops: next, pickTarget: next.length >= 15 ? null : "stop" });
       }
     },
     [set],
@@ -406,6 +431,9 @@ export function MapView() {
         controller
         layers={layers as never[]}
         onClick={onClick}
+        // node G_real teo còn 2px ở zoom xa (v11) — nới vùng ăn click để gõ
+        // liên tục 9 điểm giao không phải nhắm từng pixel
+        pickingRadius={8}
         getCursor={({ isDragging }) =>
           pickTarget ? "crosshair" : isDragging ? "grabbing" : "grab"
         }
@@ -470,11 +498,30 @@ export function MapView() {
         </Button>
       </div>
       {pickTarget && (
-        <div className="absolute left-1/2 top-3 -translate-x-1/2 rounded-lg border border-surface-border bg-surface-panel px-3 py-1.5 text-sm shadow-float">
-          Bấm vào một nút giao trên bản đồ để chọn{" "}
-          <span className="font-bold text-algo-frontier">
-            {pickTarget === "start" ? "điểm Đi" : pickTarget === "goal" ? "điểm Đến" : "điểm giao"}
-          </span>
+        <div className="absolute left-1/2 top-3 flex -translate-x-1/2 items-center gap-2 rounded-lg border border-surface-border bg-surface-panel px-3 py-1.5 text-sm shadow-float">
+          {pickTarget === "stop" ? (
+            <span>
+              Bấm các nút giao để thêm điểm giao{" "}
+              <span className="font-mono font-bold text-algo-frontier">{stops.length}/15</span>
+            </span>
+          ) : (
+            <span>
+              Bấm vào một nút giao để chọn{" "}
+              <span className="font-bold text-algo-frontier">
+                {pickTarget === "start" ? "điểm Đi" : "điểm Đến"}
+              </span>
+              {((pickTarget === "start" && !goal) || (pickTarget === "goal" && !start)) && (
+                <span className="text-ink-dim"> — xong sẽ chọn tiếp {pickTarget === "start" ? "điểm Đến" : "điểm Đi"}</span>
+              )}
+            </span>
+          )}
+          <button
+            type="button"
+            className="rounded border border-surface-border px-1.5 py-0.5 text-xs text-ink-dim transition-colors hover:text-ink"
+            onClick={() => set({ pickTarget: null })}
+          >
+            Xong
+          </button>
         </div>
       )}
       <Legend />

@@ -43,6 +43,7 @@ interface AppState {
   start: string | null;
   goal: string | null;
   stops: string[];
+  tspMethod: TspMethod; // sống trong store: Section thu gọn unmount con (v11)
   beamWidth: number | "";
   epsilon: number | "";
   offlineMode: boolean;
@@ -105,6 +106,7 @@ export const useApp = create<AppState>((set, get) => ({
   start: null,
   goal: null,
   stops: [],
+  tspMethod: "held_karp",
   beamWidth: "",
   epsilon: "",
   offlineMode: false,
@@ -145,6 +147,17 @@ export const useApp = create<AppState>((set, get) => ({
       }
       if (state.compare && !("compare" in patch)) extra.compare = null;
       if (state.multi && !("multi" in patch)) extra.multi = null;
+      // v11: ADDING a delivery stop switches the journey to tour mode —
+      // the ATSP tour is Đi + stops only, so a lingering "Đến" is dead
+      // input that confuses the map (goal chip) and the run button.
+      // Removing a stop never touches the goal.
+      if ("stops" in patch && Array.isArray(patch.stops) &&
+          patch.stops.length > state.stops.length &&
+          state.goal && !("goal" in patch)) {
+        extra.goal = null;
+        queueMicrotask(() => toast.info(
+          "Đã bỏ điểm Đến — tối ưu nhiều điểm chỉ cần điểm Đi và các điểm giao."));
+      }
       return { ...patch, ...extra };
     }),
 
@@ -192,7 +205,10 @@ export const useApp = create<AppState>((set, get) => ({
     const s = get();
     if (s.running || s.comparing || s.multiRunning) return; // one flight at a time (L3-04)
     if (!s.start || !s.goal) {
-      toast.error("Hãy chọn cả điểm Đi và điểm Đến trước khi chạy.");
+      // tour mode: đừng đòi điểm Đến mà hint CTA vừa tuyên bố không cần
+      toast.error(s.stops.length > 0
+        ? "Đang ở chế độ nhiều điểm — dùng nút Tối ưu thứ tự, hoặc xoá các điểm giao để chạy tuyến 2 điểm."
+        : "Hãy chọn cả điểm Đi và điểm Đến trước khi chạy.");
       return;
     }
     if (s.start === s.goal) {
@@ -240,14 +256,19 @@ export const useApp = create<AppState>((set, get) => ({
     }
     set({ comparing: true });
     try {
+      // B chạy bằng ĐÚNG cấu hình của tuyến A (review v11 — UX MAJOR):
+      // đổi Tiêu chí không xoá trace A (luật v10f), nên lấy s.mode hiện tại
+      // từng làm B chạy mode khác A → bảng so sánh in mét như giây.
       const t = await api.route({
-        start: s.start, goal: s.goal, algorithm: s.compareAlgo, mode: s.mode,
-        time_slot: s.slot, graph: s.graph, include_trace: false,
+        start: s.start, goal: s.goal, algorithm: s.compareAlgo,
+        mode: s.trace.mode, time_slot: s.trace.time_slot, graph: s.trace.graph,
+        include_trace: false,
       });
       // stale guards (L3-04): inputs unchanged AND the main trace this
-      // comparison was made against must still be on screen
+      // comparison was made against must still be on screen (mode B đã
+      // khoá theo trace nên không cần so mode hiện tại)
       const n = get();
-      if (n.graph !== s.graph || n.slot !== s.slot || n.mode !== s.mode ||
+      if (n.graph !== s.graph || n.slot !== s.slot ||
           n.start !== s.start || n.goal !== s.goal ||
           n.compareAlgo !== s.compareAlgo || n.trace !== s.trace)
         return;

@@ -210,7 +210,7 @@ class Metrics(StrictModel):
     nodes_expanded: Annotated[int, Field(ge=0)]
     max_frontier: Annotated[int, Field(ge=0)]
     runtime_ms: Annotated[float, Field(ge=0)]
-    optimal_guarantee: bool
+    optimal_guarantee: bool  # guarantee for this completed/terminated run
     epsilon_bound: float | None = None  # idastar only
     beam_width: Annotated[int, Field(ge=1)] | None = None  # beam only
     trace_truncated: bool = False

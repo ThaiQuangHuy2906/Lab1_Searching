@@ -9,6 +9,7 @@ Every error uses the unified envelope {error: {code, message_vi}}
 from __future__ import annotations
 
 import csv
+import logging
 import platform
 import sys
 from functools import lru_cache
@@ -18,6 +19,7 @@ from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from pydantic import ValidationError as PydanticValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from .explain import build_explanation
@@ -33,6 +35,7 @@ from .tsp import solve_multiroute
 
 APP_VERSION = "0.1.0"
 RESULTS_DIR = Path(__file__).resolve().parents[2] / "results"
+logger = logging.getLogger(__name__)
 
 ALL_ALGORITHMS = {**ALGORITHMS, **ADVANCED_ALGORITHMS}
 
@@ -83,8 +86,22 @@ async def on_key_error(_req: Request, exc: KeyError):
     msg = exc.args[0] if exc.args else ""
     if isinstance(msg, str) and msg.startswith("node "):
         return error_json(404, "NODE_NOT_FOUND", f"Không tìm thấy node: {msg}")
+    logger.exception("Unexpected KeyError", exc_info=exc)
     return error_json(500, "INTERNAL",
                       "Lỗi không lường trước phía server; xem log để biết chi tiết.")
+
+
+@app.exception_handler(PydanticValidationError)
+async def on_internal_pydantic_validation_error(
+    _req: Request, _exc: PydanticValidationError,
+):
+    # PydanticValidationError inherits ValueError. Without this exact handler,
+    # internal model bugs are mislabeled 422 and leak validator details.
+    logger.exception("Internal Pydantic validation failed", exc_info=_exc)
+    return error_json(
+        500, "INTERNAL",
+        "Lỗi không lường trước phía server; xem log để biết chi tiết.",
+    )
 
 
 @app.exception_handler(ValueError)
@@ -108,6 +125,7 @@ async def on_http_error(_req: Request, exc: StarletteHTTPException):
 
 @app.exception_handler(Exception)
 async def on_internal(_req: Request, exc: Exception):
+    logger.exception("Unhandled server exception", exc_info=exc)
     return error_json(500, "INTERNAL",
                       "Lỗi không lường trước phía server; xem log để biết chi tiết.")
 

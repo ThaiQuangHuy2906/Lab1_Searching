@@ -1,5 +1,10 @@
 # DESIGN.md — Hợp đồng thiết kế giao diện (Phase 5)
 
+> **Trạng thái 2026-07-27:** đây là nguồn chuẩn về ý đồ, token và hành vi UI.
+> TypeScript hiện đạt `npx tsc --noEmit`; các khẳng định về cuộn, bàn phím, map,
+> theme, offline, responsive và accessibility vẫn phải được kiểm tra trên trình
+> duyệt/độ phân giải dùng để quay hoặc bảo vệ.
+>
 > **Luật:** mọi màu/font/hiệu ứng trên UI phải tra được về token trong file này và
 > `frontend/tailwind.config.ts`. Không tự thêm hiệu ứng ngoài đặc tả. Nếu cần token
 > mới → thêm vào đây trước, code sau.

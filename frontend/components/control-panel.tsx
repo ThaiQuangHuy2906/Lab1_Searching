@@ -106,6 +106,7 @@ function NodePicker({ kind }: { kind: "start" | "goal" }) {
   // the OTHER endpoint is excluded from this dropdown: Đi === Đến used to
   // reach the server and 500 before the L3-01 backend guard existed
   const other = useApp((s) => (kind === "start" ? s.goal : s.start));
+  const stops = useApp((s) => s.stops);
   const pickTarget = useApp((s) => s.pickTarget);
   const busy = useApp((s) => s.running || s.comparing || s.multiRunning);
   const set = useApp((s) => s.set);
@@ -149,7 +150,8 @@ function NodePicker({ kind }: { kind: "start" | "goal" }) {
             </SelectTrigger>
             <SelectContent>
               {graphData?.nodes
-                .filter((n) => n.id !== other)
+                .filter((n) =>
+                  n.id !== other && (kind !== "start" || !stops.includes(n.id)))
                 .map((n) => (
                   <SelectItem key={n.id} value={n.id}>{n.name ?? n.id}</SelectItem>
                 ))}
@@ -190,7 +192,7 @@ function SwapButton() {
       <Button
         variant="ghost" size="iconSm" aria-label="Đảo chiều Đi ↔ Đến"
         className="h-7 w-7 rounded-full border border-surface-border bg-surface shadow-sm"
-        disabled={busy || (!s.start && !s.goal)}
+        disabled={busy || s.stops.length > 0 || (!s.start && !s.goal)}
         onClick={() => s.set({ start: s.goal, goal: s.start })}
       >
         <ArrowDownUp className="size-3.5" />
@@ -203,6 +205,7 @@ export function ControlPanel() {
   const s = useApp();
   const isDemo = s.graph === "demo";
   const busy = s.running || s.comparing || s.multiRunning;
+  const epsilonUnit = s.mode === "distance" ? "mét" : "giây";
 
   return (
     <aside className="relative z-10 flex h-full w-80 shrink-0 flex-col border-r border-surface-border bg-surface shadow-float">
@@ -305,8 +308,8 @@ export function ControlPanel() {
           </Field>
         )}
         {s.algorithm === "idastar" && (
-          <Field label="ε — nới ngưỡng (giây)"
-            tip="Mỗi vòng IDA* nới ngưỡng thêm ε giây; nghiệm nằm trong khoảng tối ưu + ε.">
+          <Field label={`ε — nới ngưỡng (${epsilonUnit})`}
+            tip={`Mỗi vòng IDA* nới ngưỡng thêm ε ${epsilonUnit}; nghiệm nằm trong khoảng tối ưu + ε.`}>
             <input
               type="number" min={0.1} step={0.5}
               className="h-9 rounded-lg border border-surface-border bg-surface px-3 font-mono text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-algo-frontier focus-visible:ring-offset-2 focus-visible:ring-offset-surface-panel"

@@ -15,6 +15,19 @@ import { useApp } from "@/lib/store";
 
 const BASE_MS = 500;
 const SPEEDS = [0.5, 1, 2, 4, 8, 16];
+const INTERACTIVE_SHORTCUT_TARGETS = [
+  "input", "textarea", "select", "button", "a[href]", "[contenteditable]",
+  "[role='button']", "[role='checkbox']", "[role='combobox']",
+  "[role='listbox']", "[role='menuitem']", "[role='option']",
+  "[role='radio']", "[role='slider']", "[role='spinbutton']",
+  "[role='switch']", "[role='tab']", "[role='textbox']",
+].join(",");
+
+function ownsKeyboardInput(target: EventTarget | null): boolean {
+  return target instanceof Element
+    && (target.closest(INTERACTIVE_SHORTCUT_TARGETS) !== null
+      || (target instanceof HTMLElement && target.isContentEditable));
+}
 
 export function Timeline() {
   const trace = useApp((s) => s.trace);
@@ -46,9 +59,12 @@ export function Timeline() {
 
   // keyboard: Space / ArrowLeft / ArrowRight (ignored while typing)
   React.useEffect(() => {
+    if (n === 0) return;
     const onKey = (e: KeyboardEvent) => {
-      const tag = (e.target as HTMLElement).tagName;
-      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
+      if (
+        e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey
+        || ownsKeyboardInput(e.target)
+      ) return;
       if (e.code === "Space") {
         e.preventDefault();
         togglePlay();
@@ -64,7 +80,7 @@ export function Timeline() {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [togglePlay, setStep, set]);
+  }, [n, togglePlay, setStep, set]);
 
   if (n === 0) return null;
 

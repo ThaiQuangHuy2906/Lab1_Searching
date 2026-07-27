@@ -1,5 +1,10 @@
 # KIEMTOAN.md — Báo cáo Hội đồng phản biện độc lập
 
+> **Lưu ý hiện hành (2026-07-27):** đây là sổ kiểm toán/fix lịch sử tại các commit
+> ghi trong tài liệu. Không dùng các số test, line number hay kết luận cũ làm bằng
+> chứng cho worktree hiện tại. Bảng đối chiếu mới nhất nằm ở
+> `docs/CODEX-BASELINE.md` và §23–§27 của `docs/CODEX-CODEBASE-MAP.md`.
+>
 > **Ngày kiểm:** 2026-07-27 · **Commit kiểm:** `9598141` (git sạch, đồng bộ origin/main)
 > **Phương pháp:** Lượt 0 (mốc chân lý) chạy trước; 6 lượt kiểm toán độc lập chạy **song song**
 > (14 agent, ~24 phút máy, ~390 lệnh/tool); mọi phát hiện BLOCKER/MAJOR (tối đa 3/lượt) bị một

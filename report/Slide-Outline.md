@@ -5,6 +5,10 @@
 > 304/120/beam 415…) cũng đổi theo profiles, không riêng số benchmark. Sau khi có
 > TomTom, làm mới MỘT lượt: 03b real+demo → benchmark → `scripts/gen_teaching_doc.py`
 > → thay số theo Phụ lục A của `docs/KIEMTOAN.md` (cột "Đổi sau TomTom?") rồi mới nộp.
+>
+> **Tiến độ:** raw TomTom hiện mới có 07:30 và 12:00; đây là outline nội dung,
+> chưa phải file PPTX/PDF. Phải thay số, điền danh tính và chèn hình/screenshot
+> thật trước khi xuất bản nộp.
 
 > Mỗi slide: tối đa 3 bullet nội dung + ghi chú **"Nói gì trong 45–60 s"**.
 > Quy ước hình: screenshot GUI ở chế độ TỐI (DESIGN.md §1); biểu đồ lấy từ `results/figs/`.

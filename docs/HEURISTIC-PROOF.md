@@ -2,8 +2,11 @@
 
 > Tài liệu này chứng minh chặt chẽ hai tính chất của heuristic dùng cho A*, Greedy
 > Best-First và IDA* trong đồ án. Nội dung đổ thẳng vào mục **e. Nguyên lý thuật
-> toán** của báo cáo. Kiểm chứng thực nghiệm: thí nghiệm 2 (`results/exp2_*`, Phase 6)
-> và test `test_costs.py::test_heuristic_consistent_on_every_edge` (chạy mỗi lần CI).
+> toán** của báo cáo. Test
+> `test_costs.py::test_heuristic_consistent_on_every_edge` kiểm mọi cạnh với các
+> goal đại diện; phần chứng minh bên dưới mới là cơ sở tổng quát cho mọi goal.
+> `results/exp2_*` hiện là kết quả tạm của lượt benchmark cũ, không dùng làm bằng
+> chứng hiện hành trước khi chạy lại trọn pipeline cuối.
 
 ## 1. Ký hiệu và mô hình
 
@@ -92,8 +95,12 @@ trong đó $w$ là $w_{time}$ hoặc $w_{bal}$ (Bổ đề 3 chặn cả hai). $
 1. **A\*** (graph-search, có closed set) trả về đường **tối ưu** theo trọng số của mode
    đang chạy — consistent bảo đảm mỗi node được expand đúng một lần với $g$ tối ưu,
    nên closed set an toàn.
-2. **IDA\*** với ngưỡng theo $f$ cũng tối ưu; bản cài đặt nới ngưỡng $\varepsilon = 5$ s
-   mỗi vòng nên nghiệm nằm trong biên $C^* + \varepsilon$ (ghi `epsilon_bound` — Phase 3).
+2. **IDA\*** với ngưỡng theo $f$ cũng tối ưu; bản cài đặt nới ngưỡng
+   $\varepsilon = 5$ đơn vị chi phí mỗi vòng (mét với `distance`, giây với
+   `time`/`balanced`) nên nghiệm nằm trong biên $C^* + \varepsilon$
+   (ghi `epsilon_bound` — Phase 3). Bảo đảm này chỉ áp dụng khi lượt chạy hoàn
+   tất; nếu dừng sớm vì chạm safety cap `max_rounds`, API phải trả
+   `optimal_guarantee=false`.
 3. Tie-break "f bằng nhau → h nhỏ hơn trước" không ảnh hưởng tính tối ưu (chỉ đổi thứ
    tự expand giữa các ứng viên cùng $f$).
 4. **Greedy Best-First** dùng cùng $h$ nhưng bỏ $g$ → **không** có bảo đảm nào (mục 4

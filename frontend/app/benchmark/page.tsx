@@ -97,7 +97,8 @@ export default function BenchmarkPage() {
   );
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-5xl flex-col gap-4 p-6">
+    <main className="h-screen overflow-y-auto">
+      <div className="mx-auto flex min-h-full max-w-5xl flex-col gap-4 p-6">
       <div className="flex items-center gap-3">
         <Link href="/" className="flex items-center gap-1.5 text-sm text-ink-dim hover:text-ink">
           <ArrowLeft className="size-4" /> Bản đồ
@@ -206,6 +207,7 @@ export default function BenchmarkPage() {
           )}
         </div>
       )}
+      </div>
     </main>
   );
 }

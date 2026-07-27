@@ -2,10 +2,13 @@
 
 > **Cách dùng:** đây là kịch bản để MỖI THÀNH VIÊN tự giảng lại thuật toán trong video
 > (yêu cầu đề 4.10a — ví dụ TỰ THIẾT KẾ, cấm chép tutorial). Ví dụ dưới đây chạy trên
-> **dữ liệu thật của nhóm**, mọi bảng từng-bước được SINH TỰ ĐỘNG từ chính code
-> (`python scripts/gen_teaching_doc.py`) nên khớp 100% với những gì GUI chiếu.
+> **graph/địa danh thật từ OSM cùng profile snapshot của nhóm**, mọi bảng
+> từng-bước được SINH TỰ ĐỘNG từ chính code
+> (`scripts/gen_teaching_doc.py`). File hiện tại là artifact tạm, chưa được sinh
+> lại từ worktree sửa semantic mới nhất và chưa dùng profile TomTom cuối; không
+> tuyên bố các bảng đang khớp 100% với GUI cho tới lượt regenerate cuối.
 > **Đừng đọc nguyên văn** — hiểu bảng, tự nói bằng lời của mình.
-> ⚠️ **SỐ TẠM (profiles đang synthetic):** MỌI con số ở đây sẽ đổi sau lượt TomTom —
+> ⚠️ **SỐ TẠM (profiles đang synthetic; raw TomTom mới 2/4):** MỌI con số ở đây sẽ đổi sau lượt TomTom —
 > KỂ CẢ các bảng chạy tay và số ví dụ (chi phí BFS/A*, ma trận ATSP mini… đều phụ
 > thuộc congestion của profiles) chứ không riêng số benchmark. Quy trình làm mới
 > MỘT lượt: 03b real + demo → benchmark → **chạy lại script này** (số exp3/exp7

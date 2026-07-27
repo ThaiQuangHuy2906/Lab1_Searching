@@ -10,7 +10,7 @@ import random
 import pytest
 
 from app.graph_store import MODES, GraphStore
-from app.models import TIME_SLOTS, Trace
+from app.models import GraphFile, TIME_SLOTS, Trace, TrafficProfiles
 from app.search import dijkstra
 from app.search_advanced import ADVANCED_ALGORITHMS, beam, bidijkstra, greedy, idastar
 
@@ -37,6 +37,49 @@ def sample_pairs(store: GraphStore, n: int, seed: int, min_m: float = 0.0):
         if store.straight_line_m(a, b) >= min_m:
             pairs.append((a, b))
     return pairs
+
+
+def tiny_store(edge_specs: list[tuple[str, str, float]], node_count: int = 4) -> GraphStore:
+    """Small deterministic directed graph for semantic trace/termination tests."""
+    nodes = [
+        {
+            "id": f"n{i:04d}", "name": f"N{i}",
+            "lat": 10.5, "lon": 106.5 + i * 0.0001, "type": "landmark",
+        }
+        for i in range(1, node_count + 1)
+    ]
+    edges = [
+        {
+            "id": f"e{i:05d}", "u": u, "v": v, "name": None,
+            "length_m": length, "highway": "primary", "oneway": True,
+            "free_speed_kmh": 36.0, "free_travel_time_s": length / 10.0,
+            "risk": {
+                "flood": 0, "construction": 0,
+                "narrow_alley": 0, "traffic_light": 0,
+            },
+        }
+        for i, (u, v, length) in enumerate(edge_specs, 1)
+    ]
+    graph = GraphFile.model_validate({
+        "meta": {
+            "name": "G_tiny", "bbox": [106.0, 10.0, 107.0, 11.0],
+            "directed": True, "created": "2026-07-27", "crs": "EPSG:4326",
+            "node_count": len(nodes), "edge_count": len(edges),
+        },
+        "nodes": nodes,
+        "edges": edges,
+    })
+    profiles = TrafficProfiles.model_validate({
+        "meta": {
+            "graph": "G_tiny", "created": "2026-07-27",
+            "source": "synthetic",
+        },
+        "profiles": {
+            slot: {edge["id"]: 1 for edge in edges}
+            for slot in TIME_SLOTS
+        },
+    })
+    return GraphStore(graph, profiles, "demo")
 
 
 # ---------------------------------------------------- bidirectional
@@ -70,6 +113,24 @@ def test_bidijkstra_trace_has_both_sides(demo: GraphStore):
         assert st.h is None and st.f is None
 
 
+def test_bidijkstra_trace_g_comes_from_active_frontier_side(demo: GraphStore):
+    """A closed-side distance must not replace an active-side frontier value."""
+    t = bidijkstra(demo, "n0001", "n0008", include_trace=True)
+    backward_step = next(
+        st for st in t.trace
+        if st.expanded == "n0008" and st.side == "backward"
+    )
+    edge = demo.edge_by_uv[("n0001", "n0008")]
+    active_cost = round(demo.weight(edge.id, "balanced", "07:30"), 1)
+
+    # After the backward expansion, n0001 is active only backward and n0008
+    # only forward. Both therefore expose the active edge cost, not the 0.0
+    # distance retained for the endpoint already closed on the other side.
+    assert {"n0001", "n0008"} <= set(backward_step.frontier)
+    assert backward_step.g["n0001"] == active_cost
+    assert backward_step.g["n0008"] == active_cost
+
+
 # ----------------------------------------------------------- ida*
 
 
@@ -97,6 +158,46 @@ def test_idastar_small_real_pair(real: GraphStore):
     t = idastar(real, src, dst, include_trace=False)
     assert t.found
     assert t.metrics.total_cost <= d.metrics.total_cost + 5.0 + TOL
+
+
+def test_idastar_trace_frontier_is_after_expansion(demo: GraphStore):
+    """SCHEMA §B.3: the first snapshot includes successors just generated."""
+    t = idastar(
+        demo, "n0001", "n0030", include_trace=True, max_rounds=1
+    )
+    first = t.trace[0]
+    expected = sorted({nbr for nbr, _eid in demo.adj["n0001"]})
+
+    assert first.expanded == "n0001"
+    assert first.frontier == expected
+    assert set(first.g) == set(first.h) == set(first.f) == set(expected)
+
+
+def test_idastar_round_cap_does_not_claim_guarantee():
+    store = tiny_store([
+        ("n0001", "n0002", 1000.0),
+        ("n0002", "n0003", 1000.0),
+    ], node_count=3)
+    assert dijkstra(
+        store, "n0001", "n0003", mode="distance", include_trace=False
+    ).found
+
+    t = idastar(
+        store, "n0001", "n0003", mode="distance",
+        include_trace=False, max_rounds=1,
+    )
+    assert not t.found
+    assert t.metrics.epsilon_bound == 5.0
+    assert not t.metrics.optimal_guarantee
+
+
+def test_idastar_exhaustive_unreachable_keeps_theoretical_guarantee():
+    store = tiny_store([("n0001", "n0002", 100.0)], node_count=2)
+    t = idastar(
+        store, "n0002", "n0001", mode="distance", include_trace=False
+    )
+    assert not t.found
+    assert t.metrics.optimal_guarantee
 
 
 # --------------------------------------------------------- greedy
@@ -148,6 +249,26 @@ def test_beam_default_width_by_level(demo: GraphStore, real: GraphStore):
     assert beam(demo, "n0001", "n0010", include_trace=False).metrics.beam_width == 5
     src, dst = sample_pairs(real, 1, seed=1)[0]
     assert beam(real, src, dst, include_trace=False).metrics.beam_width == 50
+
+
+def test_beam_trace_and_metric_use_only_selected_width():
+    store = tiny_store([
+        ("n0001", "n0002", 100.0),
+        ("n0001", "n0003", 200.0),
+    ])
+    t = beam(
+        store, "n0001", "n0004",
+        mode="distance", include_trace=True, beam_width=1,
+    )
+    Trace.model_validate(t.model_dump())
+
+    assert not t.found
+    assert t.trace[0].expanded == "n0001"
+    assert len(t.trace[0].frontier) == 1
+    assert all(len(step.frontier) <= 1 for step in t.trace)
+    assert t.metrics.max_frontier == max(
+        1, *(len(step.frontier) for step in t.trace)
+    )
 
 
 # ------------------------------------------------------ contract

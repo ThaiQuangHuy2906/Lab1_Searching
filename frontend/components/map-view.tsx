@@ -393,6 +393,10 @@ export function MapView() {
           toast.error("Điểm Đi phải khác điểm Đến.");
           return;
         }
+        if (st.stops.includes(node.id)) {
+          toast.error("Điểm Đi không thể đồng thời là điểm giao.");
+          return;
+        }
         // tour mode (đã có điểm giao) không cần Đến -> đừng auto-chuyển
         set({ start: node.id,
               pickTarget: st.goal || st.stops.length > 0 ? null : "goal" });

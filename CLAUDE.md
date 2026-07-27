@@ -1,79 +1,123 @@
-# CLAUDE.md — Lab 1: Search Algorithms for Vietnamese Traffic
+# CLAUDE.md — Project01 handoff
 
-## Tổng quan (10 dòng)
+## Trạng thái hiện hành
 
-Ứng dụng hỗ trợ shipper giao hàng đa điểm tại TP.HCM: tìm đường 2 điểm bằng 10 thuật toán
-(bfs, dfs, iddfs, ucs, dijkstra, astar, greedy, bidijkstra, idastar, beam) và tối ưu thứ tự
-giao hàng ATSP (held_karp, nn_2opt, sa). Dữ liệu 2 tầng: `G_demo` (~50 node địa danh thật,
-để visualize/quay video) và `G_real` (vài nghìn node từ OSM, để benchmark); congestion 4 khung
-giờ (07:30/12:00/17:30/22:00) từ TomTom hoặc synthetic fallback — demo chạy offline hoàn toàn.
-Chi phí quy hết về GIÂY: `t_free·f_cong + penalty` (γ=1.5; ngập 60/lô cốt 90/hẻm 30/đèn 25),
-3 mode distance/time/balanced; heuristic haversine/v_max (admissible + consistent).
-Backend FastAPI (port 8000) + frontend Next.js 15 (port 3000, MapLibre + deck.gl).
-Mọi thuật toán trả về MỘT cấu trúc `trace` duy nhất — quy tắc vàng, xem `docs/SCHEMA.md`.
-Làm theo 8 phase, cuối mỗi phase dừng chờ duyệt — xem `PROMPT-MASTER.md` + `docs/TIENDO.md`.
+Mốc kiểm mới nhất: **2026-07-27**.
 
-## Bắt đầu session mới — đọc theo thứ tự
+- 10 thuật toán hai điểm: `bfs`, `dfs`, `iddfs`, `ucs`, `dijkstra`, `astar`,
+  `greedy`, `bidijkstra`, `idastar`, `beam`.
+- 3 ATSP: `held_karp`, `nn_2opt`, `sa`.
+- G_demo: **51 node / 292 cạnh có hướng / 56 one-way**.
+- G_real: **2.118 node / 4.699 cạnh có hướng / 1.433 one-way**.
+- Profile hiện tại vẫn `synthetic`; raw TomTom mới có 07:30 và 12:00, còn thiếu
+  17:30 và 22:00.
+- `results/` là benchmark tạm ngày 2026-07-26, cũ hơn graph ngày 2026-07-27.
+- Gate hiện tại: **95 pytest pass**, `ALL DATA VALID` với cảnh báo nguồn TomTom
+  2/4, `npx tsc --noEmit` pass.
+- B-3/B-4/B-5 đã sửa; B-1/B-2/B-6 vẫn mở. Xem
+  `docs/CODEX-BASELINE.md`.
 
-1. `CLAUDE.md` (file này) → 2. `docs/TIENDO.md` (đang ở phase nào) → 3. `PROMPT-MASTER.md`
-(luật + đặc tả phase) → 4. `docs/SCHEMA.md` (3 hợp đồng dữ liệu). Tiếp tục phase đang dở,
-không bao giờ làm lại thứ đã xong.
+Không chạy 03b, rebuild graph/profile, benchmark hoặc teaching generator trước
+khi đủ 4 snapshot và user chốt dữ liệu cuối.
 
-## Lệnh chạy (Windows — PowerShell hoặc Git Bash)
+## Đọc theo thứ tự
 
-```bash
-# venv (đã tạo bằng Python 3.14 — xem Ghi chú môi trường)
-py -3.14 -m venv .venv
-.venv/Scripts/python.exe -m pip install -r backend/requirements.txt
+1. `docs/Lab 1 - Searching.pdf` — đề bài/rubric.
+2. `docs/Lab1-ChotPhuongAn.md` — quyết định dự án đã chốt.
+3. `docs/SCHEMA.md` — contract graph/trace/API/cost.
+4. `AGENTS.md` — quy tắc vận hành repository hiện hành.
+5. `docs/CODEX-CODEBASE-MAP.md` — kiến trúc, test gap, blocker.
+6. `docs/CODEX-BASELINE.md` — bằng chứng chạy mới nhất.
 
-# sinh mock data (deterministic, seed 42)
-.venv/Scripts/python.exe scripts/00_generate_mock.py
+`PROMPT-MASTER.md` là đặc tả thi công gốc. `docs/TIENDO.md`,
+`docs/KIEMTOAN.md` và audit Claude là lịch sử, không phải bằng chứng cho
+worktree hiện tại.
 
-# test
-.venv/Scripts/python.exe -m pytest backend/tests/ -v
+## Bất biến không được phá
 
-# pipeline dữ liệu (offline một lần; 01 cần mạng, có cache trong data/raw/)
-.venv/Scripts/python.exe scripts/01_download_osm.py
-.venv/Scripts/python.exe scripts/02_build_graph.py
-.venv/Scripts/python.exe scripts/03b_build_profiles.py real
-.venv/Scripts/python.exe scripts/04_build_gdemo.py
-.venv/Scripts/python.exe scripts/03b_build_profiles.py demo
-.venv/Scripts/python.exe scripts/validate_data.py
-# (03a_crawl_tomtom.py tuỳ chọn — cần TOMTOM_API_KEY trong .env, chạy 4 lần đúng 4 khung giờ;
-#  sau crawl: scripts/05_calibrate_gamma.py ước γ̂ thực nghiệm → results/gamma_calibration.csv;
-#  run-book trọn lượt TomTom cuối trước khi nộp: hdcrawl.md)
+- Một kiểu `Trace` duy nhất cho cả 10 thuật toán.
+- `distance` dùng **mét**; `time` và `balanced` dùng **giây**.
+- `total_time_s` luôn là balanced path weight, kể cả khi mode đang là
+  `distance` hoặc `time`.
+- IDA* mặc định ε = 5 **đơn vị cost của mode**: mét cho `distance`, giây cho
+  hai mode còn lại.
+- Cap trace 5.000 bước chỉ cắt payload, không cắt search hay metrics.
+- UCS/Dijkstra/Bidijkstra cần trọng số không âm; A*/IDA* phụ thuộc heuristic
+  admissible + consistent trong `docs/HEURISTIC-PROOF.md`.
+- Product search/TSP/API tự cài bằng Python/`heapq`; NetworkX chỉ dùng trong
+  pipeline, test và benchmark đối chứng.
+- Graph là có hướng; ma trận ATSP là bất đối xứng.
+- Demo backend đọc snapshot local, không gọi mạng.
+- Random phải có seed: mặc định 42; SA dùng seed 0–4.
+- Không hand-edit số sinh tự động trong
+  `docs/GIAI-THICH-THUAT-TOAN.md`.
 
-# benchmark 7 thí nghiệm (cwd backend/, ~7 phút, seed 42, KHÔNG chạy song song việc khác):
-#   ../.venv/Scripts/python.exe -m app.benchmark
-# sinh lại tài liệu giảng từ data thật: .venv/Scripts/python.exe scripts/gen_teaching_doc.py
-# kiểm tương phản WCAG 2 theme (cần mạng đọc style Carto): .venv/Scripts/python.exe scripts/check_contrast.py
+## Lệnh kiểm chứng an toàn
 
-# backend API (cwd backend/): ../.venv/Scripts/python.exe -m uvicorn app.main:app --port 8000
-# frontend (cwd frontend/):   npm install && npm run dev   → http://localhost:3000
-#   (thiết kế bám docs/DESIGN.md — token trong frontend/tailwind.config.ts)
+PowerShell, từ repo root:
+
+```powershell
+.\.venv\Scripts\python.exe -m pytest backend\tests\ -q
+.\.venv\Scripts\python.exe scripts\validate_data.py
+
+Set-Location frontend
+npx tsc --noEmit
 ```
 
-## Quy ước bất biến (chi tiết: PROMPT-MASTER.md mục 1)
+Git Bash trên Windows:
 
-- **Schema trước code** — đổi hợp đồng dữ liệu phải sửa `docs/SCHEMA.md` trước và báo rõ.
-- **Trace chuẩn duy nhất** cho cả 10 thuật toán; đơn vị chi phí duy nhất là **GIÂY**.
-- Thuật toán sản phẩm tự cài (Python thuần + `heapq`); **NetworkX chỉ trong test/benchmark**.
-- OSMnx **v2**, query bbox **tuple** `(106.680, 10.760, 106.720, 10.800)` — cấm cú pháp v1, cấm query theo tên quận.
-- Không gọi mạng khi demo; mọi random có seed (mặc định 42, SA 5 seed 0–4).
-- Ngôn ngữ: code/commit tiếng Anh — UI/explanation/báo cáo/docs tiếng Việt.
-- Mỗi phase một commit `phase-N: <nội dung>`; sửa giữa chừng `fix: <nội dung>`.
+```bash
+.venv/Scripts/python.exe -m pytest backend/tests/ -q
+.venv/Scripts/python.exe scripts/validate_data.py
 
-## Ghi chú môi trường (đã duyệt Phase 0)
+cd frontend
+npx tsc --noEmit
+```
 
-- **Python 3.14 là chuẩn của dự án** (PROMPT-MASTER §8 đã cập nhật từ 3.11 ngày 2026-07-26).
-  Đã kiểm chứng: 8 gói khoa học (osmnx, geopandas, shapely, pyproj, numpy, scipy, pandas,
-  matplotlib) đều có wheel `cp314 win_amd64` / `py3-none-any` trên PyPI — cài không cần build.
-  Version pin trong `backend/requirements.txt` kiểm chứng trên 3.14/Win11. Cả nhóm cài đúng 3.14.
-- File đề bài tên thật là `docs/Lab 1 - Searching.pdf` (dấu cách, không phải `Lab_1_-_Searching.pdf`).
-- Console Windows mặc định cp1252 — script Python in tiếng Việt phải wrap stdout UTF-8
-  (hoặc chỉ print ASCII); mọi file đọc/ghi với `encoding="utf-8"`.
-- Đường dẫn repo chứa dấu tiếng Việt + khoảng trắng — luôn quote path trong lệnh shell.
-- **CẤM chạy `npm run build` khi dev server đang chạy** — cả hai cùng ghi `.next/`,
-  build sẽ phá chunk của dev server (đã gây sự cố 404 toàn bộ static). Khi user đang
-  `npm run dev`: kiểm tra type bằng `npx tsc --noEmit`; chỉ build khi dev đã tắt,
-  và sau khi đổi `next.config.ts` phải nhắc user restart dev server.
+Backend, từ `backend/`:
+
+```powershell
+..\.venv\Scripts\python.exe -m uvicorn app.main:app --port 8000
+```
+
+Frontend, từ `frontend/`:
+
+```powershell
+npm run dev
+```
+
+Không chạy `npm run build` khi dev server còn hoạt động vì cả hai cùng ghi
+`.next/`. Sau khi đổi `next.config.ts`, restart dev server.
+
+## Lệnh có ghi artifact — không chạy mặc định
+
+- `scripts/01_download_osm.py`, `02_build_graph.py`,
+  `03b_build_profiles.py`, `04_build_gdemo.py`: ghi lại `data/`.
+- `backend/app/benchmark.py`: ghi lại `results/`, phải chạy một mình.
+- `scripts/05_calibrate_gamma.py`: ghi calibration result.
+- `scripts/gen_teaching_doc.py`: ghi tài liệu sinh tự động.
+
+Lượt TomTom cuối phải đi trọn chuỗi trong `hdcrawl.md`; không trộn artifact từ
+hai lượt.
+
+## Trước demo hoặc bàn giao
+
+- Stop process cũ, restart backend/frontend, hard-refresh.
+- Xác nhận `/api/graph?level=demo` trả 51/292.
+- Kiểm `/benchmark` cuộn được ở độ phân giải quay/máy chiếu.
+- QA map, keyboard, theme, offline, responsive và accessibility bằng browser.
+- Không quảng bá con số trong `results/` là current.
+- Giữ đủ 5 banner `SỐ TẠM` cho tới khi refresh cuối hoàn tất.
+- Còn 8 `source_url` TODO, metadata risk mô tả luật cũ và các artifact tay:
+  danh tính/đóng góp, screenshot, report PDF, slide, video/link, data
+  description và `[GroupID].zip`.
+
+## Môi trường
+
+- Python chuẩn: 3.14.0 trên Windows 11.
+- Backend pin trong `backend/requirements.txt`.
+- Frontend: Next 15.5.22, React 19.2.8, TypeScript 5.9.3; dùng
+  `frontend/package-lock.json`.
+- Đề bài đúng tên `docs/Lab 1 - Searching.pdf`.
+- Repo có đường dẫn Unicode và khoảng trắng: luôn quote absolute path khi cần.
+- Console Windows có thể dùng cp1252: file/script tiếng Việt phải đọc ghi UTF-8.

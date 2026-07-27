@@ -1,7 +1,10 @@
 # DATA.md — Nguồn dữ liệu, luật xây dựng và giả định
 
-> Tài liệu này mô tả toàn bộ cách dữ liệu được tạo ra (Phase 1). Nội dung ở đây
-> đổ thẳng vào mục **d. Dataset** của báo cáo. Schema chi tiết: `docs/SCHEMA.md`.
+> **Trạng thái 2026-07-27:** tài liệu này mô tả contract và snapshot dữ liệu hiện
+> hành. Graph đã được build ngày 2026-07-27; profile vẫn là `synthetic`. Raw
+> TomTom đã có 07:30 và 12:00, còn thiếu 17:30 và 22:00; chưa chạy 03b/benchmark
+> từ bộ 2/4 này. Nội dung có thể dùng cho mục **d. Dataset** của báo cáo sau khi
+> đối chiếu lượt dữ liệu cuối. Schema chi tiết: `docs/SCHEMA.md`.
 
 ## 1. Tổng quan pipeline (chạy offline một lần, demo không gọi mạng)
 
@@ -25,7 +28,7 @@ Thứ tự chạy đầy đủ: `01 → 02 → 03b real → 04 → 03b demo → 
 | OpenStreetMap qua **OSMnx 2.1.1** (API v2) | Cấu trúc mạng đường: node, cạnh, length, highway type, tên đường | Query bằng **bbox tuple** `(106.680, 10.760, 106.720, 10.800)` — không dùng tên quận (bỏ cấp quận từ 01/7/2025). `network_type="drive"`, lấy **thành phần liên thông mạnh lớn nhất** |
 | **TomTom Traffic Flow API** (tuỳ chọn) | Mức ùn tắc thật tại ~40 điểm mẫu trên trục chính, 4 khung giờ | `currentSpeed/freeFlowSpeed` → thang 1–5 (mục 5). Chạy 03a đúng 4 mốc 07:30/12:00/17:30/22:00 |
 | Cổng giao thông TP.HCM `giaothong.hochiminhcity.gov.vn` | Đối chiếu **định tính** mức ùn tắc + nguồn cho manual_risks | Nhóm tự đối chiếu, dán link vào `manual_risks.json` |
-| `data/manual_risks.json` (nhóm tự định nghĩa) | Điểm ngập (5) + lô cốt (3) khu trung tâm | Vị trí đặt theo các tuyến nổi tiếng (Nguyễn Hữu Cảnh, Đinh Tiên Hoàng đoạn cầu Bông, Cống Quỳnh, Calmette, Trần Hưng Đạo…). **`source_url` đang là placeholder — nhóm PHẢI dán link trước khi nộp** |
+| `data/manual_risks.json` (nhóm tự định nghĩa) | Điểm ngập (5) + lô cốt (3) khu trung tâm | Vị trí đặt theo các tuyến nổi tiếng (Nguyễn Hữu Cảnh, Đinh Tiên Hoàng đoạn cầu Bông, Cống Quỳnh, Calmette, Trần Hưng Đạo…). **Cả 8 `source_url` đang là placeholder; `meta.description_vi` vẫn mô tả luật endpoint-radius cũ — phải bổ sung nguồn và đổi metadata sang luật cạnh đi vào vùng trước khi nộp** |
 | `data/gdemo_pois.json` (nhóm tự chọn) | 51 POI địa danh thật cho G_demo | Toạ độ gần đúng ±100 m, được snap vào node lưới đường gần nhất. **Chờ nhóm/giảng viên review** |
 
 ## 3. Tốc độ free-flow theo loại đường (nhóm tự đặt — KHÔNG phải tốc độ pháp lý)
@@ -84,7 +87,9 @@ Quy đổi `ratio = currentSpeed/freeFlowSpeed`: ≥0.85→1, ≥0.70→2, ≥0.
 | 22:00 | 1–2 (mọi loại đường) | | | |
 
 Nhiễu sự cố: mỗi khung đỉnh có 10% số cạnh ngẫu nhiên +1 mức (trần 5) — mô phỏng va chạm/sự cố cục bộ.
-Bản build hiện tại: `source = "synthetic"` (chưa có key TomTom). Có key → chạy 03a ở 4 mốc giờ rồi chạy lại 03b.
+Bản build hiện tại: `source = "synthetic"`. Raw TomTom đã thu được 2/4 mốc
+(07:30, 12:00), nhưng chưa được nhập vào profile; chỉ chạy lại 03b sau khi có
+đủ 17:30 và 22:00 và nhóm đã chốt nguồn dữ liệu cuối.
 
 **G_demo KHÔNG quay ngẫu nhiên (sửa 2026-07-27):** mỗi cạnh co kế thừa mức congestion
 = **trung bình trọng số** (theo thời gian free-flow) của các cạnh thật dọc hành lang

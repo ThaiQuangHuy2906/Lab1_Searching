@@ -4,9 +4,13 @@ Also asserts the explanation quality gates: Vietnamese summary with real
 numbers and at least one genuinely different alternative on G_demo.
 """
 
+import logging
+import re
+
 import pytest
 from fastapi.testclient import TestClient
 
+import app.main as main_module
 from app.main import app
 from app.models import MultirouteResponse, Trace
 
@@ -119,6 +123,30 @@ def test_route_bad_algorithm_422():
     assert r.json()["error"]["code"] == "VALIDATION_ERROR"
 
 
+def test_internal_pydantic_validation_error_is_generic_500(monkeypatch, caplog):
+    def raise_internal_validation(*_args, **_kwargs):
+        Trace.model_validate({"algorithm": "bfs"})
+
+    monkeypatch.setitem(
+        main_module.ALL_ALGORITHMS, "astar", raise_internal_validation
+    )
+    with caplog.at_level(logging.ERROR, logger="app.main"):
+        r = client.post("/api/route", json=route_body())
+
+    assert r.status_code == 500
+    err = r.json()["error"]
+    assert err["code"] == "INTERNAL"
+    assert "Trace" not in err["message_vi"]
+    assert "Field required" not in err["message_vi"]
+    assert "errors.pydantic.dev" not in err["message_vi"]
+    record = next(
+        record for record in caplog.records
+        if record.message == "Internal Pydantic validation failed"
+    )
+    assert record.exc_info is not None
+    assert isinstance(record.exc_info[1], main_module.PydanticValidationError)
+
+
 # ------------------------------------------------------------ multiroute
 
 
@@ -193,6 +221,34 @@ def test_explanation_numbers_are_consistent(mode):
     assert km_str in t.explanation.summary_vi, "real km figure must appear"
     for alt in t.explanation.alternatives:
         assert alt.why_not_vi and alt.total_time_s > 0
+
+
+@pytest.mark.parametrize(
+    ("mode", "unit"),
+    [("distance", "m"), ("time", "s"), ("balanced", "s")],
+)
+def test_idastar_explanation_epsilon_uses_mode_unit(mode, unit):
+    r = client.post("/api/route", json=route_body(
+        start="n0001", goal="n0002", algorithm="idastar", mode=mode,
+        params={"epsilon": 7.5},
+    ))
+    assert r.status_code == 200
+    summary = r.json()["explanation"]["summary_vi"]
+    assert f"ngưỡng ε = 7,5 {unit}." in summary
+
+
+@pytest.mark.parametrize(
+    ("mode", "unit"),
+    [("distance", "m"), ("time", "s"), ("balanced", "s")],
+)
+def test_nonoptimal_explanation_cost_gap_uses_mode_unit(mode, unit):
+    r = client.post("/api/route", json=route_body(
+        start="n0001", goal="n0002", algorithm="greedy", mode=mode,
+    ))
+    assert r.status_code == 200
+    summary = r.json()["explanation"]["summary_vi"]
+    pattern = rf"đắt hơn tuyến tối ưu ~\d+ {unit} \(\+"
+    assert re.search(pattern, summary), summary
 
 
 # ------------------------------------------- KIEMTOAN batch regressions

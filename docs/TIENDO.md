@@ -1,5 +1,10 @@
 # TIENDO.md — Bảng tiến độ theo phase
 
+> **Lưu ý hiện hành (2026-07-27):** đây là nhật ký lịch sử; số test, số cạnh và
+> trạng thái ở từng dòng đúng theo thời điểm của phase đó, không phải mốc hiện tại.
+> Trạng thái đã kiểm mới nhất xem `docs/CODEX-BASELINE.md`; bản đồ kiến trúc và
+> danh sách việc còn mở xem `docs/CODEX-CODEBASE-MAP.md`.
+>
 > Cập nhật cuối mỗi phase (PROMPT-MASTER luật 1). Trạng thái: ⬜ chưa làm · 🔄 đang làm · ✅ xong.
 
 | Phase | Nội dung | Trạng thái | Ghi chú | Commit |

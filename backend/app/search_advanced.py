@@ -11,8 +11,9 @@ signature, one Trace. Notes per PROMPT-MASTER 6.3:
               shows the smaller g (SCHEMA §B.3).
 - idastar     f-bounded DFS rounds; next threshold =
               max(min_f_over_threshold, threshold + epsilon), epsilon =
-              5 s by default -> solution cost <= C* + epsilon, reported
-              as metrics.epsilon_bound with optimal_guarantee=true.
+              5 cost units by default (m for distance, s otherwise) ->
+              solution cost <= C* + epsilon, reported as
+              metrics.epsilon_bound with optimal_guarantee=true.
 - beam        keeps the best k per layer by f; incomplete by design —
               found=false is a legal, well-formed outcome.
 """
@@ -26,7 +27,7 @@ from .graph_store import GraphStore
 from .models import Mode, TimeSlot, Trace, TraceStep
 from .search import _Recorder, _check_endpoints, _finish, _reconstruct, _round_map, _trivial
 
-DEFAULT_EPSILON_S = 5.0
+DEFAULT_EPSILON = 5.0
 DEFAULT_BEAM_WIDTH = {"demo": 5, "real": 50}
 IDASTAR_MAX_ROUNDS = 1_000
 
@@ -170,10 +171,17 @@ def bidijkstra(store: GraphStore, start: str, goal: str, mode: Mode = "balanced"
         max_frontier = max(max_frontier, len(frontier_nodes))
         if rec.active:
             fr = sorted(frontier_nodes)
-            # a node present in BOTH frontiers shows the smaller g (SCHEMA B.3)
-            rec.record(node, fr, side=side, g=_round_map({
-                n: min(g_f.get(n, float("inf")), g_b.get(n, float("inf")))
-                for n in fr}))
+            # Use only active-frontier distances. The minimum is meaningful
+            # only when the node is active on both sides (SCHEMA §B.3).
+            g_snapshot: dict[str, float] = {}
+            for n in fr:
+                if n in open_f and n in open_b:
+                    g_snapshot[n] = min(g_f[n], g_b[n])
+                elif n in open_f:
+                    g_snapshot[n] = g_f[n]
+                else:
+                    g_snapshot[n] = g_b[n]
+            rec.record(node, fr, side=side, g=_round_map(g_snapshot))
 
     if meet is None:
         return _finish("bidijkstra", store, mode, time_slot, False, [], expanded,
@@ -200,15 +208,16 @@ def idastar(store: GraphStore, start: str, goal: str, mode: Mode = "balanced",
     """IDA*: repeated depth-first probes bounded by f = g + h.
 
     Next threshold = max(smallest f that exceeded the bound,
-    threshold + epsilon) with epsilon = 5 s (PROMPT-MASTER rule 4), so
-    the returned cost is within C* + epsilon — reported via
-    metrics.epsilon_bound, optimal_guarantee=true "within epsilon".
+    threshold + epsilon) with epsilon = 5 mode-cost units (metres for
+    distance, seconds for time/balanced), so the returned cost is within
+    C* + epsilon — reported via metrics.epsilon_bound,
+    optimal_guarantee=true "within epsilon".
     Cycle safety inside a probe: nodes on the current path are skipped.
     """
     _check_endpoints(store, start, goal)
     t0 = time.perf_counter()
     rec = _Recorder(include_trace)
-    epsilon = float(params.get("epsilon", DEFAULT_EPSILON_S))
+    epsilon = float(params.get("epsilon", DEFAULT_EPSILON))
     if start == goal:
         t = _trivial("idastar", store, mode, time_slot, start, rec, True, t0)
         t.metrics.epsilon_bound = epsilon
@@ -243,6 +252,13 @@ def idastar(store: GraphStore, start: str, goal: str, mode: Mode = "balanced",
             if par is not None:
                 parent[node] = par
             expanded += 1
+            if node != goal:
+                for nbr, eid in reversed(store.adj[node]):
+                    ng = g + w[eid]
+                    if nbr in best_g and best_g[nbr] <= ng:
+                        continue
+                    stack.append((nbr, ng, node))
+            max_frontier = max(max_frontier, len(stack))
             if rec.active:
                 fr_g: dict[str, float] = {}
                 for n, sg, _p in stack:
@@ -255,17 +271,18 @@ def idastar(store: GraphStore, start: str, goal: str, mode: Mode = "balanced",
             if node == goal:
                 return _idastar_finish(store, mode, time_slot, parent, goal,
                                        expanded, max_frontier, t0, rec, epsilon)
-            for nbr, eid in reversed(store.adj[node]):
-                ng = g + w[eid]
-                if nbr in best_g and best_g[nbr] <= ng:
-                    continue
-                stack.append((nbr, ng, node))
-            max_frontier = max(max_frontier, len(stack))
         if min_excess == float("inf"):
-            break  # search space exhausted below threshold -> unreachable
+            # Search space was exhausted: unreachability is established rather
+            # than merely assumed because a safety cap stopped the run.
+            t = _finish("idastar", store, mode, time_slot, False, [], expanded,
+                        max_frontier, t0, rec, True)
+            t.metrics.epsilon_bound = epsilon
+            return t
         threshold = max(min_excess, threshold + epsilon)
+    # The round cap stopped the proof/search before a solution or exhaustive
+    # unreachable result. Do not claim the epsilon guarantee for this run.
     t = _finish("idastar", store, mode, time_slot, False, [], expanded,
-                max_frontier, t0, rec, True)
+                max_frontier, t0, rec, False)
     t.metrics.epsilon_bound = epsilon
     return t
 
@@ -318,20 +335,27 @@ def beam(store: GraphStore, start: str, goal: str, mode: Mode = "balanced",
     while layer and not found:
         pool: dict[str, float] = {}  # candidates for the next layer
 
-        def snapshot(i: int, node: str) -> None:
-            # frontier = rest of the current beam + next-layer candidates
-            g_all = {n: g_of[n] for n in layer[i + 1:]} | pool
+        def ranked_pool() -> list[tuple[str, float]]:
+            return sorted(
+                pool.items(), key=lambda kv: kv[1] + h(kv[0])
+            )[:k]
+
+        def snapshot(node: str, selected: list[tuple[str, float]]) -> None:
+            # SCHEMA §B.3 exposes the selected next beam, never the raw pool.
+            g_all = dict(selected)
             fr = sorted(g_all)
             rec.record(node, fr, g=_round_map(g_all),
                        h=_round_map({n: h(n) for n in fr}),
                        f=_round_map({n: g_all[n] + h(n) for n in fr}))
 
-        for i, node in enumerate(layer):
+        for node in layer:
             expanded += 1
             if node == goal:
                 found = True
+                selected = ranked_pool()
+                max_frontier = max(max_frontier, len(selected))
                 if rec.active:
-                    snapshot(i, node)
+                    snapshot(node, selected)
                 break
             for nbr, eid in store.adj[node]:
                 if nbr in visited:
@@ -340,16 +364,16 @@ def beam(store: GraphStore, start: str, goal: str, mode: Mode = "balanced",
                 if nbr not in pool or ng < pool[nbr]:
                     pool[nbr] = ng
                     parent[nbr] = node
+            max_frontier = max(max_frontier, min(k, len(pool)))
             if rec.active:
-                snapshot(i, node)
+                snapshot(node, ranked_pool())
         if found:
             break
-        ranked = sorted(pool.items(), key=lambda kv: kv[1] + h(kv[0]))[:k]
+        ranked = ranked_pool()
         layer = [n for n, _ in ranked]
         for n, gval in ranked:
             g_of[n] = gval
             visited.add(n)
-        max_frontier = max(max_frontier, len(layer))
     t = _finish("beam", store, mode, time_slot, found,
                 _reconstruct(parent, goal) if found else [], expanded,
                 max_frontier, t0, rec, False)

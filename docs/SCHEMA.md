@@ -1,5 +1,9 @@
 # SCHEMA.md — Ba hợp đồng dữ liệu (chốt tại Phase 0)
 
+> **Trạng thái 2026-07-27:** contract hiện hành đã được đối chiếu tĩnh với
+> `backend/app/models.py` và được bộ test 95 mục kiểm tra trên worktree hiện tại.
+> Dữ liệu benchmark trong `results/` là artifact cũ và không thay đổi contract này.
+>
 > **Quy tắc vàng của nhóm:** không ai code trước khi 3 hợp đồng này được duyệt.
 > Sau khi duyệt, **mọi** thay đổi schema phải cập nhật file này và báo rõ trong tóm tắt phase (PROMPT-MASTER luật 2).
 >
@@ -103,7 +107,11 @@ Một định dạng duy nhất dùng chung cho `data/graph_demo.json` (G_demo) 
 
 **Ràng buộc:** đủ đúng 4 khung giờ; mỗi khung giờ phủ **100% edge id** của graph đi kèm (không thiếu, không thừa id lạ); giá trị congestion là **số nguyên 1–5** (1 = thông thoáng, 5 = kẹt cứng).
 
-**File trên đĩa (chốt Phase 1):** mỗi graph có file profiles **riêng** vì không gian edge id của G_demo và G_real trùng nhau (`e00001` tồn tại ở cả hai): `data/traffic_profiles_real.json` và `data/traffic_profiles_demo.json` (mock: `data/mock/traffic_profiles_mock.json`). Đây là thay đổi so với tên gộp `traffic_profiles.json` trong cây thư mục PROMPT-MASTER §2.
+**File trên đĩa (chốt Phase 1):** mỗi graph có file profiles **riêng** vì không
+gian edge id của G_demo và G_real trùng nhau (`e00001` tồn tại ở cả hai):
+`data/traffic_profiles_real.json` và `data/traffic_profiles_demo.json`
+(mock: `data/mock/traffic_profiles_mock.json`). Tên `traffic_profiles.json`
+trong heading chỉ contract logic dùng chung, không phải tên artifact trên đĩa.
 
 ---
 
@@ -123,7 +131,7 @@ run(graph_store, start, goal, mode, time_slot, include_trace, **params) -> Trace
   "mode": "balanced",             // enum mode
   "time_slot": "07:30",           // enum time_slot
   "graph": "demo",                // enum graph
-  "found": true,                  // false nếu không tìm được đường (Beam có thể; các thuật toán khác chỉ khi goal không tới được)
+  "found": true,                  // false nếu không tìm được đường; cũng có thể false khi thuật toán có cap (Beam/IDDFS/IDA*) dừng trước khi chứng minh
   "path": ["n0001", "n0014", "n0027"],  // dãy node id liên tiếp có cạnh nối; [] nếu found=false; [start] nếu start==goal
   "metrics": { /* B.2 */ },
   "trace": [ /* B.3 — [] nếu include_trace=false */ ],
@@ -139,9 +147,9 @@ run(graph_store, start, goal, mode, time_slot, include_trace, **params) -> Trace
   "total_distance_m": 3120.0,     // luôn tính (tổng length_m dọc path); null nếu found=false
   "total_time_s": 812.4,          // luôn tính (tổng t_free·f_cong + penalty dọc path, tức weight balanced) — để mọi mode so sánh được với nhau; null nếu found=false
   "nodes_expanded": 143,          // số lần pop-và-expand thật sự (IDDFS/IDA*: cộng dồn qua mọi vòng lặp)
-  "max_frontier": 38,             // kích thước frontier/open lớn nhất quan sát được
+  "max_frontier": 38,             // kích thước frontier/open lớn nhất; Beam đo selected beam (≤ beam_width), không đo raw candidate pool
   "runtime_ms": 4.2,              // thời gian chạy thuật toán (không tính build explanation)
-  "optimal_guarantee": true,      // theo LÝ THUYẾT trên đồ thị trọng số này (bảng B.5) — không phụ thuộc kết quả lần chạy
+  "optimal_guarantee": true,      // bảo đảm áp dụng cho kết quả/termination hiện tại theo bảng B.5
   "epsilon_bound": 5.0,           // CHỈ idastar; các thuật toán khác: null/vắng mặt
   "beam_width": 5,                // CHỈ beam; các thuật toán khác: null/vắng mặt
   "trace_truncated": false        // true nếu trace bị cắt tại 5 000 bước (B.3)
@@ -175,9 +183,14 @@ run(graph_store, start, goal, mode, time_slot, include_trace, **params) -> Trace
 | bidijkstra | ✓ | – | – | bắt buộc `side` mỗi bước; frontier = hợp 2 phía; node ở cả 2 frontier → `g` = min 2 phía |
 | greedy | – | ✓ | – | g vẫn được tính nội bộ để ra metrics, nhưng không xuất trong trace |
 | astar, idastar | ✓ | ✓ | ✓ | f = g + h; A* tie-break theo h nhỏ hơn |
-| beam | ✓ | ✓ | ✓ | frontier = beam hiện tại (≤ k phần tử) |
+| beam | ✓ | ✓ | ✓ | frontier = top-k ứng viên của beam lớp kế tiếp đã chọn sau bước expand (≤ k); không chứa raw pool chưa cắt |
 
 **Chống phình payload:** server cắt `trace` tại **5 000 bước** và đặt `metrics.trace_truncated = true` (metrics vẫn tính trên toàn bộ quá trình chạy, chỉ danh sách bước bị cắt). Cờ `include_trace` trong request: mặc định `true` với `graph=demo`, `false` với `graph=real`; khi `false` → `trace: []`.
+
+**Ngoại lệ biểu diễn của Beam theo lớp:** các node cùng lớp đang lần lượt được
+expand không được trộn với raw candidate pool trong `frontier`. Sau mỗi bước,
+trace chỉ hiển thị top-k ứng viên lớp kế tiếp đã được chọn ở thời điểm đó; nhờ
+vậy `frontier` và `max_frontier` cùng tuân thủ giới hạn `beam_width`.
 
 ### B.4 `explanation`
 
@@ -197,7 +210,7 @@ Do `explain.py` điền ở Phase 4. **Phase 2–3 trả đúng shape rỗng:** 
 }
 ```
 
-### B.5 `optimal_guarantee` chuẩn theo thuật toán (giá trị cố định ghi vào metrics)
+### B.5 `optimal_guarantee` chuẩn theo thuật toán và termination
 
 | algorithm | optimal_guarantee | Lý do ngắn |
 |---|---|---|
@@ -205,7 +218,7 @@ Do `explain.py` điền ở Phase 4. **Phase 2–3 trả đúng shape rỗng:** 
 | dfs, iddfs | `false` | không theo chi phí |
 | ucs, dijkstra, bidijkstra | `true` | chứng minh chuẩn với weight ≥ 0 |
 | astar | `true` | heuristic admissible + consistent (docs/HEURISTIC-PROOF.md) |
-| idastar | `true` | trong ngưỡng ε = 5 (`epsilon_bound`) — ε tính theo **đơn vị chi phí của mode đang chạy**: giây với time/balanced, mét với distance |
+| idastar | `true` khi tìm được nghiệm trong biên ε hoặc đã duyệt cạn và chứng minh không tới được; `false` nếu dừng do chạm safety cap `max_rounds` | ε tính theo **đơn vị chi phí của mode đang chạy**: giây với time/balanced, mét với distance; cap không tạo ra chứng minh |
 | greedy, beam | `false` | greedy theo h / cắt frontier, không complete (beam) |
 
 ---
@@ -347,7 +360,7 @@ distance      → h(n) = haversine(n, goal)            # mét
 time|balanced → h(n) = haversine(n, goal) / v_max    # giây; v_max = max free_speed toàn đồ thị, đổi ra m/s
 ```
 
-Tính chất admissible + consistent: chứng minh tại `docs/HEURISTIC-PROOF.md` (Phase 2) + kiểm chứng thực nghiệm (thí nghiệm 2). Hằng số γ, penalty, ε=5 s: **đổi phải hỏi** (PROMPT-MASTER luật 4).
+Tính chất admissible + consistent: chứng minh tại `docs/HEURISTIC-PROOF.md` (Phase 2) + kiểm chứng thực nghiệm (thí nghiệm 2). Hằng số γ, penalty, ε=5 theo đơn vị chi phí của mode (mét với `distance`, giây với `time`/`balanced`): **đổi phải hỏi** (PROMPT-MASTER luật 4).
 
 ---
 

@@ -1,7 +1,13 @@
 # PROMPT MASTER — Lab 1: Search Algorithms for Vietnamese Traffic
 
-> **File này là CHỈ DẪN THI CÔNG cho Claude Code.** Đặt ở gốc repo, cùng với:
-> - `docs/Lab_1_-_Searching.pdf` — đề bài gốc (nguồn chân lý #1 về **YÊU CẦU**)
+> **Trạng thái 2026-07-27:** đây là đặc tả thi công gốc và lịch sử chia phase,
+> không còn là run-book cho worktree hiện tại. Quy tắc vận hành mới xem
+> `AGENTS.md`/`CLAUDE.md`; bằng chứng hiện hành xem `docs/CODEX-BASELINE.md`.
+> Các mốc dừng/commit theo phase bên dưới chỉ mô tả quy trình đã dùng khi xây
+> dự án, không tự động áp dụng cho yêu cầu mới.
+>
+> File đặt ở gốc repo, cùng với:
+> - `docs/Lab 1 - Searching.pdf` — đề bài gốc (nguồn chân lý #1 về **YÊU CẦU**)
 > - `docs/Lab1-ChotPhuongAn.md` — phương án nhóm đã chốt (nguồn chân lý #2 về **LỰA CHỌN**)
 >
 > Nếu 3 tài liệu mâu thuẫn: **đề bài > phương án > file này**, và phải BÁO RÕ mâu thuẫn cho tôi trước khi tự quyết.
@@ -10,7 +16,7 @@
 
 ## 0. Vai trò của bạn
 
-Bạn là kỹ sư trưởng chịu trách nhiệm xây dựng **toàn bộ** đồ án này: data pipeline, 9 thuật toán tìm đường, 3 thuật toán TSP, backend FastAPI, frontend Next.js, bộ thí nghiệm benchmark, và bộ khung deliverables (báo cáo, slide, kịch bản video). Nhóm 5 sinh viên (A–E) sẽ review, điền nội dung báo cáo, chụp screenshot, quay video và bảo vệ trước giảng viên — vì vậy mọi thứ bạn làm phải **chạy được từ zero, tái lập được, và giải thích được**.
+Bạn là kỹ sư trưởng chịu trách nhiệm xây dựng **toàn bộ** đồ án này: data pipeline, 10 thuật toán tìm đường, 3 thuật toán TSP, backend FastAPI, frontend Next.js, bộ thí nghiệm benchmark, và bộ khung deliverables (báo cáo, slide, kịch bản video). Nhóm 5 sinh viên (A–E) sẽ review, điền nội dung báo cáo, chụp screenshot, quay video và bảo vệ trước giảng viên — vì vậy mọi thứ bạn làm phải **chạy được từ zero, tái lập được, và giải thích được**.
 
 ---
 
@@ -19,7 +25,7 @@ Bạn là kỹ sư trưởng chịu trách nhiệm xây dựng **toàn bộ** đ
 1. **Làm theo phase (mục 5).** Cuối mỗi phase: chạy test, commit, cập nhật `docs/TIENDO.md`, tóm tắt ≤10 dòng, rồi **DỪNG chờ tôi duyệt** — trừ khi tôi ra lệnh "làm liên tục Phase X→Y".
 2. **Schema trước code.** Ba hợp đồng dữ liệu (mục 3) được chốt ở Phase 0 trong `docs/SCHEMA.md`. Sau khi tôi duyệt, mọi thay đổi schema phải cập nhật `SCHEMA.md` **và báo rõ trong tóm tắt phase**.
 3. **Mọi thuật toán tìm đường trả về cùng một cấu trúc `trace`** (mục 3.2), không ngoại lệ. Đây là quy tắc vàng của nhóm.
-4. **Đơn vị chi phí duy nhất là GIÂY.** Công thức cost/heuristic đúng như mục 4, hằng số đúng như phương án: γ = 1.5; penalty ngập 60 / lô cốt 90 / hẻm nhỏ 30 / đèn đỏ 25 (giây); IDA* dùng ε = 5 s. Muốn đổi hằng số → hỏi tôi.
+4. **Không trộn đơn vị.** `distance` dùng mét; `time` và `balanced` dùng giây. Công thức cost/heuristic đúng như mục 4, hằng số đúng như phương án: γ = 1.5; penalty ngập 60 / lô cốt 90 / hẻm nhỏ 30 / đèn đỏ 25 giây; IDA* dùng ε = 5 đơn vị cost của mode (mét cho `distance`, giây cho hai mode còn lại). Muốn đổi hằng số → hỏi tôi.
 5. **OSMnx phiên bản 2.x, cú pháp v2.** Query bằng **bounding box dạng tuple** `(left, bottom, right, top)` = `(106.680, 10.760, 106.720, 10.800)`. Cấm cú pháp v1 (tham số rời `north, south, east, west`), cấm query theo tên quận/phường. Khi không chắc API của OSMnx / react-map-gl / deck.gl, **kiểm tra docs của version đã cài**, không đoán theo trí nhớ.
 6. **NetworkX chỉ được dùng trong test/benchmark làm baseline đối chứng.** Mọi thuật toán trong sản phẩm (`search.py`, `search_advanced.py`, `tsp.py`) phải tự cài đặt, chỉ dùng cấu trúc dữ liệu thuần Python + `heapq`.
 7. **Không gọi mạng khi demo.** Dữ liệu là snapshot tĩnh commit sẵn trong repo. Script crawl TomTom là bước tuỳ chọn chạy một lần (cần `TOMTOM_API_KEY` trong `.env`, không commit key); pipeline phải có **bộ sinh congestion tổng hợp (synthetic) làm fallback** để không có key vẫn build được toàn bộ dữ liệu.
@@ -38,7 +44,7 @@ Bạn là kỹ sư trưởng chịu trách nhiệm xây dựng **toàn bộ** đ
 ├── CLAUDE.md                     # tạo ở Phase 0: tổng quan 10 dòng, lệnh chạy, quy ước, trỏ tới TIENDO.md
 ├── PROMPT-MASTER.md              # file này
 ├── docs/
-│   ├── Lab_1_-_Searching.pdf
+│   ├── Lab 1 - Searching.pdf
 │   ├── Lab1-ChotPhuongAn.md
 │   ├── SCHEMA.md                 # 3 hợp đồng dữ liệu (Phase 0)
 │   ├── TIENDO.md                 # bảng: phase | trạng thái | ghi chú | commit
@@ -47,7 +53,8 @@ Bạn là kỹ sư trưởng chịu trách nhiệm xây dựng **toàn bộ** đ
 ├── data/
 │   ├── graph_demo.json           # G_demo: 40–60 node địa danh thật
 │   ├── graph_real.json           # G_real: vài nghìn node từ OSM
-│   ├── traffic_profiles.json     # congestion 1–5 theo 4 khung giờ
+│   ├── traffic_profiles_demo.json # congestion G_demo theo 4 khung giờ
+│   ├── traffic_profiles_real.json # congestion G_real theo 4 khung giờ
 │   └── DATA.md                   # nguồn, giả định, luật synthetic, dẫn nguồn risk
 ├── scripts/                      # pipeline offline, chạy tuần tự 01→04
 │   ├── 01_download_osm.py
@@ -90,7 +97,7 @@ Bạn là kỹ sư trưởng chịu trách nhiệm xây dựng **toàn bộ** đ
     "directed": true,
     "created": "2026-07-27",
     "crs": "EPSG:4326",
-    "node_count": 52, "edge_count": 128
+    "node_count": 51, "edge_count": 292
   },
   "nodes": [
     { "id": "n0001", "name": "Chợ Bến Thành", // G_real: name có thể null
@@ -195,9 +202,9 @@ mode=time|balanced → h(n) = haversine(n, goal) / v_max   # giây, v_max = max 
 | Phase | Nội dung | DoD (Definition of Done) |
 |---|---|---|
 | **0** | Scaffold repo, `CLAUDE.md`, `docs/SCHEMA.md` (3 hợp đồng), `docs/TIENDO.md`, mock data generator sinh graph giả 8 node đúng schema (cho frontend làm song song) | Cây thư mục đủ; SCHEMA.md đầy đủ 3 hợp đồng + ví dụ JSON; `pytest tests/test_schema.py` pass trên mock. **DỪNG chờ duyệt SCHEMA.** |
-| **1** | Data pipeline `scripts/01→04` + `DATA.md` | `graph_real.json`, `graph_demo.json`, `traffic_profiles.json` build được không cần API key; script validate schema pass; **báo số node/edge thực tế của G_real để tôi chốt bbox cuối** (mục tiêu ~2 000–6 000 node; lệch nhiều → đề xuất bbox mới và DỪNG). |
+| **1** | Data pipeline `scripts/01→04` + `DATA.md` | `graph_real.json`, `graph_demo.json`, `traffic_profiles_{real,demo}.json` build được không cần API key; script validate schema pass; **báo số node/edge thực tế của G_real để tôi chốt bbox cuối** (mục tiêu ~2 000–6 000 node; lệch nhiều → đề xuất bbox mới và DỪNG). |
 | **2** | `costs.py`, heuristic, `search.py` (BFS, DFS, IDDFS, UCS, Dijkstra, A*) + trace + tests + `HEURISTIC-PROOF.md` | Toàn bộ test pass, trong đó UCS/Dijkstra/A* khớp chi phí NetworkX (sai số 1e-6) trên G_demo và 50 cặp mẫu G_real, đủ 3 mode × 4 khung giờ. |
-| **3** | `search_advanced.py` (Greedy, Bidirectional Dijkstra, IDA* ε=5s, Beam k) + `tsp.py` (ma trận ATSP, Held-Karp, NN+2-opt, SA 5 seed) + tests | Bidirectional & IDA* khớp Dijkstra (IDA* trong ngưỡng ε); Held-Karp khớp brute-force với n≤8; NN+2-opt và SA không bao giờ tốt hơn Held-Karp (sanity ATSP). |
+| **3** | `search_advanced.py` (Greedy, Bidirectional Dijkstra, IDA* ε=5 đơn vị mode, Beam k) + `tsp.py` (ma trận ATSP, Held-Karp, NN+2-opt, SA 5 seed) + tests | Bidirectional & IDA* khớp Dijkstra (IDA* trong ngưỡng ε); Held-Karp khớp brute-force với n≤8; NN+2-opt và SA không bao giờ tốt hơn Held-Karp (sanity ATSP). |
 | **4** | FastAPI `main.py`, `models.py`, `graph_store.py`, `explain.py` | `uvicorn` chạy; smoke test cả 6 endpoint bằng TestClient; explanation tiếng Việt tự nhiên, đúng số liệu, có ≥1 alternative. |
 | **5** | Frontend Next.js hoàn chỉnh (mục 6.5) | `npm run dev` chạy; demo được đầy đủ luồng: chọn 2 điểm → chạy từng thuật toán → animation từng bước → panel số liệu + giải thích; multiroute hiển thị thứ tự tối ưu; trang benchmark vẽ biểu đồ từ API. |
 | **6** | `benchmark.py` chạy 7 thí nghiệm (mục 6.6) | `results/` có đủ CSV + PNG của cả 7 thí nghiệm; số liệu tái lập với seed 42; tóm tắt số liệu chính in ra console. |
@@ -212,8 +219,8 @@ mode=time|balanced → h(n) = haversine(n, goal) / v_max   # giây, v_max = max 
 - **`01_download_osm.py`**: OSMnx v2, `ox.graph_from_bbox((106.680, 10.760, 106.720, 10.800), network_type="drive")`, `ox.settings.use_cache = True`. Lấy **thành phần liên thông mạnh lớn nhất** (đồ thị có hướng). Lưu graphml trung gian vào `data/raw/` (gitignore).
 - **`02_build_graph.py`**: chuyển sang schema 3.1. Free-flow speed theo `highway` type do nhóm đặt (KHÔNG dùng maxspeed pháp lý): ví dụ khởi điểm `trunk/primary 45, secondary 40, tertiary 35, residential 30, alley/service 25` km/h — ghi bảng này vào `DATA.md`. `traffic_light`: suy từ node OSM có tag `highway=traffic_signals` (cạnh kết thúc tại node đèn → flag 1). `narrow_alley`: suy từ highway ∈ {residential hẹp, alley, service} theo luật ghi trong DATA.md. `flood`/`construction`: đọc từ file thủ công `data/manual_risks.json` (tạo sẵn 6–10 điểm ngập/lô cốt tiêu biểu khu trung tâm, mỗi mục có trường `source_url` placeholder để nhóm dán link cổng giao thông TP.HCM / báo chí).
 - **`03a_crawl_tomtom.py`** (tuỳ chọn): đọc `TOMTOM_API_KEY` từ `.env`; gọi Flow Segment Data cho ~30–50 điểm mẫu rải trên trục chính; lưu raw JSON kèm timestamp vào `data/raw/tomtom/`. Ghi rõ trong docstring: chạy 4 lần đúng 4 khung giờ 07:30 / 12:00 / 17:30 / 22:00.
-- **`03b_build_profiles.py`**: sinh `traffic_profiles.json` dạng `{"07:30": {"e00001": 4, …}, …}`. Ưu tiên nội suy từ dữ liệu TomTom (`currentSpeed/freeFlowSpeed` → thang 1–5, gán cho các cạnh gần điểm đo trên cùng trục); cạnh không có dữ liệu → **luật synthetic** (documented trong DATA.md): giờ cao điểm 07:30/17:30 đường trunk/primary mức 4–5, secondary 3–4, residential 2–3; 12:00 giảm 1 mức; 22:00 hầu hết mức 1–2; thêm nhiễu ngẫu nhiên seed 42.
-- **`04_build_gdemo.py`**: G_demo **bán tự động để vừa thật vừa không sai**: (1) danh sách ~45–55 POI địa danh thật trong bbox (Chợ Bến Thành, Nhà thờ Đức Bà, Dinh Độc Lập, Bưu điện TP, Bitexco, Công viên Tao Đàn, chợ Tân Định, ĐH Khoa học Tự nhiên Nguyễn Văn Cừ, BV Nhi Đồng 2, phố Bùi Viện, Hồ Con Rùa, Thảo Cầm Viên… — bạn đề xuất đủ danh sách với toạ độ, tôi sẽ review); (2) snap mỗi POI vào node G_real gần nhất; (3) cạnh G_demo = co (contract) đường đi ngắn nhất giữa các POI kề nhau trên G_real, **kế thừa length/oneway/highway thật**; (4) đắp risk flags từ manual_risks. Đích: 40–60 node, ~120 cạnh. Xuất thêm `data/gdemo_preview.png` (matplotlib) để nhóm soát bằng mắt.
+- **`03b_build_profiles.py`**: sinh `traffic_profiles_real.json` hoặc `traffic_profiles_demo.json` dạng `{"07:30": {"e00001": 4, …}, …}`. Ưu tiên nội suy từ dữ liệu TomTom (`currentSpeed/freeFlowSpeed` → thang 1–5, gán cho các cạnh gần điểm đo trên cùng trục); cạnh không có dữ liệu → **luật synthetic** (documented trong DATA.md): giờ cao điểm 07:30/17:30 đường trunk/primary mức 4–5, secondary 3–4, residential 2–3; 12:00 giảm 1 mức; 22:00 hầu hết mức 1–2; thêm nhiễu ngẫu nhiên seed 42.
+- **`04_build_gdemo.py`**: G_demo **bán tự động để vừa thật vừa không sai**: (1) danh sách ~45–55 POI địa danh thật trong bbox (Chợ Bến Thành, Nhà thờ Đức Bà, Dinh Độc Lập, Bưu điện TP, Bitexco, Công viên Tao Đàn, chợ Tân Định, ĐH Khoa học Tự nhiên Nguyễn Văn Cừ, BV Nhi Đồng 2, phố Bùi Viện, Hồ Con Rùa, Thảo Cầm Viên… — bạn đề xuất đủ danh sách với toạ độ, tôi sẽ review); (2) snap mỗi POI vào node G_real gần nhất; (3) cạnh G_demo = co (contract) đường đi ngắn nhất giữa các POI kề nhau trên G_real, **kế thừa length/oneway/highway thật**; (4) đắp risk flags từ manual_risks. Mục tiêu thi công ban đầu là 40–60 node, ~120 cạnh; snapshot hiện hành sau repair có **51 node / 292 cạnh** để giữ các bất biến contraction. Xuất thêm `data/gdemo_preview.png` (matplotlib) để nhóm soát bằng mắt.
 - **Validator** `scripts/validate_data.py`: kiểm schema, liên thông mạnh, không cạnh trùng, mọi edge có profile đủ 4 khung giờ.
 
 ### 6.2 `search.py` — 6 thuật toán lõi (Phase 2)
@@ -233,7 +240,7 @@ Tất cả nhận `(graph_store, start, goal, mode, time_slot, include_trace, **
 
 - **Greedy Best-First**: xếp theo `h` thuần; `optimal_guarantee=false`.
 - **Bidirectional Dijkstra**: chiều ngược chạy trên **đồ thị đảo cạnh** (bắt buộc vì có hướng); điều kiện dừng chuẩn `top_f + top_b ≥ μ` (μ = cost gặp nhau tốt nhất đã thấy); ghép path tại đỉnh gặp nhau.
-- **IDA\***: ngưỡng theo `f`; vòng sau `threshold = max(min_f_vượt_ngưỡng, threshold + ε)` với ε = 5 s; ghi vào metrics `epsilon_bound: 5` và `optimal_guarantee=true` kèm chú thích "trong ngưỡng ε".
+- **IDA\***: ngưỡng theo `f`; vòng sau `threshold = max(min_f_vượt_ngưỡng, threshold + ε)` với ε = 5 đơn vị cost của mode; ghi vào metrics `epsilon_bound: 5` và `optimal_guarantee=true` kèm chú thích "trong ngưỡng ε".
 - **Beam Search**: giữ k tốt nhất theo `f` mỗi lớp; mặc định `k=5` (G_demo) / `k=50` (G_real), nhận qua `params.beam_width`; `optimal_guarantee=false`, có thể `found=false` — phải xử lý đẹp.
 - **`tsp.py`**: ma trận chi phí **bất đối xứng (ATSP)** — với k điểm (start + stops) chạy Dijkstra từ từng điểm tới k−1 điểm còn lại theo `(mode, time_slot)` hiện hành, cache luôn path từng leg để trả về. Giới hạn k ≤ 16.
   - **Held-Karp**: bitmask DP O(n²·2ⁿ), enforce n ≤ 15 (warn từ 13); ground truth.
@@ -269,7 +276,7 @@ Sampling chung: 200 cặp OD trên G_real, seed 42, loại cặp có khoảng c�
 |---|---|---|
 | 1 | Đúng đắn: UCS/Dijkstra/A* vs NetworkX Dijkstra cùng weight, 200 cặp × mode balanced × 2 khung giờ | `exp1_correctness.csv` → mục tiêu "200/200 pass" |
 | 2 | Admissibility: Dijkstra ngược lấy `h*`, so `h` | `exp2_admissibility.csv`, `admissibility_scatter.png` |
-| 3 | Benchmark 9 thuật toán × 200 cặp × {07:30, 22:00}: cost, gap so tối ưu, expanded, runtime, tỉ lệ found | `exp3_benchmark.csv`, `exp3_expanded_bar.png`, `exp3_runtime_bar.png`, `exp3_gap.png` |
+| 3 | Benchmark 10 thuật toán × 200 cặp × {07:30, 22:00}: cost, gap so tối ưu, expanded, runtime, tỉ lệ found | `exp3_benchmark.csv`, `exp3_expanded_bar.png`, `exp3_runtime_bar.png`, `exp3_gap.png` |
 | 4 | Ảnh hưởng ùn tắc: A* balanced, cùng 200 cặp, 07:30 vs 22:00 → % cặp đổi tuyến + 3 ví dụ minh hoạ xuất GeoJSON | `exp4_congestion.csv`, `exp4_examples/` |
 | 5 | Độ nhạy γ ∈ {0, 0.5, 1, 1.5, 2, 2.5, 3}: avg time & avg distance của tuyến chọn | `exp5_gamma.csv`, `exp5_gamma_curves.png` (2 đường) |
 | 6 | Đối chứng Google Maps định tính: chọn sẵn 5 cặp OD tiêu biểu, xuất tuyến của ta thành PNG/GeoJSON để nhóm chụp Google Maps đặt cạnh | `exp6_pairs.json`, `exp6_routes/` (screenshot Google là việc của nhóm — chừa placeholder trong báo cáo) |
@@ -298,8 +305,8 @@ Mục tiêu: 10 mục **a–j đúng đề**, khi hoàn thiện đạt 35–50 t
 **Nội dung từng mục (kèm ước lượng số trang khi hoàn thiện):**
 
 - **a. Giới thiệu nhóm (2–3 tr):** bảng thành viên (MSSV, tên — placeholder), bảng đóng góp %, **bảng mức độ hoàn thành theo từng dòng của rubric 100 điểm** (điền sẵn danh sách tiêu chí, cột % để trống; gợi ý ghi chú hạn chế mobile-responsive ~"GUI 95%").
-- **b. Bối cảnh (2–3 tr):** kịch bản shipper đa điểm TP.HCM; vấn đề thật: ùn tắc giờ cao điểm, một chiều dày đặc, ngập, lô cốt, cấm tải theo giờ; vì sao tối ưu lộ trình có ích. 💡 nhắc dẫn 1–2 nguồn (cổng giao thông TP.HCM…).
-- **c. Mô hình hoá (3–5 tr):** định nghĩa hình thức state/node/edge/goal/transition; bảng thuộc tính cạnh (chèn từ SCHEMA); **công thức cost đầy đủ + lý do quy hết về giây** thay vì cộng α·dist + β·time + γ·cong đa đơn vị như công thức mẫu của đề — 💡 đây là điểm khác biệt ăn điểm, phải lập luận kỹ (đề vẫn được thoả vì distance-mode/time/congestion/risk đều hiện diện); cách chọn γ=1.5 và các penalty (trỏ sang thí nghiệm 5).
+- **b. Bối cảnh (2–3 tr):** kịch bản shipper đa điểm TP.HCM; vấn đề thật: ùn tắc giờ cao điểm, một chiều dày đặc, ngập, lô cốt, hẻm và đèn tín hiệu; vì sao tối ưu lộ trình có ích. 💡 nhắc dẫn 1–2 nguồn (cổng giao thông TP.HCM…).
+- **c. Mô hình hoá (3–5 tr):** định nghĩa hình thức state/node/edge/goal/transition; bảng thuộc tính cạnh (chèn từ SCHEMA); **công thức cost đầy đủ và tách đơn vị rõ**: `distance` tối ưu mét, còn `time`/`balanced` tối ưu giây; `balanced` cộng congestion/risk trong cùng đơn vị giây thay vì trộn α·dist + β·time đa đơn vị. Giải thích cách chọn γ=1.5 và các penalty (trỏ sang thí nghiệm 5).
 - **d. Dataset (3–5 tr):** pipeline 01→04 (kèm sơ đồ), nguồn (OSM/OSMnx v2, TomTom, cổng giao thông, luật synthetic), kiến trúc 2 tầng G_demo/G_real và lý do, bảng free-speed theo highway type, giả định (chèn từ DATA.md), `[SỐ LIỆU: node/edge thực tế]`.
 - **e. Nguyên lý thuật toán (8–12 tr):** mỗi thuật toán một tiểu mục theo khung: ý tưởng / pseudocode / ví dụ minh hoạ `[ĐIỀN — viết lại bằng lời của bạn từ docs/GIAI-THICH-THUAT-TOAN.md]` / complete–optimal; tiểu mục heuristic chèn sẵn từ HEURISTIC-PROOF.md kèm `[HÌNH → admissibility_scatter.png]`.
 - **f. Program flow (2–3 tr):** khung sơ đồ Mermaid dựng sẵn (kiến trúc tổng + sequence GUI→API→search→explain), mô tả module chính `[ĐIỀN]`.
@@ -325,4 +332,4 @@ Mục tiêu: 10 mục **a–j đúng đề**, khi hoàn thiện đạt 35–50 t
 
 - Kết mỗi phase: tóm tắt ≤10 dòng (làm gì, test ra sao, số liệu chính, quyết định đã tự đưa, việc chờ tôi) rồi DỪNG.
 - Lệnh tôi sẽ dùng: `tiếp tục` (phase kế) · `làm liên tục Phase X→Y, chỉ dừng khi gặp quyết định lớn` · `sửa schema: …` (→ cập nhật SCHEMA.md + refactor) · `chạy lại benchmark` · `trạng thái?` (→ đọc TIENDO.md trả lời).
-- Câu hỏi mở đã biết, KHÔNG tự quyết: bbox cuối (chờ số liệu Phase 1); giảng viên chưa xác nhận kịch bản & việc dùng NetworkX làm baseline (nhóm tự gửi mail — cứ làm tiếp vì NetworkX đã bị cô lập trong test theo Luật 6); `return_to_start` mặc định false (đã ghi giả định).
+- Quyết định đã chốt sau phase: bbox giữ `(106.680, 10.760, 106.720, 10.800)`; Python 3.14; `return_to_start=false`; NetworkX bị cô lập khỏi product runtime. Việc nhóm còn phải chốt bằng con người: danh tính/phân công/người nộp, xác nhận giảng viên nếu cần, nguồn risk thật và bộ artifact nộp cuối.

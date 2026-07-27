@@ -152,6 +152,17 @@ def test_iddfs_trace_carries_increasing_depth_limit(demo: GraphStore):
     assert limits == sorted(limits) or t.metrics.trace_truncated
 
 
+def test_iddfs_trace_frontier_is_after_expansion(demo: GraphStore):
+    """SCHEMA §B.3: successors appear immediately after their parent expands."""
+    t = iddfs(demo, "n0001", "n0030", include_trace=True)
+    root_step = next(
+        st for st in t.trace
+        if st.expanded == "n0001" and st.depth_limit == 1
+    )
+    expected = sorted({nbr for nbr, _eid in demo.adj["n0001"]})
+    assert root_step.frontier == expected
+
+
 # ------------------------------------------------------- trace contract
 
 

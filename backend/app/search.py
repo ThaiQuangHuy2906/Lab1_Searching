@@ -259,6 +259,10 @@ def iddfs(store: GraphStore, start: str, goal: str, mode: Mode = "balanced",
             if par is not None:
                 parent[node] = par
             expanded_total += 1
+            if node != goal and depth < limit:
+                for nbr, _eid in reversed(store.adj[node]):
+                    if nbr not in best_depth or best_depth[nbr] > depth + 1:
+                        stack.append((nbr, depth + 1, node))
             fr_nodes = sorted({n for n, d, _ in stack
                                if best_depth.get(n, d + 1) > d})
             max_frontier = max(max_frontier, len(fr_nodes))
@@ -268,10 +272,6 @@ def iddfs(store: GraphStore, start: str, goal: str, mode: Mode = "balanced",
                 return _finish("iddfs", store, mode, time_slot, True,
                                _reconstruct(parent, goal), expanded_total,
                                max_frontier, t0, rec, False)
-            if depth < limit:
-                for nbr, _eid in reversed(store.adj[node]):
-                    if nbr not in best_depth or best_depth[nbr] > depth + 1:
-                        stack.append((nbr, depth + 1, node))
     return _finish("iddfs", store, mode, time_slot, False, [], expanded_total,
                    max_frontier, t0, rec, False)
 

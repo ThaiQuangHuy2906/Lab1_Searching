@@ -49,6 +49,11 @@ def vi_num(x: float, nd: int = 1) -> str:
     return s[:-2] if s.endswith(",0") else s
 
 
+def _cost_unit(mode: Mode) -> str:
+    """Unit of total_cost and epsilon for the selected optimization mode."""
+    return "m" if mode == "distance" else "s"
+
+
 def _fmt_route_totals(cost: float, time_s: float, dist_m: float, mode: Mode) -> str:
     core = f"{time_s:.0f} s ≈ {vi_num(time_s / 60)} phút; {vi_num(dist_m / 1000, 2)} km"
     if mode == "distance":
@@ -287,7 +292,8 @@ def build_explanation(store: GraphStore, trace: Trace) -> Explanation:
     if trace.metrics.optimal_guarantee:
         if trace.algorithm == "idastar":
             parts.append(f"IDA* bảo đảm tối ưu trong ngưỡng ε = "
-                         f"{vi_num(trace.metrics.epsilon_bound or 5.0)} s.")
+                         f"{vi_num(trace.metrics.epsilon_bound or 5.0)} "
+                         f"{_cost_unit(mode)}.")
         else:
             parts.append(f"{ALGO_VI[trace.algorithm]} bảo đảm đây là tuyến tối ưu "
                          "theo tiêu chí đã chọn.")
@@ -302,7 +308,7 @@ def build_explanation(store: GraphStore, trace: Trace) -> Explanation:
             else:
                 parts.append(
                     f"{ALGO_VI[trace.algorithm]} không bảo đảm tối ưu: tuyến này "
-                    f"đắt hơn tuyến tối ưu ~{gap:.0f} s "
+                    f"đắt hơn tuyến tối ưu ~{gap:.0f} {_cost_unit(mode)} "
                     f"(+{vi_num(gap / opt_cost * 100)} %).")
 
     return Explanation(summary_vi=" ".join(parts),

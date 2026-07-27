@@ -5,6 +5,11 @@
 > 304/120/beam 415…) cũng đổi theo profiles, không riêng số benchmark. Sau khi có
 > TomTom, làm mới MỘT lượt: 03b real+demo → benchmark → `scripts/gen_teaching_doc.py`
 > → thay số theo Phụ lục A của `docs/KIEMTOAN.md` (cột "Đổi sau TomTom?") rồi mới nộp.
+>
+> **Tiến độ dữ liệu:** raw TomTom hiện mới đủ 07:30 và 12:00; còn thiếu 17:30,
+> 22:00. **Tiến độ nội dung:** đây vẫn là khung Markdown, còn 40 chỗ cần điền
+> trên 30 dòng nội dung (không tính dòng chú giải marker), cùng các marker
+> screenshot/hình. Chưa phải report PDF để nộp.
 
 > **Đích:** hoàn thiện thành PDF 35–50 trang, đủ 10 mục a–j đúng đề. Khung này điền sẵn
 > mọi thứ máy làm được (công thức, bảng, số liệu benchmark, hình); phần lập luận để
@@ -157,7 +162,8 @@ f = 1 + γ(c−1)/4 trên inflation freeFlow/current của từng điểm đo) =
 > 💡 Gợi ý: mục ăn điểm "Correct implementation" (20đ) + "Additional" (10đ). Mỗi thuật
 > toán 1 tiểu mục theo KHUNG: ý tưởng ngắn → pseudocode → ví dụ minh hoạ → complete/
 > optimal. Ví dụ minh hoạ: `[ĐIỀN — VIẾT LẠI BẰNG LỜI CỦA BẠN từ docs/GIAI-THICH-THUAT-TOAN.md
-> — bảng từng bước đã sinh sẵn từ dữ liệu thật, được phép chèn bảng, cấm chép nguyên văn lời giảng]`.
+> — bảng từng bước được sinh từ graph OSM và profile synthetic hiện hành; phải
+> regenerate sau lượt dữ liệu cuối; được phép chèn bảng, cấm chép nguyên văn lời giảng]`.
 
 Danh sách tiểu mục (theo thứ tự): BFS · DFS · IDDFS · UCS · Dijkstra (+quan hệ UCS↔Dijkstra)
 · A* · Greedy Best-First · Bidirectional Dijkstra (đồ thị đảo cạnh, luật dừng μ) ·
@@ -348,7 +354,8 @@ So sánh → multiroute → trang Benchmark].
 **Điền sẵn từ phương án §10 + phát sinh thực tế:**
 - Chưa mô hình turn penalty / cấm rẽ trái (cần edge-based graph) — Future Work.
 - Heuristic còn "lỏng" (h/h* ≈ 0,565) — có thể nâng bằng landmark ALT.
-- Congestion synthetic (chưa gắn TomTom key); 4 khung giờ tĩnh, không real-time.
+- Profile congestion hiện vẫn synthetic; raw TomTom mới có 07:30 và 12:00,
+  chưa nhập vào profile; 4 khung giờ tĩnh, không real-time.
 - `narrow_alley` hiếm vì network drive loại hẻm (DATA.md §8) — cần network_type="all".
 - VRP nhiều shipper, GA/ACO: ngoài phạm vi, đã chừa kiến trúc.
 - GUI chưa responsive mobile (tự chấm GUI ~95%).

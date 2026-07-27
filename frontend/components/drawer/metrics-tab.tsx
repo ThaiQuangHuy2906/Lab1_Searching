@@ -149,7 +149,7 @@ export function MetricsTab() {
           {m.optimal_guarantee && <BadgeCheck className="size-3.5" />}
           {m.optimal_guarantee
             ? trace.algorithm === "idastar"
-              ? `Tối ưu trong ε = ${fmtVi(m.epsilon_bound ?? 5)} s`
+              ? `Tối ưu trong ε = ${fmtVi(m.epsilon_bound ?? 5)} ${costUnit}`
               : "Đảm bảo tối ưu"
             : "Không đảm bảo tối ưu"}
         </Badge>

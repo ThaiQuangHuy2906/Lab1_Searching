@@ -2,11 +2,24 @@
 .venv/
 __pycache__/
 *.pyc
+*.pyo
 .pytest_cache/
 *.egg-info/
+.coverage
+.coverage.*
+coverage.xml
+coverage/
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+.tox/
+build/
+dist/
 
 # Secrets — TomTom API key lives here, never commit (PROMPT-MASTER rule 7)
 .env
+.env.*
+!.env.example
 
 # Raw intermediate data (graphml, tomtom raw) — rebuilt by scripts/01-03
 data/raw/
@@ -15,11 +28,18 @@ data/raw/
 node_modules/
 .next/
 out/
+.vercel/
 
 # OS / editor noise
 .DS_Store
 Thumbs.db
 *.swp
+.idea/
+.vscode/
+*.log
+
+# Disposable local render/audit scratch
+tmp/
 
 # Claude Code local settings (per-machine)
 .claude/settings.local.json
@@ -30,3 +50,8 @@ audit_tmp/
 
 # TypeScript incremental build info
 frontend/tsconfig.tsbuildinfo
+
+# Agent skills (per-machine tooling, installed via `npx skills add`)
+.agents/
+.claude/skills/
+skills-lock.json

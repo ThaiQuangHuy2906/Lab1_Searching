@@ -5,6 +5,9 @@
 > Mọi lệnh chạy từ **repo root** bằng `.venv\Scripts\python.exe` (PowerShell),
 > trừ benchmark (cwd `backend/`). Tổng thời gian tay: 4 lần canh giờ × 1 phút
 > + ~25 phút buổi tối (build 3′ + benchmark 7′ + thay số ~15′).
+>
+> **Trạng thái 2026-07-27:** đã có raw snapshot 07:30 và 12:00. Còn thiếu
+> 17:30 và 22:00. Không chạy §2–§5 cho tới khi đủ 4/4 và đã chốt nguồn dữ liệu cuối.
 
 ---
 
@@ -22,15 +25,20 @@ Script **không tự kiểm giờ hệ thống**: tham số slot chỉ là nhãn
 là traffic tại đúng THỜI ĐIỂM bấm lệnh → phải canh giờ (±10–15 phút quanh mốc).
 
 ```powershell
-# 07:30 sáng
+# 07:30 sáng — ĐÃ THU 2026-07-27
 .venv\Scripts\python.exe scripts\03a_crawl_tomtom.py 07:30
-# 12:00 trưa
+# 12:00 trưa — ĐÃ THU 2026-07-27
 .venv\Scripts\python.exe scripts\03a_crawl_tomtom.py 12:00
 # 17:30 chiều
 .venv\Scripts\python.exe scripts\03a_crawl_tomtom.py 17:30
 # 22:00 tối
 .venv\Scripts\python.exe scripts\03a_crawl_tomtom.py 22:00
 ```
+
+- [x] 07:30 — `flow_20260727T074003.json`
+- [x] 12:00 — `flow_20260727T124957.json`
+- [ ] 17:30
+- [ ] 22:00
 
 - Mỗi lần crawl 40 điểm trục chính → `data/raw/tomtom/<slot>/flow_<stamp>.json`.
 - Được phép chạy **2 lần cách nhau ~10 phút trong cùng mốc** — 03b gộp mọi
@@ -110,13 +118,14 @@ Nặng nhất và dễ sót:
 ## 7. Chốt
 
 ```powershell
-.venv\Scripts\python.exe -m pytest backend\tests\ -q     # kỳ vọng: 82 passed
+.venv\Scripts\python.exe -m pytest backend\tests\ -q     # mốc 2026-07-27: 95 passed
 .venv\Scripts\python.exe scripts\validate_data.py         # ALL DATA VALID
 .venv\Scripts\python.exe scripts\gen_teaching_doc.py      # chạy lần 2 -> git diff phải RỖNG
 ```
 
-- [ ] **Đổi banner "SỐ TẠM"** ở 4 file (BaoCao / Slide / Video + header trong
-      template `scripts/gen_teaching_doc.py` rồi regen) thành ghi chú chính thức
+- [ ] **Đổi banner "SỐ TẠM"** ở đủ 5 vị trí: `results/README.md`, BaoCao,
+      Slide, Video và header trong template `scripts/gen_teaching_doc.py` rồi
+      regen; thay bằng ghi chú chính thức
       kiểu *"Số liệu lượt TomTom ngày …, seed 42"* — nộp bài mà còn chữ TẠM là
       mất điểm oan.
 - [ ] Commit: `chore: TomTom crawl + final benchmark refresh`.

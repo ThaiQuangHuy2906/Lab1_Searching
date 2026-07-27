@@ -5,6 +5,10 @@
 > 304/120/beam 415…) cũng đổi theo profiles, không riêng số benchmark. Sau khi có
 > TomTom, làm mới MỘT lượt: 03b real+demo → benchmark → `scripts/gen_teaching_doc.py`
 > → thay số theo Phụ lục A của `docs/KIEMTOAN.md` (cột "Đổi sau TomTom?") rồi mới nộp.
+>
+> **Tiến độ:** raw TomTom hiện mới có 07:30 và 12:00; đây là kịch bản, chưa có
+> video hoặc file link nộp. Chỉ quay sau lượt dữ liệu/benchmark cuối, restart
+> service và QA trình duyệt ở đúng độ phân giải quay.
 
 > **Chuẩn bị trước khi quay:** backend + frontend chạy sẵn (localhost:8000/3000, chế độ
 > TỐI); mở sẵn `docs/GIAI-THICH-THUAT-TOAN.md` để dẫn bảng; OBS quay 1920×1080; mic rõ.
@@ -99,8 +103,9 @@
 
 - (23:00) 3 hạn chế trung thực (congestion synthetic; heuristic lỏng h/h*≈0,57;
   chưa turn-penalty) + 2 hướng phát triển (TomTom real-time, ALT).
-- (24:00) Chốt: 10 thuật toán một hợp đồng trace, 3 phương pháp TSP, dữ liệu thật,
-  demo offline được. Cảm ơn.
+- (24:00) Chốt: 10 thuật toán một hợp đồng trace, 3 phương pháp TSP, graph/địa
+  danh thật từ OSM; profile traffic hiện còn synthetic và sẽ nói đúng nguồn của
+  lượt cuối; demo route engine chạy offline. Cảm ơn.
 
 ---
 

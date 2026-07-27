@@ -66,7 +66,7 @@ interface AppState {
   // ---- animation & layout
   stepIdx: number;
   playing: boolean;
-  speed: number; // multiplier: 0.5 | 1 | 2 | 4 | 8
+  speed: number; // multiplier: 0.5 | 1 | 2 | 4 | 8 | 16
   drawerOpen: boolean;
   drawerTab: DrawerTab;
 
@@ -137,7 +137,16 @@ export const useApp = create<AppState>((set, get) => ({
       // function of the journey inputs. The moment start/goal/stops change
       // (any path: dropdown, map click, clear ✕, swap ⇅), kill the results
       // that depended on them so the map can never contradict the panel.
-      if (!("start" in patch) && !("goal" in patch) && !("stops" in patch))
+      // Re-applying the same semantic value is not a change: Radix controls
+      // and map pickers may emit it again, and must not erase a valid result.
+      const startChanged = "start" in patch && patch.start !== state.start;
+      const goalChanged = "goal" in patch && patch.goal !== state.goal;
+      const stopsChanged = "stops" in patch && (
+        !Array.isArray(patch.stops)
+        || patch.stops.length !== state.stops.length
+        || patch.stops.some((id, i) => id !== state.stops[i])
+      );
+      if (!startChanged && !goalChanged && !stopsChanged)
         return patch;
       const extra: Partial<AppState> = {};
       if (state.trace && !("trace" in patch)) {
@@ -151,7 +160,7 @@ export const useApp = create<AppState>((set, get) => ({
       // the ATSP tour is Đi + stops only, so a lingering "Đến" is dead
       // input that confuses the map (goal chip) and the run button.
       // Removing a stop never touches the goal.
-      if ("stops" in patch && Array.isArray(patch.stops) &&
+      if (stopsChanged && Array.isArray(patch.stops) &&
           patch.stops.length > state.stops.length &&
           state.goal && !("goal" in patch)) {
         extra.goal = null;
@@ -233,7 +242,12 @@ export const useApp = create<AppState>((set, get) => ({
       if (n.graph !== s.graph || n.slot !== s.slot || n.mode !== s.mode ||
           n.algorithm !== s.algorithm || n.start !== s.start || n.goal !== s.goal)
         return;
-      set({ trace: t, stepIdx: Math.max(0, t.trace.length - 1), drawerTab: "metrics" });
+      set({
+        trace: t,
+        stepIdx: Math.max(0, t.trace.length - 1),
+        drawerTab: t.found ? "metrics" : "explain",
+        ...(t.found ? {} : { drawerOpen: true }),
+      });
       if (t.found) {
         toast.success(`Đã chạy ${ALGO_LABEL[s.algorithm]} — ${t.trace.length > 0
           ? `${t.trace.length} bước, ` : ""}${t.metrics.nodes_expanded} node expand.`);

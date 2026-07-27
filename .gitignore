@@ -24,5 +24,9 @@ Thumbs.db
 # Claude Code local settings (per-machine)
 .claude/settings.local.json
 
+# Independent audit scratch (KIEMTOAN reproduction scripts) — evidence stays
+# local, never ships with the repo
+audit_tmp/
+
 # TypeScript incremental build info
 frontend/tsconfig.tsbuildinfo

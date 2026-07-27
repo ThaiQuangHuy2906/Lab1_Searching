@@ -74,8 +74,11 @@
 - (16:45) **G_real**: đổi đồ thị, click chọn 2 điểm trên bản đồ 2 118 nút, chạy
   Dijkstra hai chiều → nói "2 118 nút, vài mili-giây" và ĐỌC ĐÚNG số runtime đang
   hiện trên màn hình (exp3: mean ~2,7 ms — đừng đọc số đuôi phân bố).
-- (17:30) **Multiroute 9 điểm** [người D]: thêm 9 điểm giao → Held-Karp → thứ tự đánh
-  số trên bản đồ + card "Tiết kiệm 53,6%"; đổi sang NN+2-opt → so kết quả.
+- (17:30) **Multiroute 9 điểm** [người D]: thêm 9 điểm giao (chế độ chọn trên bản đồ
+  GIỮ NGUYÊN sau mỗi click — bấm liên tục 9 nút giao, banner đếm n/15; app tự BỎ điểm
+  Đến kèm toast khi thêm điểm đầu tiên — đó là hành vi đúng, cứ nói "tour chỉ cần điểm
+  Đi + các điểm giao") → Held-Karp → thứ tự đánh số trên bản đồ + card "Tiết kiệm
+  53,6%"; đổi sang NN+2-opt → so kết quả.
 - (19:00) **Chế độ Offline**: tắt wifi thật trên màn hình → bật công tắc → app vẫn
   chạy đủ (điểm cộng độ bền demo).
 

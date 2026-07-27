@@ -27,6 +27,29 @@
 
 ## Nhật ký quyết định
 
+- **2026-07-27 (UI v11 — user rà bằng mắt từng tab + hội đồng review 3 lăng kính):**
+  3 đợt polish theo góp ý trực tiếp của user trên GUI đang chạy: (đợt 1) tab **So sánh**
+  (câu verdict + cột Δ B/A xanh/đỏ + dòng theo mode hết trùng số + swatch tuyến ở header),
+  tab **Giải thích** (tên Đi/Đến hết cắt cụt, lead/body summary, badge tối ưu, Δ so tuyến
+  chính trên card alternatives), tab **Số liệu** (2 tầng "Tuyến tìm được / Công sức tìm
+  kiếm", sub-line chi phí theo mode, bảng g/h/f `table-fixed` hết tràn cột, `fmtVi` thêm
+  nhóm nghìn NBSP toàn app), **panel trái** (segmented 3 tiêu chí, dropdown thuật toán
+  nhóm Đảm bảo/Không đảm bảo có màu + label 11px, khối ATSP ẩn control chết, hint dưới
+  CTA, Section thu gọn được); (đợt 2 — "làm full") legend tự ẩn khi trống, marker G_real
+  co giãn theo zoom (màu giữ v8), chuỗi chọn nối tiếp trên bản đồ (Đi→Đến, giữ mode thêm
+  điểm giao n/15 + nút Xong), empty-state theo đồ thị + Mẹo demo; (đợt 3 — hot-fix theo
+  user) scroll dropdown (ScrollUp/Down button — bug cắt cụt im lặng của ui/select),
+  legend né timeline CHỈ khi drawer mở, **luật tour-mode: thêm điểm giao tự bỏ điểm Đến**
+  (chiều ngược cho phép có chủ đích). Hội đồng review 3 lăng kính (bug/design/UX,
+  ~519k token) bắt 2 MAJOR đã vá: **So sánh chạy B bằng mode hiện tại thay vì mode của
+  tuyến A** (đổi Tiêu chí sau khi chạy → bảng in mét như giây; giờ B khoá theo
+  mode/slot/graph của trace A) và cột h bảng g/h/f tràn ở mode Ngắn nhất (h là mét);
+  + 8 MINOR/NIT (đơn vị hàng thời gian, tspMethod vào store, toast click bị nuốt,
+  pickingRadius 8px, footer g/h/f hết mâu thuẫn, v.v.). DESIGN.md ghi đủ v11 đợt 1–3;
+  README 79→**82 test**; `hdcrawl.md` (run-book TomTom) + `results/README.md` mới;
+  `.gitignore` thêm `audit_tmp/`. tsc + pytest 82/82 xanh. Việc TomTom + thay số vẫn
+  theo hdcrawl.md / Phụ lục A KIEMTOAN.
+
 - **2026-07-27 (FIX BATCH theo docs/KIEMTOAN.md — user duyệt, 4 commit A/B/C/D, TRƯỚC
   lượt benchmark TomTom):** (a) **L1-01**: risk vùng (ngập/lô cốt) đổi từ "mọi cạnh
   trong bán kính" sang "cạnh ĐI VÀO vùng (u ngoài, v trong)" — mỗi lượt băng qua trả

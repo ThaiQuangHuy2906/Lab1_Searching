@@ -39,7 +39,9 @@ py -3.14 -m venv .venv
 .venv/Scripts/python.exe scripts/04_build_gdemo.py
 .venv/Scripts/python.exe scripts/03b_build_profiles.py demo
 .venv/Scripts/python.exe scripts/validate_data.py
-# (03a_crawl_tomtom.py tuỳ chọn — cần TOMTOM_API_KEY trong .env, chạy 4 lần đúng 4 khung giờ)
+# (03a_crawl_tomtom.py tuỳ chọn — cần TOMTOM_API_KEY trong .env, chạy 4 lần đúng 4 khung giờ;
+#  sau crawl: scripts/05_calibrate_gamma.py ước γ̂ thực nghiệm → results/gamma_calibration.csv;
+#  run-book trọn lượt TomTom cuối trước khi nộp: hdcrawl.md)
 
 # benchmark 7 thí nghiệm (cwd backend/, ~7 phút, seed 42, KHÔNG chạy song song việc khác):
 #   ../.venv/Scripts/python.exe -m app.benchmark

@@ -385,17 +385,29 @@ Thanh nổi giữa-đáy bản đồ, nền `surface-raised`, viền `surface-bo
 
 ## 9. Trang /benchmark
 
-Đọc `POST /api/benchmark`. Chưa có kết quả → empty state hướng dẫn chạy Phase 6.
-Có kết quả → recharts trên nền tối đúng token: bar `nodes_expanded` và `runtime_ms`
-theo thuật toán (màu `algo-frontier`, lưới `surface-border`, chữ `ink-dim`),
-line độ nhạy γ 2 đường (`algo-path` + `algo-expanded`).
-Luật trục (duyệt v8c — sửa lỗi user bắt được: Recharts tự ẩn nhãn khi chật, biểu đồ
-10 cột chỉ còn 7 nhãn khiến cột idastar bị đọc nhầm thành bidijkstra):
-- XAxis bar chart: `interval={0}` (CẤM auto-skip — mỗi cột một nhãn), nhãn nghiêng
-  −30°, cỡ 10, `height` đủ không cắt chữ.
-- YAxis 2 bar chart dùng **thang log** (tiêu đề card ghi rõ "thang log") — khớp kịch
-  bản video 20:00; tick viết tắt 1k/10k/100k. Giá trị đưa vào chart phải > 0
-  (expand chặn dưới 1, runtime chặn dưới 0,01 ms) vì log không nhận 0.
+Trang là bề mặt **chỉ đọc** cho `POST /api/benchmark`; không chạy lại benchmark,
+không ghi `results/` và không đưa lệnh rebuild/rerun vào UI. Thứ tự thông tin:
+header gọn → tiêu đề/ngữ cảnh → provenance → các chart card → bảng dữ liệu chi tiết.
+
+- Ready/partial hiện provenance với badge **SỐ TẠM**. Copy phải nói rõ artifact trong
+  `results/` cũ hơn graph hiện hành, chỉ dùng minh họa giao diện hoặc tham khảo lịch sử
+  và không phải kết quả benchmark chính thức của dữ liệu đang dùng. Loading dùng
+  skeleton; empty/error chỉ giữ ghi chú nguồn gọn để không giả trạng thái ready.
+- Ready có ba slot ổn định: node expand (exp3), runtime (exp3), độ nhạy γ (exp5).
+  Thiếu nguồn nào thì slot đó hiện placeholder riêng; không làm phần còn lại biến mất.
+- Loading dùng skeleton theo đúng cấu trúc ba card. Empty/error có hành động Thử lại,
+  giữ layout và không hướng dẫn người dùng tự chạy benchmark. Trong khi retry, nút giữ
+  nguyên bề rộng, khóa double-submit và thông báo trạng thái bằng `aria-live`.
+- Chart dùng `surface-panel`, lưới `surface-border`, chữ `ink-dim`; series lần lượt dùng
+  `algo-frontier`, `algo-expanded`, `algo-path`. Tooltip và mọi số hiển thị dùng format
+  tiếng Việt cùng đơn vị rõ ràng.
+- Mỗi chart có tên/mô tả văn bản và một `<details>` chứa bảng dữ liệu tương đương, với
+  caption, header có `scope="col"`, keyboard focus và vùng cuộn ngang chỉ bên trong bảng.
+- Recharts nằm trong `ResponsiveContainer`; lưới chuyển thành một cột khi bề rộng không
+  đủ. Chuyển động chart phải tắt khi `prefers-reduced-motion: reduce`.
+- XAxis bar chart dùng `interval={0}` (không auto-skip), nhãn nghiêng −30°, cỡ 10 và
+  đủ chiều cao. YAxis hai bar chart dùng thang log, tick 1k/10k/100k; giá trị chart
+  phải > 0 (expand chặn dưới 1, runtime chặn dưới 0,01 ms) vì log không nhận 0.
 
 ## 10. Kiểm định tương phản (tự động)
 

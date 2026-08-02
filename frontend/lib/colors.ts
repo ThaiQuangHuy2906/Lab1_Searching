@@ -9,6 +9,7 @@ export type RGBA = [number, number, number, number];
 export interface Palette {
   deck: {
     node: RGBA; nodeReal: RGBA; frontier: RGBA; expanded: RGBA; current: RGBA; path: RGBA;
+    routeFlowCore: RGBA; routeFlowHalo: RGBA; routeFlowStatic: RGBA;
     bidiForward: RGBA; bidiBackward: RGBA; edgeDim: RGBA; edgeReal: RGBA;
     compareB: RGBA;
     start: RGBA; goal: RGBA; stop: RGBA; stopText: RGBA;
@@ -33,6 +34,9 @@ const DARK: Palette = {
     expanded: [167, 139, 250, 255], //   violet-400
     current: [255, 255, 255, 255],
     path: [251, 191, 36, 255], //        amber-400
+    routeFlowCore: [255, 255, 255, 245],
+    routeFlowHalo: [251, 191, 36, 92],
+    routeFlowStatic: [255, 255, 255, 118],
     bidiForward: [34, 211, 238, 255],
     bidiBackward: [251, 113, 133, 255], // rose-400
     edgeDim: [113, 113, 122, 102], //    G_demo zinc-500 @40%
@@ -70,6 +74,9 @@ const LIGHT: Palette = {
     expanded: [124, 58, 237, 255], //    violet-600
     current: [24, 24, 27, 255], //       zinc-900 (per review round 2)
     path: [217, 119, 6, 255], //         amber-600
+    routeFlowCore: [255, 255, 255, 255],
+    routeFlowHalo: [217, 119, 6, 82],
+    routeFlowStatic: [255, 255, 255, 155],
     bidiForward: [8, 145, 178, 255],
     bidiBackward: [225, 29, 72, 255], // rose-600
     edgeDim: [82, 82, 91, 92], //        G_demo zinc-600 @36%

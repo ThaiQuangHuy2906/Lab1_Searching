@@ -171,18 +171,18 @@ export function CompareTab() {
             <table className="w-full text-xs">
               <thead className="bg-surface-control text-ink-dim">
                 <tr>
-                  <th className="px-2.5 py-2 text-left font-medium">Chỉ số</th>
-                  <th className="whitespace-nowrap px-2 py-2 text-right font-medium text-algo-path">
+                  <th scope="col" className="px-2.5 py-2 text-left font-medium">Chỉ số</th>
+                  <th scope="col" className="whitespace-nowrap px-2 py-2 text-right font-medium text-algo-path">
                     {/* swatch = map legend: A solid amber */}
                     <span aria-hidden className="mr-1 inline-block h-0.5 w-3.5 rounded bg-algo-path align-middle" />
                     A · {shortName(a.algorithm)}
                   </th>
-                  <th className="whitespace-nowrap px-2 py-2 text-right font-medium text-algo-frontier">
+                  <th scope="col" className="whitespace-nowrap px-2 py-2 text-right font-medium text-algo-frontier">
                     {/* swatch = map legend: B dashed cyan */}
                     <span aria-hidden className="mr-1 inline-block w-3.5 border-t-2 border-dashed border-algo-frontier align-middle" />
                     B · {shortName(b.algorithm)}
                   </th>
-                  <th className="px-2 py-2 text-right font-medium">Δ B/A</th>
+                  <th scope="col" className="px-2 py-2 text-right font-medium">Δ B/A</th>
                 </tr>
               </thead>
               <tbody>

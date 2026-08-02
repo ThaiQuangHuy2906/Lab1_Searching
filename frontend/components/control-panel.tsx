@@ -207,7 +207,7 @@ export function ControlPanel() {
   const epsilonUnit = s.mode === "distance" ? "mét" : "giây";
 
   return (
-    <aside aria-label="Bảng điều khiển định tuyến" className="relative z-10 flex h-full w-80 shrink-0 flex-col border-r border-surface-border bg-surface-rail shadow-float">
+    <aside aria-label="Bảng điều khiển định tuyến" className="relative z-10 flex h-full w-80 shrink-0 flex-col border-r border-surface-border bg-surface-rail shadow-float max-[900px]:w-[280px]">
       <div className="flex h-[60px] shrink-0 items-center gap-2.5 border-b border-surface-border bg-surface-rail px-4">
         <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-algo-frontier/15 text-algo-frontier">
           <Route className="size-4" />
@@ -231,12 +231,17 @@ export function ControlPanel() {
           </Select>
         </Field>
         <Field label="Khung giờ" tip="Mức ùn tắc của từng đoạn đường thay đổi theo 4 mốc giờ chụp.">
-          <div className="grid grid-cols-4 gap-0.5 rounded-lg border border-surface-border bg-surface-control p-0.5">
+          <div
+            role="group"
+            aria-label="Chọn khung giờ"
+            className="grid grid-cols-4 gap-0.5 rounded-lg border border-surface-border bg-surface-control p-0.5"
+          >
             {SLOTS.map((slot) => (
               <Button
                 key={slot}
                 size="sm"
                 disabled={busy}
+                aria-pressed={s.slot === slot}
                 variant={s.slot === slot ? "default" : "ghost"}
                 className="h-8 px-0 font-mono text-xs"
                 onClick={() => s.setSlot(slot)}
@@ -250,12 +255,17 @@ export function ControlPanel() {
           tip="Cân bằng (mặc định) = thời gian + phạt rủi ro (giây); Nhanh nhất = chỉ thời gian; Ngắn nhất = chỉ quãng đường.">
           {/* segmented thay dropdown (v11): thấy đủ 3 tiêu chí một lúc — đúng
               điểm nhấn "3 mode" khi demo chấm, đỡ một cú click */}
-          <div className="grid grid-cols-3 gap-0.5 rounded-lg border border-surface-border bg-surface-control p-0.5">
+          <div
+            role="group"
+            aria-label="Chọn tiêu chí tối ưu"
+            className="grid grid-cols-3 gap-0.5 rounded-lg border border-surface-border bg-surface-control p-0.5"
+          >
             {MODES.map((m) => (
               <Button
                 key={m.v}
                 size="sm"
                 disabled={busy}
+                aria-pressed={s.mode === m.v}
                 variant={s.mode === m.v ? "default" : "ghost"}
                 className="h-8 px-0 text-xs"
                 onClick={() => s.set({ mode: m.v })}
@@ -298,8 +308,8 @@ export function ControlPanel() {
           <Field label="Beam width (k)"
             tip="Số node tốt nhất giữ lại mỗi lớp — k nhỏ chạy nhanh nhưng có thể không tìm thấy đường.">
             <input
-              type="number" min={1}
-              className="h-10 rounded-lg border border-surface-border bg-surface-control px-3 font-mono text-sm hover:border-surface-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-algo-frontier focus-visible:ring-offset-2 focus-visible:ring-offset-surface-panel"
+              type="number" min={1} disabled={busy}
+              className="h-10 rounded-lg border border-surface-border bg-surface-control px-3 font-mono text-sm hover:border-surface-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-algo-frontier focus-visible:ring-offset-2 focus-visible:ring-offset-surface-panel disabled:cursor-not-allowed disabled:opacity-55"
               placeholder={isDemo ? "mặc định 5" : "mặc định 50"}
               value={s.beamWidth}
               onChange={(e) => s.set({ beamWidth: e.target.value === "" ? "" : Number(e.target.value) })}
@@ -310,8 +320,8 @@ export function ControlPanel() {
           <Field label={`ε — nới ngưỡng (${epsilonUnit})`}
             tip={`Mỗi vòng IDA* nới ngưỡng thêm ε ${epsilonUnit}; nghiệm nằm trong khoảng tối ưu + ε.`}>
             <input
-              type="number" min={0.1} step={0.5}
-              className="h-10 rounded-lg border border-surface-border bg-surface-control px-3 font-mono text-sm hover:border-surface-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-algo-frontier focus-visible:ring-offset-2 focus-visible:ring-offset-surface-panel"
+              type="number" min={0.1} step={0.5} disabled={busy}
+              className="h-10 rounded-lg border border-surface-border bg-surface-control px-3 font-mono text-sm hover:border-surface-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-algo-frontier focus-visible:ring-offset-2 focus-visible:ring-offset-surface-panel disabled:cursor-not-allowed disabled:opacity-55"
               placeholder="mặc định 5"
               value={s.epsilon}
               onChange={(e) => s.set({ epsilon: e.target.value === "" ? "" : Number(e.target.value) })}

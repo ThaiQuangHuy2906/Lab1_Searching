@@ -13,6 +13,7 @@ import { Map as MapLibre } from "react-map-gl/maplibre";
 import "maplibre-gl/dist/maplibre-gl.css";
 
 import { type RGBA } from "@/lib/colors";
+import { ROUTE_FLOW_EXTENSION } from "@/lib/route-flow-extension";
 import { usePalette } from "@/lib/use-palette";
 import { Home, Loader2, Minus, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
@@ -22,6 +23,10 @@ import { useAnimation } from "@/lib/use-animation";
 import type { GraphNode } from "@/lib/types";
 import { Legend } from "./legend";
 import { Timeline } from "./timeline";
+
+type RoutePathDatum = { path: [number, number][] };
+
+const METERS_PER_DEGREE_LAT = 110_540;
 
 export function MapView() {
   const graphData = useApp((s) => s.graphData);
@@ -95,7 +100,8 @@ export function MapView() {
     setViewState(home);
   }, [graphData, fitToGraph]);
 
-  // the ONLY decorative motion allowed: pulse ring on the current node
+  // Functional trace cue: pulse ring on the current node. The result-route
+  // flow below has its own reduced-motion fallback and only runs at trace end.
   React.useEffect(() => {
     if (!anim.current) return;
     if (reducedMotion) {
@@ -131,6 +137,12 @@ export function MapView() {
   );
 
   const isDemo = graph === "demo";
+
+  const primaryRoutePath = React.useMemo(
+    () => trace?.found && anim.showPath && !multi?.found ? toPath(trace.path) : [],
+    [trace, anim.showPath, multi, toPath],
+  );
+  const routeFlowActive = primaryRoutePath.length > 1;
 
   const nodeColor = React.useCallback(
     (n: GraphNode): RGBA => {
@@ -193,18 +205,18 @@ export function MapView() {
     }
 
     // final route / compare / multiroute — casing (nền) + màu (DESIGN 6)
-    const casedPath = (id: string, data: { path: [number, number][] }[],
+    const casedPath = (id: string, data: RoutePathDatum[],
                        color: RGBA, width = 6, dash?: [number, number]) => {
       out.push(
         new PathLayer({
           id: `${id}-casing`, data,
-          getPath: (d: { path: [number, number][] }) => d.path,
+          getPath: (d: RoutePathDatum) => d.path,
           getColor: C.labelOutline, getWidth: width + 2.5,
           widthUnits: "pixels", jointRounded: true, capRounded: true,
         }),
         new PathLayer({
           id, data,
-          getPath: (d: { path: [number, number][] }) => d.path,
+          getPath: (d: RoutePathDatum) => d.path,
           getColor: color, getWidth: width,
           widthUnits: "pixels", jointRounded: true, capRounded: true,
           // dashed body over a SOLID casing (v10d): compare route B reads
@@ -218,7 +230,6 @@ export function MapView() {
     };
     // ▶ arrows ALONG a result route only (DESIGN 6, v5c): spaced >= ~220 m,
     // dark glyph with an SDF outline in the route color
-    const M_PER_DEG_LAT = 110_540;
     const routeArrows = (id: string, paths: [number, number][][], outline: RGBA) => {
       const pts: { pos: [number, number]; angle: number }[] = [];
       for (const path of paths) {
@@ -227,8 +238,8 @@ export function MapView() {
           const [x1, y1] = path[i];
           const [x2, y2] = path[i + 1];
           const latMid = (y1 + y2) / 2;
-          const dxm = (x2 - x1) * M_PER_DEG_LAT * Math.cos((latMid * Math.PI) / 180);
-          const dym = (y2 - y1) * M_PER_DEG_LAT;
+          const dxm = (x2 - x1) * METERS_PER_DEGREE_LAT * Math.cos((latMid * Math.PI) / 180);
+          const dym = (y2 - y1) * METERS_PER_DEGREE_LAT;
           const hop = Math.hypot(dxm, dym);
           since += hop;
           if (since >= 220) {
@@ -402,6 +413,52 @@ export function MapView() {
       multi, anim, nodeColor, isDemo, showLabels, start, goal, stops,
       pickTarget, drawerTab, C, CONGESTION, theme, zoomBucket]);
 
+  const routeFlowLayers = React.useMemo(() => {
+    if (!routeFlowActive) return [];
+    const data: RoutePathDatum[] = [{ path: primaryRoutePath }];
+
+    if (reducedMotion) {
+      return [new PathLayer<RoutePathDatum>({
+        id: "route-flow-static",
+        data,
+        getPath: (d) => d.path,
+        getColor: C.routeFlowStatic,
+        getWidth: 2,
+        widthUnits: "pixels",
+        jointRounded: true,
+        capRounded: true,
+        pickable: false,
+      })];
+    }
+
+    return [
+      new PathLayer<RoutePathDatum>({
+        id: "route-flow-halo",
+        data,
+        getPath: (d) => d.path,
+        getColor: C.routeFlowHalo,
+        getWidth: 10,
+        widthUnits: "pixels",
+        jointRounded: true,
+        capRounded: true,
+        pickable: false,
+        extensions: [ROUTE_FLOW_EXTENSION],
+      }),
+      new PathLayer<RoutePathDatum>({
+        id: "route-flow-core",
+        data,
+        getPath: (d) => d.path,
+        getColor: C.routeFlowCore,
+        getWidth: 2.5,
+        widthUnits: "pixels",
+        jointRounded: true,
+        capRounded: true,
+        pickable: false,
+        extensions: [ROUTE_FLOW_EXTENSION],
+      }),
+    ];
+  }, [routeFlowActive, primaryRoutePath, reducedMotion, C]);
+
   const pulseLayer = React.useMemo(() => {
     if (!anim.current) return null;
     const pos = coord.get(anim.current.expanded);
@@ -420,10 +477,29 @@ export function MapView() {
     });
   }, [anim.current, coord, C.pulse, isDemo, pulse, reducedMotion]);
 
-  const deckLayers = React.useMemo(
-    () => pulseLayer ? [...layers, pulseLayer] : layers,
-    [layers, pulseLayer],
-  );
+  const deckLayers = React.useMemo(() => {
+    const composed = [...layers];
+    if (routeFlowLayers.length) {
+      const layerId = (layer: unknown) =>
+        typeof layer === "object" && layer !== null && "id" in layer
+          ? (layer as { id?: string }).id
+          : undefined;
+      const arrowLayers: unknown[] = [];
+      for (const id of ["route-arrows", "compare-arrows"]) {
+        const index = composed.findIndex((layer) => layerId(layer) === id);
+        if (index >= 0) arrowLayers.push(...composed.splice(index, 1));
+      }
+      const nodeIndex = composed.findIndex((layer) => layerId(layer) === "nodes");
+      composed.splice(
+        nodeIndex >= 0 ? nodeIndex : composed.length,
+        0,
+        ...routeFlowLayers,
+        ...arrowLayers,
+      );
+    }
+    if (pulseLayer) composed.push(pulseLayer);
+    return composed;
+  }, [layers, routeFlowLayers, pulseLayer]);
 
   const onClick = React.useCallback(
     (info: PickingInfo) => {
@@ -478,6 +554,10 @@ export function MapView() {
   if (!graphData || !viewState) {
     return (
       <div ref={containerRef}
+        role={graphLoading ? "status" : "alert"}
+        aria-live={graphLoading ? "polite" : "assertive"}
+        aria-busy={graphLoading}
+        aria-atomic="true"
         className="flex h-full flex-col items-center justify-center gap-3 bg-surface-map text-ink-dim">
         {graphLoading ? (
           <span className="flex items-center gap-2 text-sm">
@@ -499,8 +579,14 @@ export function MapView() {
   }
 
   return (
-    <div ref={containerRef} className="relative h-full w-full bg-surface-map">
+    <div
+      ref={containerRef}
+      role={offline ? "region" : undefined}
+      aria-label={offline ? "Bản đồ định tuyến giao thông — chế độ ngoại tuyến" : undefined}
+      className="relative h-full w-full bg-surface-map"
+    >
       <DeckGL
+        _animate={routeFlowActive && !reducedMotion}
         viewState={viewState}
         onViewStateChange={({ viewState: vs }) => setViewState(vs as MapViewState)}
         controller
@@ -529,6 +615,7 @@ export function MapView() {
         {!offline && (
           <MapLibre
             mapStyle={P.basemap}
+            locale={{ "Map.Title": "Bản đồ định tuyến giao thông" }}
             attributionControl={false}
             onError={() => {
               if (!basemapErrorShown.current) {

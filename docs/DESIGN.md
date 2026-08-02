@@ -121,6 +121,16 @@ không nhận pointer để không chặn thao tác map.
 
 *(Drawer nới 360→400 px ở duyệt v5d: cột f của bảng g/h/f từng bị cắt mép.)*
 
+**UI-03 — accessibility/responsive audit:** ở layout chuẩn 1180–1600 px, panel
+trái vẫn 320 px và drawer vẫn 400 px. Chỉ khi CSS viewport dưới 900 px (trường
+hợp audit browser zoom 200%) hai rail co còn 280 px để map không sụp về 0; không
+auto-collapse, không overlay và không đổi state/interaction. Toolbar giữ nguyên
+chức năng nhưng ẩn nhãn chữ trực quan ở ngưỡng này (accessible name vẫn đầy đủ),
+timeline cuộn ngang nội bộ nếu cần. Segmented control công bố `aria-pressed`,
+toolbar/map/error có semantic name/status, và drawer chuyển focus sang nút toggle
+thay thế sau khi mở/đóng. Khi timeline hiển thị, legend luôn nâng lên một tầng,
+không phụ thuộc drawer mở hay đóng, để hai map chrome không chồng nhau.
+
 **LUẬT VÔ HIỆU KẾT QUẢ CŨ — duyệt v10f (user bắt bug multiroute; rà thêm
 thấy tuyến 2 điểm cùng bệnh):** mọi kết quả trên bản đồ là HÀM CỦA HÀNH TRÌNH —
 đổi bất kỳ input hành trình nào (Đi / Đến / danh sách điểm giao, kể cả ⇅ và ✕)
@@ -325,6 +335,19 @@ Thanh nổi giữa-đáy bản đồ, nền `surface-raised`, viền `surface-bo
 - **Tuyến kết quả có viền (casing)**: lớp nền màu `surface` rộng 7px dưới lớp màu
   6px — tuyến nổi trên mọi nền bản đồ (kỹ thuật casing bản đồ chuẩn); áp dụng cho
   route chính, multiroute và tuyến so sánh.
+- **Luồng sáng tuyến chính (UI-XX):** khi route hai điểm đã có kết quả và timeline
+  đang ở bước cuối, giữ nguyên casing + thân amber rồi chèn thêm một đoạn nhấn
+  ngắn chạy theo chiều Đi → Đến trong 3,2 giây và lặp liên tục. Hai `PathLayer`
+  không pickable (halo amber 10px + lõi sáng 2,5px) dùng chung một deck.gl
+  `LayerExtension`: tiến độ tuyến được tạo một lần thành vertex attribute, còn
+  cửa sổ sáng chuyển động bằng shader uniform trong vòng redraw `_animate` của
+  deck.gl. React không tick state và base graph G_real không rebuild theo frame.
+  Hai lớp nằm dưới mũi tên, node và marker nên không che tương tác. Tuyến B,
+  multiroute và trace giữa chặng không chạy hiệu ứng. `prefers-reduced-motion:
+  reduce` thay loop bằng lõi sáng tĩnh 2px; thân route gốc luôn còn nguyên nên
+  nhận diện không phụ thuộc animation. Màu deck-only `routeFlowHalo`,
+  `routeFlowCore`, `routeFlowStatic` có giá trị dark/light riêng trong
+  `lib/colors.ts`; không tạo CSS animation, DOM overlay hoặc dependency mới.
 - **Attribution** "© CARTO · © OpenStreetMap contributors" chữ 10px góc dưới-phải
   khi dùng basemap (bắt buộc theo license; ẩn ở chế độ Offline).
 - Lớp ùn tắc: tô cạnh theo `cong-1..5` của khung giờ đang chọn.

@@ -43,19 +43,25 @@ export default function Home() {
           <MapView />
           <div
             aria-label="Công cụ ứng dụng"
+            role="toolbar"
             className="absolute right-3 top-3 z-20 flex h-11 items-center gap-1 rounded-lg border border-surface-strong bg-surface-raised p-1 shadow-float"
           >
             {offline && (
-              <span className="flex h-9 items-center gap-1.5 rounded-md border border-surface-border bg-surface-control px-2.5 text-xs font-medium text-ink">
+              <span
+                aria-label="Trạng thái: Ngoại tuyến"
+                className="flex h-9 items-center gap-1.5 rounded-md border border-surface-border bg-surface-control px-2.5 text-xs font-medium text-ink"
+              >
                 <WifiOff className="size-3.5 text-algo-frontier" />
-                Ngoại tuyến
+                <span className="max-[900px]:sr-only">Ngoại tuyến</span>
               </span>
             )}
             <Link
               href="/benchmark"
+              aria-label="Mở trang Benchmark"
               className="flex h-9 items-center gap-1.5 rounded-md px-2.5 text-xs font-medium text-ink-dim transition-colors duration-150 hover:bg-surface-control hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-algo-frontier"
             >
-              <BarChart3 className="size-3.5" /> Benchmark
+              <BarChart3 className="size-3.5" />
+              <span className="max-[900px]:sr-only">Benchmark</span>
             </Link>
             <ThemeToggle />
           </div>

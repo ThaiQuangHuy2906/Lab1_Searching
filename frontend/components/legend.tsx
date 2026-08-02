@@ -32,7 +32,6 @@ export function Legend() {
   const multi = useApp((s) => s.multi);
   const graph = useApp((s) => s.graph);
   const traceOnReal = useApp((s) => s.traceOnReal);
-  const drawerOpen = useApp((s) => s.drawerOpen);
   const P = usePalette();
   const H = P.hex;
 
@@ -43,13 +42,11 @@ export function Legend() {
   // chiếm góc bản đồ chỉ để chú giải mỗi "Nút giao"
   if (!trace && !multi?.found && !comparing && !trafficLayer) return null;
 
-  // Thanh trình phát nổi giữa-đáy chỉ đè lên chú giải khi bản đồ BỊ THU HẸP
-  // (drawer phải đang mở) — chỉ khi đó mới nâng chú giải lên trên thanh
-  // (timeline cao ~58px + bottom-4 + khe thở); drawer đóng thì bản đồ đủ
-  // rộng, chú giải nằm yên ở góc như cũ.
+  // Khi timeline xuất hiện, luôn nâng chú giải lên trên thanh. Ở viewport hẹp,
+  // timeline co giãn đủ xa về bên trái ngay cả khi drawer đóng.
   const timelineVisible =
     (graph === "real" && !traceOnReal ? 0 : trace?.trace.length ?? 0) > 0;
-  const lift = timelineVisible && drawerOpen;
+  const lift = timelineVisible;
 
   return (
     <div className={`pointer-events-none absolute left-3 z-10 flex flex-col gap-1.5 rounded-lg border border-surface-strong bg-surface-raised px-3 py-2.5 text-xs text-ink-dim shadow-float transition-[bottom] duration-200 ${

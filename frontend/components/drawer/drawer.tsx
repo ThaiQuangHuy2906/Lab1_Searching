@@ -1,5 +1,6 @@
 "use client";
 
+import * as React from "react";
 import { PanelRightClose, PanelRightOpen } from "lucide-react";
 import { Button } from "../ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
@@ -12,11 +13,23 @@ export function Drawer() {
   const open = useApp((s) => s.drawerOpen);
   const tab = useApp((s) => s.drawerTab);
   const set = useApp((s) => s.set);
+  const openButtonRef = React.useRef<HTMLButtonElement>(null);
+  const closeButtonRef = React.useRef<HTMLButtonElement>(null);
+  const previousOpen = React.useRef(open);
+
+  React.useEffect(() => {
+    if (previousOpen.current === open) return;
+    previousOpen.current = open;
+    const frame = window.requestAnimationFrame(() => {
+      (open ? closeButtonRef.current : openButtonRef.current)?.focus();
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [open]);
 
   if (!open) {
     return (
       <div className="relative z-10 flex h-full items-start border-l border-surface-border bg-surface-rail p-2 shadow-float">
-        <Button variant="ghost" size="iconSm" aria-label="Mở panel kết quả"
+        <Button ref={openButtonRef} variant="ghost" size="iconSm" aria-label="Mở panel kết quả"
           onClick={() => set({ drawerOpen: true })}>
           <PanelRightOpen />
         </Button>
@@ -24,13 +37,13 @@ export function Drawer() {
     );
   }
   return (
-    <aside aria-label="Kết quả định tuyến" className="relative z-10 flex h-full w-[400px] shrink-0 flex-col border-l border-surface-border bg-surface-rail shadow-float">
+    <aside aria-label="Kết quả định tuyến" className="relative z-10 flex h-full w-[400px] shrink-0 flex-col border-l border-surface-border bg-surface-rail shadow-float max-[900px]:w-[280px]">
       <div className="flex h-[60px] shrink-0 items-center gap-2 border-b border-surface-border px-4">
         <div className="flex-1">
           <span className="text-[15px] font-bold leading-5">Kết quả</span>
           <p className="text-xs text-ink-dim">Số liệu, giải thích và đối chiếu tuyến</p>
         </div>
-        <Button variant="ghost" size="iconSm" aria-label="Thu gọn panel kết quả"
+        <Button ref={closeButtonRef} variant="ghost" size="iconSm" aria-label="Thu gọn panel kết quả"
           onClick={() => set({ drawerOpen: false })}>
           <PanelRightClose />
         </Button>

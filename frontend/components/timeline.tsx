@@ -85,7 +85,7 @@ export function Timeline() {
   if (n === 0) return null;
 
   return (
-    <div className="absolute bottom-3 left-1/2 z-10 flex h-[52px] w-[min(640px,calc(100%-2rem))] -translate-x-1/2 items-center gap-2 rounded-lg border border-surface-strong bg-surface-raised px-2.5 py-2 shadow-float">
+    <div className="absolute bottom-3 left-1/2 z-10 flex h-[52px] w-[min(640px,calc(100%-2rem))] -translate-x-1/2 items-center gap-2 rounded-lg border border-surface-strong bg-surface-raised px-2.5 py-2 shadow-float max-[900px]:overflow-x-auto">
       <div className="flex items-center gap-1">
         <Button
           variant="ghost" size="iconSm" aria-label="Lùi một bước"

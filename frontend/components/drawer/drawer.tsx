@@ -15,7 +15,7 @@ export function Drawer() {
 
   if (!open) {
     return (
-      <div className="relative z-10 flex h-full items-start border-l border-surface-border bg-surface p-2 shadow-float">
+      <div className="relative z-10 flex h-full items-start border-l border-surface-border bg-surface-rail p-2 shadow-float">
         <Button variant="ghost" size="iconSm" aria-label="Mở panel kết quả"
           onClick={() => set({ drawerOpen: true })}>
           <PanelRightOpen />
@@ -24,17 +24,20 @@ export function Drawer() {
     );
   }
   return (
-    <aside className="relative z-10 flex h-full w-[400px] shrink-0 flex-col border-l border-surface-border bg-surface shadow-float">
-      <div className="flex items-center gap-2 border-b border-surface-border px-3 py-2">
-        <span className="flex-1 text-sm font-bold">Kết quả</span>
+    <aside aria-label="Kết quả định tuyến" className="relative z-10 flex h-full w-[400px] shrink-0 flex-col border-l border-surface-border bg-surface-rail shadow-float">
+      <div className="flex h-[60px] shrink-0 items-center gap-2 border-b border-surface-border px-4">
+        <div className="flex-1">
+          <span className="text-[15px] font-bold leading-5">Kết quả</span>
+          <p className="text-xs text-ink-dim">Số liệu, giải thích và đối chiếu tuyến</p>
+        </div>
         <Button variant="ghost" size="iconSm" aria-label="Thu gọn panel kết quả"
           onClick={() => set({ drawerOpen: false })}>
           <PanelRightClose />
         </Button>
       </div>
-      <div className="flex-1 overflow-y-auto p-3">
+      <div className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto p-3">
         <Tabs value={tab} onValueChange={(v) => set({ drawerTab: v as DrawerTab })}>
-          <TabsList>
+          <TabsList className="sticky top-0 z-20 shadow-sm">
             <TabsTrigger value="metrics">Số liệu</TabsTrigger>
             <TabsTrigger value="explain">Giải thích</TabsTrigger>
             <TabsTrigger value="compare">So sánh</TabsTrigger>

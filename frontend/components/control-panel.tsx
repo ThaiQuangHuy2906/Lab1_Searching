@@ -63,7 +63,7 @@ function SwitchRow({ label, tip, checked, onChange }: {
   label: string; tip?: string; checked: boolean; onChange: (v: boolean) => void;
 }) {
   return (
-    <div className="flex min-h-8 items-center justify-between gap-2">
+    <div className="flex min-h-9 items-center justify-between gap-2">
       <FieldLabel tip={tip}>{label}</FieldLabel>
       <Switch checked={checked} onCheckedChange={onChange} aria-label={label} />
     </div>
@@ -77,13 +77,13 @@ function Section({ title, tip, children }: {
   // mặc định MỞ hết, trạng thái chỉ sống trong phiên (không persist)
   const [open, setOpen] = React.useState(true);
   return (
-    <div className="flex shrink-0 flex-col gap-2.5 rounded-xl border border-surface-border bg-surface-panel p-3">
+    <div className="flex shrink-0 flex-col gap-2.5 rounded-xl border border-surface-border/80 bg-surface-panel p-3">
       <div className="flex items-center gap-2">
         <button
           type="button"
           aria-expanded={open}
           onClick={() => setOpen(!open)}
-          className="flex min-w-0 flex-1 items-center gap-2 text-[11px] font-bold uppercase tracking-wider text-ink"
+          className="-m-1 flex min-h-9 min-w-0 flex-1 items-center gap-2 rounded-lg px-1 text-[11px] font-bold uppercase tracking-wider text-ink transition-colors hover:bg-surface-control"
         >
           <span className="h-3 w-0.5 shrink-0 rounded-full bg-algo-frontier" />
           <span className="truncate">{title}</span>
@@ -113,21 +113,21 @@ function NodePicker({ kind }: { kind: "start" | "goal" }) {
   const isDemo = graph === "demo";
 
   // ride-hailing style (DESIGN v9d): fixed role color, hollow dot -> filled
-  const roleHex = kind === "start" ? "#047857" : "#dc2626";
+  const roleColor = kind === "start" ? "rgb(var(--start))" : "rgb(var(--goal))";
   const roleDot = (
     <span
       aria-hidden
       className="pointer-events-none absolute left-3 top-1/2 z-10 size-2.5 -translate-y-1/2 rounded-full"
-      style={value ? { background: roleHex } : { border: `2px solid ${roleHex}` }}
+      style={value ? { background: roleColor } : { border: `2px solid ${roleColor}` }}
     />
   );
-  const roleBorder = value ? { borderColor: `${roleHex}99` } : undefined;
+  const roleBorder = value ? { borderColor: roleColor } : undefined;
 
   // nút ✕ xoá chọn — cùng kiểu với ✕ của hàng Stops (DESIGN §4, duyệt v8)
   const clear = value ? (
     <button
       aria-label={kind === "start" ? "Xoá điểm đi" : "Xoá điểm đến"}
-      className="shrink-0 rounded p-1 text-ink-dim transition-colors hover:text-goal disabled:pointer-events-none disabled:opacity-40"
+      className="inline-flex size-9 shrink-0 items-center justify-center rounded-lg text-ink-dim transition-colors hover:bg-goal/10 hover:text-goal disabled:pointer-events-none disabled:opacity-40"
       disabled={busy}
       onClick={() => set(kind === "start" ? { start: null } : { goal: null })}
     >
@@ -191,7 +191,7 @@ function SwapButton() {
     <div className="z-10 -mt-1.5 -mb-3.5 flex justify-center">
       <Button
         variant="ghost" size="iconSm" aria-label="Đảo chiều Đi ↔ Đến"
-        className="h-7 w-7 rounded-full border border-surface-border bg-surface shadow-sm"
+        className="rounded-full border border-surface-border bg-surface-control shadow-sm"
         disabled={busy || s.stops.length > 0 || (!s.start && !s.goal)}
         onClick={() => s.set({ start: s.goal, goal: s.start })}
       >
@@ -208,18 +208,18 @@ export function ControlPanel() {
   const epsilonUnit = s.mode === "distance" ? "mét" : "giây";
 
   return (
-    <aside className="relative z-10 flex h-full w-80 shrink-0 flex-col border-r border-surface-border bg-surface shadow-float">
-      <div className="flex shrink-0 items-center gap-2.5 border-b border-surface-border bg-surface-panel px-4 py-3">
+    <aside aria-label="Bảng điều khiển định tuyến" className="relative z-10 flex h-full w-80 shrink-0 flex-col border-r border-surface-border bg-surface-rail shadow-float">
+      <div className="flex h-[60px] shrink-0 items-center gap-2.5 border-b border-surface-border bg-surface-rail px-4">
         <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-algo-frontier/15 text-algo-frontier">
           <Route className="size-4" />
         </span>
         <div className="min-w-0">
-          <h1 className="truncate text-sm font-bold">Định tuyến giao thông TP.HCM</h1>
+          <h1 className="truncate text-[15px] font-bold leading-5">Định tuyến giao thông TP.HCM</h1>
           <p className="truncate text-xs text-ink-dim">Shipper giao hàng đa điểm — Lab 1 AI</p>
         </div>
       </div>
 
-      <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto p-2.5">
+      <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-x-hidden overflow-y-auto p-2.5">
       <Section title="Bối cảnh">
         <Field label="Đồ thị">
           <Select value={s.graph} disabled={busy}
@@ -232,14 +232,14 @@ export function ControlPanel() {
           </Select>
         </Field>
         <Field label="Khung giờ" tip="Mức ùn tắc của từng đoạn đường thay đổi theo 4 mốc giờ chụp.">
-          <div className="grid grid-cols-4 gap-0.5 rounded-lg border border-surface-border bg-surface p-0.5">
+          <div className="grid grid-cols-4 gap-0.5 rounded-lg border border-surface-border bg-surface-control p-0.5">
             {SLOTS.map((slot) => (
               <Button
                 key={slot}
                 size="sm"
                 disabled={busy}
                 variant={s.slot === slot ? "default" : "ghost"}
-                className="h-7 px-0 font-mono text-xs"
+                className="h-8 px-0 font-mono text-xs"
                 onClick={() => s.setSlot(slot)}
               >
                 {slot}
@@ -251,14 +251,14 @@ export function ControlPanel() {
           tip="Cân bằng (mặc định) = thời gian + phạt rủi ro (giây); Nhanh nhất = chỉ thời gian; Ngắn nhất = chỉ quãng đường.">
           {/* segmented thay dropdown (v11): thấy đủ 3 tiêu chí một lúc — đúng
               điểm nhấn "3 mode" khi demo chấm, đỡ một cú click */}
-          <div className="grid grid-cols-3 gap-0.5 rounded-lg border border-surface-border bg-surface p-0.5">
+          <div className="grid grid-cols-3 gap-0.5 rounded-lg border border-surface-border bg-surface-control p-0.5">
             {MODES.map((m) => (
               <Button
                 key={m.v}
                 size="sm"
                 disabled={busy}
                 variant={s.mode === m.v ? "default" : "ghost"}
-                className="h-7 px-0 text-xs"
+                className="h-8 px-0 text-xs"
                 onClick={() => s.set({ mode: m.v })}
               >
                 {m.label}
@@ -300,7 +300,7 @@ export function ControlPanel() {
             tip="Số node tốt nhất giữ lại mỗi lớp — k nhỏ chạy nhanh nhưng có thể không tìm thấy đường.">
             <input
               type="number" min={1}
-              className="h-9 rounded-lg border border-surface-border bg-surface px-3 font-mono text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-algo-frontier focus-visible:ring-offset-2 focus-visible:ring-offset-surface-panel"
+              className="h-10 rounded-lg border border-surface-border bg-surface-control px-3 font-mono text-sm hover:border-surface-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-algo-frontier focus-visible:ring-offset-2 focus-visible:ring-offset-surface-panel"
               placeholder={isDemo ? "mặc định 5" : "mặc định 50"}
               value={s.beamWidth}
               onChange={(e) => s.set({ beamWidth: e.target.value === "" ? "" : Number(e.target.value) })}
@@ -312,7 +312,7 @@ export function ControlPanel() {
             tip={`Mỗi vòng IDA* nới ngưỡng thêm ε ${epsilonUnit}; nghiệm nằm trong khoảng tối ưu + ε.`}>
             <input
               type="number" min={0.1} step={0.5}
-              className="h-9 rounded-lg border border-surface-border bg-surface px-3 font-mono text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-algo-frontier focus-visible:ring-offset-2 focus-visible:ring-offset-surface-panel"
+              className="h-10 rounded-lg border border-surface-border bg-surface-control px-3 font-mono text-sm hover:border-surface-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-algo-frontier focus-visible:ring-offset-2 focus-visible:ring-offset-surface-panel"
               placeholder="mặc định 5"
               value={s.epsilon}
               onChange={(e) => s.set({ epsilon: e.target.value === "" ? "" : Number(e.target.value) })}
@@ -344,12 +344,12 @@ export function ControlPanel() {
             {s.stops.map((id, i) => {
               const name = s.graphData?.nodes.find((n) => n.id === id)?.name ?? id;
               return (
-                <div key={id} className="flex items-center gap-2 rounded-lg border border-surface-border px-2 py-1 text-xs">
+                <div key={id} className="flex min-h-10 items-center gap-2 rounded-lg border border-surface-border bg-surface-control pl-2 text-xs">
                   <span className="flex size-4 shrink-0 items-center justify-center rounded-full bg-algo-path font-mono text-[10px] font-bold text-surface">{i + 1}</span>
                   <span className="min-w-0 flex-1 truncate">{name}</span>
                   <button
                     aria-label={`Bỏ ${name}`}
-                    className="text-ink-dim hover:text-goal disabled:pointer-events-none disabled:opacity-40"
+                    className="inline-flex size-9 items-center justify-center rounded-lg text-ink-dim hover:bg-goal/10 hover:text-goal disabled:pointer-events-none disabled:opacity-40"
                     disabled={busy}
                     onClick={() => s.set({ stops: s.stops.filter((x) => x !== id) })}
                   >
@@ -391,7 +391,7 @@ export function ControlPanel() {
 
       </div>
       {/* CTA ghim đáy panel — luôn nhìn thấy (DESIGN 4, duyệt v4) */}
-      <div className="flex shrink-0 flex-col gap-1.5 border-t border-surface-border bg-surface-panel px-4 py-3">
+      <div className="flex shrink-0 flex-col gap-1.5 border-t border-surface-border bg-surface-rail px-4 py-3">
         <Button size="lg" className="w-full" disabled={busy} onClick={() => void s.runRoute()}>
           {s.running ? <Loader2 className="animate-spin" /> : <Play />}
           {s.running ? "Đang chạy…" : "Chạy thuật toán"}
@@ -426,7 +426,7 @@ function MultiButtons() {
   // ngắn lại đáng kể trên màn hình laptop (v11)
   if (s.stops.length === 0) {
     return (
-      <p className="rounded-lg border border-dashed border-surface-border px-2.5 py-2 text-[11px] leading-relaxed text-ink-dim">
+      <p className="rounded-lg border border-dashed border-surface-border bg-surface-control/60 px-2.5 py-2 text-[11px] leading-relaxed text-ink-dim">
         Thêm ít nhất 1 điểm giao ở trên để mở phần tối ưu thứ tự ghé (bài toán ATSP).
       </p>
     );

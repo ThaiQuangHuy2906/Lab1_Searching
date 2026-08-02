@@ -9,7 +9,7 @@ export function ThemeToggle({ className }: { className?: string }) {
   const toggleTheme = useApp((s) => s.toggleTheme);
   return (
     <Button
-      variant="secondary"
+      variant="ghost"
       size="iconSm"
       className={className}
       aria-label={theme === "dark" ? "Chuyển chế độ Sáng" : "Chuyển chế độ Tối"}

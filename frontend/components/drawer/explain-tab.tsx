@@ -146,7 +146,7 @@ export function ExplainTab() {
                 {ex.congested_segments.length}
               </Badge>
             </CardTitle>
-            <p className="text-[11px] text-ink-dim">
+            <p className="text-[11px] leading-4 text-ink-dim">
               Đang tô màu tương ứng trên bản đồ — gộp theo tên đường, lấy mức cao nhất.
             </p>
           </CardHeader>
@@ -161,8 +161,7 @@ export function ExplainTab() {
                   {info.count > 1 && (
                     <span className="shrink-0 text-ink-dim">{info.count} đoạn</span>
                   )}
-                  <span className="shrink-0 font-mono font-semibold"
-                    style={{ color: P.congestionHex[info.level] }}>
+                  <span className="shrink-0 font-mono font-semibold text-ink">
                     mức {info.level}/5
                   </span>
                 </div>
@@ -179,7 +178,7 @@ export function ExplainTab() {
       {ex.alternatives.map((alt) => (
         <Card key={alt.label}>
           <CardHeader className="gap-1">
-            <CardTitle className="text-algo-frontier">{alt.label}</CardTitle>
+            <CardTitle className="border-l-2 border-algo-frontier pl-2">{alt.label}</CardTitle>
             <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 font-mono text-xs text-ink">
               {fmtDur(alt.total_time_s)} · {fmtKm(alt.total_distance_m)}
               <AltDeltas altTime={alt.total_time_s} altDist={alt.total_distance_m}
@@ -187,7 +186,7 @@ export function ExplainTab() {
             </div>
           </CardHeader>
           <CardContent>
-            <p className="text-xs leading-relaxed text-ink-dim">{alt.why_not_vi}</p>
+            <p className="text-[13px] leading-5 text-ink-dim">{alt.why_not_vi}</p>
           </CardContent>
         </Card>
       ))}

@@ -24,10 +24,19 @@ vòng pulse ở node đang expand (§3), transition ẩn/hiện drawer, và các
 chức năng** (duyệt v6): hover/active state 150 ms trên phần tử tương tác, nút nhấn
 `scale(0.98)` khi active — phản hồi thao tác, không phải trang trí.
 
-**Phân lớp v6:** phần tử NỔI TRÊN BẢN ĐỒ (timeline, legend, cụm nút góc, banner chọn
-điểm) dùng nền ĐẶC `surface-panel` + **bóng trung tính** `shadow-float`
+**Phân lớp v6/UI-01:** phần tử NỔI TRÊN BẢN ĐỒ (timeline, legend, cụm nút góc,
+banner chọn điểm) dùng nền ĐẶC `surface-raised` + viền `surface-border-strong` +
+**bóng trung tính** `shadow-float`
 (`0 4px 16px rgb(0 0 0/0.45)` tối · `0 4px 16px rgb(0 0 0/0.14)` sáng) — chiều sâu
 2 lớp rõ ràng: bản đồ ↔ điều khiển. Bóng đen trung tính, không phải shadow màu.
+
+**UI-01 — Operational Control Room Refinement:** giữ nguyên kiến trúc ba cột và
+mọi hành vi hiện có, nhưng chuẩn hóa thành năm vai trò surface: nền map/offline,
+rail, panel/card, control chìm và chrome nổi. Map là vùng có visual weight lớn
+nhất; rail/panel dùng tương phản nền và khoảng cách thay cho viền lồng nhau.
+Header hai rail, toolbar map, timeline, legend và banner chọn điểm cùng dùng một
+nhịp cao 36–52 px, bán kính 8 px và chrome nổi trung tính. Light mode có giá trị
+surface/border riêng, không suy ra bằng cách đảo màu dark mode.
 
 ## 2. Token nền tảng (Dark | Light)
 
@@ -36,11 +45,17 @@ chỉ dùng tên token, KHÔNG dùng mã màu trực tiếp.
 
 | Token | Tối | Sáng | Dùng cho |
 |---|---|---|---|
-| `surface` | zinc-950 `#09090b` | zinc-50 `#fafafa` | nền trang, nền map offline |
-| `surface-panel` | zinc-900 `#18181b` | white `#ffffff` | panel trái, drawer, card, timeline |
-| `surface-border` | zinc-800 `#27272a` | zinc-200 `#e4e4e7` | viền panel/card/input |
+| `surface` | `#09090b` | `#f5f7fa` | nền trang mặc định |
+| `surface-map` | `#070a0e` | `#f2f5f8` | nền map/offline |
+| `surface-rail` | `#0d0e11` | `#f8f9fb` | panel trái và drawer phải |
+| `surface-panel` | `#16171b` | `#ffffff` | card/section trong rail |
+| `surface-control` | `#090a0d` | `#f6f7f9` | input, segmented control, vùng sunken |
+| `surface-raised` | `#1c1d22` | `#ffffff` | toolbar, timeline, legend, banner/popover |
+| `surface-border` | `#2a2b30` | `#dadee3` | viền tinh tế |
+| `surface-border-strong` | `#3f4148` | `#bec3cc` | viền chrome nổi/focus-adjacent |
 | `ink` | zinc-100 `#f4f4f5` | zinc-900 `#18181b` | chữ chính |
-| `ink-dim` | zinc-400 `#a1a1aa` | zinc-500 `#71717a` | nhãn phụ, chú thích |
+| `ink-dim` | `#a6a6b0` | zinc-600 `#52525b` | nhãn phụ, chú thích |
+| `ink-faint` | `#767680` | zinc-500 `#71717a` | metadata rất thứ cấp, không dùng cho body nhỏ |
 | `hl` (row highlight) | white @10% | zinc-950 @8% | hàng đang expand trong bảng g/h/f |
 | Bo góc | **8px** (`rounded-lg`) — cả 2 chế độ | | thống nhất mọi panel/card/nút/input |
 | Focus ring | 2px `algo-frontier`, offset 2px | | mọi phần tử focus bằng bàn phím |
@@ -59,14 +74,16 @@ trên nền trắng; node đang expand đảo trắng→đen.
 
 | Token | Tối | Sáng | Ý nghĩa |
 |---|---|---|---|
-| `algo-node` | zinc-300 `#d4d4d8` | zinc-600 `#52525b` | node thường (v8 dark zinc-500→300; v8e light zinc-400→600 — cùng bệnh chìm vào nền positron) |
+| `algo-node` | zinc-400 `#a1a1aa` @59% | zinc-600 `#52525b` @55% | node nền G_demo; trace state dùng màu + kích thước lớn hơn để nổi bật |
+| `algo-node-real` | zinc-400 @41% | zinc-600 @44% | node nền G_real; picking radius vẫn giữ riêng ở 8px |
 | `algo-frontier` | cyan-400 `#22d3ee` | cyan-600 `#0891b2` | node trong frontier |
 | `algo-expanded` | violet-400 `#a78bfa` | violet-600 `#7c3aed` | node đã expand |
 | `algo-current` | white `#ffffff` + pulse trắng | zinc-900 `#18181b` + pulse đen | node đang expand |
 | `algo-path` | amber-400 `#fbbf24` | amber-600 `#d97706` | tuyến kết quả, nét dày 4px |
 | `bidi-forward` | cyan-400 `#22d3ee` | cyan-600 `#0891b2` | phía xuôi (side=forward) |
 | `bidi-backward` | rose-400 `#fb7185` | rose-600 `#e11d48` | phía ngược (side=backward) |
-| `edge-dim` | zinc-400/85% `#a1a1aa` | zinc-500/80% `#71717a` | cạnh thường (v8 dark zinc-600→400; v8e light zinc-300→500 — vẫn dưới mọi màu thuật toán ở cả 2 chế độ) |
+| `edge-dim` | zinc-500 @40% | zinc-600 @36% | cạnh nền G_demo; phải lùi sau route/trace |
+| `edge-real` | zinc-500 @25% | zinc-600 @28% | cạnh nền G_real; giảm “white hairball” |
 | `cong-1..5` | `#10b981 #a3e635 #facc15 #f97316 #ef4444` | `#059669 #4d7c0f #a16207 #ea580c #dc2626` (lime-700/yellow-700 — đo WCAG trên nền positron) | thang ùn tắc 1→5 |
 | Start | chip **"Đi"**: nền emerald-700 `#047857`, chữ trắng — CỐ ĐỊNH 2 chế độ (chữ 5,48) | | điểm xuất phát; token `start` (marker/badge) vẫn emerald-500/600 theo chế độ |
 | Goal | chip **"Đến"**: nền red-600 `#dc2626`, chữ trắng — CỐ ĐỊNH 2 chế độ (đồ hoạ ≥3,5 / chữ 4,83) | | điểm đích; token `goal` vẫn red-500/600 theo chế độ |
@@ -78,7 +95,8 @@ trên nền trắng; node đang expand đảo trắng→đen.
 **Legend:** cố định góc **dưới-trái**, tiêu đề nhỏ "CHÚ GIẢI" (10px uppercase, v6),
 luôn hiển thị; nội dung theo ngữ cảnh
 (chạy 1 thuật toán → 5 mục thuật toán; bidijkstra → thêm 2 phía; bật lớp ùn tắc →
-thang 1–5; so sánh → 2 tuyến). Nền `surface-panel/95`, chữ 12px.
+thang 1–5; so sánh → 2 tuyến). Nền `surface-raised`, chữ 12px; bản thân legend
+không nhận pointer để không chặn thao tác map.
 
 ## 4. Bố cục
 
@@ -174,12 +192,12 @@ quả + chip Đi/Đến giữ nguyên); ON → nếu kết quả đang có sẵn
 timeline hiện lại ngay, nếu kết quả được chạy lúc OFF (không có bước) thì toast
 nhắc "bấm Chạy thuật toán lại để xem từng bước".
 
-**CARD HOÁ panel — duyệt v10 (nước lớn, panel bị chê "phẳng đều"):**
-panel trái và drawer phải đổi NỀN xuống `surface`; mỗi NHÓM nội dung là một
-**card** `surface-panel` bo `rounded-xl` + viền — ba tầng rõ: nền `surface`
-→ card `surface-panel` → control nhập `surface` (chìm trong card). Header app
-+ footer CTA giữ nền `surface-panel` làm khối trên/dưới. Khung giờ đổi thành
-**segmented control**: khối `surface` p-0.5 viền, nút active variant default
+**CARD HOÁ panel — duyệt v10, chuẩn hoá UI-01:** panel trái và drawer phải dùng
+nền `surface-rail`; mỗi NHÓM nội dung là một **card** `surface-panel` bo
+`rounded-lg` + viền — ba tầng rõ: rail `surface-rail` → card `surface-panel` →
+control nhập `surface-control` (chìm trong card). Header app + footer CTA giữ
+nền `surface-rail` làm khối trên/dưới. Khung giờ đổi thành **segmented control**:
+khối `surface-control` p-0.5 viền, nút active variant default
 (cyan), nút thường ghost — một khối liền thay 4 nút rời. Switch track OFF đổi
 `surface-border` → `ink-dim/35` (track cũ tàng hình trên nền trắng). Nút ⇅
 thành nút TRÒN viền nền `surface` chồng nhẹ giữa 2 ô, CĂN GIỮA ngang
@@ -210,11 +228,10 @@ v6: bản đồ ↔ điều khiển; trước đó 2 khối này chỉ có viề
 Tiêu đề nhóm trong panel ("BỐI CẢNH"…) thêm THANH ACCENT dọc `algo-frontier`
 2×12px + chữ nâng `ink-dim` → `ink` — mắt bắt nhóm nhanh hơn, không thêm màu mới.
 
-**Điều khiển dạng form — duyệt v9 (panel bị chê "phẳng"):** mọi control NHẬP
-(SelectTrigger, input số, nút secondary) dùng nền **`surface`** thay vì
-`surface-panel` — "khoét sâu" một nấc so với panel ở CẢ 2 chế độ (tối: zinc-950
-trên zinc-900; sáng: zinc-50 trên trắng), hết cảnh input trắng-trên-trắng.
-Popup/dropdown (SelectContent) vẫn `surface-panel` + `shadow-float` (lớp NỔI).
+**Điều khiển dạng form — duyệt v9, chuẩn hoá UI-01:** mọi control NHẬP
+(SelectTrigger, input số, nút secondary) dùng nền **`surface-control`** — "khoét
+sâu" một nấc so với panel ở CẢ 2 chế độ, hết cảnh input trắng-trên-trắng.
+Popup/dropdown (SelectContent) dùng `surface-raised` + `shadow-float` (lớp NỔI).
 Focus ring 2px `algo-frontier` (đã quy định §2) từ v9 áp THẬT vào code
 Button/SelectTrigger/Switch/input. Switch: thumb TRẮNG cố định + viền
 `ring-black/15` + bóng nhỏ (thumb đen cũ nhìn nặng ở chế độ sáng); track giữ
@@ -262,7 +279,7 @@ Button/SelectTrigger/Switch/input. Switch: thumb TRẮNG cố định + viền
 
 ## 5. SIGNATURE — Timeline trình phát
 
-Thanh nổi giữa-đáy bản đồ, nền `surface-panel/95`, viền `surface-border`:
+Thanh nổi giữa-đáy bản đồ, nền `surface-raised`, viền `surface-border-strong`:
 `[⏮ step-back] [▶/⏸] [⏭ step-forward] [━━━●━━ slider] [Bước 37/143] [tốc độ ▾]`
 
 - Tốc độ: 0.5× / 1× / 2× / 4× / 8× / 16× (base 500 ms/bước; 16× thêm ở v10e — 8× vẫn chậm với trace G_real hàng nghìn bước).
@@ -277,10 +294,10 @@ Thanh nổi giữa-đáy bản đồ, nền `surface-panel/95`, viền `surface-
 
 - Basemap: MapLibre style **Carto dark-matter** (không cần key):
   `https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json`
-- Chế độ **Offline**: tắt basemap, vẽ thuần đồ thị bằng deck.gl trên nền `surface`
+- Chế độ **Offline**: tắt basemap, vẽ thuần đồ thị bằng deck.gl trên nền `surface-map`
   — bảo hiểm wifi phòng bảo vệ; mọi lớp thuật toán giữ nguyên.
 - G_demo: node LUÔN có nhãn tên POI ở mọi mức zoom (duyệt v8 — bỏ ngưỡng zoom 12.8; **collision filter** vẫn tự nhường khi label đè nhau); G_real: không nhãn.
-- **Hover node** → tooltip tên POI (G_demo) / id nút (G_real) — nền `surface-panel`.
+- **Hover node** → tooltip tên POI (G_demo) / id nút (G_real) — nền `surface-raised`.
 - **Mũi tên hướng TUYẾN** (duyệt v5c — thay bản mũi-tên-mọi-cạnh v5/v5b vì rối):
   ▶ CHỈ xuất hiện dọc tuyến kết quả sau khi chạy thuật toán — tuyến chính, các chặng
   multiroute, và tuyến B khi So sánh. Đặt tại trung điểm các đoạn, cách nhau ≥ ~220 m,
@@ -345,6 +362,7 @@ Luật trục (duyệt v8c — sửa lỗi user bắt được: Recharts tự �
 đọc màu nền basemap **thật** từ style JSON của Carto, tính contrast WCAG:
 đồ hoạ thông tin ≥ 3,0 (so cả nền panel lẫn nền basemap), chữ ≥ 4,5. Trạng thái:
 **PASS toàn bộ cả 2 chế độ** (2026-07-26). Ngoại lệ CÓ CHỦ ĐÍCH, không tính ngưỡng:
-`algo-node` và `edge-dim` — node/cạnh "chưa thăm" nhận diện bằng SỰ VẮNG màu,
+`algo-node`, `algo-node-real`, `edge-dim` và `edge-real` — node/cạnh "chưa thăm"
+nhận diện bằng SỰ VẮNG màu,
 cố ý chìm để lớp thuật toán nổi; nếu nâng đạt 3,0 thì toàn bản đồ sáng rực và
 frontier/expanded mất độ nổi. Cần mắt người xác nhận khi duyệt.

@@ -49,22 +49,22 @@ export function GhfTable() {
 
   return (
     <div className="flex flex-col gap-1">
-    <div className="max-h-72 overflow-y-auto rounded-lg border border-surface-border">
+    <div className="max-h-72 overflow-y-auto rounded-lg border border-surface-strong bg-surface-control/50">
       {/* table-fixed là bắt buộc: layout auto để tên node dài (Bảo tàng Hồ
           Chí Minh…) đẩy bảng rộng hơn drawer và CẮT CỤT cột f (bug v10);
           với fixed, cột số giữ đúng bề rộng còn tên tự truncate. */}
       <table className="w-full table-fixed text-xs">
-        <thead className="sticky top-0 bg-surface-panel text-left text-ink-dim">
+        <thead className="sticky top-0 bg-surface-raised text-left text-ink-dim">
           <tr>
-            <th className="px-2.5 py-1.5 font-medium">Node</th>
-            {usesG && <th className="w-16 px-1.5 py-1.5 text-right font-medium">g</th>}
-            {usesH && <th className="w-14 px-1.5 py-1.5 text-right font-medium">h</th>}
-            {usesF && <th className="w-16 px-1.5 py-1.5 text-right font-medium">f</th>}
+            <th scope="col" className="px-2.5 py-1.5 font-medium">Node</th>
+            {usesG && <th scope="col" className="w-16 px-1.5 py-1.5 text-right font-medium">g</th>}
+            {usesH && <th scope="col" className="w-14 px-1.5 py-1.5 text-right font-medium">h</th>}
+            {usesF && <th scope="col" className="w-16 px-1.5 py-1.5 text-right font-medium">f</th>}
           </tr>
         </thead>
         <tbody>
           {cur && (
-            <tr ref={currentRef} className="bg-hl/10 font-medium text-ink">
+            <tr ref={currentRef} aria-current="step" className="bg-hl/10 font-medium text-ink">
               <td className="truncate px-2.5 py-1.5" title={nameOf(cur.expanded)}>
                 <span className="mr-1.5 inline-block size-2 rounded-full bg-algo-current align-middle" />
                 {nameOf(cur.expanded)}
@@ -75,11 +75,20 @@ export function GhfTable() {
               {usesF && <td className="px-1.5 py-1.5 text-right font-mono">–</td>}
             </tr>
           )}
-          {cur?.frontier.map((id) => (
+          {cur?.frontier.map((id) => {
+            const canJump = anim.stepOfNode.has(id);
+            return (
             <tr
               key={id}
+              tabIndex={canJump ? 0 : -1}
+              aria-label={canJump ? `Nhảy tới bước expand ${nameOf(id)}` : undefined}
               onClick={() => jump(id)}
-              className="cursor-pointer border-t border-surface-border/50 text-ink-dim hover:bg-surface-border/40"
+              onKeyDown={(event) => {
+                if (!canJump || (event.key !== "Enter" && event.key !== " ")) return;
+                event.preventDefault();
+                jump(id);
+              }}
+              className="cursor-pointer border-t border-surface-border/50 text-ink-dim hover:bg-surface-border/40 focus-visible:bg-surface-raised focus-visible:text-ink"
             >
               {/* tooltip gộp tên + affordance: title trên td từng ĐÈ mất
                   hint "bấm để nhảy" của tr (review v11) */}
@@ -94,7 +103,8 @@ export function GhfTable() {
               {usesH && <td className="px-1.5 py-1.5 text-right font-mono">{val(cur.h, id)}</td>}
               {usesF && <td className="px-1.5 py-1.5 text-right font-mono">{val(cur.f, id)}</td>}
             </tr>
-          ))}
+            );
+          })}
         </tbody>
       </table>
     </div>

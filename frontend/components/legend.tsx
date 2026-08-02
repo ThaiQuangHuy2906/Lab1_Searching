@@ -18,12 +18,8 @@ function Dot({ color, ring }: { color: string; ring?: boolean }) {
 function Line({ color, dashed }: { color: string; dashed?: boolean }) {
   return (
     <span
-      className="inline-block h-1 w-4 shrink-0 rounded-full"
-      style={
-        dashed
-          ? { backgroundImage: `repeating-linear-gradient(90deg, ${color} 0 4px, transparent 4px 7px)` }
-          : { background: color }
-      }
+      className={`inline-block w-[18px] shrink-0 border-t-[3px] ${dashed ? "border-dashed" : "border-solid"}`}
+      style={{ borderTopColor: color }}
     />
   );
 }
@@ -56,9 +52,9 @@ export function Legend() {
   const lift = timelineVisible && drawerOpen;
 
   return (
-    <div className={`absolute left-4 z-10 flex flex-col gap-1.5 rounded-lg border border-surface-border bg-surface-panel px-3 py-2.5 text-xs text-ink-dim shadow-float transition-[bottom] duration-200 ${
+    <div className={`pointer-events-none absolute left-3 z-10 flex flex-col gap-1.5 rounded-lg border border-surface-strong bg-surface-raised px-3 py-2.5 text-xs text-ink-dim shadow-float transition-[bottom] duration-200 ${
       lift ? "bottom-[5.5rem]" : "bottom-4"}`}>
-      <span className="text-[10px] font-bold uppercase tracking-wider">Chú giải</span>
+      <span className="text-[10px] font-bold uppercase tracking-wider text-ink">Chú giải</span>
       {trace && !multi && (
         <>
           {isBidi ? (

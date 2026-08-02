@@ -85,10 +85,12 @@ export function Timeline() {
   if (n === 0) return null;
 
   return (
-    <div className="absolute bottom-4 left-1/2 z-10 flex -translate-x-1/2 items-center gap-3 rounded-lg border border-surface-border bg-surface-panel px-4 py-2.5 shadow-float">
+    <div className="absolute bottom-3 left-1/2 z-10 flex h-[52px] w-[min(640px,calc(100%-2rem))] -translate-x-1/2 items-center gap-2 rounded-lg border border-surface-strong bg-surface-raised px-2.5 py-2 shadow-float">
       <div className="flex items-center gap-1">
         <Button
           variant="ghost" size="iconSm" aria-label="Lùi một bước"
+          aria-keyshortcuts="ArrowLeft"
+          disabled={stepIdx <= 0}
           onClick={() => { setStep(stepIdx - 1); set({ playing: false }); }}
         >
           <SkipBack />
@@ -96,19 +98,22 @@ export function Timeline() {
         <Button
           size="icon"
           aria-label={playing ? "Tạm dừng" : "Phát"}
+          aria-keyshortcuts="Space"
           onClick={togglePlay}
         >
           {playing ? <Pause /> : <Play />}
         </Button>
         <Button
           variant="ghost" size="iconSm" aria-label="Tiến một bước"
+          aria-keyshortcuts="ArrowRight"
+          disabled={stepIdx >= n - 1}
           onClick={() => { setStep(stepIdx + 1); set({ playing: false }); }}
         >
           <SkipForward />
         </Button>
       </div>
       <Slider
-        className="w-56 md:w-72"
+        className="min-w-24 flex-1"
         min={0}
         max={n - 1}
         step={1}
@@ -116,11 +121,11 @@ export function Timeline() {
         onValueChange={([v]) => { setStep(v); set({ playing: false }); }}
         aria-label="Bước hiện tại"
       />
-      <span className="whitespace-nowrap font-mono text-xs text-ink-dim">
+      <span className="min-w-[76px] whitespace-nowrap text-right font-mono text-xs text-ink-dim">
         Bước <span className="font-bold text-ink">{Math.min(stepIdx, n - 1) + 1}</span>/{n}
       </span>
       <Select value={String(speed)} onValueChange={(v) => set({ speed: Number(v) })}>
-        <SelectTrigger className="h-8 w-[76px] text-xs" aria-label="Tốc độ phát">
+        <SelectTrigger className="h-9 w-[72px] text-xs" aria-label="Tốc độ phát">
           <SelectValue />
         </SelectTrigger>
         <SelectContent>

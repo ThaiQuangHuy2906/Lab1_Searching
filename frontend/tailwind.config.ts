@@ -12,10 +12,15 @@ const config: Config = {
       colors: {
         surface: {
           DEFAULT: v("surface"),
+          map: v("surface-map"),
+          rail: v("surface-rail"),
           panel: v("surface-panel"),
+          control: v("surface-control"),
+          raised: v("surface-raised"),
           border: v("surface-border"),
+          strong: v("surface-border-strong"),
         },
-        ink: { DEFAULT: v("ink"), dim: v("ink-dim") },
+        ink: { DEFAULT: v("ink"), dim: v("ink-dim"), faint: v("ink-faint") },
         hl: v("hl"),
         algo: {
           node: v("algo-node"),

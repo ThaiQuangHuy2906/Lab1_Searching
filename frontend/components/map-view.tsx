@@ -14,7 +14,7 @@ import "maplibre-gl/dist/maplibre-gl.css";
 
 import { type RGBA } from "@/lib/colors";
 import { usePalette } from "@/lib/use-palette";
-import { Home, Minus, Plus, Trash2 } from "lucide-react";
+import { Home, Loader2, Minus, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { useApp } from "@/lib/store";
 import { Button } from "./ui/button";
@@ -49,6 +49,7 @@ export function MapView() {
 
   const [viewState, setViewState] = React.useState<MapViewState | null>(null);
   const [pulse, setPulse] = React.useState(1);
+  const [reducedMotion, setReducedMotion] = React.useState(false);
   const basemapErrorShown = React.useRef(false);
   const homeView = React.useRef<MapViewState | null>(null);
   const containerRef = React.useRef<HTMLDivElement>(null);
@@ -57,6 +58,14 @@ export function MapView() {
   // v11: quantized zoom (half-steps) — the G_real marker sizes scale with it
   // below, and quantizing keeps the layers memo from rebuilding every frame
   const zoomBucket = Math.round((viewState?.zoom ?? 14) * 2) / 2;
+
+  React.useEffect(() => {
+    const query = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const sync = () => setReducedMotion(query.matches);
+    sync();
+    query.addEventListener("change", sync);
+    return () => query.removeEventListener("change", sync);
+  }, []);
 
   // Fit the camera to the ACTUAL node cloud with the REAL canvas size.
   // meta.bbox covers the river + the empty east bank, so bbox-fitting left
@@ -89,12 +98,16 @@ export function MapView() {
   // the ONLY decorative motion allowed: pulse ring on the current node
   React.useEffect(() => {
     if (!anim.current) return;
+    if (reducedMotion) {
+      setPulse(1.25);
+      return;
+    }
     const id = window.setInterval(
       () => setPulse(1 + 0.9 * Math.abs(Math.sin(Date.now() / 280))),
       50,
     );
     return () => window.clearInterval(id);
-  }, [anim.current]);
+  }, [anim.current, reducedMotion]);
 
   const coord = React.useMemo(() => {
     const m = new Map<string, [number, number]>();
@@ -117,6 +130,8 @@ export function MapView() {
     [drawerTab, trace],
   );
 
+  const isDemo = graph === "demo";
+
   const nodeColor = React.useCallback(
     (n: GraphNode): RGBA => {
       if (anim.current?.expanded === n.id) return C.current;
@@ -127,12 +142,10 @@ export function MapView() {
         return C.expanded;
       }
       if (anim.frontierSet.has(n.id)) return C.frontier;
-      return C.node;
+      return isDemo ? C.node : C.nodeReal;
     },
-    [anim, C],
+    [anim, C, isDemo],
   );
-
-  const isDemo = graph === "demo";
   // v8: G_demo labels are ALWAYS on (user request) — collision filter handles overlap
   const showLabels = isDemo;
 
@@ -141,8 +154,8 @@ export function MapView() {
     // v11: G_real đọc như "cầu tóc rối" khi zoom xa — marker co giãn theo
     // zoom (2→3 px node, 1.1→1.6 px cạnh). MÀU giữ nguyên như duyệt v8;
     // zoom sát trở về đúng kích thước cũ.
-    const realNodeR = zoomBucket < 13 ? 2 : zoomBucket < 14 ? 2.5 : 3;
-    const realEdgeW = zoomBucket < 13 ? 1.1 : zoomBucket < 14 ? 1.4 : 1.6;
+    const realNodeR = zoomBucket < 13 ? 1.8 : zoomBucket < 14 ? 2.2 : 2.6;
+    const realEdgeW = zoomBucket < 13 ? 0.75 : zoomBucket < 14 ? 0.95 : 1.15;
     const edgeData = graphData.edges.map((e) => ({
       id: e.id,
       source: coord.get(e.u)!,
@@ -156,8 +169,10 @@ export function MapView() {
         getSourcePosition: (d: (typeof edgeData)[number]) => d.source,
         getTargetPosition: (d: (typeof edgeData)[number]) => d.target,
         getColor: (d: (typeof edgeData)[number]) =>
-          trafficLayer ? CONGESTION[d.level] : C.edgeDim,
-        getWidth: isDemo ? 3 : realEdgeW,
+          trafficLayer ? CONGESTION[d.level] : isDemo ? C.edgeDim : C.edgeReal,
+        getWidth: trafficLayer
+          ? (isDemo ? 2.4 : Math.max(1.1, realEdgeW))
+          : (isDemo ? 1.35 : realEdgeW),
         widthUnits: "pixels",
         updateTriggers: { getColor: [trafficLayer, traffic, theme] },
       }),
@@ -268,14 +283,22 @@ export function MapView() {
         pickable: true,
         getPosition: (n: GraphNode) => [n.lon, n.lat],
         getFillColor: nodeColor,
-        getRadius: isDemo ? 5.5 : realNodeR,
+        getRadius: (n: GraphNode) => {
+          if (anim.current?.expanded === n.id) return isDemo ? 7.2 : 5.8;
+          if (anim.frontierSet.has(n.id)) return isDemo ? 5.8 : 4.6;
+          if (anim.expandedSet.has(n.id)) return isDemo ? 5.2 : 4.1;
+          return isDemo ? 4.2 : realNodeR;
+        },
         radiusUnits: "pixels",
         stroked: false,
         // anim.steps.length is load-bearing: toggling "Trace trên G_real" OFF
         // empties anim.steps while stepIdx/trace/theme all stay unchanged —
         // without it deck.gl kept the stale expanded/frontier fill colors
         // (audit finding L3-03; same bug class as the label layer below)
-        updateTriggers: { getFillColor: [anim.stepIdx, anim.steps.length, trace, theme] },
+        updateTriggers: {
+          getFillColor: [anim.stepIdx, anim.steps.length, trace, theme],
+          getRadius: [anim.stepIdx, anim.steps.length, trace, zoomBucket],
+        },
       }),
     );
     if (isDemo) {
@@ -292,23 +315,24 @@ export function MapView() {
       );
     }
 
-    // pulse ring on the node being expanded
+    // Functional current ring: current remains identifiable without relying
+    // on fill color alone. The animated outer pulse is isolated below so a
+    // 50 ms tick never rebuilds every graph/path/label layer.
     if (anim.current) {
       const pos = coord.get(anim.current.expanded);
       if (pos) {
         out.push(
           new ScatterplotLayer({
-            id: "pulse",
+            id: "current-ring",
             data: [{ pos }],
             getPosition: (d: { pos: [number, number] }) => d.pos,
             stroked: true,
             filled: false,
-            getLineColor: C.pulse,
+            getLineColor: C.frontier,
             lineWidthUnits: "pixels",
             getLineWidth: 2,
-            getRadius: (isDemo ? 9 : 6) * pulse,
+            getRadius: isDemo ? 8.7 : 7,
             radiusUnits: "pixels",
-            updateTriggers: { getRadius: pulse },
           }),
         );
       }
@@ -375,8 +399,31 @@ export function MapView() {
     }
     return out;
   }, [graphData, coord, toPath, traffic, trafficLayer, congestedSet, trace, compare,
-      multi, anim, nodeColor, pulse, isDemo, showLabels, start, goal, stops,
+      multi, anim, nodeColor, isDemo, showLabels, start, goal, stops,
       pickTarget, drawerTab, C, CONGESTION, theme, zoomBucket]);
+
+  const pulseLayer = React.useMemo(() => {
+    if (!anim.current) return null;
+    const pos = coord.get(anim.current.expanded);
+    if (!pos) return null;
+    return new ScatterplotLayer({
+      id: "pulse",
+      data: [{ pos }],
+      getPosition: (d: { pos: [number, number] }) => d.pos,
+      stroked: true,
+      filled: false,
+      getLineColor: C.pulse,
+      lineWidthUnits: "pixels",
+      getLineWidth: reducedMotion ? 1.5 : 2,
+      getRadius: (isDemo ? 9 : 7) * pulse,
+      radiusUnits: "pixels",
+    });
+  }, [anim.current, coord, C.pulse, isDemo, pulse, reducedMotion]);
+
+  const deckLayers = React.useMemo(
+    () => pulseLayer ? [...layers, pulseLayer] : layers,
+    [layers, pulseLayer],
+  );
 
   const onClick = React.useCallback(
     (info: PickingInfo) => {
@@ -425,12 +472,18 @@ export function MapView() {
     [set],
   );
 
-  if (!viewState) {
+  // A graph switch clears graphData before the request starts, while the
+  // previous camera can remain valid. Key the shell to BOTH values so a
+  // failed switch never leaves an empty canvas with no retry affordance.
+  if (!graphData || !viewState) {
     return (
       <div ref={containerRef}
-        className="flex h-full flex-col items-center justify-center gap-3 bg-surface text-ink-dim">
+        className="flex h-full flex-col items-center justify-center gap-3 bg-surface-map text-ink-dim">
         {graphLoading ? (
-          <span>Đang tải đồ thị…</span>
+          <span className="flex items-center gap-2 text-sm">
+            <Loader2 className="size-4 animate-spin text-algo-frontier" />
+            Đang tải đồ thị…
+          </span>
         ) : (
           <>
             <span className="max-w-sm text-center text-sm">
@@ -446,12 +499,12 @@ export function MapView() {
   }
 
   return (
-    <div ref={containerRef} className="relative h-full w-full bg-surface">
+    <div ref={containerRef} className="relative h-full w-full bg-surface-map">
       <DeckGL
         viewState={viewState}
         onViewStateChange={({ viewState: vs }) => setViewState(vs as MapViewState)}
         controller
-        layers={layers as never[]}
+        layers={deckLayers as never[]}
         onClick={onClick}
         // node G_real teo còn 2px ở zoom xa (v11) — nới vùng ăn click để gõ
         // liên tục 9 điểm giao không phải nhắm từng pixel
@@ -464,7 +517,7 @@ export function MapView() {
             ? {
                 text: (object as GraphNode).name ?? `nút ${(object as GraphNode).id}`,
                 style: {
-                  background: "rgb(var(--surface-panel))",
+                  background: "rgb(var(--surface-raised))",
                   color: "rgb(var(--ink))",
                   border: "1px solid rgb(var(--surface-border))",
                   borderRadius: "8px", fontSize: "12px", padding: "4px 8px",
@@ -488,13 +541,21 @@ export function MapView() {
           />
         )}
       </DeckGL>
+      {graphLoading && (
+        <div role="status" className="pointer-events-none absolute inset-0 z-30 flex items-center justify-center bg-surface-map/65">
+          <span className="flex h-11 items-center gap-2 rounded-lg border border-surface-strong bg-surface-raised px-3 text-sm font-medium shadow-float">
+            <Loader2 className="size-4 animate-spin text-algo-frontier" />
+            Đang tải đồ thị…
+          </span>
+        </div>
+      )}
       {!offline && (
         <div className="pointer-events-none absolute bottom-1 right-1.5 z-10 text-[10px] text-ink-dim/80">
           © CARTO · © OpenStreetMap contributors
         </div>
       )}
       {/* map controls (DESIGN 6, v6): zoom +/- and fly-home */}
-      <div className="absolute bottom-10 right-3 z-10 flex flex-col gap-1 rounded-lg border border-surface-border bg-surface-panel p-1 shadow-float">
+      <div className="absolute bottom-10 right-3 z-10 flex flex-col gap-1 rounded-lg border border-surface-strong bg-surface-raised p-1 shadow-float">
         <Button variant="ghost" size="iconSm" aria-label="Phóng to"
           onClick={() => setViewState((v) => v && ({ ...v, zoom: (v.zoom ?? 0) + 0.7, transitionDuration: 250 }))}>
           <Plus />
@@ -527,7 +588,7 @@ export function MapView() {
         </Button>
       </div>
       {pickTarget && (
-        <div className="absolute left-1/2 top-3 flex -translate-x-1/2 items-center gap-2 rounded-lg border border-surface-border bg-surface-panel px-3 py-1.5 text-sm shadow-float">
+        <div className="absolute left-1/2 top-3 z-20 flex min-h-11 max-w-[min(680px,calc(100%-8rem))] -translate-x-1/2 items-center gap-2 rounded-lg border border-surface-strong bg-surface-raised px-3 text-sm shadow-float">
           {pickTarget === "stop" ? (
             <span>
               Bấm các nút giao để thêm điểm giao{" "}
@@ -546,7 +607,7 @@ export function MapView() {
           )}
           <button
             type="button"
-            className="rounded border border-surface-border px-1.5 py-0.5 text-xs text-ink-dim transition-colors hover:text-ink"
+            className="inline-flex h-9 items-center rounded-lg border border-surface-border bg-surface-control px-2.5 text-xs font-medium text-ink-dim transition-colors hover:border-surface-strong hover:text-ink"
             onClick={() => set({ pickTarget: null })}
           >
             Xong

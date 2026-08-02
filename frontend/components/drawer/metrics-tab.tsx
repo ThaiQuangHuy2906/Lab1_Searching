@@ -11,19 +11,25 @@ import { GhfTable } from "../ghf-table";
 import { ALGO_LABEL, useApp } from "@/lib/store";
 import { fmtInt, fmtKm, fmtMinutes, fmtMs, fmtPct, fmtVi } from "@/lib/format";
 
-function Stat({ icon: Icon, label, value, sub, tip }: {
+function Stat({ icon: Icon, label, value, sub, tip, emphasis = "effort" }: {
   icon: React.ComponentType<{ className?: string }>;
   label: string; value: string; sub?: string; tip?: string;
+  emphasis?: "primary" | "secondary" | "effort";
 }) {
+  const valueClass = emphasis === "primary"
+    ? "text-xl"
+    : emphasis === "secondary" ? "text-base" : "text-[15px]";
   return (
-    <div className="rounded-lg border border-surface-border p-2.5">
-      <div className="flex items-center gap-1.5 text-[11px] text-ink-dim">
+    <div className={`rounded-lg border p-2.5 ${emphasis === "primary"
+      ? "border-algo-frontier/35 bg-algo-frontier/5"
+      : "border-surface-border bg-surface-control/70"}`}>
+      <div className="flex items-center gap-1.5 text-xs text-ink-dim">
         <Icon className="size-3.5 shrink-0" />
         <span className="truncate">{label}</span>
         {tip && <InfoTip text={tip} />}
       </div>
-      <div className="mt-1 font-mono text-[15px] font-bold leading-tight text-ink">{value}</div>
-      {sub && <div className="font-mono text-[10px] text-ink-dim">{sub}</div>}
+      <div className={`mt-1 font-mono font-bold leading-tight text-ink ${valueClass}`}>{value}</div>
+      {sub && <div className="mt-0.5 font-mono text-[11px] leading-4 text-ink-dim">{sub}</div>}
     </div>
   );
 }
@@ -33,10 +39,12 @@ export function EmptyState({ icon: Icon, title, hint }: {
   title: string; hint: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-col items-center gap-2 rounded-lg border border-dashed border-surface-border px-4 py-10 text-center">
-      <Icon className="size-6 text-ink-dim" />
+    <div className="flex flex-col items-center gap-2.5 rounded-lg border border-dashed border-surface-strong bg-surface-panel px-4 py-7 text-center">
+      <span className="flex size-10 items-center justify-center rounded-lg bg-surface-control text-algo-frontier">
+        <Icon className="size-5" />
+      </span>
       <p className="text-sm font-medium text-ink">{title}</p>
-      <p className="text-xs leading-relaxed text-ink-dim">{hint}</p>
+      <p className="text-xs leading-5 text-ink-dim">{hint}</p>
     </div>
   );
 }
@@ -103,7 +111,7 @@ export function MetricsTab() {
                 : <>Muốn xem từng bước: bật <b>Trace trên G_real</b> trước khi chạy</>}
             </span>
           } />
-        <div className="flex flex-col gap-1.5 rounded-lg border border-surface-border bg-surface-panel/60 p-3">
+        <div className="flex flex-col gap-1.5 rounded-lg border border-surface-border bg-surface-control/70 p-3">
           <p className="text-[11px] font-bold uppercase tracking-wider text-ink-dim">
             Mẹo demo
           </p>
@@ -140,7 +148,7 @@ export function MetricsTab() {
   }[trace.mode];
   return (
     <div className="flex flex-col gap-3">
-      <p className="font-mono text-[11px] text-ink-dim">
+      <p className="rounded-lg border border-surface-border bg-surface-control px-2.5 py-2 font-mono text-[11px] text-ink-dim">
         {ALGO_LABEL[trace.algorithm].split(" — ")[0]} · {modeVi} · {trace.time_slot} ·{" "}
         {trace.graph === "demo" ? "G_demo" : "G_real"}
       </p>
@@ -165,11 +173,14 @@ export function MetricsTab() {
           <div className="col-span-2">
             <Stat icon={Sigma} label={`Tổng chi phí (${costUnit}) — tiêu chí ${modeVi}`}
               value={fmtVi(m.total_cost ?? 0, 1)} sub={costSub}
+              emphasis="primary"
               tip="Giá trị hàm chi phí theo tiêu chí đang chọn — thuật toán tối ưu hoá đúng con số này." />
           </div>
           <Stat icon={Clock} label="Thời gian đi"
-            value={fmtMinutes(m.total_time_s ?? 0)} sub={`${fmtVi(m.total_time_s ?? 0, 1)} s`} />
-          <Stat icon={RouteIcon} label="Quãng đường" value={fmtKm(m.total_distance_m ?? 0)} />
+            value={fmtMinutes(m.total_time_s ?? 0)} sub={`${fmtVi(m.total_time_s ?? 0, 1)} s`}
+            emphasis="secondary" />
+          <Stat icon={RouteIcon} label="Quãng đường" value={fmtKm(m.total_distance_m ?? 0)}
+            emphasis="secondary" />
         </div>
       </div>
 

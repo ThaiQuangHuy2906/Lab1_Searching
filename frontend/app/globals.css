@@ -6,13 +6,20 @@
    tailwind alpha modifier. Component KHÔNG dùng mã màu trực tiếp. */
 :root,
 :root[data-theme="dark"] {
-  --surface: 9 9 11; /*        zinc-950 */
-  --surface-panel: 24 24 27; /* zinc-900 */
-  --surface-border: 39 39 42; /* zinc-800 */
+  color-scheme: dark;
+  --surface: 9 9 11;
+  --surface-map: 7 10 14;
+  --surface-rail: 13 14 17;
+  --surface-panel: 22 23 27;
+  --surface-control: 9 10 13;
+  --surface-raised: 28 29 34;
+  --surface-border: 42 43 48;
+  --surface-border-strong: 63 65 72;
   --ink: 244 244 245; /*        zinc-100 */
-  --ink-dim: 161 161 170; /*    zinc-400 */
+  --ink-dim: 166 166 176;
+  --ink-faint: 118 118 128;
   --hl: 255 255 255; /*         row highlight base (dùng /10) */
-  --algo-node: 113 113 122; /*  zinc-500 (v4) */
+  --algo-node: 161 161 170;
   --algo-frontier: 34 211 238; /* cyan-400 */
   --algo-expanded: 167 139 250; /* violet-400 */
   --algo-current: 255 255 255;
@@ -25,13 +32,20 @@
 }
 
 :root[data-theme="light"] {
-  --surface: 250 250 250; /*    zinc-50 */
+  color-scheme: light;
+  --surface: 245 247 250;
+  --surface-map: 242 245 248;
+  --surface-rail: 248 249 251;
   --surface-panel: 255 255 255;
-  --surface-border: 228 228 231; /* zinc-200 */
+  --surface-control: 246 247 249;
+  --surface-raised: 255 255 255;
+  --surface-border: 218 222 227;
+  --surface-border-strong: 190 195 204;
   --ink: 24 24 27; /*           zinc-900 */
-  --ink-dim: 113 113 122; /*    zinc-500 */
+  --ink-dim: 82 82 91;
+  --ink-faint: 113 113 122;
   --hl: 9 9 11;
-  --algo-node: 161 161 170; /*  zinc-400 */
+  --algo-node: 82 82 91;
   --algo-frontier: 8 145 178; /* cyan-600 */
   --algo-expanded: 124 58 237; /* violet-600 */
   --algo-current: 24 24 27; /*  zinc-900 */
@@ -53,6 +67,15 @@
   ::-webkit-scrollbar { width: 8px; height: 8px; }
   ::-webkit-scrollbar-thumb { @apply bg-surface-border rounded-lg; }
   ::-webkit-scrollbar-track { background: transparent; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
 }
 
 /* vòng pulse của node đang expand — hiệu ứng duy nhất được phép (DESIGN 1) */

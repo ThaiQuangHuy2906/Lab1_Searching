@@ -83,7 +83,7 @@ function Verdict({ a, b }: { a: Trace; b: Trace }) {
 
   if (cb === null || ca === null) {
     return (
-      <p className="rounded-lg border border-surface-border bg-surface px-3 py-2.5 text-xs leading-relaxed">
+      <p className="rounded-lg border border-surface-border bg-surface-control px-3 py-2.5 text-[13px] leading-5">
         {ca === null && cb === null
           ? <>Cả <b>{nameA}</b> lẫn <b>{nameB}</b> đều không tìm được đường ở cấu hình này</>
           : <><b>{cb === null ? nameB : nameA}</b> không tìm được đường ở cấu hình này</>}
@@ -101,7 +101,7 @@ function Verdict({ a, b }: { a: Trace; b: Trace }) {
 
   if (Math.abs(ca - cb) < 0.05) {
     return (
-      <p className="rounded-lg border border-surface-border bg-surface px-3 py-2.5 text-xs leading-relaxed">
+      <p className="rounded-lg border border-surface-border bg-surface-control px-3 py-2.5 text-[13px] leading-5">
         Hai thuật toán tìm được tuyến <b>cùng chi phí</b> ({fmtCost(ca)}).{expClause}
       </p>
     );
@@ -110,7 +110,7 @@ function Verdict({ a, b }: { a: Trace; b: Trace }) {
     ? [nameA, nameB, ca, cb] : [nameB, nameA, cb, ca];
   const pct = ((lCost - wCost) / wCost) * 100;
   return (
-    <p className="rounded-lg border border-surface-border bg-surface px-3 py-2.5 text-xs leading-relaxed">
+    <p className="rounded-lg border border-surface-border bg-surface-control px-3 py-2.5 text-[13px] leading-5">
       Tuyến của <b>{lName}</b> đắt hơn <b>{wName}</b>{" "}
       <b className="font-mono">{fmtCost(lCost - wCost)}</b>
       <span className="font-mono"> (+{fmtVi(pct, pct < 10 ? 1 : 0)} %)</span> trên
@@ -129,7 +129,9 @@ export function CompareTab() {
       <div className="flex items-end gap-2">
         <div className="flex-1">
           <div className="mb-1.5 text-xs font-medium text-ink-dim">Thuật toán B</div>
-          <Select value={s.compareAlgo} onValueChange={(v) => s.set({ compareAlgo: v as Algorithm })}>
+          <Select value={s.compareAlgo}
+            disabled={s.comparing || s.running || s.multiRunning}
+            onValueChange={(v) => s.set({ compareAlgo: v as Algorithm })}>
             <SelectTrigger aria-label="Thuật toán so sánh"><SelectValue /></SelectTrigger>
             <SelectContent>
               {(Object.keys(ALGO_LABEL) as Algorithm[])
@@ -144,7 +146,7 @@ export function CompareTab() {
           disabled={!a || s.comparing || s.running || s.multiRunning}
           onClick={() => void s.runCompare()}>
           {s.comparing ? <Loader2 className="animate-spin" /> : <GitCompareArrows />}
-          So sánh
+          {s.comparing ? "Đang so sánh…" : "So sánh"}
         </Button>
       </div>
 
@@ -167,7 +169,7 @@ export function CompareTab() {
               được phép CẮT CỤT cột Δ (bug class v10, review v11 bắt lại) */}
           <div className="overflow-x-auto rounded-lg border border-surface-border">
             <table className="w-full text-xs">
-              <thead className="bg-surface text-ink-dim">
+              <thead className="bg-surface-control text-ink-dim">
                 <tr>
                   <th className="px-2.5 py-2 text-left font-medium">Chỉ số</th>
                   <th className="whitespace-nowrap px-2 py-2 text-right font-medium text-algo-path">
@@ -221,7 +223,7 @@ export function CompareTab() {
             </table>
           </div>
 
-          <p className="text-[11px] text-ink-dim">
+          <p className="text-xs leading-5 text-ink-dim">
             Δ = B so với A (xanh: B tốt hơn, đỏ: B kém hơn — mọi chỉ số càng thấp càng
             tốt). Vạch màu ở tiêu đề trùng chú giải tuyến trên bản đồ.
           </p>

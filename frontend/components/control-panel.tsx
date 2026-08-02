@@ -5,9 +5,7 @@
 // Tooltip = icon ? cạnh label (InfoTip); switch rows thẳng hàng (§8).
 
 import * as React from "react";
-import {
-  ArrowDownUp, ChevronDown, Crosshair, ListOrdered, Loader2, Play, Route, X,
-} from "lucide-react";
+import { ArrowDownUp, ChevronDown, Crosshair, Loader2, Play, Route, X } from "lucide-react";
 import { Button } from "./ui/button";
 import { Switch } from "./ui/switch";
 import { InfoTip } from "./ui/info-tip";
@@ -18,7 +16,8 @@ import {
 import { Skeleton } from "./ui/skeleton";
 import { toast } from "sonner";
 import { ALGO_LABEL, useApp } from "@/lib/store";
-import type { Algorithm, Mode, TimeSlot, TspMethod } from "@/lib/types";
+import type { Algorithm, Mode, TimeSlot } from "@/lib/types";
+import { AtspSetup } from "./atsp/atsp-setup";
 
 const SLOTS: TimeSlot[] = ["07:30", "12:00", "17:30", "22:00"];
 const MODES: { v: Mode; label: string }[] = [
@@ -335,58 +334,10 @@ export function ControlPanel() {
           <NodePicker kind="start" />
         </Field>
         <SwapButton />
-        <Field label="Đến — điểm đích">
+        <Field label={s.stops.length > 0 ? "Đến — không dùng trong ATSP" : "Đến — điểm đích"}>
           <NodePicker kind="goal" />
         </Field>
-        <Field label={`Điểm giao hàng (${s.stops.length}/15)`}
-          tip="Danh sách điểm cần ghé — bài toán ATSP tìm thứ tự ghé tốt nhất (có đường một chiều nên chi phí đi–về khác nhau).">
-          <div className="flex flex-col gap-1.5">
-            {s.stops.map((id, i) => {
-              const name = s.graphData?.nodes.find((n) => n.id === id)?.name ?? id;
-              return (
-                <div key={id} className="flex min-h-10 items-center gap-2 rounded-lg border border-surface-border bg-surface-control pl-2 text-xs">
-                  <span className="flex size-4 shrink-0 items-center justify-center rounded-full bg-algo-path font-mono text-[10px] font-bold text-surface">{i + 1}</span>
-                  <span className="min-w-0 flex-1 truncate">{name}</span>
-                  <button
-                    aria-label={`Bỏ ${name}`}
-                    className="inline-flex size-9 items-center justify-center rounded-lg text-ink-dim hover:bg-goal/10 hover:text-goal disabled:pointer-events-none disabled:opacity-40"
-                    disabled={busy}
-                    onClick={() => s.set({ stops: s.stops.filter((x) => x !== id) })}
-                  >
-                    <X className="size-3.5" />
-                  </button>
-                </div>
-              );
-            })}
-            {isDemo ? (
-              <Select value="" disabled={busy} onValueChange={(v) => {
-                if (!s.stops.includes(v) && v !== s.start && s.stops.length < 15)
-                  s.set({ stops: [...s.stops, v] });
-              }}>
-                <SelectTrigger aria-label="Thêm điểm giao">
-                  <SelectValue placeholder="+ Thêm điểm giao…" />
-                </SelectTrigger>
-                <SelectContent>
-                  {s.graphData?.nodes
-                    .filter((n) => n.id !== s.start && !s.stops.includes(n.id))
-                    .map((n) => (
-                      <SelectItem key={n.id} value={n.id}>{n.name ?? n.id}</SelectItem>
-                    ))}
-                </SelectContent>
-              </Select>
-            ) : (
-              <Button variant="secondary" size="sm" disabled={busy}
-                className={s.pickTarget === "stop" ? "border-algo-frontier text-algo-frontier" : ""}
-                onClick={() => s.set({ pickTarget: s.pickTarget === "stop" ? null : "stop" })}>
-                <Crosshair /> Thêm điểm từ bản đồ
-              </Button>
-            )}
-          </div>
-        </Field>
-        <Field label="Tối ưu thứ tự ghé (ATSP)"
-          tip="Held-Karp cho nghiệm tối ưu tuyệt đối (tối đa 15 điểm); NN + 2-opt và SA là xấp xỉ nhanh. Ma trận chi phí bất đối xứng vì đường một chiều.">
-          <MultiButtons />
-        </Field>
+        <AtspSetup />
       </Section>
 
       </div>
@@ -414,44 +365,5 @@ export function ControlPanel() {
         {s.graphLoading && <Skeleton className="h-4 w-full" />}
       </div>
     </aside>
-  );
-}
-
-function MultiButtons() {
-  const s = useApp();
-  const method = s.tspMethod; // store-backed: sống sót qua thu gọn Section (v11)
-  const busy = s.running || s.comparing || s.multiRunning;
-  const tooMany = method === "held_karp" && s.stops.length > 14;
-  // chưa có điểm giao: đừng bày 2 control chết — một dòng hint là đủ, panel
-  // ngắn lại đáng kể trên màn hình laptop (v11)
-  if (s.stops.length === 0) {
-    return (
-      <p className="rounded-lg border border-dashed border-surface-border bg-surface-control/60 px-2.5 py-2 text-[11px] leading-relaxed text-ink-dim">
-        Thêm ít nhất 1 điểm giao ở trên để mở phần tối ưu thứ tự ghé (bài toán ATSP).
-      </p>
-    );
-  }
-  return (
-    <div className="flex flex-col gap-1.5">
-      <Select value={method}
-        onValueChange={(v) => s.set({ tspMethod: v as TspMethod })}>
-        <SelectTrigger aria-label="Phương pháp TSP"><SelectValue /></SelectTrigger>
-        <SelectContent>
-          <SelectItem value="held_karp">Held-Karp — tối ưu tuyệt đối</SelectItem>
-          <SelectItem value="nn_2opt">NN + 2-opt — xấp xỉ nhanh</SelectItem>
-          <SelectItem value="sa">Simulated Annealing — 5 seed</SelectItem>
-        </SelectContent>
-      </Select>
-      {tooMany && (
-        <p className="text-[11px] text-algo-path">
-          Held-Karp nhận tối đa 15 điểm (kể cả điểm Đi) — hãy dùng NN+2-opt hoặc SA.
-        </p>
-      )}
-      <Button variant="secondary" disabled={busy || tooMany}
-        onClick={() => void s.runMulti(method)}>
-        {s.multiRunning ? <Loader2 className="animate-spin" /> : <ListOrdered />}
-        {s.multiRunning ? "Đang tối ưu…" : "Tối ưu thứ tự"}
-      </Button>
-    </div>
   );
 }

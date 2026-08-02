@@ -277,6 +277,24 @@ Button/SelectTrigger/Switch/input. Switch: thumb TRẮNG cố định + viền
   `start` khi B tốt hơn / `goal` khi kém (mọi chỉ số càng thấp càng tốt), caption ghi
   chú quy ước; (d) "Đảm bảo tối ưu" dùng Badge ok/warn như tab Số liệu.
 
+**UI-02 — ATSP control flow refinement:** phần Hành trình giữ nguyên NodePicker,
+store và `runMulti`, nhưng trình bày ATSP theo chuỗi Đi → thứ tự điểm giao → phương
+pháp → tối ưu → kết quả. Khi chưa có stop, một empty subpanel hướng dẫn ba bước và
+không bày method/action bị vô hiệu. Khi có stop, status strip “Chế độ nhiều điểm”
+ghi rõ điểm Đi, số điểm giao và việc điểm Đến không tham gia; danh sách giữ đúng
+thứ tự `stops`, mỗi hàng có badge amber chữ zinc-950 và nút xoá 36 px. Control thêm
+điểm nằm sau danh sách, khoá và hiện caption khi đạt 15 stop. Method block phân biệt
+“Tối ưu tuyệt đối” với “Nghiệm xấp xỉ”; Held-Karp chỉ cho tối đa 14 stop + điểm Đi,
+không tự đổi method hoặc xoá stop khi vượt giới hạn. Khi chạy, panel hiển thị spinner
+và drawer ưu tiên skeleton ATSP hơn result cũ, không có phần trăm giả.
+
+Kết quả ATSP trong tab Số liệu dùng metadata strip (method · mode · slot · graph),
+guarantee badge theo `optimal_guarantee`, card tỷ lệ tiết kiệm theo đúng
+`savings_pct`, cặp card “Theo thứ tự nhập”/“Sau tối ưu” và itinerary đánh số theo
+`multi.order`. Tên method luôn là nhãn thân thiện, không in raw enum; `found=false`
+có state riêng, không rơi về empty state của route hai điểm. Toàn bộ dùng token và
+năm vai trò surface của UI-01; không thêm màu, dependency hay interaction mới.
+
 ## 5. SIGNATURE — Timeline trình phát
 
 Thanh nổi giữa-đáy bản đồ, nền `surface-raised`, viền `surface-border-strong`:

@@ -5,11 +5,11 @@ import {
   Route as RouteIcon, Sigma, Timer,
 } from "lucide-react";
 import { Badge } from "../ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { InfoTip } from "../ui/info-tip";
 import { GhfTable } from "../ghf-table";
+import { AtspLoading, AtspResult } from "../atsp/atsp-result";
 import { ALGO_LABEL, useApp } from "@/lib/store";
-import { fmtInt, fmtKm, fmtMinutes, fmtMs, fmtPct, fmtVi } from "@/lib/format";
+import { fmtInt, fmtKm, fmtMinutes, fmtMs, fmtVi } from "@/lib/format";
 
 function Stat({ icon: Icon, label, value, sub, tip, emphasis = "effort" }: {
   icon: React.ComponentType<{ className?: string }>;
@@ -52,47 +52,12 @@ export function EmptyState({ icon: Icon, title, hint }: {
 export function MetricsTab() {
   const trace = useApp((s) => s.trace);
   const multi = useApp((s) => s.multi);
+  const multiRunning = useApp((s) => s.multiRunning);
   const graph = useApp((s) => s.graph);
   const graphData = useApp((s) => s.graphData);
 
-  if (multi?.found && multi.totals && multi.original_order_totals) {
-    const nameOf = (id: string) =>
-      graphData?.nodes.find((n) => n.id === id)?.name ?? id;
-    return (
-      <div className="flex flex-col gap-3">
-        <Card>
-          <CardHeader><CardTitle>Thứ tự giao tối ưu ({multi.method})</CardTitle></CardHeader>
-          <CardContent className="flex flex-col gap-1 text-xs">
-            {multi.order.map((id, i) => (
-              <div key={id} className="flex items-center gap-2">
-                <span className="flex size-4 shrink-0 items-center justify-center rounded-full bg-algo-path font-mono text-[10px] font-bold text-surface">
-                  {i === 0 ? "Đi" : i}
-                </span>
-                <span className="truncate">{nameOf(id)}</span>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-        <div className="grid grid-cols-2 gap-2">
-          <Stat icon={Clock} label="Theo thứ tự nhập"
-            value={fmtMinutes(multi.original_order_totals.total_time_s)}
-            sub={fmtKm(multi.original_order_totals.total_distance_m)} />
-          <Stat icon={Clock} label="Sau tối ưu"
-            value={fmtMinutes(multi.totals.total_time_s)}
-            sub={fmtKm(multi.totals.total_distance_m)} />
-        </div>
-        <div className="rounded-lg bg-start/10 p-3 text-center">
-          <span className="text-xs text-ink-dim">Tiết kiệm</span>{" "}
-          <span className="font-mono text-lg font-bold text-start">
-            {multi.savings_pct !== null ? fmtPct(multi.savings_pct) : "—"}
-          </span>
-        </div>
-        <Badge variant={multi.optimal_guarantee ? "ok" : "warn"} className="w-fit">
-          {multi.optimal_guarantee ? "Tối ưu tuyệt đối (Held-Karp)" : "Nghiệm xấp xỉ"}
-        </Badge>
-      </div>
-    );
-  }
+  if (multiRunning) return <AtspLoading />;
+  if (multi) return <AtspResult multi={multi} graphData={graphData} />;
 
   if (!trace) {
     const isDemo = graph === "demo";

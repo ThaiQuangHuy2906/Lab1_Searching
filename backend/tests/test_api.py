@@ -11,8 +11,10 @@ import pytest
 from fastapi.testclient import TestClient
 
 import app.main as main_module
+from app.graph_store import GraphStore
 from app.main import app
-from app.models import MultirouteResponse, Trace
+from app.models import MultirouteResponse, OptimizeRouteResponse, Trace
+from app.tsp import build_matrix
 
 client = TestClient(app, raise_server_exceptions=False)
 
@@ -175,6 +177,197 @@ def test_multiroute_duplicate_stops_422():
         "start": "n0001", "stops": ["n0002", "n0002"], "method": "sa",
         "time_slot": "07:30", "graph": "demo"})
     assert r.status_code == 422
+
+
+# ----------------------------------------------- coordinate route planning
+
+
+def coordinate_body(destination_ids=("n0002", "n0043", "n0015"), **over) -> dict:
+    nodes = {
+        node["id"]: node
+        for node in client.get("/api/graph", params={"level": "demo"}).json()["nodes"]
+    }
+
+    def location(node_id: str) -> dict:
+        node = nodes[node_id]
+        return {
+            "id": f"place-{node_id}",
+            "name": node["name"] or node_id,
+            "latitude": node["lat"],
+            "longitude": node["lon"],
+        }
+
+    body = {
+        "start": location("n0021"),
+        "destinations": [location(node_id) for node_id in destination_ids],
+        "travelMode": "driving",
+        "optimizationMetric": "duration",
+        "returnToStart": False,
+        "algorithm": "held_karp",
+        "timeSlot": "07:30",
+        "graph": "demo",
+    }
+    body.update(over)
+    return body
+
+
+def test_location_search_is_accent_insensitive():
+    r = client.get("/api/locations/search", params={
+        "q": "ben thanh", "level": "demo", "limit": 5,
+    })
+    assert r.status_code == 200
+    names = [item["name"] for item in r.json()["locations"]]
+    assert any("Bến Thành" in name for name in names)
+
+
+def test_reverse_location_snaps_to_nearest_node():
+    node = client.get("/api/graph", params={"level": "demo"}).json()["nodes"][0]
+    r = client.post("/api/locations/reverse", json={
+        "latitude": node["lat"], "longitude": node["lon"], "graph": "demo",
+    })
+    assert r.status_code == 200
+    assert r.json()["location"]["nodeId"] == node["id"]
+    assert r.json()["location"]["snapDistanceMeters"] == pytest.approx(0.0)
+
+
+def test_optimize_route_coordinate_contract_and_totals():
+    r = client.post("/api/routes/optimize", json=coordinate_body())
+    assert r.status_code == 200, r.text
+    response = OptimizeRouteResponse.model_validate(r.json())
+    assert response.found and response.optimized_order[0].id == "place-n0021"
+    assert len(response.optimized_order) == 4
+    assert len({item.id for item in response.optimized_order}) == 4
+    assert response.algorithm == "held-karp" and response.optimal_guarantee
+    assert response.route_geometry
+    assert all(leg.geometry and leg.path_node_ids for leg in response.legs)
+    assert response.total_distance_meters == pytest.approx(
+        sum(leg.distance_meters for leg in response.legs)
+    )
+    assert response.total_duration_seconds == pytest.approx(
+        sum(leg.duration_seconds for leg in response.legs)
+    )
+
+
+@pytest.mark.parametrize(
+    ("optimization_metric", "mode"),
+    [("duration", "time"), ("distance", "distance"), ("custom", "balanced")],
+)
+@pytest.mark.parametrize("return_to_start", [False, True])
+def test_optimize_route_duration_is_pure_time_for_every_metric(
+    optimization_metric, mode, return_to_start,
+):
+    node_ids = ["n0021", "n0002", "n0043", "n0015"]
+    r = client.post("/api/routes/optimize", json=coordinate_body(
+        tuple(node_ids[1:]),
+        optimizationMetric=optimization_metric,
+        returnToStart=return_to_start,
+    ))
+    assert r.status_code == 200, r.text
+    response = OptimizeRouteResponse.model_validate(r.json())
+    store = GraphStore.load("demo")
+
+    for leg in response.legs:
+        pure_duration = store.path_metrics(
+            leg.path_node_ids, "time", "07:30",
+        )[0]
+        selected_cost = store.path_metrics(
+            leg.path_node_ids, mode, "07:30",
+        )[0]
+        assert leg.duration_seconds == pytest.approx(pure_duration)
+        assert leg.optimization_cost == pytest.approx(selected_cost)
+
+    assert response.total_duration_seconds == pytest.approx(
+        sum(leg.duration_seconds for leg in response.legs)
+    )
+    assert response.total_optimization_cost == pytest.approx(
+        sum(leg.optimization_cost for leg in response.legs)
+    )
+    if optimization_metric == "duration":
+        assert response.total_optimization_cost == pytest.approx(
+            response.total_duration_seconds
+        )
+
+    # Original-order duration must be measured on the original-order paths
+    # selected by the request metric, not by running a separate fastest route.
+    _cost, path_matrix = build_matrix(store, node_ids, mode, "07:30")
+    original_pairs = list(zip(node_ids, node_ids[1:]))
+    if return_to_start:
+        original_pairs.append((node_ids[-1], node_ids[0]))
+    expected_original_duration = sum(
+        store.path_metrics(path_matrix[pair], "time", "07:30")[0]
+        for pair in original_pairs
+    )
+    assert response.original_order_totals is not None
+    assert response.original_order_totals.duration_seconds == pytest.approx(
+        expected_original_duration
+    )
+
+
+def test_optimize_route_accepts_public_hcmc_coordinate_example():
+    r = client.post("/api/routes/optimize", json={
+        "start": {
+            "id": "start", "name": "Điểm xuất phát",
+            "latitude": 10.7769, "longitude": 106.7009,
+        },
+        "destinations": [
+            {
+                "id": "destination-a", "name": "Điểm A",
+                "latitude": 10.8012, "longitude": 106.7101,
+            },
+            {
+                "id": "destination-b", "name": "Điểm B",
+                "latitude": 10.7626, "longitude": 106.6824,
+            },
+        ],
+        "travelMode": "driving",
+        "optimizationMetric": "duration",
+        "returnToStart": False,
+    })
+    assert r.status_code == 200, r.text
+    assert r.json()["optimizedOrder"][0]["id"] == "start"
+
+
+def test_optimize_route_order_is_independent_of_destination_input_order():
+    forward = client.post("/api/routes/optimize", json=coordinate_body()).json()
+    reverse = client.post(
+        "/api/routes/optimize",
+        json=coordinate_body(("n0015", "n0043", "n0002")),
+    ).json()
+    assert [item["id"] for item in forward["optimizedOrder"]] == [
+        item["id"] for item in reverse["optimizedOrder"]
+    ]
+    assert forward["totalOptimizationCost"] == pytest.approx(
+        reverse["totalOptimizationCost"]
+    )
+
+
+def test_optimize_route_return_to_start_adds_closing_leg():
+    r = client.post(
+        "/api/routes/optimize",
+        json=coordinate_body(("n0002",), returnToStart=True),
+    )
+    assert r.status_code == 200
+    body = r.json()
+    assert len(body["legs"]) == 2
+    assert body["legs"][-1]["toId"] == "place-n0021"
+
+
+def test_optimize_route_rejects_unsupported_travel_mode():
+    r = client.post(
+        "/api/routes/optimize",
+        json=coordinate_body(("n0002",), travelMode="walking"),
+    )
+    assert r.status_code == 422
+    assert r.json()["error"]["code"] == "TRAVEL_MODE_UNSUPPORTED"
+
+
+def test_optimize_route_rejects_out_of_bounds_location():
+    body = coordinate_body(("n0002",))
+    body["start"]["latitude"] = 21.0
+    body["start"]["longitude"] = 105.8
+    r = client.post("/api/routes/optimize", json=body)
+    assert r.status_code == 422
+    assert r.json()["error"]["code"] == "LOCATION_OUT_OF_BOUNDS"
 
 
 # ------------------------------------------------------------- benchmark

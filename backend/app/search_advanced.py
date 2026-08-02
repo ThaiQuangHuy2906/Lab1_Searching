@@ -212,7 +212,8 @@ def idastar(store: GraphStore, start: str, goal: str, mode: Mode = "balanced",
     distance, seconds for time/balanced), so the returned cost is within
     C* + epsilon — reported via metrics.epsilon_bound,
     optimal_guarantee=true "within epsilon".
-    Cycle safety inside a probe: nodes on the current path are skipped.
+    Cycle/duplicate safety inside a probe uses per-round best_g dominance:
+    a state reached with an equal or higher g is skipped.
     """
     _check_endpoints(store, start, goal)
     t0 = time.perf_counter()
@@ -235,7 +236,7 @@ def idastar(store: GraphStore, start: str, goal: str, mode: Mode = "balanced",
     max_frontier = 1
     threshold = h(start)
     for _round in range(int(params.get("max_rounds", IDASTAR_MAX_ROUNDS))):
-        # stack frames: (node, g, on_path set via parent chain)
+        # stack frames: (node, g, parent); best_g prunes cycles/duplicates
         stack: list[tuple[str, float, str | None]] = [(start, 0.0, None)]
         parent: dict[str, str] = {}
         best_g: dict[str, float] = {}

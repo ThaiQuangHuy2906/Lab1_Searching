@@ -38,6 +38,7 @@ export function MapView() {
   const start = useApp((s) => s.start);
   const goal = useApp((s) => s.goal);
   const stops = useApp((s) => s.stops);
+  const returnToStart = useApp((s) => s.returnToStart);
   const clearMap = useApp((s) => s.clearMap);
   const pickTarget = useApp((s) => s.pickTarget);
   const theme = useApp((s) => s.theme);
@@ -344,14 +345,25 @@ export function MapView() {
 
     // start / goal chips + multiroute stop numbers
     const chips: { pos: [number, number]; text: string; bg: RGBA; fg: RGBA }[] = [];
-    if (start && coord.get(start)) chips.push({ pos: coord.get(start)!, text: "Đi", bg: C.chipStart, fg: C.chipText });
+    if (start && coord.get(start)) chips.push({
+      pos: coord.get(start)!,
+      text: multi?.found && returnToStart ? "Đi/Về" : "Đi",
+      bg: C.chipStart,
+      fg: C.chipText,
+    });
     // multiroute result = Đi -> stops; "Đến" is NOT part of it -> hide its chip
     if (goal && coord.get(goal) && !multi?.found)
       chips.push({ pos: coord.get(goal)!, text: "Đến", bg: C.chipGoal, fg: C.chipText });
     const orderedStops = multi?.found ? multi.order.slice(1) : stops;
     orderedStops.forEach((id, i) => {
       const pos = coord.get(id);
-      if (pos) chips.push({ pos, text: String(i + 1), bg: C.stop, fg: C.stopText });
+      const isOpenRouteEnd = multi?.found && !returnToStart && i === orderedStops.length - 1;
+      if (pos) chips.push({
+        pos,
+        text: String(i + 1),
+        bg: isOpenRouteEnd ? C.chipGoal : C.stop,
+        fg: C.stopText,
+      });
     });
     if (chips.length) {
       out.push(
@@ -376,7 +388,7 @@ export function MapView() {
     return out;
   }, [graphData, coord, toPath, traffic, trafficLayer, congestedSet, trace, compare,
       multi, anim, nodeColor, pulse, isDemo, showLabels, start, goal, stops,
-      pickTarget, drawerTab, C, CONGESTION, theme, zoomBucket]);
+      returnToStart, pickTarget, drawerTab, C, CONGESTION, theme, zoomBucket]);
 
   const onClick = React.useCallback(
     (info: PickingInfo) => {

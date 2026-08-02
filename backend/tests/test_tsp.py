@@ -13,7 +13,7 @@ from app.graph_store import GraphStore
 from app.models import MultirouteResponse
 from app.tsp import (
     MAX_POINTS, build_matrix, held_karp, nn_2opt, simulated_annealing,
-    solve_multiroute, tour_cost,
+    solve_multiroute, solve_multiroute_with_paths, tour_cost,
 )
 
 TOL = 1e-9
@@ -102,6 +102,17 @@ def test_solve_multiroute_return_to_start(demo):
     assert len(resp.legs) == len(resp.order)  # closing leg included
     assert resp.legs[-1].to_node == "n0021"
     assert resp.optimal_guarantee is False
+
+
+def test_internal_facade_reuses_the_built_path_matrix(demo):
+    args = (demo, "n0021", ["n0002", "n0043", "n0015"], "held_karp")
+    response, paths = solve_multiroute_with_paths(*args, mode="balanced")
+    legacy = solve_multiroute(*args, mode="balanced")
+    assert response.model_dump() == legacy.model_dump()
+    points = ["n0021", "n0002", "n0043", "n0015"]
+    assert set(paths) == {(a, b) for a in points for b in points if a != b}
+    assert all(path[0] == pair[0] and path[-1] == pair[1]
+               for pair, path in paths.items())
 
 
 def test_size_limits(demo):

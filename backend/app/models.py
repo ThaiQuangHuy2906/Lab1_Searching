@@ -11,6 +11,7 @@ import datetime
 from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic.alias_generators import to_camel
 
 # ---------------------------------------------------------------------------
 # Shared enums / aliases (SCHEMA.md — "Các enum dùng chung")
@@ -24,6 +25,9 @@ Mode = Literal["distance", "time", "balanced"]
 TimeSlot = Literal["07:30", "12:00", "17:30", "22:00"]
 GraphLevel = Literal["demo", "real"]
 TspMethod = Literal["held_karp", "nn_2opt", "sa"]
+TravelMode = Literal["driving", "walking", "cycling"]
+OptimizationMetric = Literal["duration", "distance", "custom"]
+OptimizeAlgorithm = Literal["auto", "held_karp", "nn_2opt", "sa"]
 NodeType = Literal["landmark", "intersection", "warehouse", "hospital", "school"]
 
 NodeId = Annotated[str, Field(pattern=r"^n\d{4}$")]
@@ -55,6 +59,14 @@ class StrictModel(BaseModel):
     """Base: unknown keys are schema violations."""
 
     model_config = ConfigDict(extra="forbid")
+
+
+class CamelStrictModel(BaseModel):
+    """Strict API model using the public camelCase contract."""
+
+    model_config = ConfigDict(
+        extra="forbid", populate_by_name=True, alias_generator=to_camel,
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -379,6 +391,118 @@ class MultirouteResponse(StrictModel):
         return self
 
 
+class LocationInput(CamelStrictModel):
+    id: Annotated[str, Field(min_length=1, max_length=100)]
+    name: Annotated[str, Field(min_length=1, max_length=200)]
+    latitude: Annotated[float, Field(ge=-90, le=90)]
+    longitude: Annotated[float, Field(ge=-180, le=180)]
+
+
+class OptimizeRouteRequest(CamelStrictModel):
+    start: LocationInput
+    destinations: Annotated[list[LocationInput], Field(min_length=1, max_length=15)]
+    travel_mode: TravelMode = "driving"
+    optimization_metric: OptimizationMetric = "duration"
+    return_to_start: bool = False
+    algorithm: OptimizeAlgorithm = "auto"
+    time_slot: TimeSlot = "07:30"
+    graph: GraphLevel = "real"
+
+    @model_validator(mode="after")
+    def _check(self) -> "OptimizeRouteRequest":
+        ids = [self.start.id, *(item.id for item in self.destinations)]
+        if len(set(ids)) != len(ids):
+            raise ValueError("start/destination ids must be unique")
+        coordinates = [
+            (round(item.latitude, 7), round(item.longitude, 7))
+            for item in [self.start, *self.destinations]
+        ]
+        if len(set(coordinates)) != len(coordinates):
+            raise ValueError("locations must not have duplicate coordinates")
+        total = 1 + len(self.destinations)
+        if self.algorithm == "held_karp" and total > 15:
+            raise ValueError(
+                f"held_karp supports at most 15 points total, got {total}; "
+                "use nn_2opt, sa, or auto"
+            )
+        return self
+
+
+class SnappedLocation(CamelStrictModel):
+    id: str
+    name: str
+    latitude: float
+    longitude: float
+    node_id: NodeId
+    snap_distance_meters: Annotated[float, Field(ge=0)]
+    order: Annotated[int, Field(ge=0)] | None = None
+
+
+class LocationSearchResponse(CamelStrictModel):
+    locations: list[SnappedLocation]
+
+
+class ReverseLocationRequest(CamelStrictModel):
+    latitude: Annotated[float, Field(ge=-90, le=90)]
+    longitude: Annotated[float, Field(ge=-180, le=180)]
+    graph: GraphLevel = "real"
+
+
+class ReverseLocationResponse(CamelStrictModel):
+    location: SnappedLocation
+
+
+class OptimizedRouteLeg(CamelStrictModel):
+    from_id: str
+    to_id: str
+    distance_meters: Annotated[float, Field(ge=0)]
+    duration_seconds: Annotated[float, Field(ge=0)]
+    optimization_cost: Annotated[float, Field(ge=0)]
+    geometry: str
+    path_node_ids: list[NodeId]
+    directions: list[str] = []
+
+
+class RouteTotals(CamelStrictModel):
+    distance_meters: Annotated[float, Field(ge=0)]
+    duration_seconds: Annotated[float, Field(ge=0)]
+    optimization_cost: Annotated[float, Field(ge=0)]
+
+
+class OptimizeRouteResponse(CamelStrictModel):
+    found: bool
+    optimized_order: list[SnappedLocation]
+    legs: list[OptimizedRouteLeg]
+    total_distance_meters: float | None
+    total_duration_seconds: float | None
+    total_optimization_cost: float | None
+    original_order_totals: RouteTotals | None
+    savings_percent: float | None
+    route_geometry: str
+    algorithm: Literal["held-karp", "nearest-neighbor-2opt", "simulated-annealing"]
+    optimal_guarantee: bool
+    travel_mode: TravelMode
+    optimization_metric: OptimizationMetric
+    return_to_start: bool
+
+    @model_validator(mode="after")
+    def _check(self) -> "OptimizeRouteResponse":
+        if self.found:
+            if not self.optimized_order or not self.legs:
+                raise ValueError("found=true requires optimized_order and legs")
+            if any(value is None for value in (
+                self.total_distance_meters,
+                self.total_duration_seconds,
+                self.total_optimization_cost,
+                self.original_order_totals,
+                self.savings_percent,
+            )):
+                raise ValueError("found=true requires totals and savings")
+        elif self.optimized_order or self.legs:
+            raise ValueError("found=false requires empty optimized_order and legs")
+        return self
+
+
 class HealthResponse(StrictModel):
     status: Literal["ok"]
     versions: dict[str, str]
@@ -407,7 +531,9 @@ class BenchmarkResponse(StrictModel):
 
 class ErrorDetail(StrictModel):
     code: Literal[
-        "NODE_NOT_FOUND", "RESULTS_NOT_FOUND", "VALIDATION_ERROR", "HELD_KARP_LIMIT", "INTERNAL"
+        "NODE_NOT_FOUND", "RESULTS_NOT_FOUND", "VALIDATION_ERROR", "HELD_KARP_LIMIT",
+        "TRAVEL_MODE_UNSUPPORTED", "LOCATION_OUT_OF_BOUNDS", "DUPLICATE_LOCATION",
+        "ROUTE_NOT_FOUND", "INTERNAL"
     ]
     message_vi: str
 

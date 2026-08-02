@@ -3,7 +3,9 @@
 
 import type {
   Algorithm, ApiError, ExperimentResult, GraphFile, GraphLevel, Mode,
-  MultirouteResponse, TimeSlot, Trace, TrafficResponse, TspMethod,
+  CoordinateLocation, MultirouteResponse, OptimizationMetric,
+  OptimizeRouteResponse, TimeSlot, Trace, TrafficResponse, TravelMode,
+  TspMethod,
 } from "./types";
 
 const BASE = process.env.NEXT_PUBLIC_API_BASE ?? "http://localhost:8000";
@@ -60,6 +62,19 @@ export const api = {
     start: string; stops: string[]; method: TspMethod; mode: Mode;
     time_slot: TimeSlot; graph: GraphLevel; return_to_start: boolean;
   }) => call<MultirouteResponse>("/api/multiroute", {
+    method: "POST", body: JSON.stringify(body),
+  }),
+
+  optimizeRoute: (body: {
+    start: CoordinateLocation;
+    destinations: CoordinateLocation[];
+    travelMode: TravelMode;
+    optimizationMetric: OptimizationMetric;
+    returnToStart: boolean;
+    algorithm: TspMethod | "auto";
+    timeSlot: TimeSlot;
+    graph: GraphLevel;
+  }) => call<OptimizeRouteResponse>("/api/routes/optimize", {
     method: "POST", body: JSON.stringify(body),
   }),
 

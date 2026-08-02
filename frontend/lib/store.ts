@@ -7,8 +7,8 @@ import { create } from "zustand";
 import { toast } from "sonner";
 import { api, BackendError } from "./api";
 import type {
-  Algorithm, GraphFile, GraphLevel, Mode, MultirouteResponse, TimeSlot,
-  Trace, TspMethod,
+  Algorithm, GraphFile, GraphLevel, Mode, MultirouteResponse,
+  OptimizationMetric, TimeSlot, Trace, TravelMode, TspMethod,
 } from "./types";
 
 export const ALGO_LABEL: Record<Algorithm, string> = {
@@ -44,6 +44,8 @@ interface AppState {
   goal: string | null;
   stops: string[];
   tspMethod: TspMethod; // sống trong store: Section thu gọn unmount con (v11)
+  travelMode: TravelMode;
+  returnToStart: boolean;
   beamWidth: number | "";
   epsilon: number | "";
   offlineMode: boolean;
@@ -107,6 +109,8 @@ export const useApp = create<AppState>((set, get) => ({
   goal: null,
   stops: [],
   tspMethod: "held_karp",
+  travelMode: "driving",
+  returnToStart: false,
   beamWidth: "",
   epsilon: "",
   offlineMode: false,
@@ -146,7 +150,9 @@ export const useApp = create<AppState>((set, get) => ({
         || patch.stops.length !== state.stops.length
         || patch.stops.some((id, i) => id !== state.stops[i])
       );
-      if (!startChanged && !goalChanged && !stopsChanged)
+      const returnChanged = "returnToStart" in patch
+        && patch.returnToStart !== state.returnToStart;
+      if (!startChanged && !goalChanged && !stopsChanged && !returnChanged)
         return patch;
       const extra: Partial<AppState> = {};
       if (state.trace && !("trace" in patch)) {
@@ -302,17 +308,81 @@ export const useApp = create<AppState>((set, get) => ({
       toast.error("Cần điểm Đi và ít nhất 1 điểm giao để tối ưu thứ tự.");
       return;
     }
+    if (s.travelMode !== "driving") {
+      toast.error("Snapshot đường hiện tại chỉ hỗ trợ lái xe; chưa hỗ trợ chế độ đã chọn.");
+      return;
+    }
+    if (!s.graphData) {
+      toast.error("Dữ liệu bản đồ chưa sẵn sàng — hãy thử tải lại đồ thị.");
+      return;
+    }
     set({ multiRunning: true, trace: null, compare: null, playing: false });
     try {
-      const m = await api.multiroute({
-        start: s.start, stops: s.stops, method, mode: s.mode,
-        time_slot: s.slot, graph: s.graph, return_to_start: false,
+      const byId = new Map(s.graphData.nodes.map((node) => [node.id, node]));
+      const toLocation = (id: string) => {
+        const node = byId.get(id);
+        if (!node) throw new Error(`Missing graph node ${id}`);
+        return {
+          id: node.id,
+          name: node.name ?? node.id,
+          latitude: node.lat,
+          longitude: node.lon,
+        };
+      };
+      const metric: OptimizationMetric = {
+        balanced: "custom", time: "duration", distance: "distance",
+      }[s.mode] as OptimizationMetric;
+      const optimized = await api.optimizeRoute({
+        start: toLocation(s.start),
+        destinations: s.stops.map(toLocation),
+        travelMode: s.travelMode,
+        optimizationMetric: metric,
+        returnToStart: s.returnToStart,
+        algorithm: method,
+        timeSlot: s.slot,
+        graph: s.graph,
       });
+      const original = optimized.originalOrderTotals;
+      const m: MultirouteResponse = {
+        method,
+        mode: s.mode,
+        time_slot: s.slot,
+        graph: s.graph,
+        found: optimized.found,
+        order: optimized.optimizedOrder.map((item) => item.nodeId),
+        legs: optimized.legs.map((leg) => ({
+          from_node: leg.fromId,
+          to_node: leg.toId,
+          path: leg.pathNodeIds,
+          metrics: {
+            total_cost: leg.optimizationCost,
+            total_distance_m: leg.distanceMeters,
+            total_time_s: leg.durationSeconds,
+          },
+        })),
+        totals: optimized.totalOptimizationCost == null
+          || optimized.totalDistanceMeters == null
+          || optimized.totalDurationSeconds == null
+          ? null
+          : {
+              total_cost: optimized.totalOptimizationCost,
+              total_distance_m: optimized.totalDistanceMeters,
+              total_time_s: optimized.totalDurationSeconds,
+            },
+        original_order_totals: original ? {
+          total_cost: original.optimizationCost,
+          total_distance_m: original.distanceMeters,
+          total_time_s: original.durationSeconds,
+        } : null,
+        savings_pct: optimized.savingsPercent,
+        optimal_guarantee: optimized.optimalGuarantee,
+      };
       // stale guards (L3-04): journey edits mid-flight (map click adding a
       // stop was the reproduced case) invalidate this tour
       const n = get();
       if (n.graph !== s.graph || n.slot !== s.slot || n.mode !== s.mode ||
           n.start !== s.start ||
+          n.returnToStart !== s.returnToStart || n.travelMode !== s.travelMode ||
           JSON.stringify(n.stops) !== JSON.stringify(s.stops))
         return;
       set({ multi: m, drawerTab: "metrics" });

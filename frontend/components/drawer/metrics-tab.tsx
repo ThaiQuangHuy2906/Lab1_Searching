@@ -1,7 +1,7 @@
 "use client";
 
 import {
-  BadgeCheck, Clock, Gauge, Layers, MousePointerClick, Network,
+  ArrowRight, BadgeCheck, Clock, Gauge, Layers, MousePointerClick, Network,
   Route as RouteIcon, Sigma, Timer,
 } from "lucide-react";
 import { Badge } from "../ui/badge";
@@ -46,6 +46,7 @@ export function MetricsTab() {
   const multi = useApp((s) => s.multi);
   const graph = useApp((s) => s.graph);
   const graphData = useApp((s) => s.graphData);
+  const returnToStart = useApp((s) => s.returnToStart);
 
   if (multi?.found && multi.totals && multi.original_order_totals) {
     const nameOf = (id: string) =>
@@ -82,6 +83,28 @@ export function MetricsTab() {
         <Badge variant={multi.optimal_guarantee ? "ok" : "warn"} className="w-fit">
           {multi.optimal_guarantee ? "Tối ưu tuyệt đối (Held-Karp)" : "Nghiệm xấp xỉ"}
         </Badge>
+        <Card>
+          <CardHeader>
+            <CardTitle>
+              Chi tiết {multi.legs.length} chặng · {returnToStart ? "lộ trình khép kín" : "kết thúc tại điểm giao cuối"}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-2">
+            {multi.legs.map((leg, index) => (
+              <div key={`${leg.from_node}-${leg.to_node}-${index}`}
+                className="rounded-lg border border-surface-border p-2 text-xs">
+                <div className="flex min-w-0 items-center gap-1.5 font-medium text-ink">
+                  <span className="truncate">{nameOf(leg.from_node)}</span>
+                  <ArrowRight className="size-3.5 shrink-0 text-ink-dim" />
+                  <span className="truncate">{nameOf(leg.to_node)}</span>
+                </div>
+                <div className="mt-1 font-mono text-[11px] text-ink-dim">
+                  {fmtKm(leg.metrics.total_distance_m)} · {fmtMinutes(leg.metrics.total_time_s)}
+                </div>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
       </div>
     );
   }

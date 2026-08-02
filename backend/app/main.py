@@ -1,4 +1,4 @@
-"""FastAPI backend — the 6 endpoints of SCHEMA §C on port 8000.
+"""FastAPI backend — route/search endpoints from SCHEMA §C on port 8000.
 
 Run from backend/:  ../.venv/Scripts/python.exe -m uvicorn app.main:app --port 8000
 
@@ -15,7 +15,7 @@ import sys
 from functools import lru_cache
 from pathlib import Path
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Query, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -26,8 +26,14 @@ from .explain import build_explanation
 from .graph_store import GraphStore
 from .models import (
     BenchmarkRequest, BenchmarkResponse, ExperimentResult, GraphLevel,
-    HealthResponse, MultirouteRequest, MultirouteResponse, RouteRequest,
-    TimeSlot, Trace, TrafficResponse,
+    HealthResponse, LocationInput, LocationSearchResponse, MultirouteRequest,
+    MultirouteResponse, OptimizeRouteRequest, OptimizeRouteResponse,
+    ReverseLocationRequest, ReverseLocationResponse, RouteRequest, TimeSlot,
+    Trace, TrafficResponse,
+)
+from .route_planning import (
+    LocalGraphLocationService, RoutePlanningError,
+    SequentialRouteOptimizationService,
 )
 from .search import ALGORITHMS
 from .search_advanced import ADVANCED_ALGORITHMS
@@ -111,6 +117,11 @@ async def on_value_error(_req: Request, exc: ValueError):
     return error_json(422, code, f"Yêu cầu không hợp lệ: {msg}")
 
 
+@app.exception_handler(RoutePlanningError)
+async def on_route_planning_error(_req: Request, exc: RoutePlanningError):
+    return error_json(422, exc.code, exc.message_vi)
+
+
 @app.exception_handler(StarletteHTTPException)
 async def on_http_error(_req: Request, exc: StarletteHTTPException):
     # Unknown paths / wrong methods used to leak Starlette's English
@@ -176,6 +187,34 @@ def post_multiroute(req: MultirouteRequest) -> MultirouteResponse:
     return solve_multiroute(store, req.start, req.stops, req.method,
                             mode=req.mode, time_slot=req.time_slot,
                             return_to_start=req.return_to_start)
+
+
+@app.get("/api/locations/search", response_model=LocationSearchResponse)
+def search_locations(
+    q: str = "",
+    level: GraphLevel = "demo",
+    limit: int = Query(default=8, ge=1, le=20),
+) -> LocationSearchResponse:
+    service = LocalGraphLocationService(GraphStore.load(level))
+    return LocationSearchResponse(locations=service.search(q, limit))
+
+
+@app.post("/api/locations/reverse", response_model=ReverseLocationResponse)
+def reverse_location(req: ReverseLocationRequest) -> ReverseLocationResponse:
+    service = LocalGraphLocationService(GraphStore.load(req.graph))
+    location = service.snap(LocationInput(
+        id="selected-location",
+        name="Vị trí đã chọn",
+        latitude=req.latitude,
+        longitude=req.longitude,
+    ))
+    return ReverseLocationResponse(location=location)
+
+
+@app.post("/api/routes/optimize", response_model=OptimizeRouteResponse)
+def optimize_route(req: OptimizeRouteRequest) -> OptimizeRouteResponse:
+    service = SequentialRouteOptimizationService(GraphStore.load(req.graph))
+    return service.optimize(req)
 
 
 @app.post("/api/benchmark", response_model=BenchmarkResponse)

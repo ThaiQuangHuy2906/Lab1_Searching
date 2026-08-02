@@ -6,8 +6,9 @@ giao hàng bằng 3 phương pháp ATSP. Backend dùng FastAPI; frontend dùng N
 MapLibre và deck.gl; dữ liệu chạy demo được lưu cục bộ nên thuật toán không cần
 gọi mạng.
 
-> **Trạng thái ngày 2026-07-27 — chưa phải bộ nộp cuối:** code hiện đạt 95 test,
-> validator dữ liệu đạt và TypeScript không lỗi. Hai graph hiện hành đã được
+> **Trạng thái kiểm tra gần nhất — chưa phải bộ nộp cuối:** 112/113 test đạt;
+> test health còn lại yêu cầu Python 3.14 nhưng venv trên máy kiểm tra đang là
+> 3.13.9. Validator dữ liệu đạt, TypeScript và production build không lỗi. Hai graph hiện hành đã được
 > build ngày 2026-07-27, nhưng profile vẫn là `synthetic`; raw TomTom mới có
 > 07:30 và 12:00, còn thiếu 17:30 và 22:00. `results/` là số tạm từ lượt
 > 2026-07-26 và không được dùng làm kết quả chính thức. Không chạy 03b, rebuild,
@@ -17,7 +18,7 @@ gọi mạng.
 
 | Hạng mục | Trạng thái hiện tại | Bằng chứng |
 |---|---|---|
-| Backend | **Đạt** | `95 passed, 1 warning` ngày 2026-07-27 |
+| Backend | **Đạt phần chức năng; lệch môi trường** | `112 passed, 1 failed`: chỉ `test_health` do venv 3.13.9 thay vì Python 3.14 |
 | Data contract | **Đạt, có cảnh báo nguồn** | `ALL DATA VALID`; profile vẫn `synthetic` dù raw TomTom đã có 2 snapshot |
 | TypeScript | **Đạt** | `npx tsc --noEmit` exit 0 |
 | G_demo | **Hiện hành** | 51 node, 292 cạnh có hướng, 56 cạnh một chiều |
@@ -173,11 +174,16 @@ dấu `\` sang Bash.
 | GET | `/api/traffic?slot=07:30&level=demo` | congestion của một graph/slot |
 | POST | `/api/route` | một trong 10 thuật toán hai điểm |
 | POST | `/api/multiroute` | tối ưu thứ tự nhiều điểm |
+| GET | `/api/locations/search` | autocomplete địa danh từ snapshot cục bộ |
+| POST | `/api/locations/reverse` | snap tọa độ vào node đường gần nhất |
+| POST | `/api/routes/optimize` | tối ưu nhiều điểm theo tọa độ, trả polyline từng chặng/toàn tuyến |
 | POST | `/api/benchmark` | đọc kết quả benchmark cached |
 
 Request/response, enum, đơn vị và error envelope đầy đủ nằm trong
 [`docs/SCHEMA.md`](docs/SCHEMA.md). `distance` dùng mét; `time` và `balanced`
 dùng giây. `found=false` là response 200 hợp lệ, không nhất thiết là lỗi HTTP.
+Thiết kế, giả định và giới hạn riêng của tính năng nhiều địa điểm xem
+[`docs/MULTI-LOCATION-ROUTING.md`](docs/MULTI-LOCATION-ROUTING.md).
 
 ## Kiểm tra an toàn
 
@@ -191,11 +197,12 @@ Set-Location frontend
 npx tsc --noEmit
 ```
 
-Mốc đã chạy trên worktree ngày 2026-07-27:
+Mốc kiểm tra gần nhất trên worktree:
 
-- pytest: `95 passed, 1 warning in 14.62s`;
+- pytest: `112 passed, 1 failed`; lỗi duy nhất là health check phiên bản Python
+  (venv 3.13.9, dự án yêu cầu 3.14); chạy `-k "not test_health"` đạt 112/112;
 - validator: `ALL DATA VALID`, kèm hai cảnh báo profile synthetic/raw TomTom 2/4;
-- TypeScript: exit code 0.
+- TypeScript: exit code 0; `npm run build` thành công.
 
 Không xem test count là chứng minh cho hành vi không được test. Map, theme,
 offline, accessibility, responsive và độ phân giải máy chiếu vẫn cần QA

@@ -7,6 +7,8 @@ export type Mode = "distance" | "time" | "balanced";
 export type TimeSlot = "07:30" | "12:00" | "17:30" | "22:00";
 export type GraphLevel = "demo" | "real";
 export type TspMethod = "held_karp" | "nn_2opt" | "sa";
+export type TravelMode = "driving" | "walking" | "cycling";
+export type OptimizationMetric = "duration" | "distance" | "custom";
 
 export interface GraphNode {
   id: string;
@@ -111,6 +113,51 @@ export interface MultirouteResponse {
   original_order_totals: LegMetrics | null;
   savings_pct: number | null;
   optimal_guarantee: boolean;
+}
+
+export interface CoordinateLocation {
+  id: string;
+  name: string;
+  latitude: number;
+  longitude: number;
+}
+
+export interface SnappedLocation extends CoordinateLocation {
+  nodeId: string;
+  snapDistanceMeters: number;
+  order: number | null;
+}
+
+export interface OptimizedRouteLeg {
+  fromId: string;
+  toId: string;
+  distanceMeters: number;
+  durationSeconds: number;
+  optimizationCost: number;
+  geometry: string;
+  pathNodeIds: string[];
+  directions: string[];
+}
+
+export interface OptimizeRouteResponse {
+  found: boolean;
+  optimizedOrder: SnappedLocation[];
+  legs: OptimizedRouteLeg[];
+  totalDistanceMeters: number | null;
+  totalDurationSeconds: number | null;
+  totalOptimizationCost: number | null;
+  originalOrderTotals: {
+    distanceMeters: number;
+    durationSeconds: number;
+    optimizationCost: number;
+  } | null;
+  savingsPercent: number | null;
+  routeGeometry: string;
+  algorithm: "held-karp" | "nearest-neighbor-2opt" | "simulated-annealing";
+  optimalGuarantee: boolean;
+  travelMode: TravelMode;
+  optimizationMetric: OptimizationMetric;
+  returnToStart: boolean;
 }
 
 export interface TrafficResponse {

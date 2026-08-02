@@ -18,7 +18,9 @@ import {
 import { Skeleton } from "./ui/skeleton";
 import { toast } from "sonner";
 import { ALGO_LABEL, useApp } from "@/lib/store";
-import type { Algorithm, Mode, TimeSlot, TspMethod } from "@/lib/types";
+import type {
+  Algorithm, GraphNode, Mode, TimeSlot, TravelMode, TspMethod,
+} from "@/lib/types";
 
 const SLOTS: TimeSlot[] = ["07:30", "12:00", "17:30", "22:00"];
 const MODES: { v: Mode; label: string }[] = [
@@ -99,6 +101,73 @@ function Section({ title, tip, children }: {
   );
 }
 
+function NodeAutocomplete({ value, options, placeholder, ariaLabel, disabled,
+  resetOnSelect = false, onSelect }: {
+  value: string | null;
+  options: GraphNode[];
+  placeholder: string;
+  ariaLabel: string;
+  disabled: boolean;
+  resetOnSelect?: boolean;
+  onSelect: (id: string) => void;
+}) {
+  const listId = React.useId();
+  const selectedName = options.find((node) => node.id === value)?.name ?? value ?? "";
+  const [text, setText] = React.useState(selectedName);
+
+  React.useEffect(() => {
+    if (!resetOnSelect) setText(selectedName);
+  }, [resetOnSelect, selectedName]);
+
+  const commitIfExact = (raw: string) => {
+    const folded = raw.trim().toLocaleLowerCase("vi");
+    const match = options.find((node) =>
+      node.id.toLocaleLowerCase("vi") === folded
+      || (node.name ?? "").toLocaleLowerCase("vi") === folded);
+    if (!match) return false;
+    onSelect(match.id);
+    setText(resetOnSelect ? "" : match.name ?? match.id);
+    return true;
+  };
+
+  return (
+    <div className="relative min-w-0 flex-1">
+      <input
+        type="text"
+        role="combobox"
+        aria-label={ariaLabel}
+        aria-autocomplete="list"
+        aria-controls={listId}
+        list={listId}
+        disabled={disabled}
+        value={text}
+        placeholder={placeholder}
+        className="h-9 w-full rounded-lg border border-surface-border bg-surface px-3 text-sm text-ink placeholder:text-ink-dim focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-algo-frontier disabled:opacity-50"
+        onChange={(event) => {
+          const raw = event.target.value;
+          setText(raw);
+          commitIfExact(raw);
+        }}
+        onKeyDown={(event) => {
+          if (event.key === "Enter") {
+            event.preventDefault();
+            if (!commitIfExact(text)) toast.error("Không tìm thấy địa điểm phù hợp trong danh sách.");
+          }
+          if (event.key === "Escape") setText(resetOnSelect ? "" : selectedName);
+        }}
+        onBlur={() => {
+          if (text && !commitIfExact(text)) setText(resetOnSelect ? "" : selectedName);
+        }}
+      />
+      <datalist id={listId}>
+        {options.map((node) => (
+          <option key={node.id} value={node.name ?? node.id}>{node.id}</option>
+        ))}
+      </datalist>
+    </div>
+  );
+}
+
 function NodePicker({ kind }: { kind: "start" | "goal" }) {
   const graphData = useApp((s) => s.graphData);
   const graph = useApp((s) => s.graph);
@@ -136,28 +205,35 @@ function NodePicker({ kind }: { kind: "start" | "goal" }) {
   ) : null;
 
   if (isDemo) {
+    const options = graphData?.nodes.filter((n) =>
+      n.id !== other && (kind !== "start" || !stops.includes(n.id))) ?? [];
+    const active = pickTarget === kind;
     return (
       <div className="flex items-center gap-1">
         <div className="relative min-w-0 flex-1">
           {roleDot}
-          <Select
-            value={value ?? ""} disabled={busy}
-            onValueChange={(v) => set(kind === "start" ? { start: v } : { goal: v })}
-          >
-            <SelectTrigger aria-label={kind === "start" ? "Điểm đi" : "Điểm đến"}
-              className={"pl-8 " + (value ? "font-medium" : "")} style={roleBorder}>
-              <SelectValue placeholder={kind === "start" ? "Chọn điểm xuất phát…" : "Chọn điểm đến…"} />
-            </SelectTrigger>
-            <SelectContent>
-              {graphData?.nodes
-                .filter((n) =>
-                  n.id !== other && (kind !== "start" || !stops.includes(n.id)))
-                .map((n) => (
-                  <SelectItem key={n.id} value={n.id}>{n.name ?? n.id}</SelectItem>
-                ))}
-            </SelectContent>
-          </Select>
+          <div className="[&_input]:pl-8" style={roleBorder}>
+            <NodeAutocomplete
+              value={value}
+              options={options}
+              disabled={busy}
+              ariaLabel={kind === "start" ? "Tìm điểm đi" : "Tìm điểm đến"}
+              placeholder={kind === "start" ? "Tìm điểm xuất phát…" : "Tìm điểm đến…"}
+              onSelect={(id) => set(kind === "start" ? { start: id } : { goal: id })}
+            />
+          </div>
         </div>
+        <Button
+          type="button"
+          variant="ghost"
+          size="iconSm"
+          disabled={busy}
+          aria-label={kind === "start" ? "Chọn điểm đi trên bản đồ" : "Chọn điểm đến trên bản đồ"}
+          className={active ? "border border-algo-frontier text-algo-frontier" : ""}
+          onClick={() => set({ pickTarget: active ? null : kind })}
+        >
+          <Crosshair />
+        </Button>
         {clear}
       </div>
     );
@@ -266,6 +342,18 @@ export function ControlPanel() {
             ))}
           </div>
         </Field>
+        <Field label="Chế độ di chuyển"
+          tip="Snapshot OSM hiện tại được xây bằng network_type=drive. Kiến trúc đã chừa adapter cho đi bộ và xe đạp.">
+          <Select value={s.travelMode} disabled={busy}
+            onValueChange={(value) => s.set({ travelMode: value as TravelMode })}>
+            <SelectTrigger aria-label="Chế độ di chuyển"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="driving">Lái xe — đang hỗ trợ</SelectItem>
+              <SelectItem value="walking" disabled>Đi bộ — chưa có dữ liệu</SelectItem>
+              <SelectItem value="cycling" disabled>Xe đạp — chưa có dữ liệu</SelectItem>
+            </SelectContent>
+          </Select>
+        </Field>
         <div className="flex flex-col">
           <SwitchRow label="Lớp ùn tắc"
             tip="Tô màu từng đoạn đường theo mức ùn tắc 1→5 của khung giờ đang chọn."
@@ -358,29 +446,26 @@ export function ControlPanel() {
                 </div>
               );
             })}
-            {isDemo ? (
-              <Select value="" disabled={busy} onValueChange={(v) => {
-                if (!s.stops.includes(v) && v !== s.start && s.stops.length < 15)
-                  s.set({ stops: [...s.stops, v] });
-              }}>
-                <SelectTrigger aria-label="Thêm điểm giao">
-                  <SelectValue placeholder="+ Thêm điểm giao…" />
-                </SelectTrigger>
-                <SelectContent>
-                  {s.graphData?.nodes
-                    .filter((n) => n.id !== s.start && !s.stops.includes(n.id))
-                    .map((n) => (
-                      <SelectItem key={n.id} value={n.id}>{n.name ?? n.id}</SelectItem>
-                    ))}
-                </SelectContent>
-              </Select>
-            ) : (
-              <Button variant="secondary" size="sm" disabled={busy}
-                className={s.pickTarget === "stop" ? "border-algo-frontier text-algo-frontier" : ""}
-                onClick={() => s.set({ pickTarget: s.pickTarget === "stop" ? null : "stop" })}>
-                <Crosshair /> Thêm điểm từ bản đồ
-              </Button>
+            {isDemo && (
+              <NodeAutocomplete
+                value={null}
+                resetOnSelect
+                disabled={busy || s.stops.length >= 15}
+                ariaLabel="Tìm và thêm điểm giao"
+                placeholder="+ Tìm điểm giao…"
+                options={s.graphData?.nodes.filter((n) =>
+                  n.id !== s.start && !s.stops.includes(n.id)) ?? []}
+                onSelect={(id) => {
+                  if (!s.stops.includes(id) && id !== s.start && s.stops.length < 15)
+                    s.set({ stops: [...s.stops, id] });
+                }}
+              />
             )}
+            <Button variant="secondary" size="sm" disabled={busy || s.stops.length >= 15}
+              className={s.pickTarget === "stop" ? "border-algo-frontier text-algo-frontier" : ""}
+              onClick={() => s.set({ pickTarget: s.pickTarget === "stop" ? null : "stop" })}>
+              <Crosshair /> Thêm điểm từ bản đồ
+            </Button>
           </div>
         </Field>
         <Field label="Tối ưu thứ tự ghé (ATSP)"
@@ -447,6 +532,12 @@ function MultiButtons() {
           Held-Karp nhận tối đa 15 điểm (kể cả điểm Đi) — hãy dùng NN+2-opt hoặc SA.
         </p>
       )}
+      <SwitchRow
+        label="Quay về điểm Đi"
+        tip="Bật để tạo lộ trình khép kín; tắt để kết thúc tại điểm giao cuối."
+        checked={s.returnToStart}
+        onChange={(value) => s.set({ returnToStart: value })}
+      />
       <Button variant="secondary" disabled={busy || tooMany}
         onClick={() => void s.runMulti(method)}>
         {s.multiRunning ? <Loader2 className="animate-spin" /> : <ListOrdered />}

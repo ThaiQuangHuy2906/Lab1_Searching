@@ -20,6 +20,8 @@
 | `time_slot` | `07:30` · `12:00` · `17:30` · `22:00` |
 | `graph` | `demo` · `real` |
 | `tsp_method` | `held_karp` · `nn_2opt` · `sa` |
+| `travel_mode` | `driving` · `walking` · `cycling` (snapshot hiện tại chỉ hỗ trợ `driving`) |
+| `optimization_metric` | `duration` · `distance` · `custom` |
 | `node.type` | `landmark` · `intersection` · `warehouse` · `hospital` · `school` |
 
 ---
@@ -334,7 +336,98 @@ Chưa có kết quả trong `results/` → 404 `RESULTS_NOT_FOUND` (message hư�
 | 404 | `RESULTS_NOT_FOUND` | benchmark chưa chạy |
 | 422 | `VALIDATION_ERROR` | enum sai, thiếu trường, stops rỗng/trùng, quá 15 stops (message_vi nêu trường sai) |
 | 422 | `HELD_KARP_LIMIT` | held_karp với k = 16 |
+| 422 | `TRAVEL_MODE_UNSUPPORTED` | snapshot/provider không hỗ trợ chế độ di chuyển đã chọn |
+| 422 | `LOCATION_OUT_OF_BOUNDS` | tọa độ nằm ngoài bbox của graph đã chọn |
+| 422 | `DUPLICATE_LOCATION` | hai địa điểm khác nhau snap vào cùng một node đường |
+| 422 | `ROUTE_NOT_FOUND` | không có đường giữa ít nhất một cặp điểm liên tiếp/cần xét |
 | 500 | `INTERNAL` | lỗi không lường trước (log server, message chung chung) |
+
+### C.8 API địa điểm và tối ưu lộ trình theo tọa độ
+
+Đây là contract công khai cho tính năng **Sequential Multi-Destination Route
+Planning**. Nó là lớp adapter tọa độ ở trên engine ATSP §C.5; `/api/multiroute`
+được giữ để tương thích với GUI/teaching contract dùng node id.
+
+`GET /api/locations/search?q=ben%20thanh&level=demo&limit=8` tìm địa danh cục bộ
+không dấu/không phân biệt hoa thường và trả `{ "locations": [...] }`. Mỗi kết
+quả có `{id, name, latitude, longitude, nodeId}`. Endpoint không gọi mạng.
+
+`POST /api/locations/reverse` nhận:
+
+```jsonc
+{"latitude": 10.7769, "longitude": 106.7009, "graph": "real"}
+```
+
+và trả địa điểm/node gần nhất cùng `snapDistanceMeters`. Tọa độ ngoài bbox trả
+`LOCATION_OUT_OF_BOUNDS`.
+
+`POST /api/routes/optimize` nhận:
+
+```jsonc
+{
+  "start": {"id": "start", "name": "Điểm xuất phát", "latitude": 10.7769, "longitude": 106.7009},
+  "destinations": [
+    {"id": "destination-a", "name": "Điểm A", "latitude": 10.8012, "longitude": 106.7101}
+  ],
+  "travelMode": "driving",
+  "optimizationMetric": "duration",
+  "returnToStart": false,
+  "algorithm": "auto",
+  "timeSlot": "07:30",
+  "graph": "real"
+}
+```
+
+- `destinations`: 1-15 phần tử, id duy nhất và khác `start.id`.
+- `algorithm`: `auto|held_karp|nn_2opt|sa`; `auto` dùng Held-Karp khi tổng số
+  điểm ≤ 11, ngược lại dùng NN + 2-opt bất đối xứng.
+- Mapping metric: `duration -> time`, `distance -> distance`,
+  `custom -> balanced`.
+- `durationSeconds` và `totalDurationSeconds` **luôn** là tổng weight mode
+  `time` (`t_free × f_cong`), không cộng penalty risk. `optimizationCost` dùng
+  metric đã chọn: giây thuần với `duration`, mét với `distance`, và giây gồm
+  time + risk penalty với `custom`. Quy tắc này chỉ áp dụng contract tọa độ
+  §C.8; `total_time_s` legacy ở §B/§C.5 vẫn giữ nghĩa balanced đã chốt.
+- Tọa độ được snap vào node gần nhất trong graph; adapter local cho phép sai số
+  khoảng 275 m quanh bbox để nhận POI nằm sát biên. Nếu hai địa điểm snap cùng
+  node, request bị từ chối thay vì âm thầm bỏ một điểm.
+- Dữ liệu hiện tại là OSM `network_type=drive`; `walking` và `cycling` trả
+  `TRAVEL_MODE_UNSUPPORTED` rõ ràng.
+- Thứ tự điểm nhập chỉ dùng để tính `originalOrderTotals`; tie-break của thuật
+  toán dùng id ổn định nên `optimizedOrder` không phụ thuộc thứ tự nhập.
+
+Response `200`:
+
+```jsonc
+{
+  "found": true,
+  "optimizedOrder": [
+    {"id": "start", "name": "Điểm xuất phát", "latitude": 10.7769,
+     "longitude": 106.7009, "snappedNodeId": "n0123", "snapDistanceMeters": 12.4, "order": 0}
+  ],
+  "legs": [
+    {"fromId": "start", "toId": "destination-a", "distanceMeters": 5200,
+     "durationSeconds": 900, "optimizationCost": 900,
+     "geometry": "encoded-polyline", "pathNodeIds": ["n0123", "n0456"], "directions": []}
+  ],
+  "totalDistanceMeters": 5200,
+  "totalDurationSeconds": 900,
+  "totalOptimizationCost": 900,
+  "originalOrderTotals": {"distanceMeters": 5200, "durationSeconds": 900, "optimizationCost": 900},
+  "savingsPercent": 0,
+  "routeGeometry": "encoded-polyline",
+  "algorithm": "held-karp",
+  "optimalGuarantee": true,
+  "travelMode": "driving",
+  "optimizationMetric": "duration",
+  "returnToStart": false
+}
+```
+
+`geometry` và `routeGeometry` là Google Encoded Polyline precision 5 được sinh
+từ geometry node của snapshot. `directions=[]` vì adapter local hiện tại không
+có turn-by-turn; field được giữ để adapter provider tương lai có thể điền mà
+không đổi contract.
 
 ---
 

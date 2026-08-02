@@ -113,6 +113,10 @@ def tour_cost(cost: dict, order: list[str], return_to_start: bool) -> float:
 def held_karp(cost: dict, points: list[str], return_to_start: bool
               ) -> tuple[list[str], float]:
     """Exact ATSP by bitmask DP. points[0] is the fixed start."""
+    # Canonicalize destination indices so equal-cost tie breaks are stable and
+    # independent of the order supplied by the user. The original input order
+    # remains available to solve_multiroute for its comparison totals.
+    points = [points[0], *sorted(points[1:])]
     n = len(points)
     if n > HELD_KARP_MAX:
         raise ValueError(
@@ -257,12 +261,21 @@ def simulated_annealing(cost: dict, points: list[str], return_to_start: bool,
 # ------------------------------------------------------------- facade
 
 
-def solve_multiroute(store: GraphStore, start: str, stops: list[str],
-                     method: TspMethod, mode: Mode = "balanced",
-                     time_slot: TimeSlot = "07:30",
-                     return_to_start: bool = False) -> MultirouteResponse:
-    """Full multiroute answer per SCHEMA §C.5 (raises KeyError on unknown
-    nodes and ValueError on size-limit violations -> API maps to 404/422)."""
+def solve_multiroute_with_paths(
+    store: GraphStore,
+    start: str,
+    stops: list[str],
+    method: TspMethod,
+    mode: Mode = "balanced",
+    time_slot: TimeSlot = "07:30",
+    return_to_start: bool = False,
+) -> tuple[MultirouteResponse, dict[tuple[str, str], list[str]]]:
+    """Solve §C.5 and expose the already-built path matrix to adapters.
+
+    The public legacy facade below returns only the response. Coordinate API
+    adapters reuse the matrix to derive pure travel duration for both the
+    optimized and original orders without repeating Dijkstra calls.
+    """
     for node in [start, *stops]:
         if not store.has_node(node):
             raise KeyError(f"node '{node}' not in graph '{store.level}'")
@@ -277,9 +290,11 @@ def solve_multiroute(store: GraphStore, start: str, stops: list[str],
     try:
         cost, path = build_matrix(store, points, mode, time_slot)
     except UnreachableStopError:
-        return MultirouteResponse(**base, found=False, order=[], legs=[],
-                                  totals=None, original_order_totals=None,
-                                  savings_pct=None)
+        response = MultirouteResponse(
+            **base, found=False, order=[], legs=[], totals=None,
+            original_order_totals=None, savings_pct=None,
+        )
+        return response, {}
 
     if method == "held_karp":
         order, _ = held_karp(cost, points, return_to_start)
@@ -312,6 +327,19 @@ def solve_multiroute(store: GraphStore, start: str, stops: list[str],
     original = totals_of(points)
     savings = round((original.total_cost - totals.total_cost)
                     / original.total_cost * 100, 1) if original.total_cost else 0.0
-    return MultirouteResponse(**base, found=True, order=order, legs=legs,
-                              totals=totals, original_order_totals=original,
-                              savings_pct=savings)
+    response = MultirouteResponse(
+        **base, found=True, order=order, legs=legs, totals=totals,
+        original_order_totals=original, savings_pct=savings,
+    )
+    return response, path
+
+
+def solve_multiroute(store: GraphStore, start: str, stops: list[str],
+                     method: TspMethod, mode: Mode = "balanced",
+                     time_slot: TimeSlot = "07:30",
+                     return_to_start: bool = False) -> MultirouteResponse:
+    """Public legacy answer per SCHEMA §C.5."""
+    response, _paths = solve_multiroute_with_paths(
+        store, start, stops, method, mode, time_slot, return_to_start,
+    )
+    return response

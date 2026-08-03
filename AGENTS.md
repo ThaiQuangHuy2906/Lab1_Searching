@@ -160,24 +160,13 @@ npm run dev
 9. Do not commit, push, branch, crawl, rebuild, or benchmark unless requested.
 10. Never report a command as passed if it was not executed.
 
-## Shared Drive handoff
+## Task handoff
 
-- Shared task log: [Project01 — Codex Task Log & Handoff](https://docs.google.com/document/d/1Ey-SaAQ4ty2P_sOxOXB9INmc-a7jC3eEzJ_Z_KH-p_0).
-- For a substantive implementation, audit, or evidence-gathering task, read the
-  newest relevant log entry before acting. The log is a handoff aid, never a
-  replacement for the current user request, this file, contracts, or fresh
-  checks.
-- At completion, unless the user says not to log it, append one concise entry
-  at the top of the Doc's `Entries (newest first)` section. Include: objective,
-  scope/files, verified commands or runtime evidence, current facts established,
-  risks/blockers, next-task prompt, requested model/effort, and status.
-- Do not record secrets, access tokens, passwords, unnecessary personal data,
-  or claims not backed by current evidence. If effective runtime routing is not
-  exposed, write `MODEL ROUTING UNVERIFIED` rather than infer it.
-- If the Google Drive connector is unavailable or its write fails, say so in
-  the final handoff; do not claim that the shared log was updated. Do not use a
-  failed log write as authority to edit, commit, push, rebuild data, or run a
-  benchmark.
+- Keep routine task reports in the final response and repository documentation.
+- Do not use external document or storage services for task handoff unless
+  the user explicitly opts back in.
+- Record only current, verified evidence; never include secrets, access tokens,
+  passwords, or unnecessary personal data.
 
 ## Pre-submission warnings
 

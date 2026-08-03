@@ -6,6 +6,13 @@ import { Button } from "../ui/button";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "../ui/select";
+import { AtspCompare } from "../atsp/atsp-compare";
+import { AtspLoading } from "../atsp/atsp-result";
+import {
+  ALGORITHM_ORDER,
+  chooseCompareAlgorithm,
+  routeGuaranteeLabel,
+} from "@/lib/algorithm-policy";
 import { ALGO_LABEL, useApp } from "@/lib/store";
 import { fmtInt, fmtKm, fmtMinutes, fmtMs, fmtSeconds, fmtVi } from "@/lib/format";
 import type { Algorithm, Trace } from "@/lib/types";
@@ -119,22 +126,73 @@ function Verdict({ a, b }: { a: Trace; b: Trace }) {
   );
 }
 
+function directedEdges(path: string[]) {
+  return new Set(path.slice(0, -1).map((node, index) => `${node}\u0000${path[index + 1]}`));
+}
+
+/** Geometry-oriented complement to the cost verdict. The percentage is a
+ * directed-edge Jaccard score, so 100% means the two node paths are identical
+ * even when their search effort differs. */
+function RouteOverlap({ a, b }: { a: Trace; b: Trace }) {
+  const edgesA = directedEdges(a.path);
+  const edgesB = directedEdges(b.path);
+  const common = [...edgesA].filter((edge) => edgesB.has(edge)).length;
+  const onlyA = edgesA.size - common;
+  const onlyB = edgesB.size - common;
+  const union = common + onlyA + onlyB;
+  const percentage = union === 0 ? null : Math.round((common / union) * 100);
+
+  return (
+    <div className="rounded-lg border border-surface-border bg-surface-panel p-2.5">
+      <div className="flex items-center justify-between gap-2">
+        <p className="text-[11px] font-bold uppercase tracking-wider text-ink-dim">
+          Độ trùng tuyến
+        </p>
+        <Badge className="shrink-0 font-mono">
+          {percentage === null ? "—" : `${percentage} %`}
+        </Badge>
+      </div>
+      <div className="mt-2 grid grid-cols-3 gap-1.5 text-center">
+        <div className="rounded-md bg-surface-control px-1.5 py-1.5">
+          <p className="font-mono text-sm font-bold text-ink">{fmtInt(common)}</p>
+          <p className="text-[10px] text-ink-dim">đoạn chung</p>
+        </div>
+        <div className="rounded-md bg-algo-path/10 px-1.5 py-1.5">
+          <p className="font-mono text-sm font-bold text-algo-path">{fmtInt(onlyA)}</p>
+          <p className="text-[10px] text-ink-dim">chỉ tuyến A</p>
+        </div>
+        <div className="rounded-md bg-algo-frontier/10 px-1.5 py-1.5">
+          <p className="font-mono text-sm font-bold text-algo-frontier">{fmtInt(onlyB)}</p>
+          <p className="text-[10px] text-ink-dim">chỉ tuyến B</p>
+        </div>
+      </div>
+      <p className="mt-1.5 text-[10px] leading-4 text-ink-faint">
+        Tính theo cạnh có hướng: số đoạn chung chia cho tổng số đoạn khác nhau.
+      </p>
+    </div>
+  );
+}
+
 export function CompareTab() {
   const s = useApp();
   const a = s.trace;
   const b = s.compare;
+  const selectedCompareAlgo = chooseCompareAlgorithm(a?.algorithm, s.compareAlgo);
+
+  if (s.multiRunning) return <AtspLoading />;
+  if (s.multi) return <AtspCompare multi={s.multi} />;
 
   return (
     <div className="flex flex-col gap-3">
       <div className="flex items-end gap-2">
         <div className="flex-1">
           <div className="mb-1.5 text-xs font-medium text-ink-dim">Thuật toán B</div>
-          <Select value={s.compareAlgo}
+          <Select value={selectedCompareAlgo}
             disabled={s.comparing || s.running || s.multiRunning}
             onValueChange={(v) => s.set({ compareAlgo: v as Algorithm })}>
             <SelectTrigger aria-label="Thuật toán so sánh"><SelectValue /></SelectTrigger>
             <SelectContent>
-              {(Object.keys(ALGO_LABEL) as Algorithm[])
+              {ALGORITHM_ORDER
                 .filter((x) => x !== a?.algorithm)
                 .map((x) => (
                   <SelectItem key={x} value={x}>{ALGO_LABEL[x]}</SelectItem>
@@ -164,6 +222,7 @@ export function CompareTab() {
       {a && b && (
         <>
           <Verdict a={a} b={b} />
+          <RouteOverlap a={a} b={b} />
 
           {/* overflow-x-auto chứ không hidden: 4 cột + tên dài không bao giờ
               được phép CẮT CỤT cột Δ (bug class v10, review v11 bắt lại) */}
@@ -208,12 +267,17 @@ export function CompareTab() {
                   );
                 })}
                 <tr className="border-t border-surface-border/60">
-                  <td className="px-2.5 py-1.5 text-ink-dim">Đảm bảo tối ưu</td>
+                  <td className="px-2.5 py-1.5 text-ink-dim">Bảo đảm kết quả</td>
                   {[a, b].map((t, i) => (
                     <td key={i} className="px-2 py-1.5 text-right">
                       <Badge variant={t.metrics.optimal_guarantee ? "ok" : "warn"}
                         className="px-1.5 py-0 text-[10px]">
-                        {t.metrics.optimal_guarantee ? "Có" : "Không"}
+                        {routeGuaranteeLabel(
+                          t.algorithm,
+                          t.metrics.optimal_guarantee,
+                          t.metrics.epsilon_bound,
+                          t.mode === "distance" ? "m" : "s",
+                        )}
                       </Badge>
                     </td>
                   ))}
@@ -225,7 +289,8 @@ export function CompareTab() {
 
           <p className="text-xs leading-5 text-ink-dim">
             Δ = B so với A (xanh: B tốt hơn, đỏ: B kém hơn — mọi chỉ số càng thấp càng
-            tốt). Vạch màu ở tiêu đề trùng chú giải tuyến trên bản đồ.
+            tốt). Vạch màu ở tiêu đề trùng chú giải tuyến trên bản đồ. Tuyến B được
+            dịch ngang 4 px chỉ để lộ phần trùng; tọa độ và số liệu không đổi.
           </p>
         </>
       )}

@@ -9,6 +9,7 @@ import { InfoTip } from "../ui/info-tip";
 import { GhfTable } from "../ghf-table";
 import { AtspLoading, AtspResult } from "../atsp/atsp-result";
 import { ALGO_LABEL, useApp } from "@/lib/store";
+import { routeGuaranteeLabel } from "@/lib/algorithm-policy";
 import { fmtInt, fmtKm, fmtMinutes, fmtMs, fmtVi } from "@/lib/format";
 
 function Stat({ icon: Icon, label, value, sub, tip, emphasis = "effort" }: {
@@ -120,11 +121,12 @@ export function MetricsTab() {
       <div className="flex flex-wrap items-center gap-1.5">
         <Badge variant={m.optimal_guarantee ? "ok" : "warn"} className="gap-1">
           {m.optimal_guarantee && <BadgeCheck className="size-3.5" />}
-          {m.optimal_guarantee
-            ? trace.algorithm === "idastar"
-              ? `Tối ưu trong ε = ${fmtVi(m.epsilon_bound ?? 5)} ${costUnit}`
-              : "Đảm bảo tối ưu"
-            : "Không đảm bảo tối ưu"}
+          {routeGuaranteeLabel(
+            trace.algorithm,
+            m.optimal_guarantee,
+            m.epsilon_bound,
+            costUnit,
+          )}
         </Badge>
         {m.beam_width != null && <Badge>k = {m.beam_width}</Badge>}
         {m.trace_truncated && <Badge variant="danger">Trace bị cắt ở 5 000 bước</Badge>}

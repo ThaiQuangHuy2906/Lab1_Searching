@@ -3,8 +3,9 @@
 > **Lưu ý hiện hành (2026-08-03):** phần từ “TRẠNG THÁI FIX BATCH” trở xuống là
 > sổ kiểm toán/fix lịch sử tại các commit
 > ghi trong tài liệu. Không dùng các số test, line number hay kết luận cũ làm bằng
-> chứng cho worktree hiện tại. Kết luận current-state nằm ngay trong mục FINAL-01
-> dưới đây và phần cập nhật cuối của `docs/CODEX-CODEBASE-MAP.md`.
+> chứng cho worktree hiện tại. Kết luận current-state nằm trong mục cập nhật UI
+> mới nhất, FINAL-01 dưới đây và phần cập nhật cuối của
+> `docs/CODEX-CODEBASE-MAP.md`.
 >
 > **Ngày kiểm:** 2026-07-27 · **Commit kiểm:** `9598141` (git sạch, đồng bộ origin/main)
 > **Phương pháp:** Lượt 0 (mốc chân lý) chạy trước; 6 lượt kiểm toán độc lập chạy **song song**
@@ -12,6 +13,34 @@
 > agent hoài nghi **tái lập độc lập từ đầu** trước khi vào báo cáo (cột "Phản biện chéo").
 > Script tái lập nằm nguyên trong `audit_tmp/` (luot1…luot6, verify/) — không commit.
 > Sau toàn bộ cuộc kiểm: `git status` chỉ còn untracked `audit_tmp/` — **không file nguồn nào bị sửa**.
+
+---
+
+## Cập nhật UI compare + ATSP tabs — 2026-08-03
+
+**Phạm vi:** làm rõ hai tuyến thuật toán khi trùng cạnh; thêm nội dung ATSP thật
+cho tab Giải thích và So sánh; chuyển handoff về local-only, không dùng dịch vụ
+tài liệu/lưu trữ bên ngoài nếu người dùng chưa chủ động bật lại.
+
+- Compare A/B: tuyến B giữ nguyên node path, API và metrics nhưng casing, nét đứt
+  và mũi tên được dịch 4 px ở tầng render. Drawer hiển thị số cạnh có hướng chung,
+  chỉ A, chỉ B và tỷ lệ `chung / hợp`; ảnh dark G_demo đã được kiểm bằng mắt.
+- ATSP Giải thích: diễn giải method/guarantee, tiêu chí, bất đối xứng và tác động
+  trước/sau từ đúng `MultirouteResponse`.
+- ATSP So sánh: đối chiếu thứ tự nhập với thứ tự sau tối ưu cho cost/time/distance;
+  UI ghi rõ đây không phải so sánh đồng thời hai method vì store chỉ giữ một `multi`.
+- `npx tsc --noEmit`: exit 0. `git diff --check`: exit 0 (chỉ cảnh báo line-ending
+  hiện có của `docs/DESIGN.md`). Không chạy backend suite, validator, build,
+  benchmark hoặc data rebuild vì thay đổi chỉ ở frontend/tài liệu.
+- Runtime ATSP 1366×768: **53/53 assertion**, 13 PNG; dark/light explanation +
+  before/after compare, loading/disabled, invalidation, Held-Karp 14/15 stop,
+  G_real picking, route/explanation/compare/offline/drawer/error-retry regression.
+- Runtime route/flow 1366×768: **11/12 assertion**, 10 PNG; dark/light, compare,
+  trace, clear, G_real và reduced motion đạt. Cổng FPS G_real còn không đạt trên
+  Chromium SwiftShader (xấp xỉ 14 FPS), cùng rủi ro GPU giả lập đã biết từ FINAL-01;
+  chưa tái lập bằng GPU phần cứng.
+- Lỗi console quan sát được chỉ gồm favicon 404 và lỗi `/api/graph` được script
+  cố ý tạo để kiểm error/retry; không có exception UI ngoài dự kiến.
 
 ---
 

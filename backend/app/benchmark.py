@@ -314,8 +314,13 @@ def exp5(store: GraphStore, pairs: list[tuple[str, str]]) -> str:
         for src, dst in pairs:
             t = astar(st, src, dst, mode="balanced", time_slot="07:30",
                       include_trace=False)
-            # measure the chosen route with the standard gamma=1.5 clock
-            _c, dist, time_s = store.path_metrics(t.path, "time", "07:30")
+            # Measure the chosen route with the standard gamma=1.5 travel-time
+            # clock. path_metrics' third value is the balanced total (including
+            # risk penalties), so avg_time_s must use the mode cost returned
+            # first when mode="time".
+            time_s, dist, _balanced = store.path_metrics(
+                t.path, "time", "07:30"
+            )
             total_t += time_s
             total_d += dist
         rows.append([gamma, f"{total_t / len(pairs):.1f}",

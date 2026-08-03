@@ -41,7 +41,7 @@ export function Drawer() {
       <div className="flex h-[60px] shrink-0 items-center gap-2 border-b border-surface-border px-4">
         <div className="flex-1">
           <span className="text-[15px] font-bold leading-5">Kết quả</span>
-          <p className="text-xs text-ink-dim">Số liệu, giải thích và đối chiếu tuyến</p>
+          <p className="text-xs text-ink-dim">Số liệu, giải thích và đối chiếu hành trình</p>
         </div>
         <Button ref={closeButtonRef} variant="ghost" size="iconSm" aria-label="Thu gọn panel kết quả"
           onClick={() => set({ drawerOpen: false })}>

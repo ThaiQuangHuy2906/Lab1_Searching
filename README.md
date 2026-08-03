@@ -18,8 +18,9 @@ gọi mạng.
 - Ba phương pháp ATSP cho hành trình nhiều điểm trên đồ thị có hướng, bất đối xứng.
 - Bản đồ G_demo/G_real, lớp ùn tắc, offline mode và chọn điểm trực tiếp trên map.
 - Luồng sáng nhấn tuyến, focus/keyboard đầy đủ và fallback `prefers-reduced-motion`.
-- Giải thích tiếng Việt, so sánh hai tuyến và benchmark viewer chỉ đọc với cảnh
-  báo nguồn dữ liệu rõ ràng.
+- Giải thích tiếng Việt cho tuyến hai điểm và ATSP; so sánh hai thuật toán có
+  chỉ báo phần tuyến trùng/khác; đối chiếu ATSP trước/sau tối ưu.
+- Benchmark viewer chỉ đọc với cảnh báo nguồn dữ liệu rõ ràng.
 
 > **Trạng thái ngày 2026-08-03 — sẵn sàng demo có cảnh báo, chưa được nộp:**
 > [FINAL-01](docs/KIEMTOAN.md#cập-nhật-hậu-kiểm-final-01--2026-08-03) xác nhận
@@ -39,7 +40,7 @@ gọi mạng.
 | G_demo | **Hiện hành** | 51 node, 292 cạnh có hướng, 56 cạnh một chiều |
 | G_real | **Hiện hành** | 2.118 node, 4.699 cạnh có hướng, 1.433 cạnh một chiều |
 | Benchmark | **Chưa hiện hành** | `results/` cũ hơn graph; xem [`results/README.md`](results/README.md) |
-| UI/runtime | **Đạt có cảnh báo** | [71/71 kiểm tra UI chính](docs/KIEMTOAN.md#bằng-chứng-đã-chạy-thật-trong-final-01); benchmark đủ loading/empty/error/retry/partial; luồng sáng tuyến đạt 11/12 kiểm tra |
+| UI/runtime | **Đạt có cảnh báo** | [71/71 UI chính](docs/KIEMTOAN.md#bằng-chứng-đã-chạy-thật-trong-final-01) + [53/53 ATSP/compare mới](docs/KIEMTOAN.md#cập-nhật-ui-compare--atsp-tabs--2026-08-03); benchmark đủ loading/empty/error/retry/partial; route-flow 11/12 do SwiftShader |
 | Backend sau clean restart | **Khớp dữ liệu** | G_demo 51/292 và G_real 2.118/4.699 khớp snapshot trên đĩa |
 | Trước khi nộp | **Còn việc tay** | 8 URL nguồn risk + metadata risk cũ, 40 marker cần điền trên 30 dòng nội dung (không tính dòng chú giải), screenshot, report PDF, slide, video/link và ZIP |
 
@@ -56,7 +57,7 @@ restart cả hai service, hard-refresh trình duyệt và xác nhận
 | Thuật toán bắt buộc | BFS, DFS, UCS, A* |
 | Thuật toán bổ sung | IDDFS, Dijkstra, Greedy, Bidirectional Dijkstra, IDA*, Beam |
 | Đa điểm | Held–Karp, Nearest Neighbor + cải thiện bất đối xứng, Simulated Annealing |
-| GUI | Shell điều hành dark/light, chọn điểm trên map, animation trace và luồng sáng tuyến có reduced-motion, timeline, bảng g/h/f, ATSP, so sánh, giải thích tiếng Việt, trang benchmark có trạng thái dữ liệu tạm |
+| GUI | Shell điều hành dark/light, chọn điểm trên map, animation trace và luồng sáng tuyến có reduced-motion, timeline, bảng g/h/f, ATSP, so sánh tuyến có độ trùng, giải thích tiếng Việt cho route/ATSP, trang benchmark có trạng thái dữ liệu tạm |
 | Báo cáo và video | Có khung a–j, outline 14 slide và kịch bản video; vẫn cần nhóm hoàn thiện artifact thật |
 
 Rubric chính thức 100 điểm và yêu cầu đóng gói nằm trong

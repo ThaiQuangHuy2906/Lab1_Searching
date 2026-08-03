@@ -79,7 +79,7 @@ trên nền trắng; node đang expand đảo trắng→đen.
 | `algo-frontier` | cyan-400 `#22d3ee` | cyan-600 `#0891b2` | node trong frontier |
 | `algo-expanded` | violet-400 `#a78bfa` | violet-600 `#7c3aed` | node đã expand |
 | `algo-current` | white `#ffffff` + pulse trắng | zinc-900 `#18181b` + pulse đen | node đang expand |
-| `algo-path` | amber-400 `#fbbf24` | amber-600 `#d97706` | tuyến kết quả, nét dày 4px |
+| `algo-path` | amber-400 `#fbbf24` | amber-600 `#d97706` | tuyến kết quả, nét dày 6px |
 | `bidi-forward` | cyan-400 `#22d3ee` | cyan-600 `#0891b2` | phía xuôi (side=forward) |
 | `bidi-backward` | rose-400 `#fb7185` | rose-600 `#e11d48` | phía ngược (side=backward) |
 | `edge-dim` | zinc-500 @40% | zinc-600 @36% | cạnh nền G_demo; phải lùi sau route/trace |
@@ -88,7 +88,7 @@ trên nền trắng; node đang expand đảo trắng→đen.
 | Start | chip **"Đi"**: nền emerald-700 `#047857`, chữ trắng — CỐ ĐỊNH 2 chế độ (chữ 5,48) | | điểm xuất phát; token `start` (marker/badge) vẫn emerald-500/600 theo chế độ |
 | Goal | chip **"Đến"**: nền red-600 `#dc2626`, chữ trắng — CỐ ĐỊNH 2 chế độ (đồ hoạ ≥3,5 / chữ 4,83) | | điểm đích; token `goal` vẫn red-500/600 theo chế độ |
 | Stops | số trên nền amber theo chế độ, chữ **zinc-950** cả 2 (đo: trắng trên amber-600 chỉ 3,19) | | điểm giao multiroute |
-| So sánh | A `algo-path` liền 6px · B `algo-frontier` nét đứt DÀY 5px [10,5] trên CASING liền cùng hệ với A (v10d — bản 3px không casing chìm vào lưới) | | 2 tuyến chồng lớp |
+| So sánh | A `algo-path` liền 6px · B `algo-frontier` nét đứt DÀY 5px [10,5] trên CASING liền, dịch ngang **4 px chỉ ở tầng hiển thị** để lộ các cạnh trùng (tọa độ/metrics không đổi) | | 2 tuyến dễ đối chiếu |
 | Nhãn POI trên map | zinc-50 TRẮNG HẲN, 12,5px đậm 600, halo tối 3px (v8d — kèm fix stale updateTriggers khi đổi theme) | zinc-800 ĐẬM HẲN viền trắng (v8e) | TextLayer G_demo |
 | Basemap | Carto **dark-matter** | Carto **positron** | không cần key |
 
@@ -188,8 +188,9 @@ mở/đóng khác nhau).
 
 **Panel trái v11 (redesign sau góp ý UI):** Tiêu chí tối ưu đổi dropdown →
 **segmented 3 nút** cùng pattern Khung giờ (thấy đủ 3 mode một lúc, đỡ 1 click
-khi demo); dropdown Thuật toán nhóm 2 nhóm `SelectGroup/SelectLabel` theo bảng
-SCHEMA §B.5 ("Đảm bảo tối ưu" / "Không đảm bảo — đánh đổi"); dưới CTA thêm dòng
+khi demo); dropdown Thuật toán nhóm 3 nhóm `SelectGroup/SelectLabel` theo bảng
+SCHEMA §B.5 ("Đảm bảo tối ưu" / "Bảo đảm trong biên ε" cho IDA* /
+"Không đảm bảo — đánh đổi"); dưới CTA thêm dòng
 trạng thái khi thiếu input ("Còn thiếu điểm Đi." / "…Đến."); nút chọn-trên-bản-đồ
 hiện id node bằng font-mono; Section p-3 + vùng cuộn gap-2 p-2.5 (nén ~40px);
 toàn bộ control hành trình + 3 nút chạy khoá chéo khi đang có request bay
@@ -252,7 +253,8 @@ Button/SelectTrigger/Switch/input. Switch: thumb TRẮNG cố định + viền
 - Đầu tab Số liệu có **dòng nguồn kết quả**: "A* · Cân bằng · 07:30 · G_demo" —
   kết quả đang xem thuộc cấu hình nào (tránh nhầm khi user đã đổi lựa chọn ở panel).
 - Số liệu: card metrics (cost/time/km/expanded/max frontier/runtime + badge
-  "Đảm bảo tối ưu"/"Không đảm bảo") + **bảng g/h/f** của frontier tại bước hiện tại.
+  "Đảm bảo tối ưu"/"Tối ưu trong ε"/"Không đảm bảo") + **bảng g/h/f** của frontier
+  tại bước hiện tại.
   (v11 — redesign sau góp ý UI): stat card chia 2 TẦNG có kicker — "TUYẾN TÌM ĐƯỢC"
   (card Tổng chi phí bản rộng col-span-2 + Thời gian đi + Quãng đường) và "CÔNG SỨC
   TÌM KIẾM" (Đã expand · Frontier max · Runtime, lưới 3 cột gọn); card chi phí mang
@@ -269,7 +271,8 @@ Button/SelectTrigger/Switch/input. Switch: thumb TRẮNG cố định + viền
   (v11 — redesign sau góp ý UI, KHÔNG đổi text backend): tên Đi/Đến WRAP thay vì
   truncate ("Chùa X…" hết cắt cụt); summary tách câu đầu làm LEAD in đậm `ink`, phần
   còn lại `ink-dim` (tách tại ". " — an toàn vì số liệu tiếng Việt dùng dấu phẩy thập
-  phân); hàng chips thêm Badge ok/warn "Đảm bảo tối ưu" đồng bộ 2 tab kia; thời gian
+  phân); hàng chips thêm Badge ok/warn theo đúng contract (IDA* ghi biên ε thay vì
+  "Đảm bảo tối ưu") đồng bộ 2 tab kia; thời gian
   <90 s đọc bằng giây thay vì "0,x phút"; card ùn tắc: badge đếm tổng đoạn + caption
   "gộp theo tên đường, lấy mức cao nhất" + chữ "mức x/5" tô đúng `congestionHex` của
   mức; nhóm alternatives có kicker "Tuyến thay thế đã xét — và vì sao bị loại", mỗi
@@ -285,7 +288,13 @@ Button/SelectTrigger/Switch/input. Switch: thumb TRẮNG cố định + viền
   lam trùng chú giải bản đồ) — bên THẮNG in đậm `ink`, bên thua `ink-dim`, không dùng
   màu tuyến tô giá trị (hết lẫn "màu của ai" với "ai tốt hơn"); (c) cột Δ = % B so A,
   `start` khi B tốt hơn / `goal` khi kém (mọi chỉ số càng thấp càng tốt), caption ghi
-  chú quy ước; (d) "Đảm bảo tối ưu" dùng Badge ok/warn như tab Số liệu.
+  chú quy ước; (d) hàng "Bảo đảm kết quả" dùng Badge ok/warn như tab Số liệu và ghi
+  rõ biên ε khi một tuyến dùng IDA*.
+  Khi hai thuật toán dùng chung cạnh, tuyến B và mũi tên B được `PathStyleExtension`
+  dịch sang phải 4 px ở tầng render; casing và thân dùng hệ số khác nhau để cùng đạt
+  đúng 4 px. Legend/caption nói rõ đây chỉ là lệch hiển thị. Một card "Độ trùng tuyến"
+  báo số cạnh có hướng chung, chỉ A, chỉ B và tỷ lệ Jaccard `chung / hợp`, nên trường
+  hợp cùng chi phí nhưng khác đường hoặc cùng đường nhưng khác công sức vẫn đọc được.
 
 **UI-02 — ATSP control flow refinement:** phần Hành trình giữ nguyên NodePicker,
 store và `runMulti`, nhưng trình bày ATSP theo chuỗi Đi → thứ tự điểm giao → phương
@@ -304,6 +313,12 @@ guarantee badge theo `optimal_guarantee`, card tỷ lệ tiết kiệm theo đú
 `multi.order`. Tên method luôn là nhãn thân thiện, không in raw enum; `found=false`
 có state riêng, không rơi về empty state của route hai điểm. Toàn bộ dùng token và
 năm vai trò surface của UI-01; không thêm màu, dependency hay interaction mới.
+
+Hai tab còn lại cũng nhận biết ATSP mà không đổi API/state: **Giải thích** diễn giải
+phương pháp, guarantee, tiêu chí, tính bất đối xứng và tác động thời gian/quãng đường
+từ chính `MultirouteResponse`; **So sánh** đối chiếu "Thứ tự nhập" với "Sau tối ưu"
+cho cost/time/distance. Đây không phải so sánh đồng thời hai phương pháp ATSP vì store
+chỉ giữ một `multi`; UI phải nói rõ giới hạn đó thay vì giả lập thêm kết quả.
 
 ## 5. SIGNATURE — Timeline trình phát
 
@@ -331,10 +346,13 @@ Thanh nổi giữa-đáy bản đồ, nền `surface-raised`, viền `surface-bo
   multiroute, và tuyến B khi So sánh. Đặt tại trung điểm các đoạn, cách nhau ≥ ~220 m,
   xoay theo hướng di chuyển; màu **tối (zinc-950) cả 2 chế độ** + viền SDF MÀU TUYẾN
   (amber cho tuyến chính, cyan cho tuyến B) — đọc như mũi tên khắc trong dải tuyến,
-  nổi cả khi tràn ra ngoài mép dải. Không còn mũi tên trên cạnh thường.
-- **Tuyến kết quả có viền (casing)**: lớp nền màu `surface` rộng 7px dưới lớp màu
+  nổi cả khi tràn ra ngoài mép dải. Mũi tên B nhận cùng offset 4 px với thân tuyến B;
+  không còn mũi tên trên cạnh thường.
+- **Tuyến kết quả có viền (casing)**: lớp nền màu `surface` rộng 8,5px dưới lớp màu
   6px — tuyến nổi trên mọi nền bản đồ (kỹ thuật casing bản đồ chuẩn); áp dụng cho
-  route chính, multiroute và tuyến so sánh.
+  route chính, multiroute và tuyến so sánh. Toàn bộ stack tuyến kết quả nằm **trên**
+  node nền, frontier và expanded để đám node G_real không cắt vụn tuyến khi zoom xa;
+  current ring/pulse, nhãn POI, chip Đi/Đến/stop và mũi tên hướng vẫn nằm trên tuyến.
 - **Luồng sáng tuyến kết quả (UI-XX):** khi route hai điểm đã có kết quả và timeline
   đang ở bước cuối, hoặc khi ATSP đã có multiroute hợp lệ, giữ nguyên casing + thân
   amber rồi chèn thêm một đoạn nhấn ngắn chạy theo chiều hành trình trong 3,2 giây
@@ -345,7 +363,8 @@ Thanh nổi giữa-đáy bản đồ, nền `surface-raised`, viền `surface-bo
   `LayerExtension`: tiến độ tuyến được tạo một lần thành vertex attribute, còn
   cửa sổ sáng chuyển động bằng shader uniform trong vòng redraw `_animate` của
   deck.gl. React không tick state và base graph G_real không rebuild theo frame.
-  Hai lớp nằm dưới mũi tên, node và marker nên không che tương tác. Tuyến B và
+  Hai lớp nằm trên frontier/expanded nhưng dưới mũi tên, current ring, nhãn và
+  marker; chúng không pickable nên không che tương tác chọn node. Tuyến B và
   trace giữa chặng không chạy hiệu ứng. `prefers-reduced-motion:
   reduce` thay loop bằng lõi sáng tĩnh 2px; thân route gốc luôn còn nguyên nên
   nhận diện không phụ thuộc animation. Màu deck-only `routeFlowHalo`,

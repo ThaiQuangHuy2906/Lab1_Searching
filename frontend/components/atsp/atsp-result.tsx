@@ -5,19 +5,8 @@ import { Badge } from "../ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Skeleton } from "../ui/skeleton";
 import { fmtKm, fmtMinutes, fmtPct, fmtVi } from "@/lib/format";
-import type { GraphFile, LegMetrics, MultirouteResponse, TspMethod } from "@/lib/types";
-
-const METHOD_LABEL: Record<TspMethod, string> = {
-  held_karp: "Held-Karp",
-  nn_2opt: "NN + 2-opt",
-  sa: "Simulated Annealing",
-};
-
-const MODE_LABEL = {
-  balanced: "Cân bằng",
-  time: "Nhanh nhất",
-  distance: "Ngắn nhất",
-} as const;
+import type { GraphFile, LegMetrics, MultirouteResponse } from "@/lib/types";
+import { ATSP_METHOD_LABEL, ATSP_MODE_LABEL, atspCostUnit } from "./atsp-copy";
 
 function ResultSummary({ label, totals, emphasized = false, costUnit }: {
   label: string;
@@ -84,7 +73,7 @@ function AtspFailure({ multi, incomplete = false }: {
   return (
     <div className="flex flex-col gap-3">
       <p className="rounded-lg border border-surface-border bg-surface-control px-2.5 py-2 font-mono text-[11px] text-ink-dim">
-        {METHOD_LABEL[multi.method]} · {MODE_LABEL[multi.mode]} · {multi.time_slot} ·{" "}
+        {ATSP_METHOD_LABEL[multi.method]} · {ATSP_MODE_LABEL[multi.mode]} · {multi.time_slot} ·{" "}
         {multi.graph === "demo" ? "G_demo" : "G_real"}
       </p>
       <div role="status" className="rounded-lg border border-algo-path/35 bg-algo-path/10 p-3">
@@ -116,12 +105,12 @@ export function AtspResult({ multi, graphData }: {
 
   const nameOf = (id: string) =>
     graphData?.nodes.find((node) => node.id === id)?.name ?? id;
-  const costUnit = multi.mode === "distance" ? "m" : "s";
+  const costUnit = atspCostUnit(multi.mode);
 
   return (
     <div className="flex flex-col gap-3">
       <p className="rounded-lg border border-surface-border bg-surface-control px-2.5 py-2 font-mono text-[11px] text-ink-dim">
-        {METHOD_LABEL[multi.method]} · {MODE_LABEL[multi.mode]} · {multi.time_slot} ·{" "}
+        {ATSP_METHOD_LABEL[multi.method]} · {ATSP_MODE_LABEL[multi.mode]} · {multi.time_slot} ·{" "}
         {multi.graph === "demo" ? "G_demo" : "G_real"}
       </p>
 
@@ -130,7 +119,7 @@ export function AtspResult({ multi, graphData }: {
           {multi.optimal_guarantee && <BadgeCheck className="size-3.5" />}
           {multi.optimal_guarantee ? "Tối ưu tuyệt đối" : "Nghiệm xấp xỉ"}
         </Badge>
-        <Badge>{METHOD_LABEL[multi.method]}</Badge>
+        <Badge>{ATSP_METHOD_LABEL[multi.method]}</Badge>
       </div>
 
       <div className="rounded-lg border border-start/35 bg-start/5 p-3">
@@ -139,7 +128,7 @@ export function AtspResult({ multi, graphData }: {
           {multi.savings_pct === null ? "—" : fmtPct(multi.savings_pct)}
         </p>
         <p className="mt-1.5 text-[11px] leading-4 text-ink-dim">
-          So với thứ tự nhập, theo tổng chi phí của tiêu chí {MODE_LABEL[multi.mode].toLowerCase()}.
+          So với thứ tự nhập, theo tổng chi phí của tiêu chí {ATSP_MODE_LABEL[multi.mode].toLowerCase()}.
         </p>
       </div>
 

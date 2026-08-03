@@ -561,6 +561,19 @@ Verified/current findings:
   the highlight travels from Đi through the full delivery order instead of
   restarting on every leg. Active trace steps suppress two-point route-flow to
   avoid competing motion.
+- The result-route stack (casing, route body, flow and direction arrows) is
+  composed above base/frontier/expanded nodes so dense G_real trace states do
+  not cut the route into visually disconnected fragments. Current-node rings,
+  POI labels and endpoint/stop chips remain above the route; route layers stay
+  non-pickable so node selection behavior is unchanged.
+- Compare route B keeps its original node coordinates and metrics but uses a
+  render-only 4 px `PathStyleExtension` offset for casing, dashed body and
+  direction arrows. The compare drawer also reports directed-edge overlap
+  (common, A-only, B-only and Jaccard percentage) so shared geometry is explicit.
+- Drawer Explanation and Compare now recognize `multi`: ATSP explanation is
+  derived from the current `MultirouteResponse`, while ATSP comparison means
+  input order versus optimized order. Cross-method ATSP comparison is not
+  claimed because the store intentionally retains only one `multi` result.
 - FINAL-01 functional route-flow QA passed G_demo/G_real, compare, trace,
   clear/invalidation and reduced-motion states. G_real measured only about
   16 FPS under Chromium SwiftShader; a hardware-GPU run was not reproduced.

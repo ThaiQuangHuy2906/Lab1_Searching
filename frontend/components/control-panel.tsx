@@ -15,6 +15,7 @@ import {
 } from "./ui/select";
 import { Skeleton } from "./ui/skeleton";
 import { toast } from "sonner";
+import { ALGORITHM_GROUPS } from "@/lib/algorithm-policy";
 import { ALGO_LABEL, useApp } from "@/lib/store";
 import type { Algorithm, Mode, TimeSlot } from "@/lib/types";
 import { AtspSetup } from "./atsp/atsp-setup";
@@ -25,15 +26,9 @@ const MODES: { v: Mode; label: string }[] = [
   { v: "time", label: "Nhanh nhất" },
   { v: "distance", label: "Ngắn nhất" },
 ];
-// nhóm dropdown thuật toán theo bảo đảm lý thuyết (SCHEMA §B.5) — người chấm
-// nhìn menu là thấy ngay nhóm nào cam kết tối ưu, nhóm nào đánh đổi.
+// Nhóm dropdown theo bảo đảm lý thuyết (SCHEMA §B.5): IDA* của dự án
+// dùng ngưỡng nới ε nên phải đứng riêng, không được gọi là tối ưu tuyệt đối.
 // Màu label = đúng ngữ nghĩa Badge ok/warn dùng khắp drawer (start / algo-path).
-const ALGO_GROUPS: { label: string; cls: string; algos: Algorithm[] }[] = [
-  { label: "Đảm bảo tối ưu", cls: "text-start",
-    algos: ["ucs", "dijkstra", "astar", "bidijkstra", "idastar"] },
-  { label: "Không đảm bảo — đánh đổi", cls: "text-algo-path",
-    algos: ["bfs", "dfs", "iddfs", "greedy", "beam"] },
-];
 
 function FieldLabel({ children, tip, dot }: {
   children: React.ReactNode; tip?: string; dot?: string;
@@ -286,12 +281,12 @@ export function ControlPanel() {
       </Section>
 
       <Section title="Thuật toán"
-        tip="UCS, Dijkstra, A*, Hai chiều, IDA* đảm bảo tuyến tối ưu; BFS, DFS, IDDFS, Greedy, Beam thì không.">
+        tip="UCS, Dijkstra, A* và Hai chiều đảm bảo tối ưu; IDA* nằm trong biên C* + ε; BFS, DFS, IDDFS, Greedy và Beam không đảm bảo tối ưu theo cost.">
         <Select value={s.algorithm} disabled={busy}
           onValueChange={(v) => s.set({ algorithm: v as Algorithm })}>
           <SelectTrigger aria-label="Thuật toán"><SelectValue /></SelectTrigger>
           <SelectContent>
-            {ALGO_GROUPS.map((g) => (
+            {ALGORITHM_GROUPS.map((g) => (
               <SelectGroup key={g.label}>
                 <SelectLabel className={`flex items-center gap-1.5 ${g.cls}`}>
                   <span className="size-1.5 rounded-full bg-current" />

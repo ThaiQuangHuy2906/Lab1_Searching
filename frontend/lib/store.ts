@@ -5,7 +5,9 @@
 
 import { create } from "zustand";
 import { toast } from "sonner";
+import { chooseCompareAlgorithm } from "./algorithm-policy";
 import { api, BackendError } from "./api";
+import { createLatestRequestGuard } from "./latest-request";
 import type {
   Algorithm, GraphFile, GraphLevel, Mode, MultirouteResponse, TimeSlot,
   Trace, TspMethod,
@@ -28,6 +30,7 @@ export type DrawerTab = "metrics" | "explain" | "compare";
 export type Theme = "dark" | "light";
 
 const THEME_KEY = "traffic-theme";
+const graphRequests = createLatestRequestGuard();
 
 interface AppState {
   // ---- giao diện Sáng/Tối (DESIGN.md §1 — mặc định Tối)
@@ -177,6 +180,7 @@ export const useApp = create<AppState>((set, get) => ({
   },
 
   loadGraph: async (level) => {
+    const requestToken = graphRequests.begin();
     set({
       graphLoading: true, graph: level, graphData: null, traffic: null,
       trace: null, compare: null, multi: null, start: null, goal: null,
@@ -184,12 +188,14 @@ export const useApp = create<AppState>((set, get) => ({
     });
     try {
       const g = await api.graph(level);
+      if (!graphRequests.isCurrent(requestToken) || get().graph !== level) return;
       set({ graphData: g });
       await get().loadTraffic();
     } catch (e) {
+      if (!graphRequests.isCurrent(requestToken) || get().graph !== level) return;
       toast.error(e instanceof BackendError ? e.message : "Không tải được đồ thị.");
     } finally {
-      set({ graphLoading: false });
+      if (graphRequests.isCurrent(requestToken)) set({ graphLoading: false });
     }
   },
 
@@ -268,13 +274,14 @@ export const useApp = create<AppState>((set, get) => ({
       toast.error("Hãy chạy thuật toán chính trước, rồi mới so sánh.");
       return;
     }
-    set({ comparing: true });
+    const compareAlgo = chooseCompareAlgorithm(s.trace.algorithm, s.compareAlgo);
+    set({ comparing: true, compareAlgo });
     try {
       // B chạy bằng ĐÚNG cấu hình của tuyến A (review v11 — UX MAJOR):
       // đổi Tiêu chí không xoá trace A (luật v10f), nên lấy s.mode hiện tại
       // từng làm B chạy mode khác A → bảng so sánh in mét như giây.
       const t = await api.route({
-        start: s.start, goal: s.goal, algorithm: s.compareAlgo,
+        start: s.start, goal: s.goal, algorithm: compareAlgo,
         mode: s.trace.mode, time_slot: s.trace.time_slot, graph: s.trace.graph,
         include_trace: false,
       });
@@ -284,10 +291,10 @@ export const useApp = create<AppState>((set, get) => ({
       const n = get();
       if (n.graph !== s.graph || n.slot !== s.slot ||
           n.start !== s.start || n.goal !== s.goal ||
-          n.compareAlgo !== s.compareAlgo || n.trace !== s.trace)
+          n.compareAlgo !== compareAlgo || n.trace !== s.trace)
         return;
       set({ compare: t, drawerTab: "compare" });
-      toast.success(`Đã so sánh với ${ALGO_LABEL[s.compareAlgo]}.`);
+      toast.success(`Đã so sánh với ${ALGO_LABEL[compareAlgo]}.`);
     } catch (e) {
       toast.error(e instanceof BackendError ? e.message : "So sánh thất bại.");
     } finally {

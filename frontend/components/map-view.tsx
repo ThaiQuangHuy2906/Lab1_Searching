@@ -27,6 +27,25 @@ import { Timeline } from "./timeline";
 type RoutePathDatum = { path: [number, number][] };
 
 const METERS_PER_DEGREE_LAT = 110_540;
+// Compare-only visual separation. PathStyleExtension expresses offsets relative
+// to each layer's own width, so casedPath converts this shared pixel distance
+// for the casing/body independently. Route coordinates remain untouched.
+const COMPARE_ROUTE_OFFSET_PX = 4;
+const RESULT_ROUTE_PATH_LAYER_IDS = new Set([
+  "route-casing", "route",
+  "multi-path-casing", "multi-path",
+  "route-compare-casing", "route-compare",
+]);
+const RESULT_ROUTE_ARROW_LAYER_IDS = new Set([
+  "route-arrows", "multi-arrows", "compare-arrows",
+]);
+const RESULT_ROUTE_OVERLAY_ANCHOR_IDS = new Set(["current-ring", "labels", "chips"]);
+
+function getLayerId(layer: unknown): string | undefined {
+  return typeof layer === "object" && layer !== null && "id" in layer
+    ? (layer as { id?: string }).id
+    : undefined;
+}
 
 export function MapView() {
   const graphData = useApp((s) => s.graphData);
@@ -214,14 +233,20 @@ export function MapView() {
     }
 
     // final route / compare / multiroute — casing (nền) + màu (DESIGN 6)
-    const casedPath = (id: string, data: RoutePathDatum[],
-                       color: RGBA, width = 6, dash?: [number, number]) => {
+    const casedPath = (id: string, data: RoutePathDatum[], color: RGBA,
+                       width = 6, dash?: [number, number], offsetPixels = 0) => {
+      const casingWidth = width + 2.5;
+      const hasOffset = offsetPixels !== 0;
       out.push(
         new PathLayer({
           id: `${id}-casing`, data,
           getPath: (d: RoutePathDatum) => d.path,
-          getColor: C.labelOutline, getWidth: width + 2.5,
+          getColor: C.labelOutline, getWidth: casingWidth,
           widthUnits: "pixels", jointRounded: true, capRounded: true,
+          ...(hasOffset ? {
+            getOffset: offsetPixels / casingWidth,
+            extensions: [new PathStyleExtension({ offset: true })],
+          } : {}),
         }),
         new PathLayer({
           id, data,
@@ -230,17 +255,23 @@ export function MapView() {
           widthUnits: "pixels", jointRounded: true, capRounded: true,
           // dashed body over a SOLID casing (v10d): compare route B reads
           // as one continuous band instead of dissolving into the grid
-          ...(dash ? {
-            getDashArray: dash, dashJustified: true,
-            extensions: [new PathStyleExtension({ dash: true })],
+          ...(dash || hasOffset ? {
+            ...(dash ? { getDashArray: dash, dashJustified: true } : {}),
+            ...(hasOffset ? { getOffset: offsetPixels / width } : {}),
+            extensions: [new PathStyleExtension({
+              dash: Boolean(dash), offset: hasOffset,
+            })],
           } : {}),
         }),
       );
     };
     // ▶ arrows ALONG a result route only (DESIGN 6, v5c): spaced >= ~220 m,
     // dark glyph with an SDF outline in the route color
-    const routeArrows = (id: string, paths: [number, number][][], outline: RGBA) => {
-      const pts: { pos: [number, number]; angle: number }[] = [];
+    const routeArrows = (id: string, paths: [number, number][][],
+                         outline: RGBA, offsetPixels = 0) => {
+      const pts: {
+        pos: [number, number]; angle: number; pixelOffset: [number, number];
+      }[] = [];
       for (const path of paths) {
         let since = Infinity; // always place one on the first hop
         for (let i = 0; i + 1 < path.length; i += 1) {
@@ -255,6 +286,12 @@ export function MapView() {
             pts.push({
               pos: [(x1 + x2) / 2, latMid],
               angle: (Math.atan2(dym, dxm) * 180) / Math.PI,
+              // Positive PathStyleExtension offset is the right-hand side.
+              // Pixel Y grows downward, hence [dym, dxm] is the matching
+              // screen-space right normal for the route direction.
+              pixelOffset: hop > 0
+                ? [(dym / hop) * offsetPixels, (dxm / hop) * offsetPixels]
+                : [0, 0],
             });
             since = 0;
           }
@@ -267,6 +304,7 @@ export function MapView() {
           getPosition: (d: (typeof pts)[number]) => d.pos,
           getText: () => "▶",
           getAngle: (d: (typeof pts)[number]) => d.angle,
+          getPixelOffset: (d: (typeof pts)[number]) => d.pixelOffset,
           getSize: 14,
           getColor: C.stopText,
           characterSet: ["▶"],
@@ -291,8 +329,9 @@ export function MapView() {
     }
     if (compare?.found && drawerTab === "compare") {
       casedPath("route-compare", [{ path: toPath(compare.path) }],
-        C.compareB, 5, [10, 5]);
-      routeArrows("compare-arrows", [toPath(compare.path)], C.compareB);
+        C.compareB, 5, [10, 5], COMPARE_ROUTE_OFFSET_PX);
+      routeArrows("compare-arrows", [toPath(compare.path)],
+        C.compareB, COMPARE_ROUTE_OFFSET_PX);
     }
 
     // nodes (pickable for G_real start/goal picking)
@@ -488,22 +527,32 @@ export function MapView() {
 
   const deckLayers = React.useMemo(() => {
     const composed = [...layers];
-    if (routeFlowLayers.length) {
-      const layerId = (layer: unknown) =>
-        typeof layer === "object" && layer !== null && "id" in layer
-          ? (layer as { id?: string }).id
-          : undefined;
-      const arrowLayers: unknown[] = [];
-      for (const id of ["route-arrows", "multi-arrows", "compare-arrows"]) {
-        const index = composed.findIndex((layer) => layerId(layer) === id);
-        if (index >= 0) arrowLayers.push(...composed.splice(index, 1));
+    const routePaths: unknown[] = [];
+    const routeArrows: unknown[] = [];
+
+    // Result routes must stay above the dense frontier/expanded node cloud,
+    // especially on G_real at overview zoom. Pull the complete route stack out
+    // of its construction position, then place it above nodes but below the
+    // current ring, labels and endpoint/stop chips. All route layers are
+    // non-pickable, so the invisible demo picking layer remains usable.
+    for (let index = composed.length - 1; index >= 0; index -= 1) {
+      const id = getLayerId(composed[index]);
+      if (id && RESULT_ROUTE_ARROW_LAYER_IDS.has(id)) {
+        routeArrows.unshift(...composed.splice(index, 1));
+      } else if (id && RESULT_ROUTE_PATH_LAYER_IDS.has(id)) {
+        routePaths.unshift(...composed.splice(index, 1));
       }
-      const nodeIndex = composed.findIndex((layer) => layerId(layer) === "nodes");
+    }
+    if (routePaths.length || routeArrows.length || routeFlowLayers.length) {
+      const overlayIndex = composed.findIndex((layer) =>
+        RESULT_ROUTE_OVERLAY_ANCHOR_IDS.has(getLayerId(layer) ?? ""),
+      );
       composed.splice(
-        nodeIndex >= 0 ? nodeIndex : composed.length,
+        overlayIndex >= 0 ? overlayIndex : composed.length,
         0,
+        ...routePaths,
         ...routeFlowLayers,
-        ...arrowLayers,
+        ...routeArrows,
       );
     }
     if (pulseLayer) composed.push(pulseLayer);

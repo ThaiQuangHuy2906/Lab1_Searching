@@ -66,7 +66,9 @@ export function Legend() {
             </>
           )}
           <span className="flex items-center gap-2"><Dot color={H.current} ring /> Đang expand</span>
-          <span className="flex items-center gap-2"><Line color={H.path} /> Tuyến kết quả</span>
+          {!comparing && (
+            <span className="flex items-center gap-2"><Line color={H.path} /> Tuyến kết quả</span>
+          )}
           <span className="flex items-center gap-2"><span className="w-4 text-center text-[10px] leading-none">▶</span> Hướng di chuyển</span>
         </>
       )}
@@ -84,6 +86,9 @@ export function Legend() {
         <>
           <span className="flex items-center gap-2"><Line color={H.path} /> Thuật toán A</span>
           <span className="flex items-center gap-2"><Line color={H.frontier} dashed /> Thuật toán B</span>
+          <span className="max-w-44 pl-[26px] text-[10px] leading-4 text-ink-faint">
+            B lệch hiển thị 4 px; tọa độ không đổi.
+          </span>
         </>
       )}
       {trafficLayer && (

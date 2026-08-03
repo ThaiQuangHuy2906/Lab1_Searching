@@ -105,7 +105,13 @@ def load_benchmark_numbers() -> dict[str, str]:
         return abs(float(t[method]["ratio_optimal"]) - 1.0) < 1e-9
 
     def gap_txt(method: str) -> str:
-        return f"+{_vi_thousands((float(t[method]['ratio_optimal']) - 1) * 100, 1)}%"
+        ratio = float(t[method]["ratio_optimal"])
+        if ratio <= 0:
+            raise ValueError(f"ratio_optimal must be positive for {method}")
+        # exp7 stores optimal/candidate. Convert that ratio back to the
+        # candidate's positive relative gap above the Held-Karp optimum.
+        gap_pct = (1 / ratio - 1) * 100
+        return f"+{_vi_thousands(gap_pct, 1)}%"
 
     if hit("nn_2opt") and hit("sa_best_of_5_seeds"):
         n["tsp_claim"] = "NN+2-opt và SA đều đạt đúng nghiệm Held-Karp"

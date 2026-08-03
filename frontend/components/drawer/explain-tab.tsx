@@ -12,8 +12,11 @@
 import { ArrowRight, Clock, MessageSquareText, Route as RouteIcon } from "lucide-react";
 import { Badge } from "../ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import { AtspExplanation } from "../atsp/atsp-explanation";
+import { AtspLoading } from "../atsp/atsp-result";
 import { EmptyState } from "./metrics-tab";
 import { useApp } from "@/lib/store";
+import { routeGuaranteeLabel } from "@/lib/algorithm-policy";
 import { usePalette } from "@/lib/use-palette";
 import { fmtKm, fmtMinutes, fmtSeconds } from "@/lib/format";
 import type { Trace } from "@/lib/types";
@@ -56,15 +59,17 @@ function AltDeltas({ altTime, altDist, trace }: {
 export function ExplainTab() {
   const trace = useApp((s) => s.trace);
   const multi = useApp((s) => s.multi);
+  const multiRunning = useApp((s) => s.multiRunning);
   const graphData = useApp((s) => s.graphData);
   const P = usePalette();
+
+  if (multiRunning) return <AtspLoading />;
+  if (multi) return <AtspExplanation multi={multi} />;
 
   if (!trace) {
     return (
       <EmptyState icon={MessageSquareText} title="Chưa có giải thích"
-        hint={multi?.found
-          ? "Kết quả tối ưu thứ tự không kèm giải thích lộ trình — xem tab Số liệu; muốn đọc giải thích, chạy tuyến 2 điểm (Đi/Đến) bằng nút Chạy thuật toán."
-          : "Chạy một thuật toán để đọc phần giải thích lộ trình bằng tiếng Việt."} />
+        hint="Chạy một thuật toán để đọc phần giải thích lộ trình bằng tiếng Việt." />
     );
   }
   const ex = trace.explanation;
@@ -73,6 +78,7 @@ export function ExplainTab() {
   const start = trace.path[0] ? nameOf(trace.path[0]) : null;
   const goal = trace.path.length > 1 ? nameOf(trace.path[trace.path.length - 1]) : null;
   const viaCount = Math.max(0, trace.path.length - 2);
+  const costUnit = trace.mode === "distance" ? "m" : "s";
 
   // Lead/body: sentence 1 carries the "why" -> emphasized; the rest is
   // supporting detail. Safe to split on ". " in this copy: Vietnamese
@@ -124,7 +130,12 @@ export function ExplainTab() {
                 {fmtKm(trace.metrics.total_distance_m ?? 0)}
               </Badge>
               <Badge variant={trace.metrics.optimal_guarantee ? "ok" : "warn"}>
-                {trace.metrics.optimal_guarantee ? "Đảm bảo tối ưu" : "Không đảm bảo tối ưu"}
+                {routeGuaranteeLabel(
+                  trace.algorithm,
+                  trace.metrics.optimal_guarantee,
+                  trace.metrics.epsilon_bound,
+                  costUnit,
+                )}
               </Badge>
             </div>
           )}

@@ -7,6 +7,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "../ui/select";
 import { useApp } from "@/lib/store";
+import { isStopOptionAllowed } from "@/lib/interaction-policy";
 import type { TspMethod } from "@/lib/types";
 
 const MAX_STOPS = 15;
@@ -136,7 +137,8 @@ export function AtspSetup() {
           value=""
           disabled={busy || atLimit}
           onValueChange={(value) => {
-            if (!s.stops.includes(value) && value !== s.start && s.stops.length < MAX_STOPS)
+            if (isStopOptionAllowed(value, s.start, s.goal, s.stops)
+                && s.stops.length < MAX_STOPS)
               s.set({ stops: [...s.stops, value] });
           }}
         >
@@ -145,7 +147,9 @@ export function AtspSetup() {
           </SelectTrigger>
           <SelectContent>
             {s.graphData?.nodes
-              .filter((node) => node.id !== s.start && !s.stops.includes(node.id))
+              .filter((node) => isStopOptionAllowed(
+                node.id, s.start, s.goal, s.stops,
+              ))
               .map((node) => (
                 <SelectItem key={node.id} value={node.id}>{node.name ?? node.id}</SelectItem>
               ))}

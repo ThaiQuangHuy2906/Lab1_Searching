@@ -7,7 +7,11 @@ contracts, current implementation, executed tests, generated artifacts, and
 historical claims. `UNVERIFIED` means the onboarding could not establish the
 claim with a suitable runtime check.
 
-### Current frontend and release delta — 2026-08-03
+The current-state sections were refreshed again on 2026-08-04 from the dirty,
+validated worktree at HEAD `9a790dee005ffc13016094749b92c0375d16929b`; these
+uncommitted changes are user work, not a release commit.
+
+### Current frontend and release delta — through 2026-08-04
 
 - `d44b96a`: refreshed the shared pathfinding shell and dark/light control-room
   surface system.
@@ -22,6 +26,10 @@ claim with a suitable runtime check.
 - FINAL-01 verdict: **DEMO-READY WITH WARNINGS**, **SUBMISSION BLOCKED** and
   **FINAL-DATA NOT ALLOWED**. Backend/API/schema/data/results were unchanged by
   the four UI commits.
+- The current worktree adds finite-epsilon/API/benchmark regressions and the
+  frontend slot/traffic, route–multiroute, effective-trace legend and
+  sign-aware ATSP-savings repairs. Automated gates pass; browser QA for this
+  latest interaction batch remains `UNVERIFIED`.
 
 ## 1. Project purpose and rubric
 
@@ -411,26 +419,27 @@ Directly read from current JSON and rechecked by `validate_data.py`:
 
 | Graph | Created | Nodes | Directed edges | `oneway=true` | Flood | Construction | Narrow alley | Traffic light |
 |---|---|---:|---:|---:|---:|---:|---:|---:|
-| `G_demo` | 2026-07-27 | 51 | 292 | 56 | 24 | 24 | 0 | 131 |
+| `G_demo` | 2026-08-03 | 51 | 298 | 60 | 24 | 24 | 0 | 130 |
 | `G_real` | 2026-07-27 | 2,118 | 4,699 | 1,433 | 54 | 19 | 8 | 185 |
 
 Both profile files:
 
-- were created 2026-07-27;
-- declare `source: synthetic`;
+- were created 2026-08-03;
+- declare `source: tomtom+synthetic`;
 - contain exactly 4 slots;
-- cover all 292 or 4,699 edges per slot.
+- cover all 298 or 4,699 edges per slot.
 
-Two raw TomTom snapshots exist:
-`data/raw/tomtom/0730/flow_20260727T074003.json` and
-`data/raw/tomtom/1200/flow_20260727T124957.json`. There is no 17:30 or 22:00
-snapshot. Validator exits 0 but warns for both graph levels that raw TomTom data
-exists while profiles remain synthetic.
+Four raw TomTom snapshots exist: 07:30 and 12:00 were queried on 2026-07-27;
+17:30 and 22:00 were queried on 2026-08-03. Both dates are Mondays, seven days
+apart, so these are representative slot snapshots rather than a same-day time
+series. Each slot has 40 valid sample points. The real profile assigns TomTom
+levels to 635/4,699 edges per slot and uses deterministic synthetic fallback for
+the other 4,064 edges. The demo profile is derived from real-profile corridor
+weighted means. Validator reports `ALL DATA VALID`.
 
 `manual_risks.json` has 8 records and 8 placeholder `source_url` strings, hence
-zero usable cited URLs. Its `meta.description_vi` still describes the old
-"either endpoint inside radius" rule, while the current build/data contract
-uses the "edge entering the zone" rule.
+zero usable cited URLs. Its `meta.description_vi` now matches the current
+"edge entering the zone" rule and discloses the route-start-inside limitation.
 
 The six demo-vs-real contraction invariants are:
 
@@ -453,7 +462,8 @@ wall-clock and therefore not byte-reproducible.
 | 6 | qualitative routes | five G_demo POI pairs | fixed | JSON + PNG/GeoJSON | Google Maps captures |
 | 7 | ATSP comparison | one ten-point scenario | SA seeds 0-4 | CSV + map | report/video |
 
-Current results are from 2026-07-26; current data was rebuilt 2026-07-27.
+Current results are from 2026-07-26; the current graph/profile chain was
+refreshed on 2026-08-03.
 `results/README.md` explicitly marks them `SỐ TẠM`. Do not quote existing
 headline values as current.
 
@@ -464,7 +474,7 @@ against NetworkX; exp3 is the ten-algorithm run.
 
 | Artifact | Source/owner | Current status |
 |---|---|---|
-| `docs/GIAI-THICH-THUAT-TOAN.md` | `scripts/gen_teaching_doc.py` + data/traces + exp3/exp7 | generated and deliberately left provisional until the four-slot refresh |
+| `docs/GIAI-THICH-THUAT-TOAN.md` | `scripts/gen_teaching_doc.py` + data/traces + exp3/exp7 | generated and deliberately left provisional until the final benchmark/generator pass |
 | `results/*.csv`, figures, routes | `backend/app/benchmark.py` | generated and stale |
 | `data/graph_*.json`, profiles, preview | pipeline scripts | generated snapshot; current and validated |
 | `report/BaoCao-Khung.md` | manual frame with data/result references | incomplete |
@@ -517,11 +527,11 @@ TypeScript checking plus targeted headless-Chrome behavior probes.
 |---|---|---|---|---|
 | theme | dark | `initTheme`, `toggleTheme` | `traffic-theme` | none |
 | graph | demo | `loadGraph` | no | clears journey/results; reloads graph/traffic |
-| slot | 07:30 | `setSlot` | no | clears results; reloads traffic |
+| slot | 07:30 | `setSlot` | no | same-value is a no-op; a real change clears dependent results and old traffic, then reloads with a latest-request/graph-slot guard |
 | mode | balanced | `set` | no | not immediately invalidated |
 | algorithm | astar | `set` | no | not immediately invalidated |
 | start/goal | null/null | centralized `set` | no | clears trace/compare/multi |
-| stops | `[]` | centralized `set` | no | clears results; adding stop clears goal |
+| stops | `[]` | centralized `set` | no | clears results; adding stop clears goal with an explanatory toast; duplicates with start/goal/another stop are rejected |
 | beamWidth/epsilon | blank | `set` | no | sent only for matching algorithm |
 | offlineMode | false | `set` | no | changes basemap branch |
 | trafficLayer | false | `set` | no | display only |
@@ -532,10 +542,11 @@ TypeScript checking plus targeted headless-Chrome behavior probes.
 
 Journey invalidation compares semantic start/goal/stops values. Re-selecting
 the same endpoint or passing an equal ordered stops array preserves results;
-real-map and demo-picker paths both prevent a start from duplicating a stop.
-Tour mode disables the two-endpoint swap control. Async response guards are
-good, but shared `finally` flags have an unverified overlap race if a later
-request starts before an earlier stale request finishes.
+real-map and demo-picker paths prevent endpoint/stop duplication. Tour mode
+disables the Goal picker and two-endpoint swap, and the route action is blocked
+while any stop exists. Route/graph/traffic responses use request-snapshot or
+latest-request guards. Shared `finally` flags still have an unverified overlap
+race if a later request starts before an earlier stale request finishes.
 
 ## 19. Visualization and timeline
 
@@ -599,8 +610,9 @@ The map route retained root body overflow ownership.
 
 ## 20. Test architecture
 
-Current collection: 88 test functions plus parameterization produce 95 pytest
-items. All 95 passed after the semantic repair batches.
+Current collection produces **111 pytest items**. All 111 passed on the
+2026-08-04 worktree after the baseline repair batch; frontend has a separate
+**8-test** Node suite and TypeScript check.
 
 | Test file | Module/type | Main invariant/oracle | Dataset | Important gap |
 |---|---|---|---|---|
@@ -623,7 +635,13 @@ Completed semantic regressions:
 4. Beam selected frontier and metric bounded by `beam_width`;
 5. IDA* capped versus exhaustive-unreachable guarantees;
 6. internal Pydantic failure is generic 500 with server-side traceback;
-7. browser scroll, keyboard ownership, and journey-state behavior.
+7. browser scroll, keyboard ownership, and journey-state behavior (historical
+   FINAL-01 evidence);
+8. finite positive epsilon and model/API rejection of non-finite values;
+9. typed OpenAPI graph/error responses and experiment-6 JSON benchmark rows;
+10. Bidirectional Dijkstra initial frontier and trivial-route mode units;
+11. slot/traffic coherence, route–multiroute guards, effective-trace legend and
+    sign-aware ATSP savings in the frontend 8-test suite.
 
 Priority semantic tests still missing:
 
@@ -688,12 +706,12 @@ Statuses use the onboarding vocabulary requested by the handoff.
 
 | ID | Status | Current file/function | Root cause/evidence | Existing test | Missing verification/test |
 |---|---|---|---|---|---|
-| B-1 | `CONFIRMED` | current data vs `results/*` | data dated 27/07; results dated 26/07; README says old | validator checks data, not provenance | coherent rerun after final data decision |
+| B-1 | `CONFIRMED` | current data vs `results/*` | graph/profile closeout dated 03/08; results dated 26/07 and explicitly marked `SỐ TẠM` | validator checks data, not benchmark provenance | coherent rerun after code stabilizes and separate authorization |
 | B-2 | `CONFIRMED` | `report/*`, repository root | no final report PDF, deck, video link, ZIP; 40 actionable fill markers excluding the legend; URLs/screenshots absent | none appropriate | manual artifact review/package check |
-| B-3 | `RESOLVED` | `iddfs`, `idastar`, `bidijkstra` | snapshots moved post-generation; g restricted to active side(s) | red-before/green-after semantic tests | full 95-item suite passed |
-| B-4 | `RESOLVED` | `explain.py::build_explanation` | mode-derived `m`/`s` suffix | epsilon and gap tested in all 3 modes | full 95-item suite passed |
+| B-3 | `RESOLVED` | `iddfs`, `idastar`, `bidijkstra` | snapshots moved post-generation; g restricted to active side(s) | red-before/green-after semantic tests | full 111-item suite passed |
+| B-4 | `RESOLVED` | `explain.py::build_explanation` | mode-derived `m`/`s` suffix | epsilon and gap tested in all 3 modes | full 111-item suite passed |
 | B-5 | `RESOLVED` | benchmark page scroll owner | reproduced before patch; `main` now independently scrolls 28 px | headless Chrome 1366×768 | recheck on actual projector before recording |
-| B-6 | `MITIGATED` | `GraphStore.load`, `graph_payload`, live API | process caches old data; FINAL-01 clean restart matched disk for demo 51/292 and real 2.118/4.699 | clean-start runtime probe | repeat restart/hard-refresh pre-flight before every capture |
+| B-6 | `MITIGATED` | `GraphStore.load`, `graph_payload`, live API | process caches old data; the latest clean probe matched disk for demo 51/298 and real 2.118/4.699 | clean-start runtime probe | repeat restart/hard-refresh pre-flight before every capture |
 
 ### High-priority audit findings
 
@@ -705,11 +723,11 @@ Statuses use the onboarding vocabulary requested by the handoff.
 | P-04 IDA* exhausted-round guarantee | `RESOLVED` | capped exit false; exhaustive-unreachable true | controlled termination regressions |
 | P-05 light-theme contrast | `RESOLVED` | contrast checker passed and FINAL-01 exercised dark/light runtime states | formal WCAG/screen-reader audit not run |
 | P-06 offline mode/Google font | `PARTIALLY_CONFIRMED` | offline not persisted; `next/font/google` present | disconnected build not run |
-| P-07 same-value invalidation | `RESOLVED` | semantic value comparison precedes invalidation | same-start browser reselect preserved trace |
-| P-08 manual risk description | `CONFIRMED` | metadata states old endpoint-radius rule | update with data contract |
+| P-07 same-value invalidation / stale traffic | `RESOLVED` | semantic slot comparison precedes invalidation; real slot changes clear traffic and guard graph/slot/request identity | automated regression; latest browser interaction is unverified |
+| P-08 manual risk description | `RESOLVED` | metadata now states `u` outside/`v` inside and the start-inside limitation | JSON/prose inspection |
 | P-09 result README/run-book defects | `RESOLVED` | exp1 now names UCS/Dijkstra/A*; run-book lists all five banners | final coherent refresh still pending |
 | P-10 Pydantic `ValidationError` | `RESOLVED` | exact handler returns generic/logged 500; request errors remain 422 | endpoint response/log regression |
-| P-11 start may equal an existing stop in UI | `RESOLVED` | demo picker filters stops; real-map picker rejects them; tour swap disabled | browser picker/tour probe |
+| P-11 endpoint/stop conflict and route–multiroute overlap | `RESOLVED` | pickers reject duplicates; route action is blocked while stops exist; tour Goal/swap controls are disabled | automated policy regression; latest browser interaction is unverified |
 | P-12 README Git Bash paths | `RESOLVED` | PowerShell and Bash path conventions are now separated | execute on non-Windows only if that platform becomes supported |
 | P-13 deck.gl animation performance | `PARTIALLY_CONFIRMED` | functional pulse/route-flow states pass; G_real SwiftShader run was about 16 FPS | profile with hardware GPU |
 | P-14 `max_frontier` overhead | `PARTIALLY_CONFIRMED` | DFS/IDDFS/Bidi compute/sort frontier on run path | benchmark impact not measured |
@@ -744,7 +762,7 @@ Statuses use the onboarding vocabulary requested by the handoff.
 3. If a public contract should change, patch `SCHEMA.md` first with approval.
 4. Keep patches small and do not touch data/results/generated docs incidentally.
 5. Run the narrow regression test.
-6. Run all 95 backend tests, validator, and frontend type check as applicable.
+6. Run the full backend suite, validator, frontend tests, and type check as applicable.
 7. Use live/browser verification for UI/lifecycle claims.
 8. If data changes, execute the entire dependency chain once; never mix old and
    new artifacts.
@@ -752,32 +770,30 @@ Statuses use the onboarding vocabulary requested by the handoff.
 
 ## 26. Recommended fix order
 
-The authorized B-3/B-4/B-5 and semantic repair batches are complete. Remaining
-safe order:
+The authorized data closeout and current semantic repair batch are complete.
+Remaining safe order:
 
-1. Decide the explicit runtime-budget/epsilon policy for bounded IDDFS/IDA*;
-   do not invent a timeout contract implicitly.
-2. Collect the remaining TomTom 17:30 and 22:00 snapshots; do not
-   rebuild profiles from a partial set.
-3. With all four slots available, decide final TomTom versus transparent
-   synthetic inputs and run the authorized data/profile/validation chain once.
-4. Run one isolated benchmark, then regenerate teaching content and synchronize
+1. Obtain approval for the four implementation decisions in
+   `KE-HOACH-TRIEN-KHAI-NHIEM-VU-HOP-NHOM.md`, then update schema before code.
+2. Implement and regression-test the approved graph-view, ATSP-trace and
+   request-scoped scenario work without rebuilding the validated data snapshot.
+3. After code stabilizes and only with separate authorization, run one isolated
+   benchmark, gamma calibration and teaching-generator pass; then synchronize
    all five banners/numbers.
-5. Restart services, verify live graph metadata, capture UI/Maps evidence.
-6. Complete URLs, names/contributions, report PDF, slides, video, links, and
-    final ZIP.
+4. Restart services, verify live graph metadata, capture UI/Maps evidence.
+5. Complete URLs, names/contributions, report PDF, slides, video, links, and
+   final ZIP.
 
 ## 27. Unresolved questions
 
-- Final profile choice remains deferred by the user until all four TomTom slots
-  are collected; 07:30 and 12:00 exist now, while 17:30 and 22:00 remain.
 - Who supplies/verifies the eight real risk citations?
 - Who owns final group identity, contribution percentages, GroupID, and submitter?
 - Can/should the Google fonts be localized before an offline defense?
 - What exact timeout/cancellation contract should IDDFS and IDA* expose?
-- Should `/api/benchmark` reject partial artifact sets or explicitly report
-  completeness?
+- `/api/benchmark` now has explicit partial semantics: bulk returns available
+  artifacts, while an explicitly requested missing experiment returns 404.
 - FINAL-01 verified map/theme/contrast, offline, keyboard/focus, reduced motion
-  and three desktop viewport sizes in browser. A fresh production build, real
+  and three desktop viewport sizes in browser. The 2026-08-04 frontend repair
+  batch has not been rechecked in a browser. A fresh production build, real
   screen reader/formal WCAG run, mobile layout, projector hardware, and
   hardware-GPU route-flow performance remain unverified.

@@ -4,8 +4,9 @@ The assignment (4.10a) requires the team to explain every algorithm on a
 SELF-DESIGNED example (no textbook copies). We fix ONE 7-node subgraph of
 G_demo around Chợ Bến Thành — real landmarks, real costs, real one-way
 streets — and run every actual implementation on it with full traces.
-The step tables below are therefore generated, not hand-typed: they can
-never drift from the code or from what the GUI shows in the video.
+The step tables below are therefore generated, not hand-typed, so they track
+the search code on this induced graph. They must not be claimed to match the
+current full-graph GUI until a backend `teach_7` view exists and is verified.
 
 Re-run after any data rebuild:  python scripts/gen_teaching_doc.py
 """
@@ -63,9 +64,10 @@ def build_substore(demo: GraphStore) -> tuple[GraphStore, dict[str, str]]:
     })
     label = {by_name[nm].id: SHORT[nm] for nm in SUB_NAMES}
     sub = GraphStore(graph, profiles, "demo")
-    # inherit v_max from the FULL G_demo: the GUI runs on the full graph, so
-    # the h column here must be computed with the same v_max to match it 100%
-    # (a larger v_max only shrinks h -> admissibility is preserved)
+    # Keep the full-G_demo v_max as a conservative teaching convention.
+    # The current GUI still runs on the full graph, so this does NOT establish
+    # step/path parity; only a future verified `teach_7` backend view may do so.
+    # A larger v_max only shrinks h, so admissibility is preserved.
     sub.v_max_ms = demo.v_max_ms
     return sub, label
 
@@ -230,14 +232,18 @@ def main() -> None:
 > **Cách dùng:** đây là kịch bản để MỖI THÀNH VIÊN tự giảng lại thuật toán trong video
 > (yêu cầu đề 4.10a — ví dụ TỰ THIẾT KẾ, cấm chép tutorial). Ví dụ dưới đây chạy trên
 > **dữ liệu thật của nhóm**, mọi bảng từng-bước được SINH TỰ ĐỘNG từ chính code
-> (`python scripts/gen_teaching_doc.py`) nên khớp 100% với những gì GUI chiếu.
+> (`python scripts/gen_teaching_doc.py`) trên graph induced 7 node. Snapshot GUI
+> hiện chạy full G_demo, nên KHÔNG được tuyên bố hai bên khớp bước/path. Chỉ xác
+> nhận GUI parity sau khi backend view `teach_7` tương lai tồn tại và được test.
 > **Đừng đọc nguyên văn** — hiểu bảng, tự nói bằng lời của mình.
-> ⚠️ **SỐ TẠM (profiles đang synthetic):** MỌI con số ở đây sẽ đổi sau lượt TomTom —
+> ⚠️ **SỐ TẠM (chưa regen theo profile `tomtom+synthetic`):** MỌI con số ở đây
+> vẫn thuộc lượt cũ và sẽ đổi ở lượt generator cuối —
 > KỂ CẢ các bảng chạy tay và số ví dụ (chi phí BFS/A*, ma trận ATSP mini… đều phụ
-> thuộc congestion của profiles) chứ không riêng số benchmark. Quy trình làm mới
-> MỘT lượt: 03b real + demo → benchmark → **chạy lại script này** (số exp3/exp7
-> bên dưới đọc tự động từ `results/*.csv`) → đồng bộ các số ví dụ đã chép sang
-> Slide/Video/BaoCao theo Phụ lục A của `docs/KIEMTOAN.md`.
+> thuộc congestion của profiles) chứ không riêng số benchmark. Data refresh đã
+> hoàn tất; phần còn lại phải chạy MỘT lượt: benchmark → hiệu chuẩn γ → **chạy
+> lại script này** (số exp3/exp7 bên dưới đọc tự động từ `results/*.csv`) → đồng
+> bộ các số ví dụ đã chép sang Slide/Video/BaoCao theo Phụ lục A của
+> `docs/KIEMTOAN.md`.
 
 ## 0. Đồ thị ví dụ dùng xuyên suốt (trích từ G_demo, khu Chợ Bến Thành)
 
@@ -316,7 +322,9 @@ visited (đồ thị hữu hạn). Tối ưu ✘ — trả về đường ĐẦU
 
 **Ý tưởng:** chạy DFS có giới hạn độ sâu d = 0, 1, 2, … tăng dần tới khi chạm đích —
 được độ nông của BFS với bộ nhớ của DFS, đổi lại phải chạy lại từ đầu mỗi vòng
-(cột "Giới hạn d" trong bảng; số expand CỘNG DỒN qua các vòng). Complete ✔.
+(cột "Giới hạn d" trong bảng; số expand CỘNG DỒN qua các vòng). Implementation
+chỉ complete khi lời giải có độ sâu không vượt cap 100; chạm cap mà chưa thấy
+lời giải thì không được tuyên bố complete.
 Tối ưu ✘ trên đồ thị trọng số (nông nhất theo SỐ CẠNH, như BFS).
 
 {trace_table(d['iddfs'], lab, with_depth=True)}
@@ -394,8 +402,9 @@ A* cũng dùng h nhưng CÓ g nên không bị.
 **Ý tưởng:** chạy ĐỒNG THỜI hai Dijkstra — xuôi từ BT và ngược từ {lab[goal]} (trên đồ thị đảo
 chiều cạnh, vì đường một chiều!). Mỗi bước expand phía có chi phí đỉnh nhỏ hơn (cột
 "Phía"). Khi hai vùng chạm nhau và `top_xuôi + top_ngược ≥ μ` (μ = chi phí gặp tốt
-nhất đã thấy) thì dừng — tối ưu như Dijkstra nhưng hai "bong bóng" nhỏ thay vì một
-bong bóng to. Node nằm trong cả 2 frontier hiển thị g nhỏ hơn. Complete ✔ · Tối ưu ✔.
+nhất đã thấy) thì dừng — tối ưu như Dijkstra. Hai phía có thể xét ít node hơn trên
+instance thuận lợi, nhưng worst-case không tốt hơn Dijkstra vô điều kiện. Node nằm
+trong cả 2 frontier hiển thị g nhỏ hơn. Complete ✔ · Tối ưu ✔.
 
 {trace_table(d['bidijkstra'], lab, with_side=True)}
 
@@ -406,9 +415,12 @@ bong bóng to. Node nằm trong cả 2 frontier hiển thị g nhỏ hơn. Compl
 ## 9. IDA*
 
 **Ý tưởng:** phiên bản tiết kiệm bộ nhớ của A*: duyệt sâu nhưng CẮT mọi nhánh có
-f = g + h vượt ngưỡng; hết vòng thì nới ngưỡng lên `max(f nhỏ nhất bị cắt, ngưỡng + ε)`
-với **ε = 5 s** rồi chạy lại. Nghiệm nằm trong `C* + ε` (ghi `epsilon_bound`).
-Complete ✔ · Tối ưu ✔ trong ngưỡng ε.
+f = g + h vượt ngưỡng; hết vòng thì nới ngưỡng lên `max(f nhỏ nhất bị cắt, ngưỡng + ε)`.
+Mặc định **ε = 5 m** ở mode distance và **5 s** ở time/balanced. Nếu tìm thấy trước
+cap 1.000 vòng, nghiệm nằm trong `C* + ε` (ghi `epsilon_bound`); nếu chạm cap thì
+không được tuyên bố complete hay guarantee đó. Implementation dùng explicit stack
+đang chờ `Q` cùng các map `best_g`, `parent`, `h_of`, nên space được mô tả theo code
+là `O(V + Q)`, không phải bound đệ quy textbook `O(bd)`.
 
 {trace_table(d['idastar'], lab)}
 
@@ -463,6 +475,11 @@ Shipper xuất phát từ **BT**, giao tại **HN, MT, SC** (không quay về). 
   kết quả trên INSTANCE 10 điểm này (không gian nhỏ), KHÔNG phải bảo đảm tổng quát —
   NN+2-opt/SA vẫn là xấp xỉ, không có chứng minh tối ưu.
 
+**Complexity đúng theo implementation:** Nearest Neighbour là `O(n² log n)` vì
+mỗi vòng gọi `sorted(left)` trước khi chọn min. Mỗi pass 2-opt/Or-opt xét
+`Θ(n²)` candidate và full re-cost mỗi candidate tốn `Θ(n)`, nên local search là
+`O(Pn³)` với `P` pass, không phải bound delta-cost của một implementation khác.
+
 **Held-Karp nói ngắn gọn trong video:** dp[S][i] = chi phí rẻ nhất xuất phát BT, thăm
 đúng tập S, đứng ở i. Điền dần theo kích thước S (2^n trạng thái) — với n=4 chỉ có
 8 tập chứa BT, vẽ bảng lên bảng trắng được; n=10 máy tính lo, vẫn tối ưu tuyệt đối.
@@ -475,13 +492,13 @@ Shipper xuất phát từ **BT**, giao tại **HN, MT, SC** (không quay về). 
 |---|---|---|---|
 | BFS | ✔ | ✘ | tối ưu SỐ CẠNH, không phải chi phí |
 | DFS | ✔ (visited, hữu hạn) | ✘ | trả đường đầu tiên chạm đích |
-| IDDFS | ✔ | ✘ | như BFS về độ nông |
+| IDDFS | Có điều kiện | ✘ | chỉ complete nếu độ sâu lời giải ≤ cap 100 |
 | UCS | ✔ | ✔ | expand theo g, w > 0 |
 | Dijkstra | ✔ | ✔ | như UCS |
 | A* | ✔ | ✔ | h admissible + consistent (proof) |
 | Greedy | ✔ (visited) | ✘ | bỏ qua g |
 | Hai chiều | ✔ | ✔ | luật dừng top_f + top_b ≥ μ |
-| IDA* | ✔ | ✔ trong C*+ε | ngưỡng nới ε = 5 s |
+| IDA* | Có điều kiện | ✔ trong C*+ε nếu chưa chạm cap | ε = 5 m (distance), 5 s (time/balanced); cap 1.000 vòng |
 | Beam | ✘ | ✘ | cắt frontier còn k |
 | Held-Karp | — | ✔ | duyệt đủ 2^n trạng thái |
 | NN + 2-opt / SA | — | ✘ (xấp xỉ) | heuristic cục bộ / ngẫu nhiên |

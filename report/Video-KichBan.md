@@ -3,11 +3,13 @@
 > ⚠️ **SỐ TẠM (2026-07-27):** mọi con số exp1–exp7 trong tài liệu này lấy từ lượt chạy
 > congestion **synthetic** — và CẢ CÁC SỐ VÍ DỤ CHẠY TAY (446/341/+31%/+104 s/ma trận
 > 304/120/beam 415…) cũng đổi theo profiles, không riêng số benchmark. Sau khi có
-> TomTom, làm mới MỘT lượt: 03b real+demo → benchmark → `scripts/gen_teaching_doc.py`
-> → thay số theo Phụ lục A của `docs/KIEMTOAN.md` (cột "Đổi sau TomTom?") rồi mới nộp.
+> TomTom, phần data đã được làm mới theo `03b real → 04 → 03b demo → validate_data`;
+> benchmark, hiệu chuẩn γ và `scripts/gen_teaching_doc.py` vẫn chờ lượt cuối.
+> Chỉ thay số theo Phụ lục A của `docs/KIEMTOAN.md` sau lượt đó rồi mới nộp.
 >
-> **Tiến độ:** raw TomTom hiện mới có 07:30 và 12:00; đây là kịch bản, chưa có
-> video hoặc file link nộp. Chỉ quay sau lượt dữ liệu/benchmark cuối, restart
+> **Tiến độ:** raw TomTom đủ 4/4 snapshot đại diện trên hai ngày thứ Hai;
+> profile hiện là `tomtom+synthetic`, `G_demo` là 51/298. Đây là kịch bản, chưa
+> có video hoặc file link nộp. Chỉ quay sau benchmark/generator cuối, restart
 > service và QA trình duyệt ở đúng độ phân giải quay.
 
 > **Chuẩn bị trước khi quay:** backend + frontend chạy sẵn (localhost:8000/3000, chế độ
@@ -33,16 +35,20 @@
 > h MỘT LẦN ở 2:00 rồi giảng từng thuật toán trên đúng đồ thị đó. Với MỖI thuật toán
 > phải chỉ rõ trên màn hình (checklist đề): điểm đầu/cuối · thứ tự expand · frontier/
 > open list · giá trị cost (UCS/Dijkstra/A*) · giá trị heuristic (A*/Greedy) · cách
-> suy ra tuyến cuối. GUI: chạy trên G_demo, timeline bước-một, drawer hiện bảng g/h/f
-> — quay màn hình GUI làm "bảng động", bảng trong tài liệu làm "bảng tĩnh" khi cần dừng hình.
+> suy ra tuyến cuối. Snapshot hiện hành chỉ có GUI full G_demo, không phải induced
+> graph 7 node, nên chưa được gọi GUI là "bảng động" khớp bảng tĩnh. Chỉ quay parity
+> từng bước sau khi view backend `teach_7` tương lai tồn tại và đã được test; nếu
+> chưa có thì dùng riêng bảng tĩnh 7 node và demo GUI full graph như hai bằng chứng khác nhau.
 
-- (2:00) **Đồ thị ví dụ** — 7 địa danh, 23 cạnh THẬT, chỉ vào cạnh một chiều
+- (2:00) **Đồ thị ví dụ** — 7 địa danh, 24 cạnh THẬT, chỉ vào cạnh một chiều
   BX→BT (Công trường Quách Thị Trang) + bảng h (haversine/v_max). Nêu bài toán chính
   BT → BX: "có đường trực tiếp nhưng chỉ chiều VỀ — chiều đi phải vòng".
-- (3:00) **BFS** [người B]: chạy GUI bước-một NGAY trên BT→BX: BFS chọn tuyến ít cạnh
+- (3:00) **BFS** [người B]: dùng bảng 7 node BT→BX; chỉ chạy GUI bước-một trên đúng
+  bài này nếu `teach_7` đã triển khai và xác minh parity. BFS chọn tuyến ít cạnh
   nhưng đắt (446 s) vs tối ưu (341 s) — đắt hơn +31%; chốt "ít cạnh ≠ rẻ".
 - (4:00) **DFS + IDDFS** [người B]: DFS lao sâu (chỉ thứ tự expand); IDDFS cột
-  "giới hạn d" tăng dần, số expand CỘNG DỒN — cái giá của chạy lại.
+  "giới hạn d" tăng dần, số expand CỘNG DỒN — cái giá của chạy lại; chỉ complete
+  nếu lời giải không sâu hơn cap 100.
 - (5:00) **UCS** [người B]: chỉ cột g tăng dần theo hàng đợi ưu tiên; goal-test khi POP.
 - (5:45) **Dijkstra** [người B]: nói quan hệ với UCS (cùng máy, khác góc nhìn;
   bản cài early-exit) — 30 giây.
@@ -55,8 +61,10 @@
 - (8:00) **Dijkstra hai chiều** [người C]: GUI 2 màu lan từ 2 phía (cột "Phía" trong
   bảng); nêu chiều ngược chạy trên đồ thị ĐẢO CẠNH vì một chiều; luật dừng
   top_xuôi + top_ngược ≥ μ.
-- (9:00) **IDA\*** [người C]: ngưỡng f nới dần ε = 5 s; tối ưu trong C*+ε;
-  đổi bộ nhớ lấy thời gian (expand 630k trên G_real!).
+- (9:00) **IDA\*** [người C]: ngưỡng f nới dần ε = 5 m ở distance, 5 s ở
+  time/balanced; guarantee C*+ε chỉ khi chưa chạm cap 1.000 vòng. Không gọi
+  implementation hiện hành là O(bd): nó giữ `best_g`, `parent`, `h_of` và
+  explicit stack đang chờ (O(V+Q)).
 - (9:45) **Beam** [người C]: chạy k=2 rồi k=5 trên GUI; nói "incomplete" +
   số benchmark: k=50 vẫn lỡ 1,5% ca trên G_real.
 - (10:30) **Held-Karp/TSP mini** [người C]: ma trận 4×4 bất đối xứng (BT→SC 304 vs
@@ -101,11 +109,12 @@
 
 ## 23:00 – 25:00 · Hạn chế & kết
 
-- (23:00) 3 hạn chế trung thực (congestion synthetic; heuristic lỏng h/h*≈0,57;
-  chưa turn-penalty) + 2 hướng phát triển (TomTom real-time, ALT).
+- (23:00) 3 hạn chế trung thực (TomTom chỉ phủ mẫu và còn synthetic fallback;
+  heuristic lỏng h/h*≈0,57; chưa turn-penalty) + 2 hướng phát triển (TomTom
+  real-time, ALT).
 - (24:00) Chốt: 10 thuật toán một hợp đồng trace, 3 phương pháp TSP, graph/địa
-  danh thật từ OSM; profile traffic hiện còn synthetic và sẽ nói đúng nguồn của
-  lượt cuối; demo route engine chạy offline. Cảm ơn.
+  danh thật từ OSM; profile traffic hiện là `tomtom+synthetic` từ bốn snapshot
+  đại diện trên hai ngày thứ Hai; demo route engine chạy offline. Cảm ơn.
 
 ---
 

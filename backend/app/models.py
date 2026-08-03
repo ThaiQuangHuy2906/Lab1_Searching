@@ -297,7 +297,7 @@ class Trace(StrictModel):
 
 class RouteParams(StrictModel):
     beam_width: Annotated[int, Field(ge=1)] | None = None
-    epsilon: Annotated[float, Field(gt=0)] | None = None
+    epsilon: Annotated[float, Field(gt=0, allow_inf_nan=False)] | None = None
 
 
 class RouteRequest(StrictModel):

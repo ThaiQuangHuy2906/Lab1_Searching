@@ -1,11 +1,12 @@
 # Audit Claude trước khi bàn giao — ảnh chụp lịch sử
 
 > **Phạm vi thời gian:** báo cáo nguyên bản Claude gửi trước lượt onboarding Codex
-> ngày 2026-07-27. Các con số 82 test và B-3/B-4/B-5 bên dưới phản ánh worktree lúc
-> Claude kiểm, không phải trạng thái hiện hành. Đối chiếu mới nhất: 95 test đạt;
-> B-3/B-4/B-5 đã được sửa và kiểm chứng theo
-> `docs/CODEX-BASELINE.md`; B-1/B-2/B-6 vẫn mở. Nội dung gốc được giữ bên dưới để
-> bảo toàn bằng chứng và mạch quyết định.
+> ngày 2026-07-27. Toàn bộ số test, graph count, trạng thái B-* và kết luận bên
+> dưới chỉ phản ánh snapshot lịch sử, không phải trạng thái hiện hành. Mốc
+> 2026-08-04 có 111 backend test, 8 frontend test và `ALL DATA VALID`; tra
+> `README.md`, phần current-state của `docs/CODEX-CODEBASE-MAP.md` và
+> `docs/KE-HOACH-TRIEN-KHAI-NHIEM-VU-HOP-NHOM.md`, rồi xác minh bằng lệnh fresh.
+> Nội dung gốc được giữ bên dưới để bảo toàn bằng chứng và mạch quyết định.
 
 ## Báo cáo nguyên bản
 

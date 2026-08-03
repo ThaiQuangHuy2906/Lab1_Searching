@@ -125,7 +125,7 @@ def bidijkstra(store: GraphStore, start: str, goal: str, mode: Mode = "balanced"
     mu = float("inf")
     meet: str | None = None
     expanded = 0
-    max_frontier = 1
+    max_frontier = len(open_f | open_b)
 
     def try_meet(n: str) -> None:
         nonlocal mu, meet

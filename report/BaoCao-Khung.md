@@ -3,11 +3,14 @@
 > ⚠️ **SỐ TẠM (2026-07-27):** mọi con số exp1–exp7 trong tài liệu này lấy từ lượt chạy
 > congestion **synthetic** — và CẢ CÁC SỐ VÍ DỤ CHẠY TAY (446/341/+31%/+104 s/ma trận
 > 304/120/beam 415…) cũng đổi theo profiles, không riêng số benchmark. Sau khi có
-> TomTom, làm mới MỘT lượt: 03b real+demo → benchmark → `scripts/gen_teaching_doc.py`
-> → thay số theo Phụ lục A của `docs/KIEMTOAN.md` (cột "Đổi sau TomTom?") rồi mới nộp.
+> TomTom, phần data đã được làm mới theo `03b real → 04 → 03b demo → validate_data`.
+> Benchmark, hiệu chuẩn γ và `scripts/gen_teaching_doc.py` vẫn chưa chạy lại;
+> chỉ thay số theo Phụ lục A của `docs/KIEMTOAN.md` sau lượt cuối đó rồi mới nộp.
 >
-> **Tiến độ dữ liệu:** raw TomTom hiện mới đủ 07:30 và 12:00; còn thiếu 17:30,
-> 22:00. **Tiến độ nội dung:** đây vẫn là khung Markdown, còn 40 chỗ cần điền
+> **Tiến độ dữ liệu:** raw TomTom đã đủ 4/4 snapshot đại diện lấy trên hai ngày
+> thứ Hai; profile hiện là `tomtom+synthetic`; `G_demo` đã rebuild 51/298 và
+> validator đạt.
+> **Tiến độ nội dung:** đây vẫn là khung Markdown, còn 40 chỗ cần điền
 > trên 30 dòng nội dung (không tính dòng chú giải marker), cùng các marker
 > screenshot/hình. Chưa phải report PDF để nộp.
 
@@ -132,7 +135,9 @@ f = 1 + γ(c−1)/4 trên inflation freeFlow/current của từng điểm đo) =
 > ✍️ Phụ trách: **A**
 > 💡 Gợi ý: phần lớn nội dung đã có trong `data/DATA.md` — chuyển thành prose, đừng
 > dán nguyên bảng. Bắt buộc nêu: pipeline 4 bước + validator; 2 tầng đồ thị và LÝ DO;
-> nguồn (OSM/OSMnx v2, TomTom tuỳ chọn + synthetic fallback, cổng giao thông đối chiếu
+> nguồn (OSM/OSMnx v2, TomTom 4/4 snapshot đại diện trên hai ngày thứ Hai, chỉ
+> dùng trên các cạnh được gán + synthetic fallback,
+> cổng giao thông đối chiếu
 > định tính); bảng free-speed; giả định & hạn chế (mục 8 DATA.md — trung thực là điểm cộng).
 
 **Sơ đồ pipeline** *(vẽ lại từ DATA.md §1)*: `01_download_osm → 02_build_graph →
@@ -143,14 +148,15 @@ f = 1 + γ(c−1)/4 trên inflation freeFlow/current của từng điểm đo) =
 | | G_real | G_demo |
 |---|---|---|
 | Node | 2 118 (raw 2 230, lấy SCC) | 51 địa danh thật |
-| Cạnh | 4 699 (1 433 một chiều) | 292 (56 một chiều) |
-| Đèn / ngập / lô cốt / hẻm | 185 / 54 / 19 / 8 | 131 / 24 / 24 / 0 |
+| Cạnh | 4 699 (1 433 một chiều) | 298 (60 một chiều) |
+| Đèn / ngập / lô cốt / hẻm | 185 / 54 / 19 / 8 | 130 / 24 / 24 / 0 |
 | Bất biến demo/real | — | time ≤1,5× · dist ≤1,8× · balanced ≤1,5× cả 4 khung giờ, mọi cặp POI (validator chặn) |
 
 [ĐIỀN: kiến trúc 2 tầng — vì sao cần cả hai: G_demo để visualize/giảng/quay video
 (tên thật, cạnh co kế thừa hình học thật), G_real để benchmark/chứng minh scale.]
 
-[ĐIỀN: luật synthetic congestion (DATA.md §5) + khẳng định demo offline 100%.]
+[ĐIỀN: luật TomTom + synthetic fallback (DATA.md §5), phạm vi phủ mẫu và khẳng
+định demo offline 100%.]
 
 [SCREENSHOT: `data/gdemo_preview.png` — sơ đồ G_demo 51 điểm]
 
@@ -162,12 +168,13 @@ f = 1 + γ(c−1)/4 trên inflation freeFlow/current của từng điểm đo) =
 > 💡 Gợi ý: mục ăn điểm "Correct implementation" (20đ) + "Additional" (10đ). Mỗi thuật
 > toán 1 tiểu mục theo KHUNG: ý tưởng ngắn → pseudocode → ví dụ minh hoạ → complete/
 > optimal. Ví dụ minh hoạ: `[ĐIỀN — VIẾT LẠI BẰNG LỜI CỦA BẠN từ docs/GIAI-THICH-THUAT-TOAN.md
-> — bảng từng bước được sinh từ graph OSM và profile synthetic hiện hành; phải
+> — bảng từng bước hiện còn được sinh từ graph/profile synthetic cũ; phải
 > regenerate sau lượt dữ liệu cuối; được phép chèn bảng, cấm chép nguyên văn lời giảng]`.
 
 Danh sách tiểu mục (theo thứ tự): BFS · DFS · IDDFS · UCS · Dijkstra (+quan hệ UCS↔Dijkstra)
 · A* · Greedy Best-First · Bidirectional Dijkstra (đồ thị đảo cạnh, luật dừng μ) ·
-IDA* (ngưỡng ε=5 s) · Beam Search (k, incomplete).
+IDA* (ε=5 m ở distance, 5 s ở time/balanced; cap 1.000 vòng) · Beam Search
+(k, incomplete).
 
 **Tiểu mục heuristic** *(chèn sẵn)*: toàn bộ chứng minh admissible + consistent lấy từ
 `docs/HEURISTIC-PROOF.md` (Bổ đề 1–3, Định lý 1–3, mục 6b về làm tròn số — bài học hay
@@ -232,7 +239,8 @@ error envelope), frontend store/timeline đồng bộ 2 chiều.]
 > ✍️ Phụ trách: **E**
 > 💡 Gợi ý: bảng lý thuyết `[nhóm kiểm tra lại]` rồi ĐỐI CHIẾU số đo thật — phân tích
 > chênh lệch lý thuyết/thực nghiệm là chỗ ăn điểm phân tích. b = bậc nhánh, d = độ sâu
-> nghiệm, C* = chi phí tối ưu, ε = trọng số cạnh nhỏ nhất.
+> nghiệm, C* = chi phí tối ưu, ε_min = cận dưới trọng số cạnh dương trong bound
+> textbook của UCS; ε_IDA = bước nới ngưỡng IDA* theo đơn vị mode.
 
 **Bảng lý thuyết** *(điền sẵn — [nhóm kiểm tra lại])*:
 
@@ -240,13 +248,13 @@ error envelope), frontend store/timeline đồng bộ 2 chiều.]
 |---|---|---|---|---|
 | BFS | O(b^d) | O(b^d) | ✔ | ✘ (chỉ khi cạnh đều) |
 | DFS | O(b^m) | O(bm) | ✔ (hữu hạn+visited) | ✘ |
-| IDDFS | O(b^d) | O(bd) | ✔ | ✘ (như BFS) |
+| IDDFS | O(b^d) | theo stack/closed từng vòng | Có điều kiện: d≤cap 100 | ✘ (như BFS) |
 | UCS | O(b^(1+C*/ε)) | O(b^(1+C*/ε)) | ✔ | ✔ |
 | Dijkstra | O((V+E)logV) | O(V) | ✔ | ✔ |
 | A* | O(b^d) — thực tế ≪ UCS | O(b^d) | ✔ | ✔ (h admissible) |
 | Greedy | O(b^m) | O(b^m) | ✔ (visited) | ✘ |
-| BiDijkstra | ~2·O(b^(d/2)) | 2 frontier | ✔ | ✔ |
-| IDA* | lặp lại theo ngưỡng | O(bd) | ✔ | ✔ trong C*+ε |
+| BiDijkstra | Worst-case O((V+E)logV), không hơn Dijkstra vô điều kiện | O(V) | ✔ | ✔ |
+| IDA* | lặp lại theo ngưỡng, tối đa 1.000 vòng | O(V+Q): `best_g`/`parent`/`h_of` + explicit stack đang chờ Q | Có điều kiện: chưa chạm cap | ✔ trong C*+ε_IDA nếu chưa chạm cap |
 | Beam | O(k·d) | O(k) | ✘ | ✘ |
 
 **Bảng thực nghiệm** *(điền sẵn từ [SỐ LIỆU → results/exp3_benchmark.csv] — trung bình
@@ -274,8 +282,10 @@ error envelope), frontend store/timeline đồng bộ 2 chiều.]
 [ĐIỀN: phân tích — (1) A*/BiDijkstra tiết kiệm ~37–39% expand so UCS/Dijkstra, khớp
 lý thuyết heuristic/2-phía; (2) Greedy expand ít nhất (62) nhưng gap trung bình 60,9%
 — cái giá của việc bỏ qua g, đắt hơn cả BFS; (3) IDDFS/IDA* expand khủng (hàng trăm
-nghìn) do chạy lại từng vòng — CÁI GIÁ của tiết kiệm bộ nhớ O(bd), IDA* vẫn giữ chất
-lượng nghiệm (gap ≤ ε) còn IDDFS thì không; (4) Beam k=50 lỡ 1,5% ca không tìm thấy
+nghìn) do chạy lại từng vòng; implementation IDA* hiện vẫn giữ các map theo node
+và explicit stack nên không được quảng cáo là `O(bd)`. IDA* chỉ giữ guarantee
+gap ≤ ε khi chưa chạm cap, còn IDDFS không tối ưu weighted cost; (4) Beam k=50
+lỡ 1,5% ca không tìm thấy
 — minh hoạ incomplete bằng số; (5) DFS gap 4 chữ số: vô nghĩa cho định tuyến.]
 
 **Ảnh hưởng ùn tắc** [SỐ LIỆU → results/exp4_congestion.csv]: **167/200 cặp (83,5%)**
@@ -313,7 +323,9 @@ theo (mode, khung giờ); tổng điểm ≤ 16, Held-Karp ≤ 15].
 
 [ĐIỀN: thảo luận — NN+2-opt và SA đều chạm nghiệm tối ưu trên instance 10 điểm này
 (không gian nhỏ); độ lệch SA giữa seed (±9,7 s) minh hoạ tính ngẫu nhiên; với k lớn
-hơn 15 chỉ còn heuristic. Nêu giới hạn Held-Karp O(n²·2ⁿ).]
+hơn 15 chỉ còn heuristic. Nêu giới hạn Held-Karp O(n²·2ⁿ); Nearest Neighbour hiện
+là O(n² log n) vì sort ở mỗi vòng; local 2-opt/Or-opt là O(Pn³) vì Θ(n²)
+candidate/pass × Θ(n) full re-cost.]
 
 [SCREENSHOT: GUI multiroute — thứ tự đánh số trên bản đồ + card "Tiết kiệm %"]
 
@@ -354,8 +366,8 @@ So sánh → multiroute → trang Benchmark].
 **Điền sẵn từ phương án §10 + phát sinh thực tế:**
 - Chưa mô hình turn penalty / cấm rẽ trái (cần edge-based graph) — Future Work.
 - Heuristic còn "lỏng" (h/h* ≈ 0,565) — có thể nâng bằng landmark ALT.
-- Profile congestion hiện vẫn synthetic; raw TomTom mới có 07:30 và 12:00,
-  chưa nhập vào profile; 4 khung giờ tĩnh, không real-time.
+- Profile congestion hiện là `tomtom+synthetic`: TomTom 4/4 chỉ phủ các cạnh
+  trục chính được gán, phần còn lại fallback; 4 khung giờ tĩnh, không real-time.
 - `narrow_alley` hiếm vì network drive loại hẻm (DATA.md §8) — cần network_type="all".
 - VRP nhiều shipper, GA/ACO: ngoài phạm vi, đã chừa kiến trúc.
 - GUI chưa responsive mobile (tự chấm GUI ~95%).

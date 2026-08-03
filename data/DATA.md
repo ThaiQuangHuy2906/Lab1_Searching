@@ -1,10 +1,10 @@
 # DATA.md — Nguồn dữ liệu, luật xây dựng và giả định
 
-> **Trạng thái 2026-07-27:** tài liệu này mô tả contract và snapshot dữ liệu hiện
-> hành. Graph đã được build ngày 2026-07-27; profile vẫn là `synthetic`. Raw
-> TomTom đã có 07:30 và 12:00, còn thiếu 17:30 và 22:00; chưa chạy 03b/benchmark
-> từ bộ 2/4 này. Nội dung có thể dùng cho mục **d. Dataset** của báo cáo sau khi
-> đối chiếu lượt dữ liệu cuối. Schema chi tiết: `docs/SCHEMA.md`.
+> **Trạng thái 2026-08-03:** `G_real` giữ topology OSM 2026-07-27; raw TomTom đã
+> đủ bốn slot 07:30, 12:00, 17:30 và 22:00. Chuỗi `03b real → 04 → 03b demo →
+> validate_data` đã hoàn tất; hai profile hiện là `tomtom+synthetic` và `G_demo`
+> đã rebuild theo profile cuối. Benchmark/hiệu chuẩn γ/generator vẫn chưa chạy
+> lại. Schema chi tiết: `docs/SCHEMA.md`.
 
 ## 1. Tổng quan pipeline (chạy offline một lần, demo không gọi mạng)
 
@@ -26,10 +26,18 @@ Thứ tự chạy đầy đủ: `01 → 02 → 03b real → 04 → 03b demo → 
 | Nguồn | Dùng cho | Ghi chú |
 |---|---|---|
 | OpenStreetMap qua **OSMnx 2.1.1** (API v2) | Cấu trúc mạng đường: node, cạnh, length, highway type, tên đường | Query bằng **bbox tuple** `(106.680, 10.760, 106.720, 10.800)` — không dùng tên quận (bỏ cấp quận từ 01/7/2025). `network_type="drive"`, lấy **thành phần liên thông mạnh lớn nhất** |
-| **TomTom Traffic Flow API** (tuỳ chọn) | Mức ùn tắc thật tại ~40 điểm mẫu trên trục chính, 4 khung giờ | `currentSpeed/freeFlowSpeed` → thang 1–5 (mục 5). Chạy 03a đúng 4 mốc 07:30/12:00/17:30/22:00 |
+| **TomTom Traffic Flow API** (tuỳ chọn) | Mức ùn tắc thật tại ~40 điểm mẫu trên trục chính, 4 khung giờ | `currentSpeed/freeFlowSpeed` → thang 1–5 (mục 5). Đã thu đủ bốn slot 07:30/12:00/17:30/22:00; thời điểm query thực tế được ghi ngay dưới bảng |
 | Cổng giao thông TP.HCM `giaothong.hochiminhcity.gov.vn` | Đối chiếu **định tính** mức ùn tắc + nguồn cho manual_risks | Nhóm tự đối chiếu, dán link vào `manual_risks.json` |
-| `data/manual_risks.json` (nhóm tự định nghĩa) | Điểm ngập (5) + lô cốt (3) khu trung tâm | Vị trí đặt theo các tuyến nổi tiếng (Nguyễn Hữu Cảnh, Đinh Tiên Hoàng đoạn cầu Bông, Cống Quỳnh, Calmette, Trần Hưng Đạo…). **Cả 8 `source_url` đang là placeholder; `meta.description_vi` vẫn mô tả luật endpoint-radius cũ — phải bổ sung nguồn và đổi metadata sang luật cạnh đi vào vùng trước khi nộp** |
+| `data/manual_risks.json` (nhóm tự định nghĩa) | Điểm ngập (5) + lô cốt (3) khu trung tâm | Vị trí đặt theo các tuyến nổi tiếng (Nguyễn Hữu Cảnh, Đinh Tiên Hoàng đoạn cầu Bông, Cống Quỳnh, Calmette, Trần Hưng Đạo…). `meta.description_vi` đã mô tả đúng luật cạnh đi vào vùng và giới hạn route bắt đầu trong vùng. **Cả 8 `source_url` vẫn là placeholder và phải được bổ sung nguồn thật trước khi nộp.** |
 | `data/gdemo_pois.json` (nhóm tự chọn) | 51 POI địa danh thật cho G_demo | Toạ độ gần đúng ±100 m, được snap vào node lưới đường gần nhất. **Chờ nhóm/giảng viên review** |
+
+Bốn snapshot TomTom được query thực tế lúc `07:40:03` và `12:49:57` ngày
+2026-07-27, `17:30:01` và `22:27:52` ngày 2026-08-03. Các nhãn
+07:30/12:00/17:30/22:00 là tên slot đại diện, không phải cam kết timestamp chính
+xác đến từng phút. Hai ngày đều là thứ Hai, cách nhau bảy ngày; nhóm chấp nhận
+đây là bộ snapshot đại diện theo slot, **không** mô tả thành chuỗi đo cùng ngày.
+Bốn raw JSON nằm dưới `data/raw/` nên bị Git ignore theo thiết kế; phải đưa chúng
+vào Data ZIP cuối để lưu bằng chứng provenance và khả năng dựng lại profile.
 
 ## 3. Tốc độ free-flow theo loại đường (nhóm tự đặt — KHÔNG phải tốc độ pháp lý)
 
@@ -87,9 +95,10 @@ Quy đổi `ratio = currentSpeed/freeFlowSpeed`: ≥0.85→1, ≥0.70→2, ≥0.
 | 22:00 | 1–2 (mọi loại đường) | | | |
 
 Nhiễu sự cố: mỗi khung đỉnh có 10% số cạnh ngẫu nhiên +1 mức (trần 5) — mô phỏng va chạm/sự cố cục bộ.
-Bản build hiện tại: `source = "synthetic"`. Raw TomTom đã thu được 2/4 mốc
-(07:30, 12:00), nhưng chưa được nhập vào profile; chỉ chạy lại 03b sau khi có
-đủ 17:30 và 22:00 và nhóm đã chốt nguồn dữ liệu cuối.
+Bản build hiện tại: `source = "tomtom+synthetic"`. Mỗi slot có 40 điểm TomTom;
+635/4 699 cạnh `G_real` gần điểm mẫu trên trục chính nhận mức TomTom ở từng slot,
+các cạnh còn lại dùng synthetic fallback seed 42. Vì vậy không được mô tả profile
+là “100% dữ liệu thật”. `G_demo` kế thừa profile hỗn hợp này qua corridor weighted mean.
 
 **G_demo KHÔNG quay ngẫu nhiên (sửa 2026-07-27):** mỗi cạnh co kế thừa mức congestion
 = **trung bình trọng số** (theo thời gian free-flow) của các cạnh thật dọc hành lang
@@ -133,16 +142,16 @@ trên G_real **tự lan sang G_demo** không cần luật riêng.
 - **Kho xuất phát kịch bản shipper:** node *Bưu điện Thành phố* mang `type="warehouse"`
   (bưu cục trung tâm có thật, đóng vai depot trong demo).
 
-## 7. Số liệu bản build hiện tại (2026-07-27, OSM snapshot 2026-07-26)
+## 7. Số liệu bản build hiện tại (refresh 2026-08-03, OSM snapshot 2026-07-26)
 
 | | G_real | G_demo |
 |---|---|---|
 | Node | **2 118** (raw 2 230, SCC 2 118) | **51** (đủ 51 POI sau review, không POI nào bị gộp) |
-| Cạnh | **4 699** (raw 4 922; gộp 22 cạnh song song, bỏ self-loop) | **292** (kề 177 → vá 6 bất biến +1 076 & thay 453 hành lang → tỉa an-toàn-toàn-cục −961) |
-| Một chiều | 1 433 | 56 (chỉ khi G_real thật sự không có chiều ngược) |
-| Đèn tín hiệu | 185 cạnh / 77 node | 131 cạnh |
+| Cạnh | **4 699** (raw 4 922; gộp 22 cạnh song song, bỏ self-loop) | **298** (kề 177 → vá 6 bất biến +1 094 & thay 429 hành lang → tỉa an-toàn-toàn-cục −973) |
+| Một chiều | 1 433 | 60 (chỉ khi G_real thật sự không có chiều ngược) |
+| Đèn tín hiệu | 185 cạnh / 77 node | 130 cạnh |
 | Ngập / lô cốt / hẻm | 54 / 19 / 8 (flag tại cạnh ĐI VÀO vùng — mục 4) | 24 / 24 / 0 |
-| Bất biến demo/real (mục 6) | — | time ≤1,5 (median 1,11 · max 1,50, sàn ≥1,0); dist ≤1,8 (median 1,08 · max 1,56, sàn ≥1,0); balanced ≤1,5 cả 4 khung giờ (max 1,49) |
+| Bất biến demo/real (mục 6) | — | time ≤1,5 (median 1,11 · p90 1,30 · max 1,50, sàn ≥1,0); dist ≤1,8 (median 1,07 · p90 1,26 · max 1,57, sàn ≥1,0); balanced ≤1,5 cả 4 khung giờ (max 1,50) |
 | Yêu cầu đề (≥20 node, ≥30 cạnh) | vượt xa | vượt xa ✓ |
 
 POI đã được nhóm review trên Google Maps (2026-07-26): đổi tên *Bảo tàng Lịch sử TP.HCM*
@@ -156,8 +165,9 @@ Curie* (lệch ~900 m), *THPT Nguyễn Thị Minh Khai* (~445 m), *ĐH Mở TP.H
    (đồ thị phình to — ghi nhận ở Future Work).
 2. Hai đường một chiều ngược nhau nối cùng cặp giao lộ bị mô hình coi như một đường 2 chiều
    (SCHEMA cấm 2 cạnh trùng cặp (u,v) — giữ cạnh nhanh hơn).
-3. Congestion synthetic là mô phỏng có chủ đích theo phân bố giờ cao điểm thực tế, KHÔNG phải
-   đo đạc; khi có TomTom thì các trục chính dùng số thật, phần còn lại vẫn synthetic.
+3. Congestion hiện là hỗn hợp: các cạnh trục chính trong bán kính gán dùng mẫu
+   TomTom, phần còn lại là synthetic fallback có seed. Đây không phải đo đạc phủ
+   toàn bộ 4 699 cạnh và cũng không phải dữ liệu real-time.
 4. Toạ độ POI nhập tay ±100 m rồi snap về node gần nhất → tên địa danh đại diện cho giao lộ
    gần nhất, không phải cổng chính của địa điểm.
 5. Điểm ngập/lô cốt là **danh sách minh hoạ có chủ đích** đặt đúng các tuyến nổi tiếng;

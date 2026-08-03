@@ -4,9 +4,11 @@
 > **congestion synthetic** ngày 2026-07-26 (seed 42, `traffic_profiles_*.json`
 > có `meta.source = "synthetic"`). Lưu ý thêm: dữ liệu graph đã được rebuild
 > ngày 2026-07-27 (fix penalty theo vùng — KIEMTOAN L1-01) nên các file ở đây
-> đang là số của lượt CŨ; chúng sẽ được thay TRỌN MỘT LƯỢT sau khi crawl TomTom
-> đủ 4 khung giờ. Hiện raw TomTom mới có 07:30 và 12:00; chưa được phép dựng
-> profile/benchmark từ bộ 2/4.
+> đang là số của lượt CŨ. Data refresh 2026-08-03 đã dùng đủ bốn snapshot đại
+> diện lấy trên hai ngày thứ Hai, tạo profile `tomtom+synthetic` và rebuild
+> `G_demo`; benchmark/hiệu chuẩn γ/generator cuối vẫn chưa được chạy. Các
+> artifact trong thư mục này chỉ được thay TRỌN MỘT LƯỢT sau khi code ổn định
+> và có ủy quyền riêng.
 >
 > **Tái sinh (chạy MỘT MÌNH, ~7 phút, không tiến trình song song):**
 > từ `backend/` chạy `..\.venv\Scripts\python.exe -m app.benchmark` (PowerShell)

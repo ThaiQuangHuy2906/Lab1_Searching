@@ -1,8 +1,10 @@
 # DESIGN.md — Hợp đồng thiết kế giao diện (Phase 5)
 
-> **Trạng thái 2026-07-27:** đây là nguồn chuẩn về ý đồ, token và hành vi UI.
-> TypeScript hiện đạt `npx tsc --noEmit`; các khẳng định về cuộn, bàn phím, map,
-> theme, offline, responsive và accessibility vẫn phải được kiểm tra trên trình
+> **Trạng thái 2026-08-04:** đây là nguồn chuẩn về ý đồ, token và hành vi UI.
+> `npm test` (8 test) và `npx tsc --noEmit` hiện đạt. Các fix mới về slot/traffic,
+> loại trừ route–multiroute, effective-trace legend và savings sign-aware chưa
+> được kiểm tra lại bằng browser; các khẳng định về cuộn, bàn phím, map, theme,
+> offline, responsive và accessibility vẫn phải được kiểm tra trên trình
 > duyệt/độ phân giải dùng để quay hoặc bảo vệ.
 >
 > **Luật:** mọi màu/font/hiệu ứng trên UI phải tra được về token trong file này và
@@ -172,8 +174,9 @@ có điểm giao. (g) **Label nhóm dropdown thuật toán** 10→11px + màu ng
 (`start`/`algo-path` như Badge ok/warn) + chấm tròn `bg-current`. (h) **ui/select
 sửa bug cắt cụt im lặng:** cuộn chuyển về Viewport + ScrollUp/DownButton chevron
 tự hiện khi tràn, `max-h min(20rem, available-height)` — chữa luôn dropdown 51 địa
-danh. (i) **Legend né timeline:** tự nâng `bottom-[5.5rem]` CHỈ khi timeline hiện
-VÀ drawer phải đang mở (map hẹp mới va), transition 200ms. (j) **Fix theo review:**
+danh. (i) **Legend né timeline (đã sửa lại 2026-08-04):** tự nâng
+`bottom-[5.5rem]` khi effective trace thực sự làm timeline hiện, không phụ thuộc
+drawer mở/đóng; transition 200ms. (j) **Fix theo review:**
 So sánh chạy B bằng ĐÚNG mode/slot/graph của tuyến A (đổi Tiêu chí sau khi chạy
 không còn làm B lệch đơn vị); hàng "Thời gian đi" một đơn vị cho cả hàng, balanced
 LUÔN phút; bảng g/h/f bỏ thập phân khi ≥1 000 + cột h w-14 (mode Ngắn nhất h là
@@ -308,8 +311,9 @@ không tự đổi method hoặc xoá stop khi vượt giới hạn. Khi chạy,
 và drawer ưu tiên skeleton ATSP hơn result cũ, không có phần trăm giả.
 
 Kết quả ATSP trong tab Số liệu dùng metadata strip (method · mode · slot · graph),
-guarantee badge theo `optimal_guarantee`, card tỷ lệ tiết kiệm theo đúng
-`savings_pct`, cặp card “Theo thứ tự nhập”/“Sau tối ưu” và itinerary đánh số theo
+guarantee badge theo `optimal_guarantee`, card thay đổi chi phí diễn giải
+`savings_pct` theo dấu (dương: “tiết kiệm”/success; âm: “tăng chi phí”/warning;
+0: “không đổi”/neutral), cặp card “Theo thứ tự nhập”/“Sau tối ưu” và itinerary đánh số theo
 `multi.order`. Tên method luôn là nhãn thân thiện, không in raw enum; `found=false`
 có state riêng, không rơi về empty state của route hai điểm. Toàn bộ dùng token và
 năm vai trò surface của UI-01; không thêm màu, dependency hay interaction mới.

@@ -11,6 +11,7 @@ import { Slider } from "./ui/slider";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "./ui/select";
+import { effectiveTraceSteps } from "@/lib/interaction-policy";
 import { useApp } from "@/lib/store";
 
 const BASE_MS = 500;
@@ -41,7 +42,7 @@ export function Timeline() {
   const traceOnReal = useApp((s) => s.traceOnReal);
 
   // mirror useAnimation: toggling trace off on G_real hides the player NOW
-  const n = graph === "real" && !traceOnReal ? 0 : trace?.trace.length ?? 0;
+  const n = effectiveTraceSteps(trace, graph, traceOnReal).length;
 
   // playback clock
   React.useEffect(() => {

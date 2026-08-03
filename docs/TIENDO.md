@@ -1,10 +1,12 @@
 # TIENDO.md — Bảng tiến độ theo phase
 
-> **Lưu ý hiện hành (2026-08-03):** đây là nhật ký lịch sử; số test, số cạnh và
+> **Lưu ý hiện hành (2026-08-04):** đây là nhật ký lịch sử; số test, số cạnh và
 > trạng thái ở từng dòng đúng theo thời điểm của phase đó, không phải mốc hiện tại.
-> Baseline 2026-07-27 nằm trong `docs/CODEX-BASELINE.md`; current-state sau
-> UI-01–UI-04 và FINAL-01 nằm trong `docs/CODEX-CODEBASE-MAP.md` và phần đầu
-> `docs/KIEMTOAN.md`.
+> Baseline 2026-07-27, UI-01–UI-04 và FINAL-01 đều là evidence lịch sử.
+> Current-state nằm trong `README.md`, phần current-state của
+> `docs/CODEX-CODEBASE-MAP.md` và
+> `docs/KE-HOACH-TRIEN-KHAI-NHIEM-VU-HOP-NHOM.md`; số hiện hành phải được xác nhận
+> lại bằng code/data và lệnh fresh.
 >
 > Cập nhật cuối mỗi phase (PROMPT-MASTER luật 1). Trạng thái: ⬜ chưa làm · 🔄 đang làm · ✅ xong.
 

@@ -3,10 +3,12 @@
 > ⚠️ **SỐ TẠM (2026-07-27):** mọi con số exp1–exp7 trong tài liệu này lấy từ lượt chạy
 > congestion **synthetic** — và CẢ CÁC SỐ VÍ DỤ CHẠY TAY (446/341/+31%/+104 s/ma trận
 > 304/120/beam 415…) cũng đổi theo profiles, không riêng số benchmark. Sau khi có
-> TomTom, làm mới MỘT lượt: 03b real+demo → benchmark → `scripts/gen_teaching_doc.py`
-> → thay số theo Phụ lục A của `docs/KIEMTOAN.md` (cột "Đổi sau TomTom?") rồi mới nộp.
+> TomTom, phần data đã được làm mới theo `03b real → 04 → 03b demo → validate_data`;
+> benchmark, hiệu chuẩn γ và `scripts/gen_teaching_doc.py` vẫn chờ lượt cuối.
+> Chỉ thay số theo Phụ lục A của `docs/KIEMTOAN.md` sau lượt đó rồi mới nộp.
 >
-> **Tiến độ:** raw TomTom hiện mới có 07:30 và 12:00; đây là outline nội dung,
+> **Tiến độ:** raw TomTom đủ 4/4 snapshot đại diện trên hai ngày thứ Hai;
+> profile hiện là `tomtom+synthetic`, `G_demo` là 51/298. Đây vẫn là outline,
 > chưa phải file PPTX/PDF. Phải thay số, điền danh tính và chèn hình/screenshot
 > thật trước khi xuất bản nộp.
 
@@ -36,8 +38,8 @@
 
 **Slide 4 — Dữ liệu 2 tầng** *(rubric: dataset trong 15đ modeling)*
 - G_real: 2 118 nút / 4 699 cạnh từ OSM (OSMnx v2, bbox trung tâm) — để benchmark
-- G_demo: 51 địa danh thật / 292 cạnh co kế thừa hình học thật (mọi cặp ≤1,5× thời gian thật, ≤1,5× cả chi phí balanced 4 khung giờ) — để giảng + demo
-- Congestion: TomTom (tuỳ chọn) + synthetic có luật, seed 42 — demo OFFLINE 100%
+- G_demo: 51 địa danh thật / 298 cạnh co kế thừa hình học thật (mọi cặp ≤1,5× thời gian thật, ≤1,5× cả chi phí balanced 4 khung giờ) — để giảng + demo
+- Congestion: `tomtom+synthetic` — TomTom trên 635/4 699 cạnh thật mỗi slot, phần còn lại fallback seed 42; demo OFFLINE 100%
 - Hình: `data/gdemo_preview.png`
 > 🗣 45s: vì sao 2 tầng (một để NHÌN, một để ĐO); mọi thứ tái lập được.
 
@@ -60,7 +62,8 @@
 > 🗣 45s: demo tại chỗ nếu được phép, không thì chiếu 2 hình này.
 
 **Slide 8 — Thuật toán bổ sung** *(rubric: additional 10đ)*
-- Nhóm làm 6 (đề cần ≥2): Dijkstra, Greedy, BiDijkstra, IDA* (ε=5 s), Beam, IDDFS
+- Nhóm làm 6 (đề cần ≥2): Dijkstra, Greedy, BiDijkstra, IDA* (ε=5 m ở distance,
+  5 s ở time/balanced; guarantee chỉ khi chưa chạm cap 1.000 vòng), Beam, IDDFS
 - Greedy: expand ít nhất (62) nhưng gap 60,9% — "linh cảm" phản chủ
 - Beam k=50: nhanh nhưng 1,5% ca KHÔNG tìm thấy — incomplete bằng số
 > 🗣 60s: mỗi thuật toán một câu "đánh đổi cái gì lấy cái gì".
@@ -95,7 +98,7 @@
 > 🗣 60s: đọc to 1 câu giải thích thật của app — cho giảng viên thấy máy "nói được tiếng người".
 
 **Slide 14 — Hạn chế & hướng phát triển**
-- Trung thực: heuristic lỏng (h/h*≈0,57), congestion synthetic, chưa turn-penalty, GUI chưa mobile
+- Trung thực: heuristic lỏng (h/h*≈0,57), TomTom chỉ phủ mẫu và còn synthetic fallback, chưa turn-penalty, GUI chưa mobile
 - Hướng phát triển: TomTom real-time, landmark ALT, VRP nhiều shipper
 - Cảm ơn + Q&A
 > 🗣 30s + để thời gian cho hỏi đáp.

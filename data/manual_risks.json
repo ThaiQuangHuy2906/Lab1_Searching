@@ -1,6 +1,6 @@
 {
   "meta": {
-    "description_vi": "Điểm ngập / lô cốt tiêu biểu khu trung tâm TP.HCM do nhóm định nghĩa (PROMPT-MASTER 6.1). Cạnh nào có đầu mút nằm trong radius_m của một mục sẽ nhận flag tương ứng (flood/construction = 1). ĐÂY LÀ DỮ LIỆU MINH HOẠ: vị trí đặt đúng các tuyến đường nổi tiếng về ngập/thi công, nhưng nhóm PHẢI dán link nguồn thật (cổng giao thông TP.HCM giaothong.hochiminhcity.gov.vn hoặc báo chí) vào source_url trước khi nộp.",
+    "description_vi": "Điểm ngập / lô cốt tiêu biểu khu trung tâm TP.HCM do nhóm định nghĩa (PROMPT-MASTER 6.1). Pipeline chỉ gắn flag tương ứng (flood/construction = 1) cho cạnh đi vào vùng: u ở ngoài radius_m và v ở trong radius_m. Vì vậy cạnh bắt đầu bên trong vùng không được đánh dấu bởi luật này; route xuất phát trong vùng có thể chưa nhận penalty cho đến khi đi ra rồi đi vào lại. ĐÂY LÀ DỮ LIỆU MINH HOẠ: vị trí đặt đúng các tuyến đường nổi tiếng về ngập/thi công, nhưng nhóm PHẢI dán link nguồn thật (cổng giao thông TP.HCM giaothong.hochiminhcity.gov.vn hoặc báo chí) vào source_url trước khi nộp.",
     "created": "2026-07-26"
   },
   "risks": [

@@ -53,6 +53,27 @@ def test_graph_bad_level_gives_422_envelope():
     assert err["code"] == "VALIDATION_ERROR" and err["message_vi"]
 
 
+def test_openapi_uses_runtime_success_and_error_contracts():
+    schema = client.get("/openapi.json").json()
+    graph_responses = schema["paths"]["/api/graph"]["get"]["responses"]
+    assert graph_responses["200"]["content"]["application/json"]["schema"] == {
+        "$ref": "#/components/schemas/GraphFile"
+    }
+
+    error_statuses = {
+        ("/api/graph", "get"): (422, 500),
+        ("/api/traffic", "get"): (422, 500),
+        ("/api/route", "post"): (404, 422, 500),
+        ("/api/multiroute", "post"): (404, 422, 500),
+        ("/api/benchmark", "post"): (404, 422, 500),
+    }
+    for (path, method), statuses in error_statuses.items():
+        responses = schema["paths"][path][method]["responses"]
+        for status in statuses:
+            response_schema = responses[str(status)]["content"]["application/json"]["schema"]
+            assert response_schema == {"$ref": "#/components/schemas/ErrorResponse"}
+
+
 # --------------------------------------------------------------- traffic
 
 
@@ -109,6 +130,23 @@ def test_route_params_beam_width():
         algorithm="beam", params={"beam_width": 2}))
     assert r.status_code == 200
     assert r.json()["metrics"]["beam_width"] == 2
+
+
+@pytest.mark.parametrize("raw_epsilon", ["1e309", "Infinity", "NaN"])
+def test_route_rejects_non_finite_epsilon_with_error_envelope(raw_epsilon):
+    raw_body = (
+        '{"start":"n0001","goal":"n0002","algorithm":"idastar",'
+        '"mode":"distance","time_slot":"07:30","graph":"demo",'
+        f'"params":{{"epsilon":{raw_epsilon}}}}}'
+    )
+
+    r = client.post(
+        "/api/route", content=raw_body,
+        headers={"content-type": "application/json"},
+    )
+
+    assert r.status_code == 422
+    assert r.json()["error"]["code"] == "VALIDATION_ERROR"
 
 
 def test_route_unknown_node_404():
@@ -209,6 +247,42 @@ def test_benchmark_single_experiment():
         assert r.status_code == 404
 
 
+def test_benchmark_experiment_6_parses_json_rows():
+    r = client.post("/api/benchmark", json={"experiment_id": 6})
+
+    assert r.status_code == 200
+    experiment = r.json()["experiments"][0]
+    assert experiment["experiment_id"] == 6
+    assert len(experiment["rows"]) == 5
+    assert all(isinstance(row, dict) for row in experiment["rows"])
+
+
+def test_benchmark_bulk_is_partial_but_explicit_missing_is_404(tmp_path, monkeypatch):
+    exp1_name = main_module.EXPERIMENT_FILES[1][0]
+    (tmp_path / exp1_name).write_text("algorithm,runtime_ms\nastar,1.0\n", encoding="utf-8")
+    monkeypatch.setattr(main_module, "RESULTS_DIR", tmp_path)
+
+    bulk = client.post("/api/benchmark", json={})
+    missing = client.post("/api/benchmark", json={"experiment_id": 6})
+
+    assert bulk.status_code == 200
+    assert [item["experiment_id"] for item in bulk.json()["experiments"]] == [1]
+    assert missing.status_code == 404
+    assert missing.json()["error"]["code"] == "RESULTS_NOT_FOUND"
+
+
+def test_benchmark_invalid_json_shape_is_safe_server_error(tmp_path, monkeypatch):
+    exp6_name = main_module.EXPERIMENT_FILES[6][0]
+    (tmp_path / exp6_name).write_text('{"rows": []}', encoding="utf-8")
+    monkeypatch.setattr(main_module, "RESULTS_DIR", tmp_path)
+
+    r = client.post("/api/benchmark", json={"experiment_id": 6})
+
+    assert r.status_code == 500
+    assert r.json()["error"]["code"] == "INTERNAL"
+    assert r.json()["error"]["message_vi"]
+
+
 # ------------------------------------------------- explanation deep-dive
 
 
@@ -267,6 +341,21 @@ def test_route_start_equals_goal_all_algorithms():
         assert t.found and t.path == [DEMO_OD["start"]]
         assert t.metrics.total_cost == 0
         assert "trùng nhau" in t.explanation.summary_vi
+
+
+@pytest.mark.parametrize(
+    ("mode", "cost_unit", "wrong_unit"),
+    [("distance", "m", "giây"), ("time", "giây", "m"), ("balanced", "giây", "m")],
+)
+def test_route_start_equals_goal_uses_mode_cost_unit(mode, cost_unit, wrong_unit):
+    r = client.post("/api/route", json=route_body(
+        goal=DEMO_OD["start"], mode=mode,
+    ))
+
+    assert r.status_code == 200
+    summary = r.json()["explanation"]["summary_vi"]
+    assert f"chi phí 0 {cost_unit}" in summary
+    assert f"chi phí 0 {wrong_unit}" not in summary
 
 
 def test_multiroute_unknown_method_is_validation_error():

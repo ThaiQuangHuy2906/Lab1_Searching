@@ -1,25 +1,28 @@
-# HDCRAWL — Run-book lượt TomTom cuối trước khi nộp
+# HDCRAWL — Nhật ký TomTom closeout và checklist artifact cuối
 
-> Crawl 4 mốc → 03b real + 04 + 03b demo → benchmark MỘT lượt → 05_calibrate_gamma
-> → regen tài liệu → thay số theo Phụ lục A của `docs/KIEMTOAN.md`.
-> Mọi lệnh chạy từ **repo root** bằng `.venv\Scripts\python.exe` (PowerShell),
-> trừ benchmark (cwd `backend/`). Tổng thời gian tay: 4 lần canh giờ × 1 phút
-> + ~25 phút buổi tối (build 3′ + benchmark 7′ + thay số ~15′).
+> **Trạng thái 2026-08-04:** raw TomTom đã đủ 4/4 slot. Hai slot 07:30, 12:00
+> lấy ngày 2026-07-27; hai slot 17:30, 22:00 lấy ngày 2026-08-03. Đây là hai
+> ngày thứ Hai cách nhau bảy ngày, dùng làm bốn snapshot đại diện, **không phải**
+> time series cùng ngày. Chuỗi `03b real → 04 → 03b demo → validate_data` đã
+> hoàn tất và cho `ALL DATA VALID` với G_demo 51/298/60, G_real
+> 2.118/4.699/1.433, profile `tomtom+synthetic`.
 >
-> **Trạng thái 2026-07-27:** đã có raw snapshot 07:30 và 12:00. Còn thiếu
-> 17:30 và 22:00. Không chạy §2–§5 cho tới khi đủ 4/4 và đã chốt nguồn dữ liệu cuối.
+> **Không chạy lại §0–§2.** Các lệnh ở đó chỉ được giữ như nhật ký tái lập.
+> Benchmark, gamma calibration và teaching generator trong §3–§5 vẫn được hoãn
+> có chủ đích; chỉ chạy sau khi code ổn định và có ủy quyền riêng.
 
 ---
 
-## 0. Chuẩn bị (trước 07:30)
+## 0. Chuẩn bị — đã hoàn tất, chỉ lưu lịch sử
 
-- [ ] Điền key vào `.env` ở repo root: `TOMTOM_API_KEY=...`
+- [x] Cấu hình key ngoài tracked source khi crawl; không ghi key vào tài liệu/repo.
+      Biến môi trường dùng là `TOMTOM_API_KEY`.
       (lấy free tại https://developer.tomtom.com — Traffic Flow API).
       Dependencies `requests` + `python-dotenv` đã pin sẵn trong requirements.
-- [ ] Chọn **một ngày thường trong tuần** — 4 mốc cùng ngày mới kể một câu chuyện
-      traffic nhất quán (thứ 7/CN kẹt khác hẳn ngày thường).
+- [x] Chốt provenance thực tế là hai ngày thứ Hai cách nhau bảy ngày; tài liệu
+      phải mô tả là bốn snapshot đại diện, không gọi là chuỗi cùng ngày.
 
-## 1. Crawl 4 mốc — chạy ĐÚNG giờ thật (~1 phút/lần)
+## 1. Crawl 4 mốc — đã hoàn tất, không chạy lại
 
 Script **không tự kiểm giờ hệ thống**: tham số slot chỉ là nhãn thư mục, dữ liệu
 là traffic tại đúng THỜI ĐIỂM bấm lệnh → phải canh giờ (±10–15 phút quanh mốc).
@@ -29,22 +32,27 @@ là traffic tại đúng THỜI ĐIỂM bấm lệnh → phải canh giờ (±10
 .venv\Scripts\python.exe scripts\03a_crawl_tomtom.py 07:30
 # 12:00 trưa — ĐÃ THU 2026-07-27
 .venv\Scripts\python.exe scripts\03a_crawl_tomtom.py 12:00
-# 17:30 chiều
+# 17:30 chiều — ĐÃ THU 2026-08-03
 .venv\Scripts\python.exe scripts\03a_crawl_tomtom.py 17:30
-# 22:00 tối
+# 22:00 tối — ĐÃ THU 2026-08-03
 .venv\Scripts\python.exe scripts\03a_crawl_tomtom.py 22:00
 ```
 
 - [x] 07:30 — `flow_20260727T074003.json`
 - [x] 12:00 — `flow_20260727T124957.json`
-- [ ] 17:30
-- [ ] 22:00
+- [x] 17:30 — `flow_20260803T173001.json`
+- [x] 22:00 — `flow_20260803T222752.json`
 
-- Mỗi lần crawl 40 điểm trục chính → `data/raw/tomtom/<slot>/flow_<stamp>.json`.
+- Mỗi slot có 40 record hợp lệ tại
+  `data/raw/tomtom/<slot>/flow_<stamp>.json`. Thư mục raw bị Git ignore và phải
+  được đóng trong Data ZIP cuối.
 - Được phép chạy **2 lần cách nhau ~10 phút trong cùng mốc** — 03b gộp mọi
   snapshot trong thư mục, tăng độ bền nếu một điểm đo trả null.
 
-## 2. Rebuild profiles + G_demo (sau mốc 22:00, ~3 phút)
+## 2. Profiles + G_demo — đã hoàn tất, không chạy lại
+
+Chuỗi dưới đây là bằng chứng quy trình đã dùng, không phải lệnh cần chạy ở trạng
+thái hiện hành:
 
 ```powershell
 .venv\Scripts\python.exe scripts\03b_build_profiles.py real
@@ -53,19 +61,18 @@ là traffic tại đúng THỜI ĐIỂM bấm lệnh → phải canh giờ (±10
 .venv\Scripts\python.exe scripts\validate_data.py
 ```
 
-**Vì sao PHẢI chạy lại 04:** bất biến balanced của G_demo được repair dựa trên
-profiles real — mức TomTom mới làm đường balanced-tối-ưu trên G_real đổi chỗ,
-04 phải repair lại thì validator mới qua. Cần biết trước:
+`04` đã được chạy đúng vị trí vì bất biến balanced của G_demo được repair dựa
+trên profiles real. Kết quả hiện hành:
 
-- Kiểm log 03b real có `source=tomtom+synthetic, tomtom-assigned=...`
-  (số cạnh nhận mức thật từ điểm đo).
-- **Số cạnh G_demo có thể đổi** (hiện 292 cạnh / 56 oneway) → mọi chỗ quote nó
-  đã nằm sẵn trong Phụ lục A.
+- Profile có `source=tomtom+synthetic`; mỗi slot G_real có 635/4.699 cạnh nhận
+  mức TomTom, phần còn lại dùng deterministic synthetic fallback.
+- G_demo hiện có **298 cạnh có hướng / 60 one-way**; mức ùn tắc được kế thừa
+  bằng corridor weighted mean và phủ đủ bốn slot.
 - Nếu risk-flag demo lệch >20% so hằng số, `validate_data` sẽ **fail có chủ
   đích** kèm thông điệp bảo cập nhật `EXPECTED_RISK_EDGES` (trong
   `scripts/validate_data.py`) + DATA.md §7 — đó là tripwire, không phải bug.
 
-## 3. Benchmark MỘT lượt (~7 phút, chạy MỘT MÌNH)
+## 3. Benchmark cuối — DEFERRED, cần ủy quyền riêng
 
 Tắt dev server + uvicorn trước (runtime_ms cần máy rảnh — TIENDO Phase 6f):
 
@@ -78,7 +85,7 @@ cd ..
 Ghi đè trọn `results/exp1–7 + figs/` (`results/README.md` không bị đụng).
 Hình exp5 giờ tự mang tiêu đề trung tính đã sửa (KIEMTOAN C9).
 
-## 4. Hiệu chuẩn γ (~5 giây)
+## 4. Hiệu chuẩn γ — DEFERRED sau benchmark cuối
 
 ```powershell
 .venv\Scripts\python.exe scripts\05_calibrate_gamma.py
@@ -89,7 +96,7 @@ In bảng inflation theo mức + **γ̂** và độ lệch so 1,5; ghi
 (dòng "γ̂ ước lượng ĐỘC LẬP từ dữ liệu thật… = [SỐ LIỆU →
 results/gamma_calibration.csv]").
 
-## 5. Regen tài liệu giảng (~30 giây)
+## 5. Regen tài liệu giảng — DEFERRED sau benchmark/gamma
 
 ```powershell
 .venv\Scripts\python.exe scripts\gen_teaching_doc.py
@@ -112,15 +119,15 @@ Nặng nhất và dễ sót:
       exp5 mới — xuất hiện ở BaoCao c, Slide 3, Video 22:00.
 - [ ] Số chạy tay từ GIAI-THICH mới → Slide 5/9, Video 3:00/7:15/10:30,
       BaoCao mục h (hiện là 446/341/+31%/+104 s/304/120/415).
-- [ ] Nếu G_demo đổi cạnh: 292/56 + risk demo ở Slide 4, BaoCao d, DATA.md §7
-      (+ `EXPECTED_RISK_EDGES` nếu validator kêu).
+- [x] Đồng bộ số hiện hành G_demo 298/60 và mô tả risk vào tài liệu current-state.
 
 ## 7. Chốt
 
 ```powershell
-.venv\Scripts\python.exe -m pytest backend\tests\ -q     # mốc 2026-07-27: 95 passed
+.venv\Scripts\python.exe -m pytest backend\tests\ -q     # mốc 2026-08-04: 111 passed
 .venv\Scripts\python.exe scripts\validate_data.py         # ALL DATA VALID
-.venv\Scripts\python.exe scripts\gen_teaching_doc.py      # chạy lần 2 -> git diff phải RỖNG
+# Chỉ sau khi được phép chạy generator cuối:
+.venv\Scripts\python.exe scripts\gen_teaching_doc.py      # chạy lần 2 -> output ổn định
 ```
 
 - [ ] **Đổi banner "SỐ TẠM"** ở đủ 5 vị trí: `results/README.md`, BaoCao,
@@ -128,7 +135,8 @@ Nặng nhất và dễ sót:
       regen; thay bằng ghi chú chính thức
       kiểu *"Số liệu lượt TomTom ngày …, seed 42"* — nộp bài mà còn chữ TẠM là
       mất điểm oan.
-- [ ] Commit: `chore: TomTom crawl + final benchmark refresh`.
+- [ ] Chỉ commit/push khi người dùng yêu cầu và sau khi toàn bộ artifact cuối đã
+      được kiểm chứng.
 - [ ] Việc tay còn lại sau lượt số: xem checklist mục 7 của `docs/KIEMTOAN.md`
       (điền [ĐIỀN], source_url manual_risks, screenshot, video, đóng gói zip,
       repo GitHub phải mở được khi chấm).

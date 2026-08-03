@@ -2,36 +2,39 @@
 
 ## Trạng thái hiện hành
 
-Mốc kiểm mới nhất: **2026-07-27**.
+Mốc kiểm mới nhất: **2026-08-04** (current worktree, chưa commit).
 
 - 10 thuật toán hai điểm: `bfs`, `dfs`, `iddfs`, `ucs`, `dijkstra`, `astar`,
   `greedy`, `bidijkstra`, `idastar`, `beam`.
 - 3 ATSP: `held_karp`, `nn_2opt`, `sa`.
-- G_demo: **51 node / 292 cạnh có hướng / 56 one-way**.
+- G_demo: **51 node / 298 cạnh có hướng / 60 one-way**.
 - G_real: **2.118 node / 4.699 cạnh có hướng / 1.433 one-way**.
-- Profile hiện tại vẫn `synthetic`; raw TomTom mới có 07:30 và 12:00, còn thiếu
-  17:30 và 22:00.
+- Profile hiện tại là `tomtom+synthetic`; raw TomTom đủ 07:30, 12:00, 17:30 và
+  22:00. Hai slot đầu lấy ngày 2026-07-27, hai slot sau lấy ngày 2026-08-03:
+  hai ngày thứ Hai cách nhau bảy ngày, không phải time series cùng ngày.
 - `results/` là benchmark tạm ngày 2026-07-26, cũ hơn graph ngày 2026-07-27.
-- Gate hiện tại: **95 pytest pass**, `ALL DATA VALID` với cảnh báo nguồn TomTom
-  2/4, `npx tsc --noEmit` pass.
-- B-3/B-4/B-5 đã sửa; B-1/B-2/B-6 vẫn mở. Xem
-  `docs/CODEX-BASELINE.md`.
+- Gate mới nhất: **111 backend pytest pass**, **8 frontend test pass**,
+  `ALL DATA VALID` và `npx tsc --noEmit` pass.
+- Các regression nền ngày 2026-08-04 đã đạt; benchmark/gamma/generator cuối và
+  các deliverable thủ công vẫn được hoãn có chủ đích.
 
-Không chạy 03b, rebuild graph/profile, benchmark hoặc teaching generator trước
-khi đủ 4 snapshot và user chốt dữ liệu cuối.
+Chuỗi `03b real → 04 → 03b demo → validate_data` đã hoàn tất. Không chạy lại
+graph/profile; không chạy benchmark, gamma calibration hoặc teaching generator
+nếu chưa có ủy quyền riêng cho giai đoạn ghi artifact đó.
 
 ## Đọc theo thứ tự
 
 1. `docs/Lab 1 - Searching.pdf` — đề bài/rubric.
 2. `docs/Lab1-ChotPhuongAn.md` — quyết định dự án đã chốt.
-3. `docs/SCHEMA.md` — contract graph/trace/API/cost.
-4. `AGENTS.md` — quy tắc vận hành repository hiện hành.
+3. `PROMPT-MASTER.md` — đặc tả thi công lịch sử và current-state note.
+4. `docs/SCHEMA.md` — contract graph/trace/API/cost.
 5. `docs/CODEX-CODEBASE-MAP.md` — kiến trúc, test gap, blocker.
-6. `docs/CODEX-BASELINE.md` — bằng chứng chạy mới nhất.
+6. `docs/CODEX-BASELINE.md` — snapshot lịch sử 2026-07-27.
+7. `docs/AUDIT-CLAUDE-PRE-SUBMISSION.md` — audit lịch sử.
 
-`PROMPT-MASTER.md` là đặc tả thi công gốc. `docs/TIENDO.md`,
-`docs/KIEMTOAN.md` và audit Claude là lịch sử, không phải bằng chứng cho
-worktree hiện tại.
+`AGENTS.md` là quy tắc vận hành repository hiện hành. `docs/TIENDO.md`,
+`docs/KIEMTOAN.md`, baseline và audit Claude là lịch sử, không phải bằng chứng
+cho worktree hiện tại; current code/data và lệnh kiểm chứng mới có quyền cao hơn.
 
 ## Bất biến không được phá
 
@@ -61,6 +64,7 @@ PowerShell, từ repo root:
 .\.venv\Scripts\python.exe scripts\validate_data.py
 
 Set-Location frontend
+npm test
 npx tsc --noEmit
 ```
 
@@ -71,6 +75,7 @@ Git Bash trên Windows:
 .venv/Scripts/python.exe scripts/validate_data.py
 
 cd frontend
+npm test
 npx tsc --noEmit
 ```
 
@@ -97,20 +102,19 @@ Không chạy `npm run build` khi dev server còn hoạt động vì cả hai c�
 - `scripts/05_calibrate_gamma.py`: ghi calibration result.
 - `scripts/gen_teaching_doc.py`: ghi tài liệu sinh tự động.
 
-Lượt TomTom cuối phải đi trọn chuỗi trong `hdcrawl.md`; không trộn artifact từ
-hai lượt.
+Lượt data closeout trong `hdcrawl.md` đã hoàn tất. Phần benchmark/gamma/generator
+còn lại là deferred work, chỉ chạy trọn chuỗi sau khi được cho phép riêng.
 
 ## Trước demo hoặc bàn giao
 
 - Stop process cũ, restart backend/frontend, hard-refresh.
-- Xác nhận `/api/graph?level=demo` trả 51/292.
+- Xác nhận `/api/graph?level=demo` trả 51/298.
 - Kiểm `/benchmark` cuộn được ở độ phân giải quay/máy chiếu.
 - QA map, keyboard, theme, offline, responsive và accessibility bằng browser.
 - Không quảng bá con số trong `results/` là current.
 - Giữ đủ 5 banner `SỐ TẠM` cho tới khi refresh cuối hoàn tất.
-- Còn 8 `source_url` TODO, metadata risk mô tả luật cũ và các artifact tay:
-  danh tính/đóng góp, screenshot, report PDF, slide, video/link, data
-  description và `[GroupID].zip`.
+- Còn 8 `source_url` TODO và các artifact tay: danh tính/đóng góp, screenshot,
+  report PDF, slide, video/link, data description và `[GroupID].zip`.
 
 ## Môi trường
 

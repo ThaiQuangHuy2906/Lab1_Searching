@@ -4,6 +4,7 @@
 // video cần người xem giải mã màu ngay lập tức.
 
 import { useApp } from "@/lib/store";
+import { effectiveTraceSteps } from "@/lib/interaction-policy";
 import { usePalette } from "@/lib/use-palette";
 
 function Dot({ color, ring }: { color: string; ring?: boolean }) {
@@ -35,41 +36,48 @@ export function Legend() {
   const P = usePalette();
   const H = P.hex;
 
-  const isBidi = trace?.algorithm === "bidijkstra";
+  const hasStepLegend = effectiveTraceSteps(trace, graph, traceOnReal).length > 0;
+  const hasTraceLegend = hasStepLegend || Boolean(trace?.found);
+  const isBidi = hasStepLegend && trace?.algorithm === "bidijkstra";
   const comparing = drawerTab === "compare" && compare;
 
   // v11: chưa có gì đáng giải mã (không kết quả, không lớp ùn tắc) thì đừng
   // chiếm góc bản đồ chỉ để chú giải mỗi "Nút giao"
-  if (!trace && !multi?.found && !comparing && !trafficLayer) return null;
+  if (!hasTraceLegend && !multi?.found && !comparing && !trafficLayer) return null;
 
   // Khi timeline xuất hiện, luôn nâng chú giải lên trên thanh. Ở viewport hẹp,
   // timeline co giãn đủ xa về bên trái ngay cả khi drawer đóng.
-  const timelineVisible =
-    (graph === "real" && !traceOnReal ? 0 : trace?.trace.length ?? 0) > 0;
+  const timelineVisible = hasStepLegend;
   const lift = timelineVisible;
 
   return (
     <div className={`pointer-events-none absolute left-3 z-10 flex flex-col gap-1.5 rounded-lg border border-surface-strong bg-surface-raised px-3 py-2.5 text-xs text-ink-dim shadow-float transition-[bottom] duration-200 ${
       lift ? "bottom-[5.5rem]" : "bottom-4"}`}>
       <span className="text-[10px] font-bold uppercase tracking-wider text-ink">Chú giải</span>
-      {trace && !multi && (
+      {trace && hasTraceLegend && !multi && (
         <>
-          {isBidi ? (
-            <>
-              <span className="flex items-center gap-2"><Dot color={H.bidiForward} /> Phía xuôi (từ Đi)</span>
-              <span className="flex items-center gap-2"><Dot color={H.bidiBackward} /> Phía ngược (từ Đến)</span>
-            </>
-          ) : (
-            <>
-              <span className="flex items-center gap-2"><Dot color={H.frontier} /> Frontier</span>
-              <span className="flex items-center gap-2"><Dot color={H.expanded} /> Đã expand</span>
-            </>
+          {hasStepLegend && (
+            isBidi ? (
+              <>
+                <span className="flex items-center gap-2"><Dot color={H.bidiForward} /> Phía xuôi (từ Đi)</span>
+                <span className="flex items-center gap-2"><Dot color={H.bidiBackward} /> Phía ngược (từ Đến)</span>
+              </>
+            ) : (
+              <>
+                <span className="flex items-center gap-2"><Dot color={H.frontier} /> Frontier</span>
+                <span className="flex items-center gap-2"><Dot color={H.expanded} /> Đã expand</span>
+              </>
+            )
           )}
-          <span className="flex items-center gap-2"><Dot color={H.current} ring /> Đang expand</span>
-          {!comparing && (
+          {hasStepLegend && (
+            <span className="flex items-center gap-2"><Dot color={H.current} ring /> Đang expand</span>
+          )}
+          {trace.found && !comparing && (
             <span className="flex items-center gap-2"><Line color={H.path} /> Tuyến kết quả</span>
           )}
-          <span className="flex items-center gap-2"><span className="w-4 text-center text-[10px] leading-none">▶</span> Hướng di chuyển</span>
+          {trace.found && !comparing && (
+            <span className="flex items-center gap-2"><span className="w-4 text-center text-[10px] leading-none">▶</span> Hướng di chuyển</span>
+          )}
         </>
       )}
       {multi?.found && (

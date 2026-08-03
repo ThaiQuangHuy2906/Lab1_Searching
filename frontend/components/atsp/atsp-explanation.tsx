@@ -4,6 +4,7 @@ import { BadgeCheck, BookOpenText, Clock, Route as RouteIcon } from "lucide-reac
 import { Badge } from "../ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { fmtKm, fmtMinutes, fmtPct, fmtSeconds } from "@/lib/format";
+import { describeAtspSavings } from "@/lib/atsp-savings";
 import type { MultirouteResponse } from "@/lib/types";
 import {
   ATSP_METHOD_EXPLANATION,
@@ -56,7 +57,7 @@ export function AtspExplanation({ multi }: { multi: MultirouteResponse }) {
 
   const before = multi.original_order_totals;
   const after = multi.totals;
-  const savings = multi.savings_pct;
+  const savings = describeAtspSavings(multi.savings_pct);
 
   return (
     <div className="flex flex-col gap-3">
@@ -99,12 +100,16 @@ export function AtspExplanation({ multi }: { multi: MultirouteResponse }) {
           </p>
         </CardHeader>
         <CardContent className="flex flex-col gap-1.5">
-          <div className="rounded-lg border border-start/35 bg-start/5 px-2.5 py-2">
-            <p className="text-[11px] text-ink-dim">Tiết kiệm theo tổng chi phí</p>
-            <p className={`mt-0.5 font-mono text-lg font-bold ${savings === null || Math.abs(savings) < 0.05
-              ? "text-ink"
-              : savings > 0 ? "text-start" : "text-goal"}`}>
-              {savings === null ? "—" : fmtPct(savings)}
+          <div className={`rounded-lg border px-2.5 py-2 ${savings.kind === "positive"
+            ? "border-start/35 bg-start/5"
+            : savings.kind === "negative"
+              ? "border-goal/35 bg-goal/10"
+              : "border-surface-border bg-surface-control"}`}>
+            <p className="text-[11px] text-ink-dim">{savings.label}</p>
+            <p className={`mt-0.5 font-mono text-lg font-bold ${savings.kind === "positive"
+              ? "text-start"
+              : savings.kind === "negative" ? "text-goal" : "text-ink"}`}>
+              {savings.absolutePct === null ? "—" : fmtPct(savings.absolutePct)}
             </p>
           </div>
           <ChangeRow icon={Clock} label="Thời gian đi" before={before.total_time_s}

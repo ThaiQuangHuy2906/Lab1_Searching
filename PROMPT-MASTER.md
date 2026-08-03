@@ -2,7 +2,8 @@
 
 > **Trạng thái 2026-07-27:** đây là đặc tả thi công gốc và lịch sử chia phase,
 > không còn là run-book cho worktree hiện tại. Quy tắc vận hành mới xem
-> `AGENTS.md`/`CLAUDE.md`; bằng chứng hiện hành xem `docs/CODEX-BASELINE.md`.
+> `AGENTS.md`; trạng thái hiện hành xem `README.md`, `data/DATA.md` và kiểm tra
+> trực tiếp code/data. `docs/CODEX-BASELINE.md` chỉ giữ bằng chứng lịch sử.
 > Các mốc dừng/commit theo phase bên dưới chỉ mô tả quy trình đã dùng khi xây
 > dự án, không tự động áp dụng cho yêu cầu mới.
 >
@@ -95,9 +96,9 @@ Bạn là kỹ sư trưởng chịu trách nhiệm xây dựng **toàn bộ** đ
     "name": "G_demo",                       // hoặc "G_real"
     "bbox": [106.680, 10.760, 106.720, 10.800],
     "directed": true,
-    "created": "2026-07-27",
+    "created": "2026-08-03",
     "crs": "EPSG:4326",
-    "node_count": 51, "edge_count": 292
+    "node_count": 51, "edge_count": 298
   },
   "nodes": [
     { "id": "n0001", "name": "Chợ Bến Thành", // G_real: name có thể null
@@ -220,7 +221,7 @@ mode=time|balanced → h(n) = haversine(n, goal) / v_max   # giây, v_max = max 
 - **`02_build_graph.py`**: chuyển sang schema 3.1. Free-flow speed theo `highway` type do nhóm đặt (KHÔNG dùng maxspeed pháp lý): ví dụ khởi điểm `trunk/primary 45, secondary 40, tertiary 35, residential 30, alley/service 25` km/h — ghi bảng này vào `DATA.md`. `traffic_light`: suy từ node OSM có tag `highway=traffic_signals` (cạnh kết thúc tại node đèn → flag 1). `narrow_alley`: suy từ highway ∈ {residential hẹp, alley, service} theo luật ghi trong DATA.md. `flood`/`construction`: đọc từ file thủ công `data/manual_risks.json` (tạo sẵn 6–10 điểm ngập/lô cốt tiêu biểu khu trung tâm, mỗi mục có trường `source_url` placeholder để nhóm dán link cổng giao thông TP.HCM / báo chí).
 - **`03a_crawl_tomtom.py`** (tuỳ chọn): đọc `TOMTOM_API_KEY` từ `.env`; gọi Flow Segment Data cho ~30–50 điểm mẫu rải trên trục chính; lưu raw JSON kèm timestamp vào `data/raw/tomtom/`. Ghi rõ trong docstring: chạy 4 lần đúng 4 khung giờ 07:30 / 12:00 / 17:30 / 22:00.
 - **`03b_build_profiles.py`**: sinh `traffic_profiles_real.json` hoặc `traffic_profiles_demo.json` dạng `{"07:30": {"e00001": 4, …}, …}`. Ưu tiên nội suy từ dữ liệu TomTom (`currentSpeed/freeFlowSpeed` → thang 1–5, gán cho các cạnh gần điểm đo trên cùng trục); cạnh không có dữ liệu → **luật synthetic** (documented trong DATA.md): giờ cao điểm 07:30/17:30 đường trunk/primary mức 4–5, secondary 3–4, residential 2–3; 12:00 giảm 1 mức; 22:00 hầu hết mức 1–2; thêm nhiễu ngẫu nhiên seed 42.
-- **`04_build_gdemo.py`**: G_demo **bán tự động để vừa thật vừa không sai**: (1) danh sách ~45–55 POI địa danh thật trong bbox (Chợ Bến Thành, Nhà thờ Đức Bà, Dinh Độc Lập, Bưu điện TP, Bitexco, Công viên Tao Đàn, chợ Tân Định, ĐH Khoa học Tự nhiên Nguyễn Văn Cừ, BV Nhi Đồng 2, phố Bùi Viện, Hồ Con Rùa, Thảo Cầm Viên… — bạn đề xuất đủ danh sách với toạ độ, tôi sẽ review); (2) snap mỗi POI vào node G_real gần nhất; (3) cạnh G_demo = co (contract) đường đi ngắn nhất giữa các POI kề nhau trên G_real, **kế thừa length/oneway/highway thật**; (4) đắp risk flags từ manual_risks. Mục tiêu thi công ban đầu là 40–60 node, ~120 cạnh; snapshot hiện hành sau repair có **51 node / 292 cạnh** để giữ các bất biến contraction. Xuất thêm `data/gdemo_preview.png` (matplotlib) để nhóm soát bằng mắt.
+- **`04_build_gdemo.py`**: G_demo **bán tự động để vừa thật vừa không sai**: (1) danh sách ~45–55 POI địa danh thật trong bbox (Chợ Bến Thành, Nhà thờ Đức Bà, Dinh Độc Lập, Bưu điện TP, Bitexco, Công viên Tao Đàn, chợ Tân Định, ĐH Khoa học Tự nhiên Nguyễn Văn Cừ, BV Nhi Đồng 2, phố Bùi Viện, Hồ Con Rùa, Thảo Cầm Viên… — bạn đề xuất đủ danh sách với toạ độ, tôi sẽ review); (2) snap mỗi POI vào node G_real gần nhất; (3) cạnh G_demo = co (contract) đường đi ngắn nhất giữa các POI kề nhau trên G_real, **kế thừa length/oneway/highway thật**; (4) đắp risk flags từ manual_risks. Mục tiêu thi công ban đầu là 40–60 node, ~120 cạnh; snapshot hiện hành sau repair 2026-08-03 có **51 node / 298 cạnh / 60 one-way** để giữ các bất biến contraction. Xuất thêm `data/gdemo_preview.png` (matplotlib) để nhóm soát bằng mắt.
 - **Validator** `scripts/validate_data.py`: kiểm schema, liên thông mạnh, không cạnh trùng, mọi edge có profile đủ 4 khung giờ.
 
 ### 6.2 `search.py` — 6 thuật toán lõi (Phase 2)

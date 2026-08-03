@@ -260,7 +260,7 @@ Request:
   "include_trace": null,          // null → theo mặc định (demo:true, real:false)
   "params": {                     // tuỳ chọn theo thuật toán, bỏ qua nếu không liên quan
     "beam_width": 5,              // beam; mặc định 5 (demo) / 50 (real)
-    "epsilon": 5.0                // idastar; mặc định 5.0 theo ĐƠN VỊ của mode (giây với time/balanced, mét với distance) — đổi phải hỏi (PROMPT-MASTER luật 4)
+    "epsilon": 5.0                // idastar; số hữu hạn > 0, mặc định 5.0 theo ĐƠN VỊ của mode (giây với time/balanced, mét với distance) — đổi phải hỏi (PROMPT-MASTER luật 4)
   }
 }
 ```
@@ -316,11 +316,17 @@ Response `200`:
     { "experiment_id": 3,
       "csv_path": "results/exp3_benchmark.csv",
       "fig_paths": ["results/figs/exp3_expanded_bar.png", "results/figs/exp3_runtime_bar.png", "results/figs/exp3_gap.png"],
-      "rows": [ { /* CSV-as-JSON: mỗi row một object, key = tên cột */ } ] }
+      "rows": [ { /* CSV/JSON artifact thành JSON: mỗi row một object */ } ] }
   ]
 }
 ```
-Chưa có kết quả trong `results/` → 404 `RESULTS_NOT_FOUND` (message hướng dẫn chạy benchmark trước). *(Shape `rows` theo từng thí nghiệm chốt ở Phase 6 — nếu cần thêm trường sẽ cập nhật SCHEMA.md và báo.)*
+Với `experiment_id` cụ thể, artifact thiếu → 404 `RESULTS_NOT_FOUND`. Với request `{}`,
+server trả các artifact đang có và bỏ qua experiment còn thiếu; chỉ trả 404 khi không
+có artifact nào. Artifact `.csv` được parse theo header; artifact `.json` (hiện là
+experiment 6) phải là một list các object. JSON sai shape là lỗi server 500
+`INTERNAL`, không được trả success với `rows=[]`. *(Shape field bên trong từng row
+theo artifact của thí nghiệm; nếu cần thêm contract chặt hơn sẽ cập nhật SCHEMA.md
+và báo.)*
 
 ### C.7 Error model thống nhất
 

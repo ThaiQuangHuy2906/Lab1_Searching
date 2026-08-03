@@ -85,6 +85,18 @@ def tiny_store(edge_specs: list[tuple[str, str, float]], node_count: int = 4) ->
 # ---------------------------------------------------- bidirectional
 
 
+def test_bidijkstra_initial_frontier_counts_both_endpoints():
+    store = tiny_store([("n0001", "n0002", 10.0)], node_count=2)
+
+    result = bidijkstra(
+        store, "n0001", "n0002", include_trace=False,
+    )
+
+    assert result.found
+    assert result.path == ["n0001", "n0002"]
+    assert result.metrics.max_frontier == 2
+
+
 def test_bidijkstra_matches_dijkstra_demo(demo: GraphStore):
     for i, (src, dst) in enumerate(sample_pairs(demo, 150, seed=42)):
         mode, slot = COMBOS[i % len(COMBOS)]

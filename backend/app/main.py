@@ -9,6 +9,7 @@ Every error uses the unified envelope {error: {code, message_vi}}
 from __future__ import annotations
 
 import csv
+import json
 import logging
 import platform
 import sys
@@ -25,9 +26,9 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from .explain import build_explanation
 from .graph_store import GraphStore
 from .models import (
-    BenchmarkRequest, BenchmarkResponse, ExperimentResult, GraphLevel,
-    HealthResponse, MultirouteRequest, MultirouteResponse, RouteRequest,
-    TimeSlot, Trace, TrafficResponse,
+    BenchmarkRequest, BenchmarkResponse, ErrorResponse, ExperimentResult,
+    GraphFile, GraphLevel, HealthResponse, MultirouteRequest, MultirouteResponse,
+    RouteRequest, TimeSlot, Trace, TrafficResponse,
 )
 from .search import ALGORITHMS
 from .search_advanced import ADVANCED_ALGORITHMS
@@ -38,6 +39,15 @@ RESULTS_DIR = Path(__file__).resolve().parents[2] / "results"
 logger = logging.getLogger(__name__)
 
 ALL_ALGORITHMS = {**ALGORITHMS, **ADVANCED_ALGORITHMS}
+
+COMMON_ERROR_RESPONSES = {
+    422: {"model": ErrorResponse},
+    500: {"model": ErrorResponse},
+}
+NOT_FOUND_ERROR_RESPONSES = {
+    404: {"model": ErrorResponse},
+    **COMMON_ERROR_RESPONSES,
+}
 
 #: experiment id -> (csv file, figure files) — names fixed by PROMPT-MASTER 6.6
 EXPERIMENT_FILES: dict[int, tuple[str, list[str]]] = {
@@ -144,19 +154,28 @@ def health() -> HealthResponse:
         "python": platform.python_version(), "app": APP_VERSION})
 
 
-@app.get("/api/graph")
+@app.get(
+    "/api/graph", response_model=GraphFile,
+    responses=COMMON_ERROR_RESPONSES,
+)
 def get_graph(level: GraphLevel = "demo") -> dict:
     return graph_payload(level)
 
 
-@app.get("/api/traffic", response_model=TrafficResponse)
+@app.get(
+    "/api/traffic", response_model=TrafficResponse,
+    responses=COMMON_ERROR_RESPONSES,
+)
 def get_traffic(slot: TimeSlot, level: GraphLevel = "demo") -> TrafficResponse:
     store = GraphStore.load(level)
     return TrafficResponse(slot=slot, graph=level,
                            congestion=store.profiles.profiles[slot])
 
 
-@app.post("/api/route", response_model=Trace, response_model_exclude_none=False)
+@app.post(
+    "/api/route", response_model=Trace, response_model_exclude_none=False,
+    responses=NOT_FOUND_ERROR_RESPONSES,
+)
 def post_route(req: RouteRequest) -> Trace:
     store = GraphStore.load(req.graph)
     include_trace = req.include_trace
@@ -170,7 +189,10 @@ def post_route(req: RouteRequest) -> Trace:
     return trace
 
 
-@app.post("/api/multiroute", response_model=MultirouteResponse)
+@app.post(
+    "/api/multiroute", response_model=MultirouteResponse,
+    responses=NOT_FOUND_ERROR_RESPONSES,
+)
 def post_multiroute(req: MultirouteRequest) -> MultirouteResponse:
     store = GraphStore.load(req.graph)
     return solve_multiroute(store, req.start, req.stops, req.method,
@@ -178,7 +200,10 @@ def post_multiroute(req: MultirouteRequest) -> MultirouteResponse:
                             return_to_start=req.return_to_start)
 
 
-@app.post("/api/benchmark", response_model=BenchmarkResponse)
+@app.post(
+    "/api/benchmark", response_model=BenchmarkResponse,
+    responses=NOT_FOUND_ERROR_RESPONSES,
+)
 def post_benchmark(req: BenchmarkRequest) -> BenchmarkResponse:
     """Serve cached experiment results from results/ (built in Phase 6)."""
     wanted = [req.experiment_id] if req.experiment_id else sorted(EXPERIMENT_FILES)
@@ -194,6 +219,20 @@ def post_benchmark(req: BenchmarkRequest) -> BenchmarkResponse:
         if csv_path.suffix == ".csv":
             with csv_path.open(encoding="utf-8", newline="") as fh:
                 rows = list(csv.DictReader(fh))
+        elif csv_path.suffix == ".json":
+            try:
+                payload = json.loads(csv_path.read_text(encoding="utf-8"))
+            except (OSError, json.JSONDecodeError) as exc:
+                raise RuntimeError(
+                    f"Invalid benchmark JSON artifact: {csv_path.name}"
+                ) from exc
+            if not isinstance(payload, list) or not all(
+                isinstance(row, dict) for row in payload
+            ):
+                raise RuntimeError(
+                    f"Benchmark JSON artifact must be a list of objects: {csv_path.name}"
+                )
+            rows = payload
         out.append(ExperimentResult(
             experiment_id=exp_id, csv_path=f"results/{csv_name}",
             fig_paths=[f"results/{f}" for f in figs

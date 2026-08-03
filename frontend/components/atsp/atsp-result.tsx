@@ -5,6 +5,7 @@ import { Badge } from "../ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Skeleton } from "../ui/skeleton";
 import { fmtKm, fmtMinutes, fmtPct, fmtVi } from "@/lib/format";
+import { describeAtspSavings } from "@/lib/atsp-savings";
 import type { GraphFile, LegMetrics, MultirouteResponse } from "@/lib/types";
 import { ATSP_METHOD_LABEL, ATSP_MODE_LABEL, atspCostUnit } from "./atsp-copy";
 
@@ -106,6 +107,15 @@ export function AtspResult({ multi, graphData }: {
   const nameOf = (id: string) =>
     graphData?.nodes.find((node) => node.id === id)?.name ?? id;
   const costUnit = atspCostUnit(multi.mode);
+  const savings = describeAtspSavings(multi.savings_pct);
+  const savingsTone = savings.kind === "positive"
+    ? "border-start/35 bg-start/5"
+    : savings.kind === "negative"
+      ? "border-goal/35 bg-goal/10"
+      : "border-surface-border bg-surface-control";
+  const savingsText = savings.kind === "positive"
+    ? "text-start"
+    : savings.kind === "negative" ? "text-goal" : "text-ink";
 
   return (
     <div className="flex flex-col gap-3">
@@ -122,10 +132,10 @@ export function AtspResult({ multi, graphData }: {
         <Badge>{ATSP_METHOD_LABEL[multi.method]}</Badge>
       </div>
 
-      <div className="rounded-lg border border-start/35 bg-start/5 p-3">
-        <p className="text-xs font-medium text-ink-dim">Tỷ lệ tiết kiệm</p>
-        <p className="mt-1 font-mono text-xl font-bold leading-none text-start">
-          {multi.savings_pct === null ? "—" : fmtPct(multi.savings_pct)}
+      <div className={`rounded-lg border p-3 ${savingsTone}`}>
+        <p className="text-xs font-medium text-ink-dim">{savings.label}</p>
+        <p className={`mt-1 font-mono text-xl font-bold leading-none ${savingsText}`}>
+          {savings.absolutePct === null ? "—" : fmtPct(savings.absolutePct)}
         </p>
         <p className="mt-1.5 text-[11px] leading-4 text-ink-dim">
           So với thứ tự nhập, theo tổng chi phí của tiêu chí {ATSP_MODE_LABEL[multi.mode].toLowerCase()}.

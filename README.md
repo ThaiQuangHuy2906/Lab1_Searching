@@ -22,31 +22,34 @@ gọi mạng.
   chỉ báo phần tuyến trùng/khác; đối chiếu ATSP trước/sau tối ưu.
 - Benchmark viewer chỉ đọc với cảnh báo nguồn dữ liệu rõ ràng.
 
-> **Trạng thái ngày 2026-08-03 — sẵn sàng demo có cảnh báo, chưa được nộp:**
-> [FINAL-01](docs/KIEMTOAN.md#cập-nhật-hậu-kiểm-final-01--2026-08-03) xác nhận
-> 95 test backend, validator dữ liệu, độ tương phản dark/light và TypeScript đều
-> đạt; API sau khi khởi động sạch khớp graph trên đĩa. Profile vẫn là
-> `synthetic`; raw TomTom mới có 07:30 và 12:00, còn thiếu 17:30 và 22:00.
+> **Trạng thái ngày 2026-08-04 — sẵn sàng triển khai có điều kiện, chưa được nộp:**
+> Lượt data refresh cuối đã tích hợp đủ raw TomTom 07:30, 12:00, 17:30 và 22:00
+> dưới dạng bốn snapshot đại diện lấy trên hai ngày thứ Hai; profile hiện là
+> `tomtom+synthetic`. `validate_data.py`, 111 test backend, 8 test frontend và
+> TypeScript check đều đạt trên
+> `G_demo` đã rebuild 51 node / 298 cạnh.
 > `results/` vẫn là số tạm từ lượt 2026-07-26 và không được dùng làm kết quả
-> chính thức. Không chạy 03b, rebuild, benchmark hoặc generator từ bộ TomTom 2/4.
+> chính thức. Không rerun data; benchmark/hiệu chuẩn γ/generator vẫn chờ một
+> lượt cuối được cho phép riêng sau khi code ổn định.
 
 ## Trạng thái kiểm chứng
 
 | Hạng mục | Trạng thái hiện tại | Bằng chứng |
 |---|---|---|
-| Backend | **Đạt** | [`95 passed, 1 warning`](docs/KIEMTOAN.md#bằng-chứng-đã-chạy-thật-trong-final-01) ngày 2026-08-03 |
-| Data contract | **Đạt, có cảnh báo nguồn** | `ALL DATA VALID`; profile vẫn `synthetic` dù raw TomTom đã có 2 snapshot |
+| Backend | **Đạt** | `111 passed, 1 warning` trên current worktree ngày 2026-08-04 |
+| Data contract | **Đạt** | `ALL DATA VALID`; profile `tomtom+synthetic`, raw TomTom đủ 4/4 slot |
+| Frontend automated | **Đạt** | `npm test`: 8/8 pass |
 | TypeScript | **Đạt** | `npx tsc --noEmit` exit 0 |
-| G_demo | **Hiện hành** | 51 node, 292 cạnh có hướng, 56 cạnh một chiều |
+| G_demo | **Hiện hành** | 51 node, 298 cạnh có hướng, 60 cạnh một chiều |
 | G_real | **Hiện hành** | 2.118 node, 4.699 cạnh có hướng, 1.433 cạnh một chiều |
 | Benchmark | **Chưa hiện hành** | `results/` cũ hơn graph; xem [`results/README.md`](results/README.md) |
-| UI/runtime | **Đạt có cảnh báo** | [71/71 UI chính](docs/KIEMTOAN.md#bằng-chứng-đã-chạy-thật-trong-final-01) + [53/53 ATSP/compare mới](docs/KIEMTOAN.md#cập-nhật-ui-compare--atsp-tabs--2026-08-03); benchmark đủ loading/empty/error/retry/partial; route-flow 11/12 do SwiftShader |
-| Backend sau clean restart | **Khớp dữ liệu** | G_demo 51/292 và G_real 2.118/4.699 khớp snapshot trên đĩa |
-| Trước khi nộp | **Còn việc tay** | 8 URL nguồn risk + metadata risk cũ, 40 marker cần điền trên 30 dòng nội dung (không tính dòng chú giải), screenshot, report PDF, slide, video/link và ZIP |
+| UI/runtime | **Chưa xác minh lại các fix mới** | FINAL-01 và lượt ATSP/compare lịch sử đã có browser evidence trong `docs/KIEMTOAN.md`; các fix 2026-08-04 về slot/traffic, route–multiroute, legend và savings mới chỉ có automated test/static evidence, browser QA hiện là `UNVERIFIED` |
+| Backend sau clean restart | **Cần pre-flight lại** | Snapshot trên đĩa là G_demo 51/298 và G_real 2.118/4.699; phải restart service rồi đối chiếu API trước demo |
+| Trước khi nộp | **Còn việc tay** | 8 URL nguồn risk thật, 40 marker cần điền trên 30 dòng nội dung (không tính dòng chú giải), screenshot, report PDF, slide, video/link và ZIP |
 
 Backend dùng cache theo vòng đời process. Trước khi demo hoặc chụp hình, phải
 restart cả hai service, hard-refresh trình duyệt và xác nhận
-`/api/graph?level=demo` trả `51` node / `292` cạnh.
+`/api/graph?level=demo` trả `51` node / `298` cạnh.
 
 ## Sản phẩm và rubric
 
@@ -211,7 +214,8 @@ npx tsc --noEmit
 Mốc FINAL-01 đã chạy ngày 2026-08-03 trên baseline commit `f22698c`:
 
 - pytest: `95 passed, 1 warning in 15.68s`;
-- validator: `ALL DATA VALID`, kèm hai cảnh báo profile synthetic/raw TomTom 2/4;
+- validator: `ALL DATA VALID` với cảnh báo nguồn của snapshot tại thời điểm
+  FINAL-01; checkpoint lịch sử này đã được data refresh 4/4 ngày 2026-08-03 thay thế;
 - contrast checker: toàn bộ token dark/light đạt;
 - TypeScript: exit code 0;
 - browser QA: 71/71 kiểm tra UI chính; 20 ảnh UI-03, 10 ảnh UI-04 và 10 ảnh
@@ -225,19 +229,18 @@ vì vậy đây vẫn là cảnh báo chứ không phải bằng chứng hiệu 
 
 ## Dữ liệu và benchmark
 
-Snapshot graph/profile đã commit đủ để chạy demo offline. Bản đồ nền Carto vẫn
+Snapshot graph/profile hiện hành đủ để chạy demo offline. Bản đồ nền Carto vẫn
 cần mạng; UI có chế độ offline không basemap.
 
-Lượt cuối phải theo đúng [`hdcrawl.md`](hdcrawl.md):
+Lượt data cuối đã hoàn tất đúng chuỗi profile → G_demo → validator. Các bước còn lại:
 
-1. thu nốt TomTom 17:30 và 22:00;
-2. chốt dùng TomTom hay synthetic minh bạch;
-3. chạy trọn chuỗi profile → G_demo → validator đúng một lượt;
-4. tắt service, chạy benchmark riêng một lượt;
-5. hiệu chuẩn γ, sinh lại tài liệu và đồng bộ đủ 5 banner/số liệu.
+1. giữ nguyên snapshot `tomtom+synthetic` đã validate, không rebuild lại;
+2. hoàn tất thay đổi code và full verification;
+3. tắt service, chạy benchmark riêng đúng một lượt khi được cho phép;
+4. hiệu chuẩn γ, sinh lại tài liệu rồi đồng bộ đủ 5 banner/số liệu.
 
-Các lệnh trên ghi đè artifact đã commit. Không chạy từng phần và không trộn
-graph/profile/result từ các lượt khác nhau.
+Các lệnh trên ghi đè artifact dữ liệu được Git theo dõi. Không chạy từng phần
+và không trộn graph/profile/result từ các lượt khác nhau.
 
 ## Cấu trúc thư mục
 
@@ -281,10 +284,11 @@ scripts/           pipeline data, validator, generator và QA
 - `[GroupID - Video].txt` — link video mở được ở tab ẩn danh;
 - `[GroupID - Data].zip` hoặc `[GroupID - Data].txt`.
 
-Trước khi đóng gói còn phải thay 8 `source_url` placeholder, sửa
-`manual_risks.json` metadata sang luật cạnh đi vào vùng, điền danh tính và đóng
-góp, xử lý toàn bộ marker, chụp screenshot/Google Maps, tạo report/slide/video
-thật, gỡ 5 banner `SỐ TẠM` sau lượt dữ liệu cuối và kiểm tra link ẩn danh.
+Trước khi đóng gói còn phải thay 8 `source_url` placeholder bằng nguồn thật,
+điền danh tính và đóng góp, xử lý toàn bộ marker, chụp screenshot/Google Maps,
+tạo report/slide/video
+thật, chạy benchmark/generator cuối được duyệt, rồi mới gỡ 5 banner `SỐ TẠM` và
+kiểm tra link ẩn danh.
 
 ## Troubleshooting
 

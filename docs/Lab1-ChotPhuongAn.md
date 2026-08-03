@@ -24,16 +24,16 @@ gồm ngập, lô cốt, hẻm nhỏ và đèn tín hiệu.
 | Hướng dữ liệu | ✅ Hybrid: OSM + TomTom tùy chọn + luật synthetic + risk thủ công |
 | OSM | ✅ OSMnx 2.1.1, API v2, query bbox; không query theo tên quận/phường |
 | Congestion | ✅ 4 mốc 07:30, 12:00, 17:30, 22:00; mức 1–5 |
-| TomTom | ⬜ Raw đã có 07:30 và 12:00; còn 17:30 và 22:00 |
-| Profile hiện hành | ✅ `traffic_profiles_demo.json` và `traffic_profiles_real.json`, cả hai vẫn `source="synthetic"` |
+| TomTom | ✅ Raw đủ 4/4 slot đại diện; 07:30/12:00 thu 2026-07-27 và 17:30/22:00 thu 2026-08-03 (hai ngày thứ Hai, không phải chuỗi đo cùng ngày) |
+| Profile hiện hành | ✅ `traffic_profiles_demo.json` và `traffic_profiles_real.json`, cả hai là `source="tomtom+synthetic"` |
 | Risk | ⬜ 8 mục trong `manual_risks.json`; 8 `source_url` còn TODO |
 | Free-flow | ✅ Nhóm đặt theo `highway`, không tuyên bố là tốc độ giới hạn pháp lý |
 
 ### Hai tầng graph hiện hành
 
-| Tầng | Snapshot 2026-07-27 | Mục đích |
+| Tầng | Snapshot hiện hành | Mục đích |
 |---|---:|---|
-| `G_demo` | 51 node / 292 cạnh có hướng / 56 one-way | animation, chạy tay, video và giảng thuật toán |
+| `G_demo` | 51 node / 298 cạnh có hướng / 60 one-way (refresh 2026-08-03) | animation, chạy tay, video và giảng thuật toán |
 | `G_real` | 2.118 node / 4.699 cạnh có hướng / 1.433 one-way | scale, benchmark và đối chứng |
 
 G_demo vượt yêu cầu tối thiểu 20 node / 30 cạnh. Cạnh co kế thừa hành lang thật
@@ -172,9 +172,13 @@ vi QA trước bảo vệ, dù không mở rộng thành một thiết kế mobi
 
 ## 11. Việc còn lại theo thứ tự
 
-1. ⬜ Thu nốt TomTom 17:30 và 22:00; chưa chạy 03b/benchmark.
-2. ⬜ Chốt nguồn dữ liệu cuối, rồi chạy trọn pipeline trong `hdcrawl.md`.
-3. ⬜ Thay 8 `source_url` TODO và sửa metadata risk theo luật cạnh đi vào vùng.
+1. ✅ Raw TomTom đủ bốn slot đại diện; nhóm chấp nhận bộ đo trên hai ngày thứ
+   Hai và phải công bố giới hạn này trong deliverable.
+2. ✅ Chốt profile `tomtom+synthetic`; chuỗi data `03b real → 04 → 03b demo →
+   validate_data` đã hoàn tất. Benchmark/hiệu chuẩn γ/generator vẫn chờ lượt
+   cuối riêng.
+3. ⬜ Thay 8 `source_url` TODO bằng nguồn thật; metadata risk đã được sửa theo
+   luật cạnh đi vào vùng.
 4. ⬜ Đồng bộ 5 banner/số liệu sau benchmark + generator cuối.
 5. ⬜ Điền danh tính/nội dung, chụp ảnh, tạo report/slide/video/data description.
 6. ⬜ Restart service, QA browser/máy chiếu, kiểm link ẩn danh và đóng ZIP.

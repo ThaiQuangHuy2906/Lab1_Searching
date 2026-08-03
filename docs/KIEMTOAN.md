@@ -1,11 +1,13 @@
 # KIEMTOAN.md — Báo cáo Hội đồng phản biện độc lập
 
-> **Lưu ý hiện hành (2026-08-03):** phần từ “TRẠNG THÁI FIX BATCH” trở xuống là
+> **Lưu ý hiện hành (2026-08-04):** phần từ “TRẠNG THÁI FIX BATCH” trở xuống là
 > sổ kiểm toán/fix lịch sử tại các commit
 > ghi trong tài liệu. Không dùng các số test, line number hay kết luận cũ làm bằng
-> chứng cho worktree hiện tại. Kết luận current-state nằm trong mục cập nhật UI
-> mới nhất, FINAL-01 dưới đây và phần cập nhật cuối của
-> `docs/CODEX-CODEBASE-MAP.md`.
+> chứng cho worktree hiện tại. FINAL-01 và các mục cập nhật UI dưới đây cũng là
+> evidence lịch sử. Current-state nằm trong `README.md`, phần current-state của
+> `docs/CODEX-CODEBASE-MAP.md` và
+> `docs/KE-HOACH-TRIEN-KHAI-NHIEM-VU-HOP-NHOM.md`; kết luận cuối vẫn phải dựa trên
+> code/data hiện hành và lệnh kiểm chứng fresh.
 >
 > **Ngày kiểm:** 2026-07-27 · **Commit kiểm:** `9598141` (git sạch, đồng bộ origin/main)
 > **Phương pháp:** Lượt 0 (mốc chân lý) chạy trước; 6 lượt kiểm toán độc lập chạy **song song**

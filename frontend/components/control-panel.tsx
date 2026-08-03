@@ -16,6 +16,10 @@ import {
 import { Skeleton } from "./ui/skeleton";
 import { toast } from "sonner";
 import { ALGORITHM_GROUPS } from "@/lib/algorithm-policy";
+import {
+  isEndpointOptionAllowed,
+  MULTI_ROUTE_ACTIVE_MESSAGE,
+} from "@/lib/interaction-policy";
 import { ALGO_LABEL, useApp } from "@/lib/store";
 import type { Algorithm, Mode, TimeSlot } from "@/lib/types";
 import { AtspSetup } from "./atsp/atsp-setup";
@@ -135,8 +139,11 @@ function NodePicker({ kind }: { kind: "start" | "goal" }) {
         <div className="relative min-w-0 flex-1">
           {roleDot}
           <Select
-            value={value ?? ""} disabled={busy}
-            onValueChange={(v) => set(kind === "start" ? { start: v } : { goal: v })}
+            value={value ?? ""} disabled={busy || (kind === "goal" && stops.length > 0)}
+            onValueChange={(v) => {
+              if (isEndpointOptionAllowed(kind, v, other, stops))
+                set(kind === "start" ? { start: v } : { goal: v });
+            }}
           >
             <SelectTrigger aria-label={kind === "start" ? "Điểm đi" : "Điểm đến"}
               className={"pl-8 " + (value ? "font-medium" : "")} style={roleBorder}>
@@ -144,8 +151,7 @@ function NodePicker({ kind }: { kind: "start" | "goal" }) {
             </SelectTrigger>
             <SelectContent>
               {graphData?.nodes
-                .filter((n) =>
-                  n.id !== other && (kind !== "start" || !stops.includes(n.id)))
+                .filter((n) => isEndpointOptionAllowed(kind, n.id, other, stops))
                 .map((n) => (
                   <SelectItem key={n.id} value={n.id}>{n.name ?? n.id}</SelectItem>
                 ))}
@@ -162,7 +168,7 @@ function NodePicker({ kind }: { kind: "start" | "goal" }) {
       <div className="relative min-w-0 flex-1">
         {roleDot}
         <Button
-          variant="secondary" disabled={busy}
+          variant="secondary" disabled={busy || (kind === "goal" && stops.length > 0)}
           className={"w-full pl-8 " + (active ? "border-algo-frontier text-algo-frontier" : "")}
           style={active ? undefined : roleBorder}
           onClick={() => set({ pickTarget: active ? null : kind })}
@@ -356,13 +362,10 @@ export function ControlPanel() {
             nhảy lên xuống (review v11) */}
         {!s.graphLoading && (
           <p className="min-h-4 text-center text-[11px] leading-4 text-ink-dim">
-            {!s.start || !s.goal
-              ? s.stops.length > 0
-                // tour mode: Đến không cần — đừng đòi (v11, stops tự bỏ Đến)
-                ? (!s.start
-                    ? "Chọn điểm Đi rồi dùng nút Tối ưu thứ tự."
-                    : "Chế độ nhiều điểm — dùng nút Tối ưu thứ tự (không cần điểm Đến).")
-                : !s.start && !s.goal ? "Chọn điểm Đi và Đến ở mục Hành trình trước."
+            {s.stops.length > 0
+              ? MULTI_ROUTE_ACTIVE_MESSAGE
+              : !s.start || !s.goal
+              ? !s.start && !s.goal ? "Chọn điểm Đi và Đến ở mục Hành trình trước."
                 : !s.start ? "Còn thiếu điểm Đi." : "Còn thiếu điểm Đến."
               : ""}
           </p>

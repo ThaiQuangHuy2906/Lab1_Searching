@@ -170,20 +170,26 @@ npm run dev
 
 ## Pre-submission warnings
 
-- `results/` predates the current 2026-07-27 graphs and is explicitly marked
-  `SỐ TẠM`.
+- `results/` predates the current 2026-08-03 graph/profile refresh and is
+  explicitly marked `SỐ TẠM`.
 - Keep every `SỐ TẠM` banner until one coherent final data/validation/benchmark
   refresh has completed and all five banner locations have been synchronized.
-- Current profiles are `synthetic`; raw TomTom snapshots exist for 07:30 and
-  12:00 only. The remaining slots are 17:30 and 22:00.
-- The user will collect all four TomTom time slots before the final data
-  decision. Do not run `03b`, rebuild graphs/profiles, or benchmark from the
-  current partial snapshot set.
+- Current profiles are `tomtom+synthetic`; raw TomTom snapshots exist for all
+  four slots 07:30, 12:00, 17:30, and 22:00. TomTom supplies sampled main-road
+  congestion while uncovered edges still use the deterministic synthetic
+  fallback. The snapshots were collected on two Mondays seven days apart and
+  are representative time slots, not a same-day time series. The raw JSON files
+  are Git-ignored and must be included in the final Data ZIP.
+- The final data chain `03b real -> 04 -> 03b demo -> validate_data` completed on
+  2026-08-03. Do not rerun profiles/graphs or start the benchmark/gamma
+  calibration/generator chain unless the user explicitly authorizes that next
+  write-producing stage.
 - Eight manual risk `source_url` values are still TODO placeholders.
 - Report, slide, video, screenshots, group identity, and submission ZIP remain
   manual deliverables.
 - Before every demo or capture, stop old services, restart backend/frontend,
   hard-refresh the browser, and verify `/api/graph?level=demo` reports the
-  current on-disk graph (currently 51 nodes and 292 edges).
+  current on-disk graph (currently 51 nodes, 298 directed edges, including 60
+  one-way edges).
 - Never run `npm run build` while a Next dev server is active.
 - Re-run browser checks at 1366x768 or the actual projector resolution.

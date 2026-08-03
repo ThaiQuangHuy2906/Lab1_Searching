@@ -20,6 +20,7 @@ import { toast } from "sonner";
 import { useApp } from "@/lib/store";
 import { Button } from "./ui/button";
 import { useAnimation } from "@/lib/use-animation";
+import { isEndpointOptionAllowed, isStopOptionAllowed } from "@/lib/interaction-policy";
 import type { GraphNode } from "@/lib/types";
 import { Legend } from "./legend";
 import { Timeline } from "./timeline";
@@ -570,19 +571,23 @@ export function MapView() {
       // lại); chế độ thêm điểm giao GIỮ NGUYÊN để gõ liên tục 9 điểm cho
       // cảnh multiroute của video, tự thoát khi chạm trần 15.
       if (target === "start") {
-        if (node.id === st.goal) {
+        if (!isEndpointOptionAllowed("start", node.id, st.goal, st.stops)) {
+          if (node.id !== st.goal) {
+            toast.error("Điểm Đi không thể đồng thời là điểm giao.");
+            return;
+          }
           toast.error("Điểm Đi phải khác điểm Đến.");
-          return;
-        }
-        if (st.stops.includes(node.id)) {
-          toast.error("Điểm Đi không thể đồng thời là điểm giao.");
           return;
         }
         // tour mode (đã có điểm giao) không cần Đến -> đừng auto-chuyển
         set({ start: node.id,
               pickTarget: st.goal || st.stops.length > 0 ? null : "goal" });
       } else if (target === "goal") {
-        if (node.id === st.start) {
+        if (!isEndpointOptionAllowed("goal", node.id, st.start, st.stops)) {
+          if (node.id !== st.start) {
+            toast.error("Điểm Đến không thể đồng thời là điểm giao.");
+            return;
+          }
           toast.error("Điểm Đến phải khác điểm Đi.");
           return;
         }
@@ -590,12 +595,16 @@ export function MapView() {
       } else {
         // đừng nuốt im lặng: đang gõ liên tục 9 điểm cho video, click không
         // ăn mà không nói gì thì người quay tưởng app đơ (review v11)
-        if (node.id === st.start) {
+        if (!isStopOptionAllowed(node.id, st.start, st.goal, st.stops)) {
+          if (node.id === st.goal) {
+            toast.info("Điểm Đến không thể đồng thời là điểm giao.");
+            return;
+          }
+          if (node.id !== st.start) {
+            toast.info("Điểm này đã có trong danh sách giao.");
+            return;
+          }
           toast.info("Điểm Đi không thể đồng thời là điểm giao.");
-          return;
-        }
-        if (st.stops.includes(node.id)) {
-          toast.info("Điểm này đã có trong danh sách giao.");
           return;
         }
         if (st.stops.length >= 15) return;

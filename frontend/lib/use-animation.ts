@@ -4,6 +4,7 @@
 // so both ALWAYS agree with the timeline (DESIGN.md §5).
 
 import { useMemo } from "react";
+import { effectiveTraceSteps } from "./interaction-policy";
 import { useApp } from "./store";
 import type { TraceStep } from "./types";
 
@@ -33,7 +34,7 @@ export function useAnimation(): AnimationState {
   // the G_real trace toggle acts on the CURRENT view too (DESIGN v10c):
   // switching it off hides the step layers instantly, keeping the route
   const steps = useMemo(
-    () => (graph === "real" && !traceOnReal ? [] : trace?.trace ?? []),
+    () => effectiveTraceSteps(trace, graph, traceOnReal),
     [trace, graph, traceOnReal],
   );
 

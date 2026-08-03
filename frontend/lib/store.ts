@@ -7,7 +7,13 @@ import { create } from "zustand";
 import { toast } from "sonner";
 import { chooseCompareAlgorithm } from "./algorithm-policy";
 import { api, BackendError } from "./api";
+import {
+  isTrafficResponseCurrent,
+  routeRunBlockReason,
+  slotChangePatch,
+} from "./interaction-policy";
 import { createLatestRequestGuard } from "./latest-request";
+import { describeAtspSavings } from "./atsp-savings";
 import type {
   Algorithm, GraphFile, GraphLevel, Mode, MultirouteResponse, TimeSlot,
   Trace, TspMethod,
@@ -31,6 +37,7 @@ export type Theme = "dark" | "light";
 
 const THEME_KEY = "traffic-theme";
 const graphRequests = createLatestRequestGuard();
+const trafficRequests = createLatestRequestGuard();
 
 interface AppState {
   // ---- giao diện Sáng/Tối (DESIGN.md §1 — mặc định Tối)
@@ -200,36 +207,45 @@ export const useApp = create<AppState>((set, get) => ({
   },
 
   loadTraffic: async () => {
+    const requestToken = trafficRequests.begin();
     const { slot, graph } = get();
+    set({ traffic: null });
     try {
       const t = await api.traffic(slot, graph);
-      // config changed while the request was in flight -> drop stale data
-      if (get().slot !== slot || get().graph !== graph) return;
+      const current = get();
+      if (!isTrafficResponseCurrent(
+        slot, graph, current.slot, current.graph,
+        trafficRequests.isCurrent(requestToken),
+      )) return;
       set({ traffic: t.congestion });
     } catch (e) {
+      const current = get();
+      if (!isTrafficResponseCurrent(
+        slot, graph, current.slot, current.graph,
+        trafficRequests.isCurrent(requestToken),
+      )) return;
       toast.error(e instanceof BackendError ? e.message : "Không tải được lớp ùn tắc.");
     }
   },
 
   setSlot: (slot) => {
-    set({ slot, trace: null, compare: null, multi: null, stepIdx: 0, playing: false });
+    const patch = slotChangePatch(get().slot, slot);
+    if (!patch) return;
+    set(patch);
     void get().loadTraffic();
   },
 
   runRoute: async () => {
     const s = get();
     if (s.running || s.comparing || s.multiRunning) return; // one flight at a time (L3-04)
-    if (!s.start || !s.goal) {
-      // tour mode: đừng đòi điểm Đến mà hint CTA vừa tuyên bố không cần
-      toast.error(s.stops.length > 0
-        ? "Đang ở chế độ nhiều điểm — dùng nút Tối ưu thứ tự, hoặc xoá các điểm giao để chạy tuyến 2 điểm."
-        : "Hãy chọn cả điểm Đi và điểm Đến trước khi chạy.");
+    const blockedReason = routeRunBlockReason(s.start, s.goal, s.stops);
+    if (blockedReason) {
+      toast.error(blockedReason);
       return;
     }
-    if (s.start === s.goal) {
-      toast.error("Điểm Đi và điểm Đến đang trùng nhau — hãy chọn hai điểm khác nhau.");
-      return;
-    }
+    // routeRunBlockReason already rejects this state; keep an explicit
+    // narrowing guard so the request contract remains string-only.
+    if (!s.start || !s.goal) return;
     set({ running: true, playing: false, multi: null, compare: null });
     try {
       const includeTrace = s.graph === "demo" ? true : s.traceOnReal;
@@ -324,8 +340,14 @@ export const useApp = create<AppState>((set, get) => ({
         return;
       set({ multi: m, drawerTab: "metrics" });
       if (m.found && m.savings_pct !== null) {
-        toast.success(`Đã tối ưu thứ tự ${s.stops.length} điểm giao — tiết kiệm ${m.savings_pct
-          .toFixed(1).replace(".", ",")} %.`);
+        const savings = describeAtspSavings(m.savings_pct);
+        const pct = savings.absolutePct?.toFixed(1).replace(".", ",");
+        if (savings.kind === "positive")
+          toast.success(`Đã tối ưu thứ tự ${s.stops.length} điểm giao — tiết kiệm ${pct} %.`);
+        else if (savings.kind === "negative")
+          toast.warning(`Thứ tự mới tăng chi phí ${pct} % so với thứ tự nhập.`);
+        else
+          toast.info("Thứ tự mới không đổi tổng chi phí so với thứ tự nhập.");
       }
     } catch (e) {
       toast.error(e instanceof BackendError ? e.message : "Tối ưu thứ tự thất bại.");

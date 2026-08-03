@@ -3,6 +3,7 @@
 import { GitCompareArrows } from "lucide-react";
 import { Badge } from "../ui/badge";
 import { fmtKm, fmtMinutes, fmtPct, fmtSeconds, fmtVi } from "@/lib/format";
+import { describeAtspSavings } from "@/lib/atsp-savings";
 import type { LegMetrics, MultirouteResponse } from "@/lib/types";
 import { ATSP_METHOD_LABEL, ATSP_MODE_LABEL } from "./atsp-copy";
 
@@ -54,15 +55,15 @@ export function AtspCompare({ multi }: { multi: MultirouteResponse }) {
 
   const before = multi.original_order_totals;
   const after = multi.totals;
-  const savings = multi.savings_pct;
+  const savings = describeAtspSavings(multi.savings_pct);
   const rows = comparisonRows(multi, before, after);
-  const verdict = savings === null
-    ? "API không trả về tỷ lệ tiết kiệm cho kết quả này."
-    : Math.abs(savings) < 0.05
+  const verdict = savings.kind === "unavailable"
+    ? "API không trả về tỷ lệ thay đổi tổng chi phí cho kết quả này."
+    : savings.kind === "neutral"
       ? "Thứ tự sau tối ưu không làm thay đổi đáng kể tổng chi phí."
-      : savings > 0
-        ? `Thứ tự sau tối ưu giảm ${fmtPct(savings)} tổng chi phí ${ATSP_MODE_LABEL[multi.mode].toLowerCase()}.`
-        : `Thứ tự sau tối ưu tăng ${fmtPct(Math.abs(savings))} tổng chi phí ${ATSP_MODE_LABEL[multi.mode].toLowerCase()}.`;
+      : savings.kind === "positive"
+        ? `Thứ tự sau tối ưu giảm ${fmtPct(savings.absolutePct)} tổng chi phí ${ATSP_MODE_LABEL[multi.mode].toLowerCase()}.`
+        : `Thứ tự sau tối ưu tăng ${fmtPct(savings.absolutePct)} tổng chi phí ${ATSP_MODE_LABEL[multi.mode].toLowerCase()}.`;
 
   return (
     <div className="flex flex-col gap-3">

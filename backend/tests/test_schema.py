@@ -12,7 +12,7 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
-from app.models import GraphFile, MultirouteResponse, Trace, TrafficProfiles
+from app.models import GraphFile, MultirouteResponse, RouteParams, Trace, TrafficProfiles
 
 MOCK_DIR = Path(__file__).resolve().parents[2] / "data" / "mock"
 
@@ -59,6 +59,12 @@ def balanced_weight(edge, congestion: int) -> float:
     risk = edge.risk.model_dump()
     penalty = sum(PENALTY_S[k] * v for k, v in risk.items())
     return edge.free_travel_time_s * f_cong + penalty
+
+
+@pytest.mark.parametrize("epsilon", [float("inf"), float("-inf"), float("nan")])
+def test_route_epsilon_must_be_finite(epsilon: float):
+    with pytest.raises(ValidationError):
+        RouteParams(epsilon=epsilon)
 
 
 # --------------------------------------------------------------------------

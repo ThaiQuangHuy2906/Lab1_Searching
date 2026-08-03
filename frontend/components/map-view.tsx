@@ -101,7 +101,8 @@ export function MapView() {
   }, [graphData, fitToGraph]);
 
   // Functional trace cue: pulse ring on the current node. The result-route
-  // flow below has its own reduced-motion fallback and only runs at trace end.
+  // flow below has its own reduced-motion fallback and runs only for a final
+  // two-point route or a completed multiroute.
   React.useEffect(() => {
     if (!anim.current) return;
     if (reducedMotion) {
@@ -138,11 +139,19 @@ export function MapView() {
 
   const isDemo = graph === "demo";
 
-  const primaryRoutePath = React.useMemo(
-    () => trace?.found && anim.showPath && !multi?.found ? toPath(trace.path) : [],
-    [trace, anim.showPath, multi, toPath],
-  );
-  const routeFlowActive = primaryRoutePath.length > 1;
+  const routeFlowPath = React.useMemo(() => {
+    if (multi?.found) {
+      // The API guarantees chained legs. Drop each repeated join node so the
+      // shader sees one continuous Đi -> stops itinerary instead of restarting
+      // the highlight on every delivery leg at the same time.
+      const routeNodeIds = multi.legs.flatMap((leg, legIndex) =>
+        legIndex === 0 ? leg.path : leg.path.slice(1),
+      );
+      return toPath(routeNodeIds);
+    }
+    return trace?.found && anim.showPath ? toPath(trace.path) : [];
+  }, [multi, trace, anim.showPath, toPath]);
+  const routeFlowActive = routeFlowPath.length > 1;
 
   const nodeColor = React.useCallback(
     (n: GraphNode): RGBA => {
@@ -415,7 +424,7 @@ export function MapView() {
 
   const routeFlowLayers = React.useMemo(() => {
     if (!routeFlowActive) return [];
-    const data: RoutePathDatum[] = [{ path: primaryRoutePath }];
+    const data: RoutePathDatum[] = [{ path: routeFlowPath }];
 
     if (reducedMotion) {
       return [new PathLayer<RoutePathDatum>({
@@ -457,7 +466,7 @@ export function MapView() {
         extensions: [ROUTE_FLOW_EXTENSION],
       }),
     ];
-  }, [routeFlowActive, primaryRoutePath, reducedMotion, C]);
+  }, [routeFlowActive, routeFlowPath, reducedMotion, C]);
 
   const pulseLayer = React.useMemo(() => {
     if (!anim.current) return null;
@@ -485,7 +494,7 @@ export function MapView() {
           ? (layer as { id?: string }).id
           : undefined;
       const arrowLayers: unknown[] = [];
-      for (const id of ["route-arrows", "compare-arrows"]) {
+      for (const id of ["route-arrows", "multi-arrows", "compare-arrows"]) {
         const index = composed.findIndex((layer) => layerId(layer) === id);
         if (index >= 0) arrowLayers.push(...composed.splice(index, 1));
       }

@@ -335,15 +335,18 @@ Thanh nổi giữa-đáy bản đồ, nền `surface-raised`, viền `surface-bo
 - **Tuyến kết quả có viền (casing)**: lớp nền màu `surface` rộng 7px dưới lớp màu
   6px — tuyến nổi trên mọi nền bản đồ (kỹ thuật casing bản đồ chuẩn); áp dụng cho
   route chính, multiroute và tuyến so sánh.
-- **Luồng sáng tuyến chính (UI-XX):** khi route hai điểm đã có kết quả và timeline
-  đang ở bước cuối, giữ nguyên casing + thân amber rồi chèn thêm một đoạn nhấn
-  ngắn chạy theo chiều Đi → Đến trong 3,2 giây và lặp liên tục. Hai `PathLayer`
+- **Luồng sáng tuyến kết quả (UI-XX):** khi route hai điểm đã có kết quả và timeline
+  đang ở bước cuối, hoặc khi ATSP đã có multiroute hợp lệ, giữ nguyên casing + thân
+  amber rồi chèn thêm một đoạn nhấn ngắn chạy theo chiều hành trình trong 3,2 giây
+  và lặp liên tục. Với ATSP, các `legs` được nối thành một polyline liên tục, bỏ nút
+  giao bị lặp ở ranh giới chặng, để luồng sáng chạy tuần tự từ Đi qua toàn bộ thứ tự
+  giao thay vì khởi động đồng thời trên từng chặng. Hai `PathLayer`
   không pickable (halo amber 10px + lõi sáng 2,5px) dùng chung một deck.gl
   `LayerExtension`: tiến độ tuyến được tạo một lần thành vertex attribute, còn
   cửa sổ sáng chuyển động bằng shader uniform trong vòng redraw `_animate` của
   deck.gl. React không tick state và base graph G_real không rebuild theo frame.
-  Hai lớp nằm dưới mũi tên, node và marker nên không che tương tác. Tuyến B,
-  multiroute và trace giữa chặng không chạy hiệu ứng. `prefers-reduced-motion:
+  Hai lớp nằm dưới mũi tên, node và marker nên không che tương tác. Tuyến B và
+  trace giữa chặng không chạy hiệu ứng. `prefers-reduced-motion:
   reduce` thay loop bằng lõi sáng tĩnh 2px; thân route gốc luôn còn nguyên nên
   nhận diện không phụ thuộc animation. Màu deck-only `routeFlowHalo`,
   `routeFlowCore`, `routeFlowStatic` có giá trị dark/light riêng trong

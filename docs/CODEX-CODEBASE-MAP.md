@@ -556,10 +556,17 @@ Verified/current findings:
   static ring instead of pulsing.
 - `ROUTE_FLOW_EXTENSION` is a singleton deck.gl `LayerExtension` driven by
   `_animate`; the base route remains readable and reduced motion uses a static
-  highlight. Active trace steps suppress route-flow to avoid competing motion.
+  highlight. Its input is either the final two-point path or one continuous
+  ATSP polyline assembled from `multi.legs`; repeated join nodes are removed so
+  the highlight travels from Đi through the full delivery order instead of
+  restarting on every leg. Active trace steps suppress two-point route-flow to
+  avoid competing motion.
 - FINAL-01 functional route-flow QA passed G_demo/G_real, compare, trace,
   clear/invalidation and reduced-motion states. G_real measured only about
   16 FPS under Chromium SwiftShader; a hardware-GPU run was not reproduced.
+- The ATSP route-flow follow-up passed G_demo dark/light, moving-frame,
+  reduced-motion and clear/invalidation checks at 1366×768. G_real start/stop
+  picking was smoke-tested; a G_real ATSP result was not runtime-reproduced.
 - `clearMap` immediately clears selections/results without confirm or undo.
 - Offline mode is not persisted.
 - `next/font/google` and Carto styles mean disconnected-first build/render is

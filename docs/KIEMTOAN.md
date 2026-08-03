@@ -1,9 +1,10 @@
 # KIEMTOAN.md — Báo cáo Hội đồng phản biện độc lập
 
-> **Lưu ý hiện hành (2026-07-27):** đây là sổ kiểm toán/fix lịch sử tại các commit
+> **Lưu ý hiện hành (2026-08-03):** phần từ “TRẠNG THÁI FIX BATCH” trở xuống là
+> sổ kiểm toán/fix lịch sử tại các commit
 > ghi trong tài liệu. Không dùng các số test, line number hay kết luận cũ làm bằng
-> chứng cho worktree hiện tại. Bảng đối chiếu mới nhất nằm ở
-> `docs/CODEX-BASELINE.md` và §23–§27 của `docs/CODEX-CODEBASE-MAP.md`.
+> chứng cho worktree hiện tại. Kết luận current-state nằm ngay trong mục FINAL-01
+> dưới đây và phần cập nhật cuối của `docs/CODEX-CODEBASE-MAP.md`.
 >
 > **Ngày kiểm:** 2026-07-27 · **Commit kiểm:** `9598141` (git sạch, đồng bộ origin/main)
 > **Phương pháp:** Lượt 0 (mốc chân lý) chạy trước; 6 lượt kiểm toán độc lập chạy **song song**
@@ -11,6 +12,54 @@
 > agent hoài nghi **tái lập độc lập từ đầu** trước khi vào báo cáo (cột "Phản biện chéo").
 > Script tái lập nằm nguyên trong `audit_tmp/` (luot1…luot6, verify/) — không commit.
 > Sau toàn bộ cuộc kiểm: `git status` chỉ còn untracked `audit_tmp/` — **không file nguồn nào bị sửa**.
+
+---
+
+## Cập nhật hậu kiểm FINAL-01 — 2026-08-03
+
+**Baseline đã kiểm:** commit `f22698c` (`feat: refine benchmark data presentation`),
+đồng bộ `origin/main` tại thời điểm kiểm. Các sửa tài liệu sau mốc này không phải
+thay đổi sản phẩm.
+
+| Cổng phát hành | Kết luận hiện tại | Bằng chứng |
+|---|---|---|
+| Demo | **DEMO-READY WITH WARNINGS** | Backend/data/TypeScript/contrast đạt; UI chính, ATSP, benchmark và route-flow đã QA runtime |
+| Nộp bài | **SUBMISSION BLOCKED** | Thiếu GroupID ZIP, Report PDF, Slide PPTX/PDF và Video TXT/link; marker/danh tính/ảnh/link nguồn chưa hoàn tất |
+| Dữ liệu cuối | **FINAL-DATA NOT ALLOWED** | TomTom mới đủ 2/4 khung giờ; profile vẫn `synthetic`; `results/` cũ hơn graph và vẫn là `SỐ TẠM` |
+
+### Bằng chứng đã chạy thật trong FINAL-01
+
+- Backend: `95 passed, 1 warning in 15.68s`; warning duy nhất là deprecation
+  Starlette/httpx.
+- Data: `ALL DATA VALID`; validator vẫn cảnh báo chỉ có hai raw TomTom và profile
+  đang `synthetic`.
+- Frontend: `npx tsc --noEmit` exit 0; contrast checker đạt toàn bộ token
+  dark/light.
+- Clean runtime: API khớp snapshot trên đĩa — G_demo 51 node/292 cạnh; G_real
+  2.118 node/4.699 cạnh.
+- UI chính: 71/71 assertion; kiểm dark/light, route, trace, compare, explanation,
+  ATSP, offline, drawer, keyboard/focus, reduced motion và các viewport 1180×720,
+  1366×768, 1600×900.
+- Benchmark viewer: đã kiểm ready/loading/empty/error/retry/partial và provenance
+  `SỐ TẠM`; không chạy lại benchmark.
+- Route-flow: 11/12 assertion đạt; các state G_demo/G_real, compare, trace,
+  clear/invalidate và reduced motion hoạt động. Assertion hiệu năng G_real không
+  đạt trong Chromium SwiftShader (xấp xỉ 16 FPS); chưa tái lập bằng GPU phần cứng.
+- Evidence: 20 ảnh UI-03 + 10 ảnh UI-04 + 10 ảnh route-flow, cùng 10 trang đề bài;
+  các PNG evidence đều không rỗng.
+
+### Việc còn chặn
+
+- **P0:** tạo đủ bốn artifact đóng gói còn thiếu: GroupID ZIP, Report PDF, Slide
+  PPTX/PDF, Video TXT/link.
+- **P1:** hoàn tất 40 marker trên 30 dòng nội dung, 12 marker screenshot, danh tính
+  và đóng góp nhóm, 8 `source_url`; thu TomTom 17:30/22:00 rồi mới quyết định
+  profile cuối và chạy trọn data → validation → benchmark → generator một lượt.
+- **P2:** favicon còn 404; chưa kiểm bằng screen reader thật/formal WCAG; hiệu năng
+  route-flow G_real trên GPU phần cứng chưa có bằng chứng.
+
+Không được gỡ banner `SỐ TẠM`, trích số `results/` làm benchmark hiện tại hoặc
+coi repository là submission-ready trước khi các blocker trên được đóng.
 
 ---
 

@@ -1,9 +1,10 @@
 # TIENDO.md — Bảng tiến độ theo phase
 
-> **Lưu ý hiện hành (2026-07-27):** đây là nhật ký lịch sử; số test, số cạnh và
+> **Lưu ý hiện hành (2026-08-03):** đây là nhật ký lịch sử; số test, số cạnh và
 > trạng thái ở từng dòng đúng theo thời điểm của phase đó, không phải mốc hiện tại.
-> Trạng thái đã kiểm mới nhất xem `docs/CODEX-BASELINE.md`; bản đồ kiến trúc và
-> danh sách việc còn mở xem `docs/CODEX-CODEBASE-MAP.md`.
+> Baseline 2026-07-27 nằm trong `docs/CODEX-BASELINE.md`; current-state sau
+> UI-01–UI-04 và FINAL-01 nằm trong `docs/CODEX-CODEBASE-MAP.md` và phần đầu
+> `docs/KIEMTOAN.md`.
 >
 > Cập nhật cuối mỗi phase (PROMPT-MASTER luật 1). Trạng thái: ⬜ chưa làm · 🔄 đang làm · ✅ xong.
 
@@ -31,6 +32,21 @@
 - Chụp 8 screenshot + 5 ảnh Google Maps đối chứng; quay video; đóng gói `[GroupID].zip`.
 
 ## Nhật ký quyết định
+
+- **2026-08-03 (UI-01–UI-04, route-flow và FINAL-01):** bốn commit nối tiếp đã
+  hoàn thiện UI mà không đổi backend/API/schema/store contract: `d44b96a` làm mới
+  shell tìm đường theo hướng Operational Control Room; `f670fa6` tách và làm rõ
+  setup/result ATSP; `6789f25` vá accessibility/responsive và thêm luồng sáng
+  route bằng deck.gl với fallback `prefers-reduced-motion`; `f22698c` hoàn thiện
+  trang benchmark ở chế độ chỉ đọc, giữ banner `SỐ TẠM` và đủ trạng thái
+  loading/empty/error/retry/partial. FINAL-01 trên `f22698c` xác nhận pytest
+  **95 passed, 1 warning**, validator `ALL DATA VALID`, contrast dark/light và
+  TypeScript đạt; clean runtime khớp G_demo 51/292, G_real 2.118/4.699; UI chính
+  đạt 71/71 assertion. Trạng thái phát hành: **DEMO-READY WITH WARNINGS**,
+  **SUBMISSION BLOCKED**, **FINAL-DATA NOT ALLOWED**. Còn chặn bởi dữ liệu TomTom
+  2/4, benchmark stale, 8 URL nguồn risk, marker/report/slide/video/ZIP thủ công;
+  route-flow G_real mới đo khoảng 16 FPS dưới SwiftShader, chưa có bằng chứng GPU
+  phần cứng.
 
 - **2026-07-27 (UI v11 — user rà bằng mắt từng tab + hội đồng review 3 lăng kính):**
   3 đợt polish theo góp ý trực tiếp của user trên GUI đang chạy: (đợt 1) tab **So sánh**

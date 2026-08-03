@@ -1,11 +1,27 @@
 # Project01 Codebase Map
 
-This map records the repository as inspected and documentation-refreshed on
-2026-07-27, starting from
-`aedcf7255c4beadd1de0be69e5638f146bae89ed`. It distinguishes intended
+This map records the repository originally inspected on 2026-07-27 from
+`aedcf7255c4beadd1de0be69e5638f146bae89ed`, then current-state refreshed on
+2026-08-03 through `f22698c9e3636e580b8392a1d213f963e466068c`. It distinguishes intended
 contracts, current implementation, executed tests, generated artifacts, and
 historical claims. `UNVERIFIED` means the onboarding could not establish the
 claim with a suitable runtime check.
+
+### Current frontend and release delta — 2026-08-03
+
+- `d44b96a`: refreshed the shared pathfinding shell and dark/light control-room
+  surface system.
+- `f670fa6`: separated ATSP setup/result presentation into
+  `frontend/components/atsp/atsp-setup.tsx` and `atsp-result.tsx` without changing
+  the store or API contract.
+- `6789f25`: hardened accessibility/responsive behavior and added the deck.gl
+  route-flow extension in `frontend/lib/route-flow-extension.ts`, with a static
+  reduced-motion fallback.
+- `f22698c`: completed the read-only benchmark viewer states while retaining
+  explicit stale-data provenance.
+- FINAL-01 verdict: **DEMO-READY WITH WARNINGS**, **SUBMISSION BLOCKED** and
+  **FINAL-DATA NOT ALLOWED**. Backend/API/schema/data/results were unchanged by
+  the four UI commits.
 
 ## 1. Project purpose and rubric
 
@@ -201,9 +217,11 @@ this matches `SCHEMA.md`.
 reload endpoint or automatic disk-change invalidation.
 
 Therefore changing files on disk does nothing to an existing process until
-caches are cleared or the backend restarts. This is not hypothetical: the live
-API returned `G_demo` created 2026-07-26 with 51/141 while the current file on
-disk is 2026-07-27 with 51/292.
+caches are cleared or the backend restarts. The 2026-07-27 onboarding reproduced
+a stale live API (51/141 versus 51/292 on disk). FINAL-01 later stopped old
+services and verified a clean process matched disk for both G_demo (51/292) and
+G_real (2.118/4.699); the lifecycle risk remains, but the latest clean runtime
+was not stale.
 
 Demo pre-flight:
 
@@ -523,8 +541,9 @@ request starts before an earlier stale request finishes.
 
 `MapView` combines MapLibre/Carto or an offline plain background with deck.gl
 layers for roads, traffic, nodes, paths, alternatives, direction arrows,
-labels, and the current-node pulse. `useAnimation` projects the current
-`TraceStep`; the map, timeline, and g/h/f table share `stepIdx`.
+labels, the current-node pulse, and an animated route-flow emphasis layer.
+`useAnimation` projects the current `TraceStep`; the map, timeline, and g/h/f
+table share `stepIdx`.
 
 Verified/current findings:
 
@@ -533,13 +552,20 @@ Verified/current findings:
 - Native controls, links, contenteditable targets, and Radix control roles own
   their keyboard events; a browser probe confirmed Space toggles a focused
   switch without playing the timeline, while body Space still plays it.
-- A 50 ms pulse updates state included in the full layer memo dependencies;
-  the rebuild/performance impact is statically plausible but not measured.
+- The trace current-node pulse updates every 50 ms; reduced motion keeps a
+  static ring instead of pulsing.
+- `ROUTE_FLOW_EXTENSION` is a singleton deck.gl `LayerExtension` driven by
+  `_animate`; the base route remains readable and reduced motion uses a static
+  highlight. Active trace steps suppress route-flow to avoid competing motion.
+- FINAL-01 functional route-flow QA passed G_demo/G_real, compare, trace,
+  clear/invalidation and reduced-motion states. G_real measured only about
+  16 FPS under Chromium SwiftShader; a hardware-GPU run was not reproduced.
 - `clearMap` immediately clears selections/results without confirm or undo.
 - Offline mode is not persisted.
 - `next/font/google` and Carto styles mean disconnected-first build/render is
   not proven.
-- The map page deliberately targets desktop, not mobile responsiveness.
+- The shell remains desktop-first. FINAL-01 found no horizontal overflow at
+  1180×720, 1366×768 or 1600×900; smaller/mobile layouts remain out of contract.
 
 B-5 repair:
 
@@ -647,7 +673,7 @@ Statuses use the onboarding vocabulary requested by the handoff.
 | B-3 | `RESOLVED` | `iddfs`, `idastar`, `bidijkstra` | snapshots moved post-generation; g restricted to active side(s) | red-before/green-after semantic tests | full 95-item suite passed |
 | B-4 | `RESOLVED` | `explain.py::build_explanation` | mode-derived `m`/`s` suffix | epsilon and gap tested in all 3 modes | full 95-item suite passed |
 | B-5 | `RESOLVED` | benchmark page scroll owner | reproduced before patch; `main` now independently scrolls 28 px | headless Chrome 1366×768 | recheck on actual projector before recording |
-| B-6 | `CONFIRMED` | `GraphStore.load`, `graph_payload`, live API | process caches old data; live API returned 51/141 vs disk 51/292 | no live lifecycle test | restart/hard-refresh pre-flight |
+| B-6 | `MITIGATED` | `GraphStore.load`, `graph_payload`, live API | process caches old data; FINAL-01 clean restart matched disk for demo 51/292 and real 2.118/4.699 | clean-start runtime probe | repeat restart/hard-refresh pre-flight before every capture |
 
 ### High-priority audit findings
 
@@ -657,7 +683,7 @@ Statuses use the onboarding vocabulary requested by the handoff.
 | P-02 IDA*/IDDFS runtime budget and epsilon | `PARTIALLY_CONFIRMED` | finite algorithm caps but no time budget; UI min epsilon 0.1 | extreme runtime not reproduced |
 | P-03 Beam frontier schema | `RESOLVED` | trace/metric expose selected top-k only | controlled width-1 regression |
 | P-04 IDA* exhausted-round guarantee | `RESOLVED` | capped exit false; exhaustive-unreachable true | controlled termination regressions |
-| P-05 light-theme contrast | `NEEDS_RUNTIME_VERIFICATION` | audit claim only; contrast/browser not run | live visual/contrast audit |
+| P-05 light-theme contrast | `RESOLVED` | contrast checker passed and FINAL-01 exercised dark/light runtime states | formal WCAG/screen-reader audit not run |
 | P-06 offline mode/Google font | `PARTIALLY_CONFIRMED` | offline not persisted; `next/font/google` present | disconnected build not run |
 | P-07 same-value invalidation | `RESOLVED` | semantic value comparison precedes invalidation | same-start browser reselect preserved trace |
 | P-08 manual risk description | `CONFIRMED` | metadata states old endpoint-radius rule | update with data contract |
@@ -665,7 +691,7 @@ Statuses use the onboarding vocabulary requested by the handoff.
 | P-10 Pydantic `ValidationError` | `RESOLVED` | exact handler returns generic/logged 500; request errors remain 422 | endpoint response/log regression |
 | P-11 start may equal an existing stop in UI | `RESOLVED` | demo picker filters stops; real-map picker rejects them; tour swap disabled | browser picker/tour probe |
 | P-12 README Git Bash paths | `RESOLVED` | PowerShell and Bash path conventions are now separated | execute on non-Windows only if that platform becomes supported |
-| P-13 deck.gl pulse rebuild | `PARTIALLY_CONFIRMED` | 50 ms pulse is a layer memo dependency | profile in browser |
+| P-13 deck.gl animation performance | `PARTIALLY_CONFIRMED` | functional pulse/route-flow states pass; G_real SwiftShader run was about 16 FPS | profile with hardware GPU |
 | P-14 `max_frontier` overhead | `PARTIALLY_CONFIRMED` | DFS/IDDFS/Bidi compute/sort frontier on run path | benchmark impact not measured |
 
 ### Lower-priority grouped observations
@@ -676,7 +702,7 @@ Statuses use the onboarding vocabulary requested by the handoff.
 | code hygiene/docstrings/logging | `PARTIALLY_CONFIRMED` | static issues exist but were not exhaustively adjudicated |
 | proof/test wording | `PARTIALLY_CONFIRMED` | sampled goals vs broad prose confirmed |
 | historical doc line references/counts | `STALE` | several old counts/line anchors conflict with current files |
-| a11y/responsive/reduced motion | `NEEDS_RUNTIME_VERIFICATION` | source suggests gaps; no browser/a11y run |
+| a11y/responsive/reduced motion | `PARTIALLY_VERIFIED` | 71/71 browser assertions include keyboard/focus/targets, reduced motion and three desktop viewports | real screen reader and mobile/formal WCAG not run |
 | miscellaneous performance/API payload comments | `NOT_REPRODUCED` | non-blocking audit suggestions were not benchmarked |
 
 ## 24. Known stale information
@@ -731,6 +757,7 @@ safe order:
 - What exact timeout/cancellation contract should IDDFS and IDA* expose?
 - Should `/api/benchmark` reject partial artifact sets or explicitly report
   completeness?
-- Production build, map/theme/contrast, offline, accessibility, and broader
-  responsive checks remain unverified; targeted scroll/keyboard/journey
-  browser checks passed.
+- FINAL-01 verified map/theme/contrast, offline, keyboard/focus, reduced motion
+  and three desktop viewport sizes in browser. A fresh production build, real
+  screen reader/formal WCAG run, mobile layout, projector hardware, and
+  hardware-GPU route-flow performance remain unverified.

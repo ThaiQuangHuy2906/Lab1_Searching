@@ -6,25 +6,41 @@ giao hàng bằng 3 phương pháp ATSP. Backend dùng FastAPI; frontend dùng N
 MapLibre và deck.gl; dữ liệu chạy demo được lưu cục bộ nên thuật toán không cần
 gọi mạng.
 
-> **Trạng thái ngày 2026-07-27 — chưa phải bộ nộp cuối:** code hiện đạt 95 test,
-> validator dữ liệu đạt và TypeScript không lỗi. Hai graph hiện hành đã được
-> build ngày 2026-07-27, nhưng profile vẫn là `synthetic`; raw TomTom mới có
-> 07:30 và 12:00, còn thiếu 17:30 và 22:00. `results/` là số tạm từ lượt
-> 2026-07-26 và không được dùng làm kết quả chính thức. Không chạy 03b, rebuild,
-> benchmark hoặc generator từ bộ TomTom 2/4.
+## Xem nhanh
+
+| Tìm đường và trực quan hoá A* — dark mode | Tối ưu thứ tự giao hàng — light mode |
+|---|---|
+| ![Kết quả tìm đường A* ở dark mode](artifacts/readme/dark-route-result.png) | ![Kết quả tối ưu ATSP ở light mode](artifacts/readme/light-atsp-result.png) |
+
+### Tính năng nổi bật
+
+- 10 thuật toán tìm đường dùng chung contract `Trace`, timeline và bảng g/h/f.
+- Ba phương pháp ATSP cho hành trình nhiều điểm trên đồ thị có hướng, bất đối xứng.
+- Bản đồ G_demo/G_real, lớp ùn tắc, offline mode và chọn điểm trực tiếp trên map.
+- Luồng sáng nhấn tuyến, focus/keyboard đầy đủ và fallback `prefers-reduced-motion`.
+- Giải thích tiếng Việt, so sánh hai tuyến và benchmark viewer chỉ đọc với cảnh
+  báo nguồn dữ liệu rõ ràng.
+
+> **Trạng thái ngày 2026-08-03 — sẵn sàng demo có cảnh báo, chưa được nộp:**
+> [FINAL-01](docs/KIEMTOAN.md#cập-nhật-hậu-kiểm-final-01--2026-08-03) xác nhận
+> 95 test backend, validator dữ liệu, độ tương phản dark/light và TypeScript đều
+> đạt; API sau khi khởi động sạch khớp graph trên đĩa. Profile vẫn là
+> `synthetic`; raw TomTom mới có 07:30 và 12:00, còn thiếu 17:30 và 22:00.
+> `results/` vẫn là số tạm từ lượt 2026-07-26 và không được dùng làm kết quả
+> chính thức. Không chạy 03b, rebuild, benchmark hoặc generator từ bộ TomTom 2/4.
 
 ## Trạng thái kiểm chứng
 
 | Hạng mục | Trạng thái hiện tại | Bằng chứng |
 |---|---|---|
-| Backend | **Đạt** | `95 passed, 1 warning` ngày 2026-07-27 |
+| Backend | **Đạt** | [`95 passed, 1 warning`](docs/KIEMTOAN.md#bằng-chứng-đã-chạy-thật-trong-final-01) ngày 2026-08-03 |
 | Data contract | **Đạt, có cảnh báo nguồn** | `ALL DATA VALID`; profile vẫn `synthetic` dù raw TomTom đã có 2 snapshot |
 | TypeScript | **Đạt** | `npx tsc --noEmit` exit 0 |
 | G_demo | **Hiện hành** | 51 node, 292 cạnh có hướng, 56 cạnh một chiều |
 | G_real | **Hiện hành** | 2.118 node, 4.699 cạnh có hướng, 1.433 cạnh một chiều |
 | Benchmark | **Chưa hiện hành** | `results/` cũ hơn graph; xem [`results/README.md`](results/README.md) |
-| B-3/B-4/B-5 | **Đã sửa** | trace/đơn vị/scroll có regression hoặc browser evidence trong [`docs/CODEX-BASELINE.md`](docs/CODEX-BASELINE.md) |
-| Backend đang chạy | **Stale** | probe localhost:8000 vẫn trả graph 2026-07-26, 51/141 thay vì 51/292 |
+| UI/runtime | **Đạt có cảnh báo** | [71/71 kiểm tra UI chính](docs/KIEMTOAN.md#bằng-chứng-đã-chạy-thật-trong-final-01); benchmark đủ loading/empty/error/retry/partial; luồng sáng tuyến đạt 11/12 kiểm tra |
+| Backend sau clean restart | **Khớp dữ liệu** | G_demo 51/292 và G_real 2.118/4.699 khớp snapshot trên đĩa |
 | Trước khi nộp | **Còn việc tay** | 8 URL nguồn risk + metadata risk cũ, 40 marker cần điền trên 30 dòng nội dung (không tính dòng chú giải), screenshot, report PDF, slide, video/link và ZIP |
 
 Backend dùng cache theo vòng đời process. Trước khi demo hoặc chụp hình, phải
@@ -40,7 +56,7 @@ restart cả hai service, hard-refresh trình duyệt và xác nhận
 | Thuật toán bắt buộc | BFS, DFS, UCS, A* |
 | Thuật toán bổ sung | IDDFS, Dijkstra, Greedy, Bidirectional Dijkstra, IDA*, Beam |
 | Đa điểm | Held–Karp, Nearest Neighbor + cải thiện bất đối xứng, Simulated Annealing |
-| GUI | Chọn điểm trên map, animation trace, timeline, bảng g/h/f, so sánh, giải thích tiếng Việt, trang benchmark |
+| GUI | Shell điều hành dark/light, chọn điểm trên map, animation trace và luồng sáng tuyến có reduced-motion, timeline, bảng g/h/f, ATSP, so sánh, giải thích tiếng Việt, trang benchmark có trạng thái dữ liệu tạm |
 | Báo cáo và video | Có khung a–j, outline 14 slide và kịch bản video; vẫn cần nhóm hoàn thiện artifact thật |
 
 Rubric chính thức 100 điểm và yêu cầu đóng gói nằm trong
@@ -191,15 +207,20 @@ Set-Location frontend
 npx tsc --noEmit
 ```
 
-Mốc đã chạy trên worktree ngày 2026-07-27:
+Mốc FINAL-01 đã chạy ngày 2026-08-03 trên baseline commit `f22698c`:
 
-- pytest: `95 passed, 1 warning in 14.62s`;
+- pytest: `95 passed, 1 warning in 15.68s`;
 - validator: `ALL DATA VALID`, kèm hai cảnh báo profile synthetic/raw TomTom 2/4;
-- TypeScript: exit code 0.
+- contrast checker: toàn bộ token dark/light đạt;
+- TypeScript: exit code 0;
+- browser QA: 71/71 kiểm tra UI chính; 20 ảnh UI-03, 10 ảnh UI-04 và 10 ảnh
+  luồng sáng tuyến ở các viewport/kịch bản đã kiểm đều không rỗng.
 
-Không xem test count là chứng minh cho hành vi không được test. Map, theme,
-offline, accessibility, responsive và độ phân giải máy chiếu vẫn cần QA
-trình duyệt trước khi quay.
+FINAL-01 đã kiểm runtime dark/light, offline, keyboard/focus, reduced motion,
+responsive 1180×720, 1366×768 và 1600×900, cùng G_demo/G_real. Vẫn phải chạy lại
+pre-flight trên máy chiếu thật trước khi quay. Hiệu năng luồng sáng tuyến G_real trên
+Chromium SwiftShader chỉ khoảng 16 FPS; kết quả với GPU phần cứng chưa tái lập,
+vì vậy đây vẫn là cảnh báo chứ không phải bằng chứng hiệu năng thực tế.
 
 ## Dữ liệu và benchmark
 
@@ -222,6 +243,7 @@ graph/profile/result từ các lượt khác nhau.
 ```text
 backend/app/       API, graph store, cost, search, ATSP, benchmark
 backend/tests/     test schema, data, cost, search, TSP và API
+artifacts/readme/  hai ảnh minh hoạ giao diện hiện hành cho README
 data/              graph/profile snapshot, POI, risk và DATA.md
 docs/              đề bài, contract, proof, design, baseline và audit
 frontend/app/      trang chính và /benchmark
@@ -242,10 +264,11 @@ scripts/           pipeline data, validator, generator và QA
 | [`docs/SCHEMA.md`](docs/SCHEMA.md) | contract graph, trace, API và cost |
 | [`data/DATA.md`](data/DATA.md) | nguồn, pipeline, giả định và snapshot |
 | [`docs/DESIGN.md`](docs/DESIGN.md) | contract thiết kế UI |
-| [`docs/CODEX-BASELINE.md`](docs/CODEX-BASELINE.md) | bằng chứng kiểm chứng mới nhất |
-| [`docs/CODEX-CODEBASE-MAP.md`](docs/CODEX-CODEBASE-MAP.md) | bản đồ kiến trúc, test gap, blocker |
+| [`docs/CODEX-BASELINE.md`](docs/CODEX-BASELINE.md) | baseline kỹ thuật ngày 2026-07-27; giữ làm lịch sử |
+| [`docs/CODEX-CODEBASE-MAP.md`](docs/CODEX-CODEBASE-MAP.md) | bản đồ kiến trúc và current-state đã cập nhật qua FINAL-01 |
 | [`docs/TIENDO.md`](docs/TIENDO.md) · [`docs/KIEMTOAN.md`](docs/KIEMTOAN.md) · [`docs/AUDIT-CLAUDE-PRE-SUBMISSION.md`](docs/AUDIT-CLAUDE-PRE-SUBMISSION.md) | nhật ký/audit lịch sử, không phải bằng chứng current |
 | [`docs/GIAI-THICH-THUAT-TOAN.md`](docs/GIAI-THICH-THUAT-TOAN.md) | tài liệu sinh tự động; hiện vẫn là số tạm |
+| [`docs/ROLE-C-ADVANCED-ATSP-GIAI-THICH-DE-HIEU.md`](docs/ROLE-C-ADVANCED-ATSP-GIAI-THICH-DE-HIEU.md) | tài liệu giảng dễ hiểu về thuật toán nâng cao và ATSP |
 
 ## Checklist nộp bài
 

@@ -41,6 +41,9 @@ Thumbs.db
 # Disposable local render/audit scratch
 tmp/
 
+# Curated documentation assets under artifacts/ are intentionally trackable.
+# Generated browser/runtime evidence belongs in audit_tmp/ or tmp/ instead.
+
 # Claude Code local settings (per-machine)
 .claude/settings.local.json
 

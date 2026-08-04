@@ -8,6 +8,7 @@ import { fmtKm, fmtMinutes, fmtPct, fmtVi } from "@/lib/format";
 import { describeAtspSavings } from "@/lib/atsp-savings";
 import type { GraphFile, LegMetrics, MultirouteResponse } from "@/lib/types";
 import { ATSP_METHOD_LABEL, ATSP_MODE_LABEL, atspCostUnit } from "./atsp-copy";
+import { AtspTrace } from "./atsp-trace";
 
 function ResultSummary({ label, totals, emphasized = false, costUnit }: {
   label: string;
@@ -123,6 +124,13 @@ export function AtspResult({ multi, graphData }: {
         {ATSP_METHOD_LABEL[multi.method]} · {ATSP_MODE_LABEL[multi.mode]} · {multi.time_slot} ·{" "}
         {multi.graph === "demo" ? "G_demo" : "G_real"}
       </p>
+      {multi.applied_scenario && (
+        <p className="rounded-lg border border-surface-border bg-surface-control/55 px-2.5 py-2 text-[11px] leading-4 text-ink-dim">
+          Kịch bản: <span className="font-medium text-ink">{multi.applied_scenario.graph_view}</span>
+          {" · "}{multi.applied_scenario.override_count} ghi đè · {multi.applied_scenario.provenance}
+          <span className="block break-all font-mono text-[10px] text-ink-faint">{multi.applied_scenario.fingerprint}</span>
+        </p>
+      )}
 
       <div className="flex flex-wrap items-center gap-1.5">
         <Badge variant={multi.optimal_guarantee ? "ok" : "warn"} className="gap-1">
@@ -160,6 +168,8 @@ export function AtspResult({ multi, graphData }: {
           />
         </div>
       </div>
+
+      <AtspTrace />
 
       <Card>
         <CardHeader className="pb-2">

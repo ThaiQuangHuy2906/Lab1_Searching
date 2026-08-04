@@ -1,0 +1,33 @@
+{
+  "case": "scenario-cost-v1",
+  "edge": {
+    "id": "e00001",
+    "u": "n0001",
+    "v": "n0002",
+    "name": "Golden edge",
+    "length_m": 360.0,
+    "highway": "secondary",
+    "oneway": true,
+    "free_speed_kmh": 36.0,
+    "free_travel_time_s": 36.0,
+    "risk": {
+      "flood": 1,
+      "construction": 0,
+      "narrow_alley": 0,
+      "traffic_light": 1
+    }
+  },
+  "congestion": 5,
+  "expected": {
+    "t_free_s": 36.0,
+    "congestion_factor": 2.5,
+    "penalty_flood_s": 60.0,
+    "penalty_construction_s": 0.0,
+    "penalty_narrow_alley_s": 0.0,
+    "penalty_traffic_light_s": 25.0,
+    "penalty_total_s": 85.0,
+    "weight_distance_m": 360.0,
+    "weight_time_s": 90.0,
+    "weight_balanced_s": 175.0
+  }
+}

@@ -41,6 +41,9 @@ Thumbs.db
 # Disposable local render/audit scratch
 tmp/
 
+# Local Playwright CLI snapshots and console logs; never part of the source tree.
+.playwright-cli/
+
 # Curated documentation assets under artifacts/ are intentionally trackable.
 # Generated browser/runtime evidence belongs in audit_tmp/ or tmp/ instead.
 

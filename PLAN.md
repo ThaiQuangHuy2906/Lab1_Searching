@@ -9,6 +9,14 @@
 > request-scoped edge override, ATSP optimization trace và
 > `AppliedScenario`/fingerprint.
 >
+> **Checkpoint hiện hành — 2026-08-05:** Milestone 1 (specification), 2
+> (GraphView), 3 (ATSP optimization trace) và 4 (edge-override sandbox) đã được
+> triển khai trong worktree. Core gates và luồng browser M3–M4 ở G_demo/full và
+> `teach_7`, 1366×768 đã đạt trên service có API khớp snapshot đĩa; điều này không thay
+> thế pre-flight đầy đủ trước demo/quay. Khi tiếp tục plan này,
+> **không lặp lại M1–M4**. Bắt đầu từ Milestone 5 để chạy integration/runtime QA,
+> sau khi luôn kiểm tra `git status --short` và diff hiện hữu.
+>
 > Tài liệu này là execution plan đã khóa. Không tạo thêm một kế hoạch tổng quát
 > khác và không audit lại toàn repository. Trước mỗi milestone chỉ xác minh
 > nhanh những facts trực tiếp liên quan vì code có thể đã thay đổi.
@@ -291,7 +299,7 @@ EdgeOverride
   free_speed_kmh?: finite float in [1, 200]
   congestion?: partial map TimeSlot -> integer [1, 5]
   risk?: RiskOverride
-  requirement: ít nhất một effective field
+  requirement: ít nhất một editable raw field trước canonicalization
 
 ScenarioConfig
   graph_view: GraphView = "full"
@@ -576,7 +584,7 @@ npx tsc --noEmit
 Dừng nếu baseline fail do repository hiện hành hoặc source authority mâu thuẫn
 với contract đã duyệt. Không sửa unrelated failure chỉ để tiếp tục.
 
-## 8. Milestone 1 — Khóa contract và hoàn thiện specification/report
+## 8. Milestone 1 — Khóa contract và hoàn thiện specification/report (đã hoàn thành)
 
 Milestone này **chỉ sửa specification/report/source prose**. Chưa triển khai
 backend/frontend feature.
@@ -615,6 +623,12 @@ Khóa UX:
 ### 8.3. `report/BaoCao-Khung.md`
 
 Hoàn thiện mục c/d/e/g/h:
+
+> **Ranh giới M1:** milestone này khóa khung 13 phương pháp, các phát biểu
+> correctness/complexity/provenance và placeholder có nguồn. Nó không tuyên bố
+> prose nhóm tự viết, ví dụ chạy tay sau data refresh, screenshot hay report PDF
+> cuối đã hoàn thành; các phần đó vẫn là manual final-submission work và phải giữ
+> marker `[ĐIỀN]`/`SỐ TẠM` cho đến lượt được ủy quyền.
 
 #### Graph model
 
@@ -743,7 +757,7 @@ Sau Milestone 1, báo:
 
 **DỪNG và chờ người dùng duyệt `docs/SCHEMA.md` trước code.**
 
-## 9. Milestone 2 — GraphView end-to-end
+## 9. Milestone 2 — GraphView end-to-end (đã hoàn thành)
 
 Chỉ bắt đầu khi STOP GATE 1 được duyệt.
 
@@ -852,7 +866,7 @@ Sau targeted, chạy full backend suite + validator + frontend tests + tsc.
 - no data file rebuild;
 - `git diff --check` pass.
 
-## 10. Milestone 3 — ATSP optimization trace
+## 10. Milestone 3 — ATSP optimization trace (đã hoàn thành)
 
 ### 10.1. Regression-first
 
@@ -947,7 +961,7 @@ Full gates sau targeted. Browser QA đủ ba method ở 1366×768.
 - reduced-motion đúng;
 - không regression route timeline.
 
-## 11. Milestone 4 — Edge-override sandbox
+## 11. Milestone 4 — Edge-override sandbox (đã hoàn thành)
 
 ### 11.1. Regression-first
 
@@ -1080,7 +1094,7 @@ derived render state; không mutate `traffic`.
 ### 11.5. Verification
 
 ```powershell
-.venv\Scripts\python.exe -m pytest backend\tests\test_costs.py backend\tests\test_scenario.py backend\tests\test_api.py backend\tests\test_search.py backend\tests\test_search_advanced.py backend\tests\test_tsp.py -v
+.venv\Scripts\python.exe -m pytest backend\tests\test_costs.py backend\tests\test_scenario.py backend\tests\test_scenario_overrides.py backend\tests\test_api.py backend\tests\test_search.py backend\tests\test_search_advanced.py backend\tests\test_tsp.py -v
 Set-Location frontend
 npm test
 npx tsc --noEmit
@@ -1204,7 +1218,8 @@ Chỉ hoàn tất khi:
 | `backend/app/tsp.py` | solver instrumentation |
 | `backend/app/optimization_trace.py` | optional recorder/sampler only |
 | `backend/app/explain.py` | scenario-aware prose |
-| `backend/tests/test_scenario.py` | view/override/fingerprint/immutability |
+| `backend/tests/test_scenario.py` | GraphView, preset và base-scenario invariants |
+| `backend/tests/test_scenario_overrides.py` | override contract, physical floor, fingerprint và immutability |
 | existing backend tests | schema/API/search/TSP regression |
 | `frontend/lib/types.ts` | exact TypeScript mirror |
 | `frontend/lib/api.ts` | view/scenario/include_trace payload |
@@ -1226,6 +1241,9 @@ Không bắt buộc tạo mọi “optional new file” nếu current implementa
 nhiệm rõ hơn khi sửa file hiện có. Không được bỏ trách nhiệm hoặc test tương ứng.
 
 ## 14. Final review checklist
+
+> Checklist này là template kiểm tra, không phải trạng thái resume. Checkpoint ở
+> đầu file là nguồn chuẩn để agent nhận handoff biết M1–M4 đã hoàn thành.
 
 ### Contract
 

@@ -11,7 +11,7 @@ import { Slider } from "./ui/slider";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "./ui/select";
-import { effectiveTraceSteps } from "@/lib/interaction-policy";
+import { activeTimelineLength } from "@/lib/atsp-trace-policy";
 import { useApp } from "@/lib/store";
 
 const BASE_MS = 500;
@@ -40,13 +40,42 @@ export function Timeline() {
   const set = useApp((s) => s.set);
   const graph = useApp((s) => s.graph);
   const traceOnReal = useApp((s) => s.traceOnReal);
+  const optimizationTrace = useApp((s) => s.optimizationTrace);
+  const timelineSource = useApp((s) => s.timelineSource);
+  const [reducedMotion, setReducedMotion] = React.useState(false);
 
-  // mirror useAnimation: toggling trace off on G_real hides the player NOW
-  const n = effectiveTraceSteps(trace, graph, traceOnReal).length;
+  // Route and optimizer traces share player controls, not event shapes.
+  const n = activeTimelineLength(
+    timelineSource, trace, optimizationTrace, graph, traceOnReal,
+  );
+  const isOptimization = timelineSource === "optimization";
+  const optimizerEvent = isOptimization && optimizationTrace
+    ? optimizationTrace.events[Math.min(stepIdx, optimizationTrace.events.length - 1)]
+    : null;
+
+  React.useEffect(() => {
+    const query = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const sync = () => setReducedMotion(query.matches);
+    sync();
+    query.addEventListener("change", sync);
+    return () => query.removeEventListener("change", sync);
+  }, []);
+
+  React.useEffect(() => {
+    if (reducedMotion && playing) set({ playing: false });
+  }, [reducedMotion, playing, set]);
+
+  const safeTogglePlay = React.useCallback(() => {
+    if (reducedMotion) {
+      set({ playing: false });
+      return;
+    }
+    togglePlay();
+  }, [reducedMotion, set, togglePlay]);
 
   // playback clock
   React.useEffect(() => {
-    if (!playing || n === 0) return;
+    if (!playing || n === 0 || reducedMotion) return;
     const id = window.setInterval(() => {
       const s = useApp.getState();
       if (s.stepIdx >= n - 1) {
@@ -56,7 +85,7 @@ export function Timeline() {
       }
     }, BASE_MS / speed);
     return () => window.clearInterval(id);
-  }, [playing, speed, n, set]);
+  }, [playing, speed, n, set, reducedMotion]);
 
   // keyboard: Space / ArrowLeft / ArrowRight (ignored while typing)
   React.useEffect(() => {
@@ -68,7 +97,7 @@ export function Timeline() {
       ) return;
       if (e.code === "Space") {
         e.preventDefault();
-        togglePlay();
+        safeTogglePlay();
       } else if (e.code === "ArrowLeft") {
         e.preventDefault();
         setStep(useApp.getState().stepIdx - 1);
@@ -81,12 +110,15 @@ export function Timeline() {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [n, togglePlay, setStep, set]);
+  }, [n, safeTogglePlay, setStep, set]);
 
   if (n === 0) return null;
 
   return (
-    <div className="absolute bottom-3 left-1/2 z-10 flex h-[52px] w-[min(640px,calc(100%-2rem))] -translate-x-1/2 items-center gap-2 rounded-lg border border-surface-strong bg-surface-raised px-2.5 py-2 shadow-float max-[900px]:overflow-x-auto">
+    <div className="absolute bottom-3 left-1/2 z-10 flex h-[52px] w-[min(760px,calc(100%-2rem))] -translate-x-1/2 items-center gap-2 rounded-lg border border-surface-strong bg-surface-raised px-2.5 py-2 shadow-float max-[900px]:overflow-x-auto">
+      <span className="hidden max-w-40 truncate text-[11px] font-medium text-ink-dim min-[700px]:inline" title={isOptimization ? "Quá trình tối ưu thứ tự ghé" : "Các bước tìm đường"}>
+        {isOptimization ? `ATSP · ${optimizationTrace?.method ?? "optimization"}` : "Tìm đường"}
+      </span>
       <div className="flex items-center gap-1">
         <Button
           variant="ghost" size="iconSm" aria-label="Lùi một bước"
@@ -100,7 +132,8 @@ export function Timeline() {
           size="icon"
           aria-label={playing ? "Tạm dừng" : "Phát"}
           aria-keyshortcuts="Space"
-          onClick={togglePlay}
+          disabled={reducedMotion}
+          onClick={safeTogglePlay}
         >
           {playing ? <Pause /> : <Play />}
         </Button>
@@ -123,8 +156,14 @@ export function Timeline() {
         aria-label="Bước hiện tại"
       />
       <span className="min-w-[76px] whitespace-nowrap text-right font-mono text-xs text-ink-dim">
-        Bước <span className="font-bold text-ink">{Math.min(stepIdx, n - 1) + 1}</span>/{n}
+        {isOptimization ? "Sự kiện" : "Bước"} <span className="font-bold text-ink">{Math.min(stepIdx, n - 1) + 1}</span>/{n}
       </span>
+      {optimizerEvent && (
+        <span className="hidden whitespace-nowrap font-mono text-[10px] text-ink-faint min-[700px]:inline">
+          Event #{optimizerEvent.ordinal} · {optimizationTrace?.recorded_events}/{optimizationTrace?.total_events}
+          {optimizationTrace?.trace_truncated ? " · đã lấy mẫu" : ""}
+        </span>
+      )}
       <Select value={String(speed)} onValueChange={(v) => set({ speed: Number(v) })}>
         <SelectTrigger className="h-9 w-[72px] text-xs" aria-label="Tốc độ phát">
           <SelectValue />

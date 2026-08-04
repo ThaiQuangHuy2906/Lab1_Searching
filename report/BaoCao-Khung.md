@@ -218,6 +218,12 @@ thay chứng minh guarantee. IDDFS chỉ complete khi depth nghiệm không vư�
 IDA* chỉ giữ guarantee khi chưa chạm cap 1.000 round; Bidirectional Dijkstra
 không được quảng cáo tốt hơn Dijkstra trong worst case vô điều kiện.
 
+**Ranh giới của khung này:** 15 mục trên là cấu trúc bắt buộc đã khóa cho cả 13
+tiểu mục, không phải tuyên bố rằng prose, pseudocode diễn giải bằng lời nhóm,
+ví dụ chạy tay, hình và report PDF đã hoàn tất. Các phần đó vẫn là việc tay trước
+khi nộp; giữ marker `[ĐIỀN]` và không thay số `SỐ TẠM` bằng số benchmark mới khi
+chưa được phép chạy chuỗi benchmark/generator cuối.
+
 **Tiểu mục heuristic** *(chèn sẵn)*: toàn bộ chứng minh admissible + consistent lấy từ
 `docs/HEURISTIC-PROOF.md` (Bổ đề 1–3, Định lý 1–3, mục 6b về làm tròn số — bài học hay
 nên kể). Kèm [HÌNH → results/figs/admissibility_scatter.png] và

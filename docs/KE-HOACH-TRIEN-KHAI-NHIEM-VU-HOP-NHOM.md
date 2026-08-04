@@ -4,14 +4,16 @@
 > các thành viên A–E có thể dùng làm context khi đọc, thảo luận hoặc viết prompt
 > cho các lượt làm việc tiếp theo.
 >
-> **Trạng thái:** audit/thiết kế đã hoàn tất; data/profile cuối đã refresh và
-> validate với TomTom 4/4. Chưa triển khai các milestone code, chưa chạy
-> benchmark/hiệu chuẩn γ/generator và chưa commit/push. Bốn quyết định UI/API ở
-> mục 9 vẫn chờ duyệt.
+> **Trạng thái cập nhật 2026-08-05:** đây là blueprint/audit snapshot trước triển
+> khai. Người dùng đã duyệt bốn quyết định UI/API ở mục 9 và Milestone 1–4 đã
+> được triển khai trong worktree hiện hành. `PLAN.md`, `docs/SCHEMA.md`,
+> `README.md`, code và fresh gates là nguồn trạng thái hiện hành; các bảng
+> “Hiện trạng”, “Có một phần” và “Chưa có” bên dưới ghi lại baseline 2026-08-04,
+> không phải mô tả current code.
 >
 > **Ngày audit:** 2026-08-04.
 
-## 1. Tóm tắt hiện trạng
+## 1. Tóm tắt baseline trước triển khai
 
 Lượt audit ban đầu hoàn tất ở chế độ chỉ đọc. Sau đó nhóm đã duyệt và hoàn tất
 chuỗi `03b real → 04 → 03b demo → validate_data`; benchmark, generator, build
@@ -532,11 +534,12 @@ generator vẫn cần ủy quyền riêng.
 
 | # | Quyết định | Trạng thái | Khuyến nghị đủ để duyệt | Trade-off |
 |---:|---|---|---|---|
-| 1 | Cách chọn số node demo | **CHỜ NGƯỜI DÙNG DUYỆT** | Preset nested UI 7/15/25/51, identifier API canonical `full/teach_7/teach_15/teach_25`; absent=`full`, real chỉ `full` | Ít linh hoạt hơn slider tùy ý, nhưng ổn định, strong-connected và quay bài giảng tốt |
-| 2 | Nơi giữ edge override | **CHỜ NGƯỜI DÙNG DUYỆT** | Frontend memory + `scenario` optional request-scoped; backend rollout trước, duplicate/non-finite/out-of-view reject, base bất biến | Payload lớn hơn chút, đổi lại stateless, refresh reset và không cần backend session |
-| 3 | ATSP trace policy | **CHỜ NGƯỜI DÙNG DUYỆT** | Cap HK/NN/SA = **2.000/2.000/1.500**, SA periodic mỗi 20 iteration; priority/stride deterministic, reserve final, cap không dừng optimizer | Payload có sampling với bài lớn, nhưng kết quả và final summary vẫn đầy đủ |
-| 4 | Provenance scenario trong response | **CHỜ NGƯỜI DÙNG DUYỆT** | Additive `AppliedScenario` + server-generated `scenario-v1` SHA-256 fingerprint trong route và multiroute | Contract rộng hơn, nhưng chứng minh được UI và backend chạy cùng scenario |
+| 1 | Cách chọn số node demo | **ĐÃ DUYỆT · ĐÃ TRIỂN KHAI M2** | Preset nested UI 7/15/25/51, identifier API canonical `full/teach_7/teach_15/teach_25`; absent=`full`, real chỉ `full` | Ít linh hoạt hơn slider tùy ý, nhưng ổn định, strong-connected và quay bài giảng tốt |
+| 2 | Nơi giữ edge override | **ĐÃ DUYỆT · ĐÃ TRIỂN KHAI M4** | Frontend memory + `scenario` optional request-scoped; backend rollout trước, duplicate/non-finite/out-of-view reject, base bất biến | Payload lớn hơn chút, đổi lại stateless, refresh reset và không cần backend session |
+| 3 | ATSP trace policy | **ĐÃ DUYỆT · ĐÃ TRIỂN KHAI M3** | Cap HK/NN/SA = **2.000/2.000/1.500**, SA periodic mỗi 20 iteration; priority/stride deterministic, reserve final, cap không dừng optimizer | Payload có sampling với bài lớn, nhưng kết quả và final summary vẫn đầy đủ |
+| 4 | Provenance scenario trong response | **ĐÃ DUYỆT · ĐÃ TRIỂN KHAI M2/M4** | Additive `AppliedScenario` + server-generated `scenario-v1` SHA-256 fingerprint trong route và multiroute | Contract rộng hơn, nhưng chứng minh được UI và backend chạy cùng scenario |
 | 5 | Dữ liệu TomTom cuối | **ĐÃ CHỐT** | Giữ 4/4 snapshot đại diện trên hai ngày thứ Hai; profile `tomtom+synthetic`, `G_demo` 51/298 đã validate; benchmark/hiệu chuẩn γ/generator vẫn hoãn đến khi code ổn định | Không còn là quyết định mở; phải công bố giới hạn và đóng gói raw trong Data ZIP |
 
-Nếu duyệt các khuyến nghị trên, lượt triển khai tiếp theo bắt đầu bằng Milestone 1
-và cập nhật contract/schema trước mọi thay đổi backend/frontend.
+Các quyết định trên đã được duyệt và triển khai theo thứ tự schema → backend →
+frontend. Lượt công việc tiếp theo bắt đầu từ Milestone 5 sau khi hoàn tất fresh
+integration/runtime QA của M1–M4.

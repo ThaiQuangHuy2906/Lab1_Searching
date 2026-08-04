@@ -276,6 +276,37 @@ def test_multiroute_nn2opt():
     assert resp.savings_pct is not None
 
 
+@pytest.mark.parametrize("method", ["held_karp", "nn_2opt", "sa"])
+def test_multiroute_optimization_trace_is_opt_in_and_typed(method):
+    body = {
+        "start": "n0021", "stops": ["n0002", "n0043", "n0015"],
+        "method": method, "mode": "balanced", "time_slot": "07:30",
+        "graph": "demo",
+    }
+    without_trace = client.post("/api/multiroute", json=body)
+    with_trace = client.post("/api/multiroute", json={**body, "include_trace": True})
+
+    assert without_trace.status_code == with_trace.status_code == 200
+    plain = MultirouteResponse.model_validate(without_trace.json())
+    traced = MultirouteResponse.model_validate(with_trace.json())
+    assert plain.optimization_trace is None
+    assert traced.optimization_trace is not None
+    assert traced.optimization_trace.events[-1].kind == "optimization_summary"
+    assert plain.order == traced.order
+    assert plain.totals == traced.totals
+    assert plain.optimizer_stats == traced.optimizer_stats
+
+
+def test_multiroute_openapi_declares_optional_optimization_trace_contract():
+    schemas = app.openapi()["components"]["schemas"]
+    request = schemas["MultirouteRequest"]
+    response = schemas["MultirouteResponse"]
+
+    assert request["properties"]["include_trace"]["default"] is False
+    assert response["properties"]["optimization_trace"]["anyOf"][0]["$ref"].endswith("/OptimizationTrace")
+    assert response["properties"]["optimizer_stats"]["anyOf"][0]["$ref"].endswith("/SaOptimizerStats")
+
+
 def test_multiroute_resolves_teaching_scenario_and_echoes_it():
     r = client.post("/api/multiroute", json={
         "start": "n0018", "stops": ["n0020", "n0038"],

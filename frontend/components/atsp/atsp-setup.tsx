@@ -3,6 +3,7 @@
 import { Crosshair, ListOrdered, Loader2, Route as RouteIcon, X } from "lucide-react";
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
+import { Switch } from "../ui/switch";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "../ui/select";
@@ -207,6 +208,21 @@ export function AtspSetup() {
               {method.description}
             </p>
           </div>
+          <div className="flex min-h-9 items-center justify-between gap-2">
+            <label htmlFor="include-optimization-trace" className="text-xs text-ink-dim">
+              Hiện quá trình tối ưu
+            </label>
+            <Switch
+              id="include-optimization-trace"
+              checked={s.includeOptimizationTrace}
+              disabled={busy}
+              aria-label="Hiện quá trình tối ưu ở lần chạy tiếp theo"
+              onCheckedChange={(checked) => s.set({ includeOptimizationTrace: checked })}
+            />
+          </div>
+          <p className="-mt-1 text-[11px] leading-4 text-ink-faint">
+            Chỉ áp dụng cho lần chạy tiếp theo; đây là diễn biến đổi thứ tự ghé, không phải đường xe chạy.
+          </p>
           {tooManyForHeldKarp && (
             <p
               id={heldKarpWarningId}

@@ -11,10 +11,13 @@ import hashlib
 import json
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
 
+from .costs import ceil_dm, haversine_m
 from .graph_store import GraphStore
 from .models import (
     AppliedScenario,
+    EdgeOverride,
     GraphFile,
     GraphResponse,
     GraphView,
@@ -43,6 +46,32 @@ class GraphViewUnavailable(Exception):
     def __init__(self, detail: str, status_code: int) -> None:
         super().__init__(detail)
         self.status_code = status_code
+
+
+class ScenarioOverrideError(Exception):
+    """Typed, safe public failure for a semantically invalid edge override."""
+
+    status_code: int
+    code: str
+
+    def __init__(self, detail: str, *, status_code: int, code: str) -> None:
+        super().__init__(detail)
+        self.status_code = status_code
+        self.code = code
+
+
+class EdgeNotFound(ScenarioOverrideError):
+    def __init__(self, edge_id: str) -> None:
+        super().__init__(
+            f"edge {edge_id} is not present in the resolved graph view",
+            status_code=404,
+            code="EDGE_NOT_FOUND",
+        )
+
+
+class InvalidEdgeOverride(ScenarioOverrideError):
+    def __init__(self, detail: str) -> None:
+        super().__init__(detail, status_code=422, code="INVALID_EDGE_OVERRIDE")
 
 
 @dataclass(frozen=True)
@@ -212,8 +241,10 @@ def graph_response(base: GraphStore, view: GraphView) -> GraphResponse:
     )
 
 
-def canonical_fingerprint(base: GraphStore, graph_view: GraphView) -> str:
-    """Fingerprint the effective no-override scenario; M4 extends the payload."""
+def canonical_fingerprint(
+    base: GraphStore, graph_view: GraphView, edge_overrides: list[dict[str, Any]] | None = None,
+) -> str:
+    """Fingerprint validated effective scenario values, never raw request order."""
     payload = {
         "version": "scenario-v1",
         "graph_level": base.level,
@@ -226,7 +257,7 @@ def canonical_fingerprint(base: GraphStore, graph_view: GraphView) -> str:
             "source": base.profiles.meta.source,
         },
         "graph_view": graph_view,
-        "edge_overrides": [],
+        "edge_overrides": edge_overrides or [],
     }
     serialized = json.dumps(
         payload,
@@ -238,17 +269,97 @@ def canonical_fingerprint(base: GraphStore, graph_view: GraphView) -> str:
     return f"scenario-v1:{hashlib.sha256(serialized).hexdigest()}"
 
 
+def _edge_minimum_length(store: GraphStore, edge_id: str) -> float:
+    edge = store.edges[edge_id]
+    u, v = store.nodes[edge.u], store.nodes[edge.v]
+    return ceil_dm(haversine_m(u.lat, u.lon, v.lat, v.lon))
+
+
+def _effective_overrides(
+    store: GraphStore, overrides: list[EdgeOverride],
+) -> list[dict[str, Any]]:
+    """Validate semantic constraints and remove accepted no-op fields/edges."""
+    effective: list[dict[str, Any]] = []
+    for override in overrides:
+        edge = store.edges.get(override.edge_id)
+        if edge is None:
+            raise EdgeNotFound(override.edge_id)
+        item: dict[str, Any] = {"edge_id": override.edge_id}
+        if override.length_m is not None:
+            minimum = _edge_minimum_length(store, override.edge_id)
+            if override.length_m < minimum:
+                raise InvalidEdgeOverride(
+                    f"length_m for {override.edge_id} is below its haversine floor",
+                )
+            if override.length_m != edge.length_m:
+                item["length_m"] = override.length_m
+        if override.free_speed_kmh is not None and override.free_speed_kmh != edge.free_speed_kmh:
+            item["free_speed_kmh"] = override.free_speed_kmh
+        if override.congestion:
+            congestion = {
+                slot: value for slot, value in override.congestion.items()
+                if value != store.congestion(override.edge_id, slot)
+            }
+            if congestion:
+                item["congestion"] = congestion
+        if override.risk:
+            risk = {
+                key: value for key, value in override.risk.model_dump(exclude_none=True).items()
+                if value != getattr(edge.risk, key)
+            }
+            if risk:
+                item["risk"] = risk
+        if len(item) > 1:
+            effective.append(item)
+    return sorted(effective, key=lambda item: item["edge_id"])
+
+
+def _store_with_overrides(
+    store: GraphStore, effective: list[dict[str, Any]],
+) -> GraphStore:
+    """Clone and apply overrides privately; cached stores and JSON stay immutable."""
+    graph_raw = store.graph.model_dump(mode="python")
+    profiles_raw = store.profiles.model_dump(mode="python")
+    edges = {edge["id"]: edge for edge in graph_raw["edges"]}
+
+    for override in effective:
+        edge_id = override["edge_id"]
+        edge = edges[edge_id]
+        if "length_m" in override:
+            edge["length_m"] = override["length_m"]
+        if "free_speed_kmh" in override:
+            edge["free_speed_kmh"] = override["free_speed_kmh"]
+        if "risk" in override:
+            edge["risk"] = {**edge["risk"], **override["risk"]}
+        edge["free_travel_time_s"] = round(
+            edge["length_m"] / (edge["free_speed_kmh"] / 3.6), 1,
+        )
+        for slot, congestion in override.get("congestion", {}).items():
+            profiles_raw["profiles"][slot][edge_id] = congestion
+
+    graph = GraphFile.model_validate(graph_raw)
+    profiles = TrafficProfiles.model_validate(profiles_raw)
+    return GraphStore(graph, profiles, store.level)
+
+
 def resolve_scenario(
     base: GraphStore, config: ScenarioConfig | None,
 ) -> ResolvedScenario:
-    """Resolve the M2 no-override scenario and construct its provenance echo."""
+    """Resolve one view/override scenario without mutating shared snapshots."""
     scenario = config or ScenarioConfig()
     store = resolve_view_store(base, scenario.graph_view)
-    provenance = "base" if scenario.graph_view == "full" else "graph_view"
+    effective = _effective_overrides(store, scenario.edge_overrides)
+    if effective:
+        store = _store_with_overrides(store, effective)
+    provenance = (
+        "sandbox_override" if effective
+        else "base" if scenario.graph_view == "full"
+        else "graph_view"
+    )
     applied = AppliedScenario(
         graph_view=scenario.graph_view,
-        override_count=0,
+        override_count=len(effective),
         provenance=provenance,
-        fingerprint=canonical_fingerprint(base, scenario.graph_view),
+        fingerprint=canonical_fingerprint(base, scenario.graph_view, effective),
     )
     return ResolvedScenario(store=store, applied_scenario=applied)

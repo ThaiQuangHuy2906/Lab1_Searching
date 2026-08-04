@@ -20,8 +20,15 @@ import { toast } from "sonner";
 import { useApp } from "@/lib/store";
 import { Button } from "./ui/button";
 import { useAnimation } from "@/lib/use-animation";
+import {
+  activeTimelineLength,
+  heldKarpHighlightIds,
+  isOptimizationFinalEvent,
+  mapControlsBottomClass,
+} from "@/lib/atsp-trace-policy";
 import { isEndpointOptionAllowed, isStopOptionAllowed } from "@/lib/interaction-policy";
-import type { GraphNode } from "@/lib/types";
+import { effectiveCongestion } from "@/lib/scenario";
+import type { GraphNode, OptimizationEvent } from "@/lib/types";
 import { Legend } from "./legend";
 import { Timeline } from "./timeline";
 
@@ -48,6 +55,20 @@ function getLayerId(layer: unknown): string | undefined {
     : undefined;
 }
 
+function conceptualOrder(event: OptimizationEvent | null): string[] {
+  if (!event) return [];
+  switch (event.kind) {
+    case "held_karp_update": return [event.predecessor, event.endpoint];
+    case "held_karp_reconstruct": return event.order;
+    case "nn_decision": return event.order;
+    case "local_improvement": return event.after_order;
+    case "sa_seed_boundary": return event.best_order;
+    case "sa_iteration": return event.best_order;
+    case "sa_final_best": return event.final_order;
+    case "optimization_summary": return event.final_order;
+  }
+}
+
 export function MapView() {
   const graphData = useApp((s) => s.graphData);
   const graphLoading = useApp((s) => s.graphLoading);
@@ -56,9 +77,17 @@ export function MapView() {
   const offline = useApp((s) => s.offlineMode);
   const trafficLayer = useApp((s) => s.trafficLayer);
   const traffic = useApp((s) => s.traffic);
+  const slot = useApp((s) => s.slot);
+  const traceOnReal = useApp((s) => s.traceOnReal);
+  const edgeOverrides = useApp((s) => s.edgeOverrides);
+  const edgeEditMode = useApp((s) => s.edgeEditMode);
+  const selectedEdgeId = useApp((s) => s.selectedEdgeId);
   const trace = useApp((s) => s.trace);
   const compare = useApp((s) => s.compare);
   const multi = useApp((s) => s.multi);
+  const optimizationTrace = useApp((s) => s.optimizationTrace);
+  const timelineSource = useApp((s) => s.timelineSource);
+  const stepIdx = useApp((s) => s.stepIdx);
   const drawerTab = useApp((s) => s.drawerTab);
   const start = useApp((s) => s.start);
   const goal = useApp((s) => s.goal);
@@ -83,6 +112,18 @@ export function MapView() {
   // v11: quantized zoom (half-steps) — the G_real marker sizes scale with it
   // below, and quantizing keeps the layers memo from rebuilding every frame
   const zoomBucket = Math.round((viewState?.zoom ?? 14) * 2) / 2;
+  const optimizationEvent = timelineSource === "optimization" && optimizationTrace
+    ? optimizationTrace.events[Math.min(stepIdx, optimizationTrace.events.length - 1)] ?? null
+    : null;
+  const showFinalMultiRoute = isOptimizationFinalEvent(optimizationEvent?.kind)
+    || !optimizationEvent;
+  const heldKarpHighlightSet = React.useMemo(
+    () => new Set(heldKarpHighlightIds(optimizationEvent)),
+    [optimizationEvent],
+  );
+  const timelineVisible = activeTimelineLength(
+    timelineSource, trace, optimizationTrace, graph, traceOnReal,
+  ) > 0;
 
   React.useEffect(() => {
     const query = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -160,7 +201,7 @@ export function MapView() {
   const isDemo = graph === "demo";
 
   const routeFlowPath = React.useMemo(() => {
-    if (multi?.found) {
+    if (multi?.found && showFinalMultiRoute) {
       // The API guarantees chained legs. Drop each repeated join node so the
       // shader sees one continuous Đi -> stops itinerary instead of restarting
       // the highlight on every delivery leg at the same time.
@@ -170,11 +211,15 @@ export function MapView() {
       return toPath(routeNodeIds);
     }
     return trace?.found && anim.showPath ? toPath(trace.path) : [];
-  }, [multi, trace, anim.showPath, toPath]);
+  }, [multi, showFinalMultiRoute, trace, anim.showPath, toPath]);
   const routeFlowActive = routeFlowPath.length > 1;
 
   const nodeColor = React.useCallback(
     (n: GraphNode): RGBA => {
+      if (optimizationEvent?.kind === "held_karp_update") {
+        if (n.id === optimizationEvent.endpoint) return C.current;
+        if (heldKarpHighlightSet.has(n.id)) return C.frontier;
+      }
       if (anim.current?.expanded === n.id) return C.current;
       if (anim.expandedSet.has(n.id)) {
         const side = anim.sideByNode.get(n.id);
@@ -185,7 +230,7 @@ export function MapView() {
       if (anim.frontierSet.has(n.id)) return C.frontier;
       return isDemo ? C.node : C.nodeReal;
     },
-    [anim, C, isDemo],
+    [anim, C, heldKarpHighlightSet, isDemo, optimizationEvent],
   );
   // v8: G_demo labels are ALWAYS on (user request) — collision filter handles overlap
   const showLabels = isDemo;
@@ -201,7 +246,9 @@ export function MapView() {
       id: e.id,
       source: coord.get(e.u)!,
       target: coord.get(e.v)!,
-      level: traffic?.[e.id] ?? 1,
+      level: effectiveCongestion(e.id, traffic ?? {}, slot, edgeOverrides[e.id]),
+      overridden: Boolean(edgeOverrides[e.id]),
+      selected: selectedEdgeId === e.id,
     }));
     const out: unknown[] = [
       new LineLayer({
@@ -210,14 +257,32 @@ export function MapView() {
         getSourcePosition: (d: (typeof edgeData)[number]) => d.source,
         getTargetPosition: (d: (typeof edgeData)[number]) => d.target,
         getColor: (d: (typeof edgeData)[number]) =>
-          trafficLayer ? CONGESTION[d.level] : isDemo ? C.edgeDim : C.edgeReal,
+          d.selected ? C.frontier : d.overridden ? C.path
+            : trafficLayer ? CONGESTION[d.level] : isDemo ? C.edgeDim : C.edgeReal,
         getWidth: trafficLayer
           ? (isDemo ? 2.4 : Math.max(1.1, realEdgeW))
           : (isDemo ? 1.35 : realEdgeW),
         widthUnits: "pixels",
-        updateTriggers: { getColor: [trafficLayer, traffic, theme] },
+        updateTriggers: {
+          getColor: [trafficLayer, traffic, slot, edgeOverrides, selectedEdgeId, theme],
+        },
       }),
     ];
+
+    if (edgeEditMode) {
+      out.push(new LineLayer({
+        id: "edges-pick",
+        data: edgeData,
+        pickable: true,
+        getSourcePosition: (d: (typeof edgeData)[number]) => d.source,
+        getTargetPosition: (d: (typeof edgeData)[number]) => d.target,
+        // Keep a non-zero alpha so the WebGL line survives the picking pass;
+        // alpha=1 remains visually imperceptible on the display pass.
+        getColor: [0, 0, 0, 1],
+        getWidth: 16,
+        widthUnits: "pixels",
+      }));
+    }
 
     if (congestedSet.size) {
       out.push(
@@ -319,10 +384,27 @@ export function MapView() {
       );
     };
 
-    if (multi?.found) {
+    if (multi?.found && showFinalMultiRoute) {
       const legPaths = multi.legs.map((l) => toPath(l.path));
       casedPath("multi-path", legPaths.map((path) => ({ path })), C.path);
       routeArrows("multi-arrows", legPaths, C.path);
+    } else if (optimizationEvent) {
+      const orderPath = toPath(conceptualOrder(optimizationEvent));
+      if (orderPath.length > 1) {
+        out.push(new PathLayer({
+          id: "optimization-conceptual-order",
+          data: [{ path: orderPath }],
+          getPath: (datum: RoutePathDatum) => datum.path,
+          getColor: C.path,
+          getWidth: 3,
+          widthUnits: "pixels",
+          jointRounded: true,
+          capRounded: true,
+          getDashArray: [7, 5],
+          dashJustified: true,
+          extensions: [new PathStyleExtension({ dash: true })],
+        }));
+      }
     } else if (trace?.found && anim.showPath) {
       const routePath = toPath(trace.path);
       casedPath("route", [{ path: routePath }], C.path);
@@ -340,10 +422,13 @@ export function MapView() {
       new ScatterplotLayer({
         id: "nodes",
         data: graphData.nodes,
-        pickable: true,
+        pickable: !edgeEditMode,
         getPosition: (n: GraphNode) => [n.lon, n.lat],
         getFillColor: nodeColor,
         getRadius: (n: GraphNode) => {
+          if (optimizationEvent?.kind === "held_karp_update" && n.id === optimizationEvent.endpoint)
+            return isDemo ? 7.2 : 5.8;
+          if (heldKarpHighlightSet.has(n.id)) return isDemo ? 5.8 : 4.6;
           if (anim.current?.expanded === n.id) return isDemo ? 7.2 : 5.8;
           if (anim.frontierSet.has(n.id)) return isDemo ? 5.8 : 4.6;
           if (anim.expandedSet.has(n.id)) return isDemo ? 5.2 : 4.1;
@@ -356,8 +441,8 @@ export function MapView() {
         // without it deck.gl kept the stale expanded/frontier fill colors
         // (audit finding L3-03; same bug class as the label layer below)
         updateTriggers: {
-          getFillColor: [anim.stepIdx, anim.steps.length, trace, theme],
-          getRadius: [anim.stepIdx, anim.steps.length, trace, zoomBucket],
+          getFillColor: [anim.stepIdx, anim.steps.length, trace, optimizationEvent, theme],
+          getRadius: [anim.stepIdx, anim.steps.length, trace, optimizationEvent, zoomBucket],
         },
       }),
     );
@@ -366,7 +451,7 @@ export function MapView() {
         new ScatterplotLayer({
           id: "nodes-pick-demo",
           data: graphData.nodes,
-          pickable: pickTarget !== null,
+          pickable: pickTarget !== null && !edgeEditMode,
           opacity: 0,
           getPosition: (n: GraphNode) => [n.lon, n.lat],
           getRadius: 14,
@@ -430,9 +515,9 @@ export function MapView() {
     const chips: { pos: [number, number]; text: string; bg: RGBA; fg: RGBA }[] = [];
     if (start && coord.get(start)) chips.push({ pos: coord.get(start)!, text: "Đi", bg: C.chipStart, fg: C.chipText });
     // multiroute result = Đi -> stops; "Đến" is NOT part of it -> hide its chip
-    if (goal && coord.get(goal) && !multi?.found)
+    if (goal && coord.get(goal) && !(multi?.found && showFinalMultiRoute))
       chips.push({ pos: coord.get(goal)!, text: "Đến", bg: C.chipGoal, fg: C.chipText });
-    const orderedStops = multi?.found ? multi.order.slice(1) : stops;
+    const orderedStops = multi?.found && showFinalMultiRoute ? multi.order.slice(1) : stops;
     orderedStops.forEach((id, i) => {
       const pos = coord.get(id);
       if (pos) chips.push({ pos, text: String(i + 1), bg: C.stop, fg: C.stopText });
@@ -458,8 +543,9 @@ export function MapView() {
       );
     }
     return out;
-  }, [graphData, coord, toPath, traffic, trafficLayer, congestedSet, trace, compare,
-      multi, anim, nodeColor, isDemo, showLabels, start, goal, stops,
+  }, [graphData, coord, toPath, traffic, slot, edgeOverrides, edgeEditMode, selectedEdgeId,
+      trafficLayer, congestedSet, trace, compare,
+      multi, optimizationEvent, heldKarpHighlightSet, showFinalMultiRoute, anim, nodeColor, isDemo, showLabels, start, goal, stops,
       pickTarget, drawerTab, C, CONGESTION, theme, zoomBucket]);
 
   const routeFlowLayers = React.useMemo(() => {
@@ -564,6 +650,17 @@ export function MapView() {
     (info: PickingInfo) => {
       const st = useApp.getState();
       if (st.running || st.comparing || st.multiRunning) return; // journey locked mid-flight (L3-04)
+      if (st.edgeEditMode) {
+        const edgeId = info.object && "id" in (info.object as object)
+          ? (info.object as { id?: string }).id
+          : undefined;
+        // The wide pick layer is the only edge layer marked pickable in edit
+        // mode. Check the resolved edge ID instead of relying on deck.gl's
+        // layer-object identity, which is not stable across all render paths.
+        // `selectEdge` rejects any node/route object whose ID is not an edge.
+        if (edgeId) st.selectEdge(edgeId);
+        return;
+      }
       const target = st.pickTarget;
       if (!target || !info.object) return;
       const node = info.object as GraphNode;
@@ -663,7 +760,7 @@ export function MapView() {
         // liên tục 9 điểm giao không phải nhắm từng pixel
         pickingRadius={8}
         getCursor={({ isDragging }) =>
-          pickTarget ? "crosshair" : isDragging ? "grabbing" : "grab"
+          edgeEditMode || pickTarget ? "crosshair" : isDragging ? "grabbing" : "grab"
         }
         getTooltip={({ object }) =>
           object && "id" in (object as GraphNode)
@@ -709,7 +806,7 @@ export function MapView() {
         </div>
       )}
       {/* map controls (DESIGN 6, v6): zoom +/- and fly-home */}
-      <div className="absolute bottom-10 right-3 z-10 flex flex-col gap-1 rounded-lg border border-surface-strong bg-surface-raised p-1 shadow-float">
+      <div className={`absolute right-3 z-10 flex flex-col gap-1 rounded-lg border border-surface-strong bg-surface-raised p-1 shadow-float ${mapControlsBottomClass(timelineVisible)}`}>
         <Button variant="ghost" size="iconSm" aria-label="Phóng to"
           onClick={() => setViewState((v) => v && ({ ...v, zoom: (v.zoom ?? 0) + 0.7, transitionDuration: 250 }))}>
           <Plus />
@@ -741,7 +838,17 @@ export function MapView() {
           <Trash2 />
         </Button>
       </div>
-      {pickTarget && (
+      {edgeEditMode && (
+        <div className="absolute left-1/2 top-3 z-20 flex min-h-11 max-w-[min(680px,calc(100%-8rem))] -translate-x-1/2 items-center gap-2 rounded-lg border border-algo-frontier/60 bg-surface-raised px-3 text-sm shadow-float">
+          <span>Bấm một cạnh để chỉnh thử trong phiên hiện tại.</span>
+          <button type="button"
+            className="inline-flex h-9 items-center rounded-lg border border-surface-border bg-surface-control px-2.5 text-xs font-medium text-ink-dim transition-colors hover:border-surface-strong hover:text-ink"
+            onClick={() => set({ edgeEditMode: false, selectedEdgeId: null })}>
+            Xong
+          </button>
+        </div>
+      )}
+      {pickTarget && !edgeEditMode && (
         <div className="absolute left-1/2 top-3 z-20 flex min-h-11 max-w-[min(680px,calc(100%-8rem))] -translate-x-1/2 items-center gap-2 rounded-lg border border-surface-strong bg-surface-raised px-3 text-sm shadow-float">
           {pickTarget === "stop" ? (
             <span>

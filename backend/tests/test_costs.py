@@ -4,15 +4,20 @@ The consistency test is the executable side of docs/HEURISTIC-PROOF.md:
 h(u) <= w(u,v) + h(v) must hold on EVERY edge, all modes, all slots.
 """
 
+import json
+from pathlib import Path
+
 import pytest
 
 from app.costs import (
-    GAMMA, congestion_factor, edge_penalty_s, edge_weight, haversine_m,
+    GAMMA, congestion_factor, edge_cost_breakdown, edge_penalty_s, edge_weight,
+    haversine_m,
 )
 from app.graph_store import MODES, GraphStore
 from app.models import TIME_SLOTS, Edge, RiskFlags
 
 EPS = 1e-6
+GOLDEN_PATH = Path(__file__).resolve().parents[2] / "data" / "mock" / "scenario_cost_golden.json"
 
 
 def make_edge(**over) -> Edge:
@@ -44,6 +49,15 @@ def test_edge_weight_hand_computed():
     assert edge_penalty_s(e) == 85
     assert edge_weight(e, 5, "balanced") == pytest.approx(175.0)
     assert edge_weight(e, 1, "balanced") == pytest.approx(36.0 + 85.0)
+
+
+def test_scenario_cost_golden_fixture_matches_product_formula():
+    """The same locked fixture is consumed by the frontend preview test."""
+    golden = json.loads(GOLDEN_PATH.read_text(encoding="utf-8"))
+    edge = Edge.model_validate(golden["edge"])
+    breakdown = edge_cost_breakdown(edge, golden["congestion"])
+    for field, expected in golden["expected"].items():
+        assert breakdown[field] == pytest.approx(expected)
 
 
 def test_haversine_known_distance():

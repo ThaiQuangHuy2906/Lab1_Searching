@@ -28,6 +28,11 @@ def haversine_m(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
     return 2 * r * math.asin(math.sqrt(a))
 
 
+def ceil_dm(length_m: float) -> float:
+    """Round a length upward to 0.1 m without rounding float noise downward."""
+    return math.ceil(round(length_m * 10, 6)) / 10
+
+
 def congestion_factor(level: int, gamma: float = GAMMA) -> float:
     """f_cong = 1 + gamma * (level - 1) / 4, level in [1..5] -> [1 .. 1+gamma].
 
@@ -44,6 +49,38 @@ def edge_penalty_s(edge: Edge) -> float:
             + PENALTY_S["traffic_light"] * r.traffic_light)
 
 
+def edge_cost_breakdown(edge: Edge, congestion: int,
+                        gamma: float = GAMMA) -> dict[str, float | int]:
+    """Expose the complete derived cost breakdown for a validated edge.
+
+    The scenario resolver and the frontend preview both derive from this
+    contract: persisted ``free_travel_time_s`` is display-only, while weights
+    use the exact length/speed ratio to preserve the heuristic proof.
+    """
+    t_free = edge.length_m / (edge.free_speed_kmh / 3.6)
+    factor = congestion_factor(congestion, gamma)
+    penalties = {
+        "penalty_flood_s": PENALTY_S["flood"] * edge.risk.flood,
+        "penalty_construction_s": PENALTY_S["construction"] * edge.risk.construction,
+        "penalty_narrow_alley_s": PENALTY_S["narrow_alley"] * edge.risk.narrow_alley,
+        "penalty_traffic_light_s": PENALTY_S["traffic_light"] * edge.risk.traffic_light,
+    }
+    timed = t_free * factor
+    penalty_total = sum(penalties.values())
+    return {
+        "length_m": edge.length_m,
+        "free_speed_kmh": edge.free_speed_kmh,
+        "t_free_s": t_free,
+        "congestion": congestion,
+        "congestion_factor": factor,
+        **penalties,
+        "penalty_total_s": penalty_total,
+        "weight_distance_m": edge.length_m,
+        "weight_time_s": timed,
+        "weight_balanced_s": timed + penalty_total,
+    }
+
+
 def edge_weight(edge: Edge, congestion: int, mode: Mode,
                 gamma: float = GAMMA) -> float:
     """weight(e, h, mode) — SCHEMA §D. Meters for distance, seconds otherwise.
@@ -55,13 +92,12 @@ def edge_weight(edge: Edge, congestion: int, mode: Mode,
     (HEURISTIC-PROOF.md §2, Bổ đề 3). `gamma` override is for benchmark
     experiment 5 only — the product always runs the locked default.
     """
+    breakdown = edge_cost_breakdown(edge, congestion, gamma)
     if mode == "distance":
-        return edge.length_m
-    t_free = edge.length_m / (edge.free_speed_kmh / 3.6)
-    timed = t_free * congestion_factor(congestion, gamma)
+        return float(breakdown["weight_distance_m"])
     if mode == "time":
-        return timed
-    return timed + edge_penalty_s(edge)  # balanced (default)
+        return float(breakdown["weight_time_s"])
+    return float(breakdown["weight_balanced_s"])
 
 
 def heuristic_m(lat: float, lon: float, goal_lat: float, goal_lon: float) -> float:

@@ -1,9 +1,8 @@
 # DESIGN.md — Hợp đồng thiết kế giao diện (Phase 5)
 
-> **Trạng thái 2026-08-04:** đây là nguồn chuẩn về ý đồ, token và hành vi UI.
-> `npm test` (8 test) và `npx tsc --noEmit` hiện đạt. Các fix mới về slot/traffic,
-> loại trừ route–multiroute, effective-trace legend và savings sign-aware chưa
-> được kiểm tra lại bằng browser; các khẳng định về cuộn, bàn phím, map, theme,
+> **Trạng thái 2026-08-05:** đây là nguồn chuẩn về ý đồ, token và hành vi UI.
+> M1–M4 đã có implementation; `npm test` (19 test) và `npx tsc --noEmit` đạt.
+> Browser QA vẫn là bằng chứng riêng: các khẳng định về cuộn, bàn phím, map, theme,
 > offline, responsive và accessibility vẫn phải được kiểm tra trên trình
 > duyệt/độ phân giải dùng để quay hoặc bảo vệ.
 >
@@ -480,6 +479,12 @@ authority của view, scenario và fingerprint.
   mở rộng graph search. Event conceptual (subset/đề xuất thứ tự) dùng nét đứt và
   legend riêng; không gọi nó là đường xe chạy. Road leg thật chỉ được nhấn đầy đủ ở
   reconstruction/summary/final state.
+- Với `held_karp_update`, map highlight toàn bộ `subset` theo màu frontier, làm
+  nổi `endpoint` theo màu current, và vẫn vẽ nét đứt `predecessor → endpoint`.
+  Đây là trạng thái DP khái niệm, không phải tuyến xe chạy.
+- Khi timeline hiển thị, cụm zoom/home/clear của map phải nâng lên trên vùng
+  timeline; tại 1366×768 mọi control vẫn nhận được click và focus, không bị thanh
+  timeline che phủ.
 - Player nêu method, event ordinal, policy sampling, `recorded_events/total_events`
   và dấu hiệu truncated. Các event không liên tiếp sau sampling là bình thường.
 - Scenario/view/input đổi thật phải clear optimization trace cùng route trace;

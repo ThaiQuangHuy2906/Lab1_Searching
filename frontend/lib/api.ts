@@ -63,6 +63,7 @@ export const api = {
   multiroute: (body: {
     start: string; stops: string[]; method: TspMethod; mode: Mode;
     time_slot: TimeSlot; graph: GraphLevel; return_to_start: boolean;
+    include_trace: boolean;
     scenario?: ScenarioConfig;
   }) => call<MultirouteResponse>("/api/multiroute", {
     method: "POST", body: JSON.stringify(body),

@@ -17,16 +17,21 @@ gọi mạng.
 - 10 thuật toán tìm đường dùng chung contract `Trace`, timeline và bảng g/h/f.
 - Ba phương pháp ATSP cho hành trình nhiều điểm trên đồ thị có hướng, bất đối xứng.
 - Bản đồ G_demo/G_real, lớp ùn tắc, offline mode và chọn điểm trực tiếp trên map.
+- GraphView backend thật cho G_demo: `full`, `teach_7`, `teach_15`, `teach_25`;
+  mọi graph, traffic, route và multiroute cùng resolve một view.
+- ATSP optimization trace opt-in có player riêng; không trộn với route `Trace`.
+- Sandbox chỉnh cạnh chỉ trong request/phiên hiện tại, có preview cost, provenance và
+  fingerprint do backend sinh; không sửa graph/profile gốc.
 - Luồng sáng nhấn tuyến, focus/keyboard đầy đủ và fallback `prefers-reduced-motion`.
 - Giải thích tiếng Việt cho tuyến hai điểm và ATSP; so sánh hai thuật toán có
   chỉ báo phần tuyến trùng/khác; đối chiếu ATSP trước/sau tối ưu.
 - Benchmark viewer chỉ đọc với cảnh báo nguồn dữ liệu rõ ràng.
 
-> **Trạng thái ngày 2026-08-04 — sẵn sàng triển khai có điều kiện, chưa được nộp:**
+> **Trạng thái ngày 2026-08-05 — M1–M4 đã triển khai, chưa được nộp:**
 > Lượt data refresh cuối đã tích hợp đủ raw TomTom 07:30, 12:00, 17:30 và 22:00
 > dưới dạng bốn snapshot đại diện lấy trên hai ngày thứ Hai; profile hiện là
-> `tomtom+synthetic`. `validate_data.py`, 111 test backend, 8 test frontend và
-> TypeScript check đều đạt trên
+> `tomtom+synthetic`. Fresh core gate đạt `148 passed` backend, `ALL DATA VALID`,
+> `19/19` frontend test và TypeScript check trên
 > `G_demo` đã rebuild 51 node / 298 cạnh.
 > `results/` vẫn là số tạm từ lượt 2026-07-26 và không được dùng làm kết quả
 > chính thức. Không rerun data; benchmark/hiệu chuẩn γ/generator vẫn chờ một
@@ -36,14 +41,14 @@ gọi mạng.
 
 | Hạng mục | Trạng thái hiện tại | Bằng chứng |
 |---|---|---|
-| Backend | **Đạt** | `111 passed, 1 warning` trên current worktree ngày 2026-08-04 |
+| Backend | **Đạt** | `148 passed, 1 warning` trên current worktree ngày 2026-08-05 |
 | Data contract | **Đạt** | `ALL DATA VALID`; profile `tomtom+synthetic`, raw TomTom đủ 4/4 slot |
-| Frontend automated | **Đạt** | `npm test`: 8/8 pass |
+| Frontend automated | **Đạt** | `npm test`: 19/19 pass |
 | TypeScript | **Đạt** | `npx tsc --noEmit` exit 0 |
 | G_demo | **Hiện hành** | 51 node, 298 cạnh có hướng, 60 cạnh một chiều |
 | G_real | **Hiện hành** | 2.118 node, 4.699 cạnh có hướng, 1.433 cạnh một chiều |
 | Benchmark | **Chưa hiện hành** | `results/` cũ hơn graph; xem [`results/README.md`](results/README.md) |
-| UI/runtime | **Chưa xác minh lại các fix mới** | FINAL-01 và lượt ATSP/compare lịch sử đã có browser evidence trong `docs/KIEMTOAN.md`; các fix 2026-08-04 về slot/traffic, route–multiroute, legend và savings mới chỉ có automated test/static evidence, browser QA hiện là `UNVERIFIED` |
+| UI/runtime | **Đạt browser QA M3–M4 ở G_demo/full + `teach_7`, 1366×768** | Đã đối chiếu API đang chạy với JSON trên đĩa; chạy player Held–Karp/NN+2-opt/SA, kiểm tra DP subset + map controls, chọn/chỉnh/reset cạnh, route có fingerprint/provenance và dark/light; vẫn phải chạy pre-flight đầy đủ trước demo/quay |
 | Backend sau clean restart | **Cần pre-flight lại** | Snapshot trên đĩa là G_demo 51/298 và G_real 2.118/4.699; phải restart service rồi đối chiếu API trước demo |
 | Trước khi nộp | **Còn việc tay** | 8 URL nguồn risk thật, 40 marker cần điền trên 30 dòng nội dung (không tính dòng chú giải), screenshot, report PDF, slide, video/link và ZIP |
 
@@ -189,10 +194,10 @@ dấu `\` sang Bash.
 | Method | Endpoint | Chức năng |
 |---|---|---|
 | GET | `/api/health` | health và version |
-| GET | `/api/graph?level=demo\|real` | graph snapshot |
-| GET | `/api/traffic?slot=07:30&level=demo` | congestion của một graph/slot |
-| POST | `/api/route` | một trong 10 thuật toán hai điểm |
-| POST | `/api/multiroute` | tối ưu thứ tự nhiều điểm |
+| GET | `/api/graph?level=demo\|real&view=full\|teach_*` | graph snapshot/view đã resolve |
+| GET | `/api/traffic?slot=07:30&level=demo&view=...` | congestion của graph/view/slot đã resolve |
+| POST | `/api/route` | một trong 10 thuật toán hai điểm; nhận `scenario` tùy chọn |
+| POST | `/api/multiroute` | tối ưu thứ tự nhiều điểm; nhận `scenario` và `include_trace` tùy chọn |
 | POST | `/api/benchmark` | đọc kết quả benchmark cached |
 
 Request/response, enum, đơn vị và error envelope đầy đủ nằm trong
@@ -208,6 +213,7 @@ Chạy từ repo root:
 .\.venv\Scripts\python.exe scripts\validate_data.py
 
 Set-Location frontend
+npm test
 npx tsc --noEmit
 ```
 

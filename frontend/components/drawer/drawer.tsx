@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { MetricsTab } from "./metrics-tab";
 import { ExplainTab } from "./explain-tab";
 import { CompareTab } from "./compare-tab";
+import { ScenarioTab } from "./scenario-tab";
 import { useApp, type DrawerTab } from "@/lib/store";
 
 export function Drawer() {
@@ -54,10 +55,12 @@ export function Drawer() {
             <TabsTrigger value="metrics">Số liệu</TabsTrigger>
             <TabsTrigger value="explain">Giải thích</TabsTrigger>
             <TabsTrigger value="compare">So sánh</TabsTrigger>
+            <TabsTrigger value="scenario">Thử nghiệm</TabsTrigger>
           </TabsList>
           <TabsContent value="metrics"><MetricsTab /></TabsContent>
           <TabsContent value="explain"><ExplainTab /></TabsContent>
           <TabsContent value="compare"><CompareTab /></TabsContent>
+          <TabsContent value="scenario"><ScenarioTab /></TabsContent>
         </Tabs>
       </div>
     </aside>

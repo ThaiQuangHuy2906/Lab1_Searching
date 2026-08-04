@@ -5,6 +5,7 @@
 
 import { useApp } from "@/lib/store";
 import { effectiveTraceSteps } from "@/lib/interaction-policy";
+import { isOptimizationFinalEvent } from "@/lib/atsp-trace-policy";
 import { usePalette } from "@/lib/use-palette";
 
 function Dot({ color, ring }: { color: string; ring?: boolean }) {
@@ -31,8 +32,12 @@ export function Legend() {
   const compare = useApp((s) => s.compare);
   const drawerTab = useApp((s) => s.drawerTab);
   const multi = useApp((s) => s.multi);
+  const optimizationTrace = useApp((s) => s.optimizationTrace);
+  const timelineSource = useApp((s) => s.timelineSource);
+  const stepIdx = useApp((s) => s.stepIdx);
   const graph = useApp((s) => s.graph);
   const traceOnReal = useApp((s) => s.traceOnReal);
+  const overrideCount = useApp((s) => Object.keys(s.edgeOverrides).length);
   const P = usePalette();
   const H = P.hex;
 
@@ -40,14 +45,22 @@ export function Legend() {
   const hasTraceLegend = hasStepLegend || Boolean(trace?.found);
   const isBidi = hasStepLegend && trace?.algorithm === "bidijkstra";
   const comparing = drawerTab === "compare" && compare;
+  const optimizationActive = timelineSource === "optimization"
+    && Boolean(optimizationTrace?.events.length);
+  const optimizationEvent = optimizationActive && optimizationTrace
+    ? optimizationTrace.events[Math.min(stepIdx, optimizationTrace.events.length - 1)]
+    : null;
+  const showFinalMultiRoute = isOptimizationFinalEvent(optimizationEvent?.kind)
+    || !optimizationEvent;
 
   // v11: chưa có gì đáng giải mã (không kết quả, không lớp ùn tắc) thì đừng
   // chiếm góc bản đồ chỉ để chú giải mỗi "Nút giao"
-  if (!hasTraceLegend && !multi?.found && !comparing && !trafficLayer) return null;
+  if (!hasTraceLegend && !multi?.found && !optimizationActive && !comparing && !trafficLayer
+      && overrideCount === 0) return null;
 
   // Khi timeline xuất hiện, luôn nâng chú giải lên trên thanh. Ở viewport hẹp,
   // timeline co giãn đủ xa về bên trái ngay cả khi drawer đóng.
-  const timelineVisible = hasStepLegend;
+  const timelineVisible = hasStepLegend || optimizationActive;
   const lift = timelineVisible;
 
   return (
@@ -80,7 +93,18 @@ export function Legend() {
           )}
         </>
       )}
-      {multi?.found && (
+      {optimizationActive && !showFinalMultiRoute && (
+        <>
+          {optimizationEvent?.kind === "held_karp_update" && (
+            <span className="flex items-center gap-2"><Dot color={H.frontier} /> Tập DP đang xét</span>
+          )}
+          <span className="flex items-center gap-2"><Line color={H.path} dashed /> Thứ tự ghé đang xét</span>
+          <span className="max-w-44 pl-[26px] text-[10px] leading-4 text-ink-faint">
+            Minh hoạ khái niệm, không phải đường xe chạy.
+          </span>
+        </>
+      )}
+      {multi?.found && showFinalMultiRoute && (
         <>
           <span className="flex items-center gap-2"><Line color={H.path} /> Lộ trình giao hàng</span>
           <span className="flex items-center gap-2"><span className="w-4 text-center text-[10px] leading-none">▶</span> Hướng di chuyển</span>
@@ -107,6 +131,11 @@ export function Legend() {
           ))}
           <span>1→5</span>
         </div>
+      )}
+      {overrideCount > 0 && (
+        <span className="flex items-center gap-2 border-t border-surface-border pt-1.5">
+          <Line color={H.path} /> {overrideCount} cạnh thử nghiệm
+        </span>
       )}
     </div>
   );

@@ -1,14 +1,14 @@
 # SCHEMA.md — Các hợp đồng dữ liệu và API
 
-> **Trạng thái 2026-08-04:** §A–§D mô tả contract base đang chạy. §E khóa phần
+> **Trạng thái 2026-08-05:** §A–§D mô tả contract base đang chạy. §E khóa phần
 > mở rộng đã được người dùng duyệt: GraphView dạy học, scenario edge-override
 > request-scoped, `AppliedScenario`/fingerprint và ATSP optimization trace.
-> **Milestone 2 đã triển khai** GraphView, graph/traffic response echo,
-> `ScenarioConfig` chỉ có `graph_view`, cùng `AppliedScenario`/fingerprint cho
-> scenario không override. **Milestone 3** (ATSP optimization trace) và
-> **Milestone 4** (edge override sandbox) vẫn là contract đích: các field và
-> resolver bổ sung của chúng chưa có trong executable model/runtime cho đến khi
-> code và regression tương ứng hoàn tất.
+> **Milestone 2 đã triển khai** GraphView, graph/traffic response echo và
+> `AppliedScenario`/fingerprint cho scenario không override. **Milestone 3 đã triển khai** ATSP optimization trace:
+> `include_trace`, event union, sampler deterministic, `optimizer_stats` và player
+> frontend. **Milestone 4 đã triển khai** `EdgeOverride` request-scoped với
+> validation finite/physical, canonical no-op, clone private bất biến, recompute
+> derived cost/`v_max`, fingerprint server-authoritative và editor frontend.
 > Không được tự coi code cũ là authority để bỏ hoặc đổi các semantics đã khóa ở §E.
 > Dữ liệu benchmark trong `results/` là artifact cũ và không thay đổi contract này.
 >
@@ -627,6 +627,35 @@ Mọi event có `ordinal` (0-based vị trí trong dòng eligible) và `kind`. U
 | `sa_final_best` | final order/cost và per-seed statistics |
 | `optimization_summary` | method, final order/cost; luôn là event cuối |
 
+Tên field executable của các event được khóa như sau để backend và frontend
+không tự diễn giải khác nhau. Mọi số thực trong bảng này (`cost`, `temperature`,
+`delta`) phải hữu hạn; `ordinal`, `mask`, `iteration` và các chỉ số đều là số
+nguyên không âm.
+
+- `held_karp_update`: `mask`, `subset`, `endpoint`, `predecessor`,
+  `candidate_cost`, `previous_cost`, `new_cost`.
+- `held_karp_reconstruct`: `order`, `total_cost`.
+- `nn_decision`: `current`, `candidates` (mỗi phần tử là `{node, cost}` theo
+  thứ tự xét), `selected`, `order` (sau quyết định).
+- `local_improvement`: `move_type`, `i`, `j`, `segment_length`,
+  `before_order`, `before_cost`, `after_order`, `after_cost`,
+  `rejected_candidates_since_previous`. Event này chỉ tồn tại khi nước đi đã
+  được chấp nhận và `after_cost < before_cost`.
+- `sa_seed_boundary`: `boundary`, `seed`, `iteration`, `temperature`,
+  `current_order`, `current_cost`, `best_order`, `best_cost`.
+- `sa_iteration`: `sample_reason`, `seed`, `iteration`, `temperature`,
+  `current_order`, `current_cost`, `candidate_order`, `candidate_cost`,
+  `delta`, `accepted`, `resulting_order`, `resulting_cost`, `best_order`,
+  `best_cost`.
+- `sa_final_best`: `final_order`, `final_cost`, `optimizer_stats`.
+- `optimization_summary`: `method`, `final_order`, `final_cost`.
+
+`SaOptimizerStats` có `seeds` theo đúng thứ tự 0–4. Mỗi phần tử có `seed`,
+`iterations`, `final_cost`, `best_cost`, `best_order`; wrapper có `best_seed`,
+`best_cost`, `mean_best_cost`, `stddev_best_cost`. Response non-SA luôn trả
+`optimizer_stats: null`; response SA reachable luôn có object này, kể cả khi
+`include_trace=false`.
+
 `n` trong các cap dưới là tổng số điểm gồm start. Cap chỉ cắt **payload**, không
 dừng optimizer hay metric:
 
@@ -685,5 +714,6 @@ Xem 4 file mock sinh bởi `scripts/00_generate_mock.py` (seed 42, tái lập 10
 | `data/mock/trace_mock.json` | §B trace A* đầy đủ từng bước g/h/f |
 | `data/mock/trace_bidijkstra_mock.json` | §B trace Bidirectional Dijkstra với `side` từng bước (GUI tô 2 màu) |
 | `data/mock/multiroute_mock.json` | §C.5 response multiroute nn_2opt |
+| `data/mock/scenario_cost_golden.json` | fixture formula chung cho preview TypeScript và `edge_cost_breakdown` Python |
 
 > ⚠️ Mock chỉ để frontend làm song song + test schema. Chiều một chiều của vài đường trong mock là **đơn giản hoá**, không cam kết đúng thực địa — G_demo thật (Phase 1) lấy `oneway` từ OSM.

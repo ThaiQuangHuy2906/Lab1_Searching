@@ -16,9 +16,13 @@ import {
 } from "./interaction-policy";
 import { createLatestRequestGuard } from "./latest-request";
 import { describeAtspSavings } from "./atsp-savings";
+import {
+  activeTimelineLength, atspInputsChanged, type TimelineSource,
+} from "./atsp-trace-policy";
+import { buildScenario, scenarioKey } from "./scenario";
 import type {
-  Algorithm, GraphLevel, GraphResponse, GraphView, Mode, MultirouteResponse,
-  TimeSlot, Trace, TspMethod,
+  Algorithm, EdgeOverride, GraphLevel, GraphResponse, GraphView, Mode,
+  MultirouteResponse, OptimizationTrace, TimeSlot, Trace, TspMethod,
 } from "./types";
 
 export const ALGO_LABEL: Record<Algorithm, string> = {
@@ -34,7 +38,7 @@ export const ALGO_LABEL: Record<Algorithm, string> = {
   beam: "Beam Search",
 };
 
-export type DrawerTab = "metrics" | "explain" | "compare";
+export type DrawerTab = "metrics" | "explain" | "compare" | "scenario";
 export type Theme = "dark" | "light";
 
 const THEME_KEY = "traffic-theme";
@@ -62,7 +66,11 @@ interface AppState {
   offlineMode: boolean;
   trafficLayer: boolean;
   traceOnReal: boolean; // guardrail: G_real defaults to no trace
+  includeOptimizationTrace: boolean; // opt-in; affects the next ATSP run only
   pickTarget: "start" | "goal" | "stop" | null;
+  edgeOverrides: Record<string, EdgeOverride>;
+  edgeEditMode: boolean;
+  selectedEdgeId: string | null;
 
   // ---- dữ liệu
   graphData: GraphResponse | null;
@@ -75,11 +83,13 @@ interface AppState {
   comparing: boolean;
   multi: MultirouteResponse | null;
   multiRunning: boolean;
+  optimizationTrace: OptimizationTrace | null;
 
   // ---- animation & layout
   stepIdx: number;
   playing: boolean;
   speed: number; // multiplier: 0.5 | 1 | 2 | 4 | 8 | 16
+  timelineSource: TimelineSource;
   drawerOpen: boolean;
   drawerTab: DrawerTab;
 
@@ -87,6 +97,10 @@ interface AppState {
   set: (patch: Partial<AppState>) => void;
   loadGraph: (level: GraphLevel, view?: GraphView) => Promise<void>;
   setGraphView: (view: GraphView) => void;
+  setEdgeEditMode: (enabled: boolean) => void;
+  selectEdge: (edgeId: string) => void;
+  setEdgeOverride: (edgeId: string, override: EdgeOverride | undefined) => void;
+  resetAllEdgeOverrides: () => void;
   loadTraffic: () => Promise<void>;
   clearMap: () => void;
   setSlot: (slot: TimeSlot) => void;
@@ -127,7 +141,11 @@ export const useApp = create<AppState>((set, get) => ({
   offlineMode: false,
   trafficLayer: false,
   traceOnReal: false,
+  includeOptimizationTrace: false,
   pickTarget: null,
+  edgeOverrides: {},
+  edgeEditMode: false,
+  selectedEdgeId: null,
 
   graphData: null,
   graphLoading: false,
@@ -139,10 +157,12 @@ export const useApp = create<AppState>((set, get) => ({
   comparing: false,
   multi: null,
   multiRunning: false,
+  optimizationTrace: null,
 
   stepIdx: 0,
   playing: false,
   speed: 1,
+  timelineSource: null,
   drawerOpen: true,
   drawerTab: "metrics",
 
@@ -161,16 +181,35 @@ export const useApp = create<AppState>((set, get) => ({
         || patch.stops.length !== state.stops.length
         || patch.stops.some((id, i) => id !== state.stops[i])
       );
-      if (!startChanged && !goalChanged && !stopsChanged)
+      const overridesChanged = "edgeOverrides" in patch
+        && scenarioKey(state.graphView, patch.edgeOverrides ?? {})
+          !== scenarioKey(state.graphView, state.edgeOverrides);
+      const routeInputChanged = startChanged || goalChanged || stopsChanged
+        || ("mode" in patch && patch.mode !== state.mode)
+        || ("slot" in patch && patch.slot !== state.slot)
+        || ("graph" in patch && patch.graph !== state.graph)
+        || ("graphView" in patch && patch.graphView !== state.graphView)
+        || overridesChanged;
+      const optimizerInputChanged = atspInputsChanged(state, patch) || overridesChanged;
+      if (!routeInputChanged && !optimizerInputChanged)
         return patch;
       const extra: Partial<AppState> = {};
-      if (state.trace && !("trace" in patch)) {
+      if (routeInputChanged && state.trace && !("trace" in patch)) {
         extra.trace = null;
         extra.stepIdx = 0;
         extra.playing = false;
+        if (state.timelineSource === "route" && !("timelineSource" in patch))
+          extra.timelineSource = null;
       }
-      if (state.compare && !("compare" in patch)) extra.compare = null;
-      if (state.multi && !("multi" in patch)) extra.multi = null;
+      if (routeInputChanged && state.compare && !("compare" in patch)) extra.compare = null;
+      if (optimizerInputChanged && state.multi && !("multi" in patch)) extra.multi = null;
+      if (optimizerInputChanged && state.optimizationTrace && !("optimizationTrace" in patch)) {
+        extra.optimizationTrace = null;
+        extra.stepIdx = 0;
+        extra.playing = false;
+        if (state.timelineSource === "optimization" && !("timelineSource" in patch))
+          extra.timelineSource = null;
+      }
       // v11: ADDING a delivery stop switches the journey to tour mode —
       // the ATSP tour is Đi + stops only, so a lingering "Đến" is dead
       // input that confuses the map (goal chip) and the run button.
@@ -187,7 +226,8 @@ export const useApp = create<AppState>((set, get) => ({
 
   clearMap: () => {
     set({ trace: null, compare: null, multi: null, start: null, goal: null,
-          stops: [], stepIdx: 0, playing: false, pickTarget: null });
+          stops: [], optimizationTrace: null, timelineSource: null,
+          stepIdx: 0, playing: false, pickTarget: null });
     toast.success("Đã xoá kết quả và lựa chọn trên bản đồ.");
   },
 
@@ -196,8 +236,10 @@ export const useApp = create<AppState>((set, get) => ({
     const requestToken = graphRequests.begin();
     set({
       graphLoading: true, graph: level, graphView, graphData: null, traffic: null,
-      trace: null, compare: null, multi: null, start: null, goal: null,
+      trace: null, compare: null, multi: null, optimizationTrace: null, timelineSource: null,
+      start: null, goal: null,
       stops: [], stepIdx: 0, playing: false, pickTarget: null,
+      edgeOverrides: {}, edgeEditMode: false, selectedEdgeId: null,
     });
     try {
       const g = await api.graph(level, graphView);
@@ -260,7 +302,7 @@ export const useApp = create<AppState>((set, get) => ({
   setSlot: (slot) => {
     const patch = slotChangePatch(get().slot, slot);
     if (!patch) return;
-    set(patch);
+    set({ ...patch, optimizationTrace: null, timelineSource: null });
     void get().loadTraffic();
   },
 
@@ -269,8 +311,42 @@ export const useApp = create<AppState>((set, get) => ({
     const patch = graphViewChangePatch(get().graphView, view);
     if (!patch) return;
     const graph = get().graph;
-    set(patch);
+    set({ ...patch, optimizationTrace: null, timelineSource: null });
     void get().loadGraph(graph, view);
+  },
+
+  setEdgeEditMode: (enabled) => {
+    const state = get();
+    if (state.running || state.comparing || state.multiRunning || state.edgeEditMode === enabled)
+      return;
+    set({
+      edgeEditMode: enabled,
+      ...(enabled ? { pickTarget: null, drawerOpen: true, drawerTab: "scenario" as DrawerTab } : {}),
+      ...(!enabled ? { selectedEdgeId: null } : {}),
+    });
+  },
+
+  selectEdge: (edgeId) => {
+    const state = get();
+    if (!state.edgeEditMode || !state.graphData?.edges.some((edge) => edge.id === edgeId)) return;
+    set({ selectedEdgeId: edgeId, drawerOpen: true, drawerTab: "scenario" });
+  },
+
+  setEdgeOverride: (edgeId, override) => {
+    const state = get();
+    const next = { ...state.edgeOverrides };
+    if (override) next[edgeId] = override;
+    else delete next[edgeId];
+    if (scenarioKey(state.graphView, next) === scenarioKey(state.graphView, state.edgeOverrides))
+      return;
+    // Go through the public setter: a scenario change invalidates every
+    // route/compare/tour result that was computed with the previous scenario.
+    get().set({ edgeOverrides: next });
+  },
+
+  resetAllEdgeOverrides: () => {
+    if (Object.keys(get().edgeOverrides).length === 0) return;
+    get().set({ edgeOverrides: {} });
   },
 
   runRoute: async () => {
@@ -284,13 +360,17 @@ export const useApp = create<AppState>((set, get) => ({
     // routeRunBlockReason already rejects this state; keep an explicit
     // narrowing guard so the request contract remains string-only.
     if (!s.start || !s.goal) return;
-    set({ running: true, playing: false, multi: null, compare: null });
+    set({
+      running: true, playing: false, multi: null, compare: null,
+      optimizationTrace: null, timelineSource: null, stepIdx: 0,
+    });
     try {
       const includeTrace = s.graph === "demo" ? true : s.traceOnReal;
       const params: { beam_width?: number; epsilon?: number } = {};
       if (s.algorithm === "beam" && s.beamWidth !== "") params.beam_width = Number(s.beamWidth);
       if (s.algorithm === "idastar" && s.epsilon !== "") params.epsilon = Number(s.epsilon);
-      const scenario = s.graphView === "full" ? undefined : { graph_view: s.graphView };
+      const scenario = buildScenario(s.graphView, s.edgeOverrides);
+      const requestScenarioKey = scenarioKey(s.graphView, s.edgeOverrides);
       const t = await api.route({
         start: s.start, goal: s.goal, algorithm: s.algorithm, mode: s.mode,
         time_slot: s.slot, graph: s.graph, include_trace: includeTrace,
@@ -304,13 +384,16 @@ export const useApp = create<AppState>((set, get) => ({
       if (n.graph !== s.graph || n.graphView !== s.graphView || n.slot !== s.slot || n.mode !== s.mode ||
           n.algorithm !== s.algorithm || n.start !== s.start || n.goal !== s.goal)
         return;
-      if (t.applied_scenario?.graph_view !== s.graphView) {
+      if (scenarioKey(n.graphView, n.edgeOverrides) !== requestScenarioKey) return;
+      if (!t.applied_scenario || t.applied_scenario.graph_view !== s.graphView) {
         toast.error("Backend không echo graph view đã chọn; đã bỏ kết quả tuyến.");
         return;
       }
       set({
         trace: t,
         stepIdx: Math.max(0, t.trace.length - 1),
+        timelineSource: t.trace.length > 0 ? "route" : null,
+        optimizationTrace: null,
         drawerTab: t.found ? "metrics" : "explain",
         ...(t.found ? {} : { drawerOpen: true }),
       });
@@ -337,6 +420,8 @@ export const useApp = create<AppState>((set, get) => ({
     const compareAlgo = chooseCompareAlgorithm(s.trace.algorithm, s.compareAlgo);
     set({ comparing: true, compareAlgo });
     try {
+      const scenario = buildScenario(s.graphView, s.edgeOverrides);
+      const requestScenarioKey = scenarioKey(s.graphView, s.edgeOverrides);
       // B chạy bằng ĐÚNG cấu hình của tuyến A (review v11 — UX MAJOR):
       // đổi Tiêu chí không xoá trace A (luật v10f), nên lấy s.mode hiện tại
       // từng làm B chạy mode khác A → bảng so sánh in mét như giây.
@@ -344,7 +429,7 @@ export const useApp = create<AppState>((set, get) => ({
         start: s.start, goal: s.goal, algorithm: compareAlgo,
         mode: s.trace.mode, time_slot: s.trace.time_slot, graph: s.trace.graph,
         include_trace: false,
-        scenario: s.graphView === "full" ? undefined : { graph_view: s.graphView },
+        scenario,
       });
       // stale guards (L3-04): inputs unchanged AND the main trace this
       // comparison was made against must still be on screen (mode B đã
@@ -354,6 +439,7 @@ export const useApp = create<AppState>((set, get) => ({
           n.start !== s.start || n.goal !== s.goal ||
           n.compareAlgo !== compareAlgo || n.trace !== s.trace)
         return;
+      if (scenarioKey(n.graphView, n.edgeOverrides) !== requestScenarioKey) return;
       if (!t.applied_scenario || !s.trace.applied_scenario ||
           t.applied_scenario.fingerprint !== s.trace.applied_scenario.fingerprint) {
         toast.error("Backend trả so sánh cho graph scenario khác; đã bỏ kết quả.");
@@ -375,12 +461,18 @@ export const useApp = create<AppState>((set, get) => ({
       toast.error("Cần điểm Đi và ít nhất 1 điểm giao để tối ưu thứ tự.");
       return;
     }
-    set({ multiRunning: true, trace: null, compare: null, playing: false });
+    set({
+      multiRunning: true, trace: null, compare: null, playing: false,
+      optimizationTrace: null, timelineSource: null, stepIdx: 0,
+    });
     try {
+      const scenario = buildScenario(s.graphView, s.edgeOverrides);
+      const requestScenarioKey = scenarioKey(s.graphView, s.edgeOverrides);
       const m = await api.multiroute({
         start: s.start, stops: s.stops, method, mode: s.mode,
         time_slot: s.slot, graph: s.graph, return_to_start: false,
-        scenario: s.graphView === "full" ? undefined : { graph_view: s.graphView },
+        include_trace: s.includeOptimizationTrace,
+        scenario,
       });
       // stale guards (L3-04): journey edits mid-flight (map click adding a
       // stop was the reproduced case) invalidate this tour
@@ -389,11 +481,23 @@ export const useApp = create<AppState>((set, get) => ({
           n.start !== s.start ||
           JSON.stringify(n.stops) !== JSON.stringify(s.stops))
         return;
-      if (m.applied_scenario?.graph_view !== s.graphView) {
+      if (scenarioKey(n.graphView, n.edgeOverrides) !== requestScenarioKey) return;
+      if (!m.applied_scenario || m.applied_scenario.graph_view !== s.graphView) {
         toast.error("Backend không echo graph view đã chọn; đã bỏ kết quả nhiều điểm.");
         return;
       }
-      set({ multi: m, drawerTab: "metrics" });
+      if (s.includeOptimizationTrace && m.found && !m.optimization_trace) {
+        toast.error("Backend không trả optimization trace đã yêu cầu; đã bỏ kết quả.");
+        return;
+      }
+      set({
+        multi: m,
+        optimizationTrace: m.optimization_trace,
+        timelineSource: m.optimization_trace ? "optimization" : null,
+        stepIdx: 0,
+        playing: false,
+        drawerTab: "metrics",
+      });
       if (m.found && m.savings_pct !== null) {
         const savings = describeAtspSavings(m.savings_pct);
         const pct = savings.absolutePct?.toFixed(1).replace(".", ",");
@@ -412,13 +516,18 @@ export const useApp = create<AppState>((set, get) => ({
   },
 
   setStep: (i) => {
-    const n = get().trace?.trace.length ?? 0;
+    const s = get();
+    const n = activeTimelineLength(
+      s.timelineSource, s.trace, s.optimizationTrace, s.graph, s.traceOnReal,
+    );
     set({ stepIdx: Math.max(0, Math.min(i, n - 1)) });
   },
 
   togglePlay: () => {
     const s = get();
-    const n = s.trace?.trace.length ?? 0;
+    const n = activeTimelineLength(
+      s.timelineSource, s.trace, s.optimizationTrace, s.graph, s.traceOnReal,
+    );
     if (n === 0) return;
     if (!s.playing && s.stepIdx >= n - 1) set({ stepIdx: 0, playing: true });
     else set({ playing: !s.playing });

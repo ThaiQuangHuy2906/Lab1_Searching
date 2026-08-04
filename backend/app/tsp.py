@@ -30,7 +30,14 @@ import random
 import statistics
 
 from .graph_store import GraphStore
-from .models import Leg, LegMetrics, Mode, MultirouteResponse, TimeSlot, TspMethod
+from .models import (
+    Leg, LegMetrics, Mode, MultirouteResponse, SaOptimizerStats, TimeSlot,
+    TspMethod,
+)
+from .optimization_trace import (
+    HELD_KARP_TRACE_CAP, NN_LOCAL_TRACE_CAP, SA_TRACE_CAP,
+    OptimizationTraceRecorder,
+)
 
 MAX_POINTS = 16
 HELD_KARP_MAX = 15
@@ -38,6 +45,7 @@ HELD_KARP_WARN = 13
 SA_SEEDS = range(5)
 SA_ITERS = 2000
 SA_ALPHA = 0.995
+TOLERANCE = 1e-12
 
 
 class UnreachableStopError(Exception):
@@ -110,8 +118,12 @@ def tour_cost(cost: dict, order: list[str], return_to_start: bool) -> float:
 # ------------------------------------------------------------- held-karp
 
 
-def held_karp(cost: dict, points: list[str], return_to_start: bool
-              ) -> tuple[list[str], float]:
+def held_karp(
+    cost: dict,
+    points: list[str],
+    return_to_start: bool,
+    recorder: OptimizationTraceRecorder | None = None,
+) -> tuple[list[str], float]:
     """Exact ATSP by bitmask DP. points[0] is the fixed start."""
     n = len(points)
     if n > HELD_KARP_MAX:
@@ -138,8 +150,26 @@ def held_karp(cost: dict, points: list[str], return_to_start: bool
                     continue
                 nmask = mask | (1 << j)
                 cand = cost_i + c[i][j]
-                if j not in dp[nmask] or cand < dp[nmask][j][0]:
+                previous = dp[nmask].get(j)
+                if previous is None or cand < previous[0]:
                     dp[nmask][j] = (cand, i)
+                    if recorder is not None:
+                        recorder.emit(
+                            lambda ordinal, nmask=nmask, i=i, j=j, cand=cand, previous=previous: {
+                                "kind": "held_karp_update",
+                                "ordinal": ordinal,
+                                "mask": nmask,
+                                "subset": [
+                                    points[index] for index in range(n)
+                                    if nmask & (1 << index)
+                                ],
+                                "endpoint": points[j],
+                                "predecessor": points[i],
+                                "candidate_cost": cand,
+                                "previous_cost": previous[0] if previous else None,
+                                "new_cost": cand,
+                            },
+                        )
 
     def close(i: int) -> float:
         return c[i][0] if return_to_start else 0.0
@@ -153,28 +183,76 @@ def held_karp(cost: dict, points: list[str], return_to_start: bool
         mask ^= 1 << order_idx[-1]
         order_idx.append(prev)
     order_idx.reverse()
-    return [points[i] for i in order_idx], best
+    order = [points[i] for i in order_idx]
+    if recorder is not None:
+        recorder.emit(
+            lambda ordinal: {
+                "kind": "held_karp_reconstruct",
+                "ordinal": ordinal,
+                "order": list(order),
+                "total_cost": best,
+            },
+            final=True,
+        )
+        recorder.emit(
+            lambda ordinal: {
+                "kind": "optimization_summary",
+                "ordinal": ordinal,
+                "method": "held_karp",
+                "final_order": list(order),
+                "final_cost": best,
+            },
+            final=True,
+        )
+    return order, best
 
 
 # ---------------------------------------------------------- nn + 2opt
 
 
-def nearest_neighbour(cost: dict, points: list[str]) -> list[str]:
+def nearest_neighbour(
+    cost: dict,
+    points: list[str],
+    recorder: OptimizationTraceRecorder | None = None,
+) -> list[str]:
     order, left = [points[0]], set(points[1:])
     while left:
-        nxt = min(sorted(left), key=lambda p: cost[(order[-1], p)])
+        current = order[-1]
+        nxt = min(sorted(left), key=lambda p: cost[(current, p)])
         order.append(nxt)
         left.remove(nxt)
+        if recorder is not None:
+            recorder.emit(
+                lambda ordinal, current=current, nxt=nxt: {
+                    "kind": "nn_decision",
+                    "ordinal": ordinal,
+                    "current": current,
+                    "candidates": [
+                        {"node": node, "cost": candidate_cost}
+                        for node, candidate_cost in sorted(
+                            ((node, cost[(current, node)]) for node in [nxt, *left]),
+                            key=lambda item: (item[1], item[0]),
+                        )
+                    ],
+                    "selected": nxt,
+                    "order": list(order),
+                },
+            )
     return order
 
 
-def two_opt_or_opt(cost: dict, order: list[str], return_to_start: bool
-                   ) -> list[str]:
+def two_opt_or_opt(
+    cost: dict,
+    order: list[str],
+    return_to_start: bool,
+    recorder: OptimizationTraceRecorder | None = None,
+) -> list[str]:
     """Local search: segment reversal (2-opt) + segment relocation
     (Or-opt, lengths 1-3, orientation preserved). ASYMMETRIC-safe:
     every candidate is fully re-costed (PROMPT-MASTER 6.3 warning)."""
     best = list(order)
     best_cost = tour_cost(cost, best, return_to_start)
+    rejected_since_previous = 0
     improved = True
     while improved:
         improved = False
@@ -184,8 +262,29 @@ def two_opt_or_opt(cost: dict, order: list[str], return_to_start: bool
             for j in range(i + 1, n):
                 cand = best[:i] + best[i:j + 1][::-1] + best[j + 1:]
                 cc = tour_cost(cost, cand, return_to_start)
-                if cc < best_cost - 1e-12:
+                if cc < best_cost - TOLERANCE:
+                    before, before_cost = list(best), best_cost
                     best, best_cost, improved = cand, cc, True
+                    if recorder is not None:
+                        recorder.emit(
+                            lambda ordinal, i=i, j=j, before=before, before_cost=before_cost, cc=cc,
+                            rejected=rejected_since_previous: {
+                                "kind": "local_improvement",
+                                "ordinal": ordinal,
+                                "move_type": "2_opt",
+                                "i": i,
+                                "j": j,
+                                "segment_length": j - i + 1,
+                                "before_order": before,
+                                "before_cost": before_cost,
+                                "after_order": list(cand),
+                                "after_cost": cc,
+                                "rejected_candidates_since_previous": rejected,
+                            },
+                        )
+                    rejected_since_previous = 0
+                else:
+                    rejected_since_previous += 1
         # Or-opt: move a small segment elsewhere, keeping its direction
         for seg_len in (1, 2, 3):
             for i in range(1, n - seg_len + 1):
@@ -196,24 +295,69 @@ def two_opt_or_opt(cost: dict, order: list[str], return_to_start: bool
                         continue
                     cand = rest[:j] + seg + rest[j:]
                     cc = tour_cost(cost, cand, return_to_start)
-                    if cc < best_cost - 1e-12:
+                    if cc < best_cost - TOLERANCE:
+                        before, before_cost = list(best), best_cost
                         best, best_cost, improved = cand, cc, True
+                        if recorder is not None:
+                            recorder.emit(
+                                lambda ordinal, i=i, j=j, seg_len=seg_len, before=before,
+                                before_cost=before_cost, cc=cc, rejected=rejected_since_previous: {
+                                    "kind": "local_improvement",
+                                    "ordinal": ordinal,
+                                    "move_type": "or_opt",
+                                    "i": i,
+                                    "j": j,
+                                    "segment_length": seg_len,
+                                    "before_order": before,
+                                    "before_cost": before_cost,
+                                    "after_order": list(cand),
+                                    "after_cost": cc,
+                                    "rejected_candidates_since_previous": rejected,
+                                },
+                            )
+                        rejected_since_previous = 0
+                    else:
+                        rejected_since_previous += 1
     return best
 
 
-def nn_2opt(cost: dict, points: list[str], return_to_start: bool
-            ) -> tuple[list[str], float]:
-    order = two_opt_or_opt(cost, nearest_neighbour(cost, points), return_to_start)
-    return order, tour_cost(cost, order, return_to_start)
+def nn_2opt(
+    cost: dict,
+    points: list[str],
+    return_to_start: bool,
+    recorder: OptimizationTraceRecorder | None = None,
+) -> tuple[list[str], float]:
+    order = two_opt_or_opt(
+        cost, nearest_neighbour(cost, points, recorder), return_to_start, recorder,
+    )
+    total = tour_cost(cost, order, return_to_start)
+    if recorder is not None:
+        recorder.emit(
+            lambda ordinal: {
+                "kind": "optimization_summary",
+                "ordinal": ordinal,
+                "method": "nn_2opt",
+                "final_order": list(order),
+                "final_cost": total,
+            },
+            final=True,
+        )
+    return order, total
 
 
 # ------------------------------------------------------------------- SA
 
 
-def simulated_annealing(cost: dict, points: list[str], return_to_start: bool,
-                        seeds=SA_SEEDS) -> tuple[list[str], float, dict]:
+def simulated_annealing(
+    cost: dict,
+    points: list[str],
+    return_to_start: bool,
+    seeds=SA_SEEDS,
+    recorder: OptimizationTraceRecorder | None = None,
+) -> tuple[list[str], float, dict]:
     """SA over seeds; returns (best_order, best_cost, per-seed stats)."""
     per_seed: list[float] = []
+    seed_details: list[dict] = []
     best_order: list[str] | None = None
     best_cost = float("inf")
     for seed in seeds:
@@ -222,7 +366,25 @@ def simulated_annealing(cost: dict, points: list[str], return_to_start: bool,
         cur_cost = tour_cost(cost, cur, return_to_start)
         t = max(cur_cost * 0.2, 1e-9)
         loc_best, loc_best_cost = list(cur), cur_cost
-        for _ in range(SA_ITERS):
+        if recorder is not None:
+            recorder.emit(
+                lambda ordinal, seed=seed, t=t, cur=cur, cur_cost=cur_cost,
+                loc_best=loc_best, loc_best_cost=loc_best_cost: {
+                    "kind": "sa_seed_boundary",
+                    "ordinal": ordinal,
+                    "boundary": "start",
+                    "seed": seed,
+                    "iteration": 0,
+                    "temperature": t,
+                    "current_order": list(cur),
+                    "current_cost": cur_cost,
+                    "best_order": list(loc_best),
+                    "best_cost": loc_best_cost,
+                },
+                priority="boundary",
+            )
+        iterations = 0
+        for iteration in range(1, SA_ITERS + 1):
             n = len(cur)
             if n > 2 and rng.random() < 0.5:  # swap two stops
                 i, j = rng.sample(range(1, n), 2)
@@ -238,19 +400,104 @@ def simulated_annealing(cost: dict, points: list[str], return_to_start: bool,
                 break
             cand_cost = tour_cost(cost, cand, return_to_start)
             delta = cand_cost - cur_cost
-            if delta <= 0 or rng.random() < math.exp(-delta / t):
+            current_order, current_cost = list(cur), cur_cost
+            accepted = delta <= 0 or rng.random() < math.exp(-delta / t)
+            new_best = False
+            if accepted:
                 cur, cur_cost = cand, cand_cost
                 if cur_cost < loc_best_cost:
                     loc_best, loc_best_cost = list(cur), cur_cost
+                    new_best = True
+            if recorder is not None and (new_best or iteration % 20 == 0):
+                reason = "new_best" if new_best else "periodic"
+                recorder.emit(
+                    lambda ordinal, reason=reason, seed=seed, iteration=iteration, t=t,
+                    current_order=current_order, current_cost=current_cost, cand=cand,
+                    cand_cost=cand_cost, delta=delta, accepted=accepted, cur=cur,
+                    cur_cost=cur_cost, loc_best=loc_best, loc_best_cost=loc_best_cost: {
+                        "kind": "sa_iteration",
+                        "ordinal": ordinal,
+                        "sample_reason": reason,
+                        "seed": seed,
+                        "iteration": iteration,
+                        "temperature": t,
+                        "current_order": current_order,
+                        "current_cost": current_cost,
+                        "candidate_order": list(cand),
+                        "candidate_cost": cand_cost,
+                        "delta": delta,
+                        "accepted": accepted,
+                        "resulting_order": list(cur),
+                        "resulting_cost": cur_cost,
+                        "best_order": list(loc_best),
+                        "best_cost": loc_best_cost,
+                    },
+                    priority=reason,
+                )
             t *= SA_ALPHA
+            iterations = iteration
         per_seed.append(loc_best_cost)
+        seed_details.append({
+            "seed": seed,
+            "iterations": iterations,
+            "final_cost": cur_cost,
+            "best_cost": loc_best_cost,
+            "best_order": list(loc_best),
+        })
+        if recorder is not None:
+            recorder.emit(
+                lambda ordinal, seed=seed, iterations=iterations, t=t, cur=cur,
+                cur_cost=cur_cost, loc_best=loc_best, loc_best_cost=loc_best_cost: {
+                    "kind": "sa_seed_boundary",
+                    "ordinal": ordinal,
+                    "boundary": "end",
+                    "seed": seed,
+                    "iteration": iterations,
+                    "temperature": t,
+                    "current_order": list(cur),
+                    "current_cost": cur_cost,
+                    "best_order": list(loc_best),
+                    "best_cost": loc_best_cost,
+                },
+                priority="boundary",
+            )
         if loc_best_cost < best_cost:
             best_order, best_cost = loc_best, loc_best_cost
+    best_seed = seed_details[min(range(len(per_seed)), key=lambda index: per_seed[index])]["seed"]
+    optimizer_stats = {
+        "seeds": seed_details,
+        "best_seed": best_seed,
+        "best_cost": min(per_seed),
+        "mean_best_cost": statistics.mean(per_seed),
+        "stddev_best_cost": statistics.stdev(per_seed) if len(per_seed) > 1 else 0.0,
+    }
     stats = {
         "seeds": list(seeds), "costs": per_seed,
         "best": min(per_seed), "mean": statistics.mean(per_seed),
         "std": statistics.stdev(per_seed) if len(per_seed) > 1 else 0.0,
+        "optimizer_stats": optimizer_stats,
     }
+    if recorder is not None:
+        recorder.emit(
+            lambda ordinal: {
+                "kind": "sa_final_best",
+                "ordinal": ordinal,
+                "final_order": list(best_order),
+                "final_cost": best_cost,
+                "optimizer_stats": optimizer_stats,
+            },
+            final=True,
+        )
+        recorder.emit(
+            lambda ordinal: {
+                "kind": "optimization_summary",
+                "ordinal": ordinal,
+                "method": "sa",
+                "final_order": list(best_order),
+                "final_cost": best_cost,
+            },
+            final=True,
+        )
     return best_order, best_cost, stats
 
 
@@ -260,7 +507,8 @@ def simulated_annealing(cost: dict, points: list[str], return_to_start: bool,
 def solve_multiroute(store: GraphStore, start: str, stops: list[str],
                      method: TspMethod, mode: Mode = "balanced",
                      time_slot: TimeSlot = "07:30",
-                     return_to_start: bool = False) -> MultirouteResponse:
+                     return_to_start: bool = False,
+                     include_trace: bool = False) -> MultirouteResponse:
     """Full multiroute answer per SCHEMA §C.5 (raises KeyError on unknown
     nodes and ValueError on size-limit violations -> API maps to 404/422)."""
     for node in [start, *stops]:
@@ -281,12 +529,19 @@ def solve_multiroute(store: GraphStore, start: str, stops: list[str],
                                   totals=None, original_order_totals=None,
                                   savings_pct=None)
 
+    recorder = OptimizationTraceRecorder(
+        method, enabled=include_trace, point_count=len(points),
+    )
+    optimizer_stats: SaOptimizerStats | None = None
     if method == "held_karp":
-        order, _ = held_karp(cost, points, return_to_start)
+        order, _ = held_karp(cost, points, return_to_start, recorder)
     elif method == "nn_2opt":
-        order, _ = nn_2opt(cost, points, return_to_start)
+        order, _ = nn_2opt(cost, points, return_to_start, recorder)
     else:
-        order, _, _stats = simulated_annealing(cost, points, return_to_start)
+        order, _, raw_stats = simulated_annealing(
+            cost, points, return_to_start, recorder=recorder,
+        )
+        optimizer_stats = SaOptimizerStats.model_validate(raw_stats["optimizer_stats"])
 
     def totals_of(seq: list[str]) -> LegMetrics:
         pairs = list(zip(seq, seq[1:]))
@@ -314,4 +569,6 @@ def solve_multiroute(store: GraphStore, start: str, stops: list[str],
                     / original.total_cost * 100, 1) if original.total_cost else 0.0
     return MultirouteResponse(**base, found=True, order=order, legs=legs,
                               totals=totals, original_order_totals=original,
-                              savings_pct=savings)
+                              savings_pct=savings,
+                              optimization_trace=recorder.build(),
+                              optimizer_stats=optimizer_stats)

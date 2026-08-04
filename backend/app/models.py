@@ -11,6 +11,7 @@ import datetime
 from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic_core import PydanticCustomError
 
 # ---------------------------------------------------------------------------
 # Shared enums / aliases (SCHEMA.md — "Các enum dùng chung")
@@ -31,6 +32,11 @@ NodeId = Annotated[str, Field(pattern=r"^n\d{4}$")]
 EdgeId = Annotated[str, Field(pattern=r"^e\d{5}$")]
 Congestion = Annotated[int, Field(ge=1, le=5)]
 Flag01 = Literal[0, 1]
+FiniteFloat = Annotated[float, Field(allow_inf_nan=False)]
+OverrideLength = Annotated[float, Field(strict=True, gt=0, allow_inf_nan=False)]
+OverrideSpeed = Annotated[float, Field(strict=True, ge=1, le=200, allow_inf_nan=False)]
+OverrideCongestion = Annotated[int, Field(strict=True, ge=1, le=5)]
+OverrideFlag = Annotated[int, Field(strict=True, ge=0, le=1)]
 
 TIME_SLOTS: tuple[TimeSlot, ...] = ("07:30", "12:00", "17:30", "22:00")
 
@@ -328,14 +334,65 @@ class RouteParams(StrictModel):
     epsilon: Annotated[float, Field(gt=0, allow_inf_nan=False)] | None = None
 
 
-class ScenarioConfig(StrictModel):
-    """Milestone 2 scenario surface: a request-scoped graph-view selection.
+class RiskOverride(StrictModel):
+    """Partial risk update for one edge in a request-scoped scenario."""
 
-    Edge overrides are deliberately introduced with their resolver in
-    Milestone 4 so this model cannot accept an override it cannot apply.
-    """
+    flood: OverrideFlag | None = None
+    construction: OverrideFlag | None = None
+    narrow_alley: OverrideFlag | None = None
+    traffic_light: OverrideFlag | None = None
+
+    @model_validator(mode="after")
+    def _has_field(self) -> "RiskOverride":
+        if all(value is None for value in self.model_dump().values()):
+            raise PydanticCustomError(
+                "edge_override_empty_risk",
+                "risk must contain at least one flag",
+            )
+        return self
+
+
+class EdgeOverride(StrictModel):
+    """Client-supplied fields only; the server recomputes every derived value."""
+
+    edge_id: EdgeId
+    length_m: OverrideLength | None = None
+    free_speed_kmh: OverrideSpeed | None = None
+    congestion: dict[TimeSlot, OverrideCongestion] | None = None
+    risk: RiskOverride | None = None
+
+    @model_validator(mode="after")
+    def _has_effective_input(self) -> "EdgeOverride":
+        if self.congestion is not None and not self.congestion:
+            raise PydanticCustomError(
+                "edge_override_empty_congestion",
+                "congestion must contain at least one slot",
+            )
+        if all(value is None for value in (
+            self.length_m, self.free_speed_kmh, self.congestion, self.risk,
+        )):
+            raise PydanticCustomError(
+                "edge_override_empty",
+                "edge override requires at least one editable field",
+            )
+        return self
+
+
+class ScenarioConfig(StrictModel):
+    """Request-scoped view plus partial edge overrides; never persisted."""
 
     graph_view: GraphView = "full"
+    edge_overrides: list[EdgeOverride] = Field(default_factory=list)
+
+    @model_validator(mode="after")
+    def _unique_edge_ids(self) -> "ScenarioConfig":
+        edge_ids = [override.edge_id for override in self.edge_overrides]
+        if len(edge_ids) != len(set(edge_ids)):
+            raise PydanticCustomError(
+                "edge_override_duplicate",
+                "edge_overrides must contain unique edge_id values",
+            )
+        return self
 
 
 class RouteRequest(StrictModel):
@@ -359,6 +416,7 @@ class MultirouteRequest(StrictModel):
     graph: GraphLevel = "demo"
     scenario: ScenarioConfig | None = None
     return_to_start: bool = False
+    include_trace: bool = False
 
     @model_validator(mode="after")
     def _check(self) -> "MultirouteRequest":
@@ -389,6 +447,205 @@ class Leg(StrictModel):
     metrics: LegMetrics
 
 
+class AtspCandidate(StrictModel):
+    node: NodeId
+    cost: FiniteFloat
+
+
+class HeldKarpUpdateEvent(StrictModel):
+    kind: Literal["held_karp_update"]
+    ordinal: Annotated[int, Field(ge=0)]
+    mask: Annotated[int, Field(ge=0)]
+    subset: list[NodeId]
+    endpoint: NodeId
+    predecessor: NodeId
+    candidate_cost: FiniteFloat
+    previous_cost: FiniteFloat | None
+    new_cost: FiniteFloat
+
+
+class HeldKarpReconstructEvent(StrictModel):
+    kind: Literal["held_karp_reconstruct"]
+    ordinal: Annotated[int, Field(ge=0)]
+    order: list[NodeId]
+    total_cost: FiniteFloat
+
+
+class NnDecisionEvent(StrictModel):
+    kind: Literal["nn_decision"]
+    ordinal: Annotated[int, Field(ge=0)]
+    current: NodeId
+    candidates: list[AtspCandidate]
+    selected: NodeId
+    order: list[NodeId]
+
+
+class LocalImprovementEvent(StrictModel):
+    kind: Literal["local_improvement"]
+    ordinal: Annotated[int, Field(ge=0)]
+    move_type: Literal["2_opt", "or_opt"]
+    i: Annotated[int, Field(ge=0)]
+    j: Annotated[int, Field(ge=0)]
+    segment_length: Annotated[int, Field(ge=1)]
+    before_order: list[NodeId]
+    before_cost: FiniteFloat
+    after_order: list[NodeId]
+    after_cost: FiniteFloat
+    rejected_candidates_since_previous: Annotated[int, Field(ge=0)]
+
+    @model_validator(mode="after")
+    def _check_improvement(self) -> "LocalImprovementEvent":
+        if not self.after_cost < self.before_cost:
+            raise ValueError("local_improvement requires after_cost < before_cost")
+        return self
+
+
+class SaSeedBoundaryEvent(StrictModel):
+    kind: Literal["sa_seed_boundary"]
+    ordinal: Annotated[int, Field(ge=0)]
+    boundary: Literal["start", "end"]
+    seed: Annotated[int, Field(ge=0)]
+    iteration: Annotated[int, Field(ge=0)]
+    temperature: Annotated[FiniteFloat, Field(ge=0)]
+    current_order: list[NodeId]
+    current_cost: FiniteFloat
+    best_order: list[NodeId]
+    best_cost: FiniteFloat
+
+
+class SaIterationEvent(StrictModel):
+    kind: Literal["sa_iteration"]
+    ordinal: Annotated[int, Field(ge=0)]
+    sample_reason: Literal["new_best", "periodic"]
+    seed: Annotated[int, Field(ge=0)]
+    iteration: Annotated[int, Field(ge=1)]
+    temperature: Annotated[FiniteFloat, Field(gt=0)]
+    current_order: list[NodeId]
+    current_cost: FiniteFloat
+    candidate_order: list[NodeId]
+    candidate_cost: FiniteFloat
+    delta: FiniteFloat
+    accepted: bool
+    resulting_order: list[NodeId]
+    resulting_cost: FiniteFloat
+    best_order: list[NodeId]
+    best_cost: FiniteFloat
+
+
+class SaSeedOptimizerStats(StrictModel):
+    seed: Annotated[int, Field(ge=0)]
+    iterations: Annotated[int, Field(ge=0)]
+    final_cost: FiniteFloat
+    best_cost: FiniteFloat
+    best_order: list[NodeId]
+
+    @model_validator(mode="after")
+    def _check_best(self) -> "SaSeedOptimizerStats":
+        if self.best_cost > self.final_cost:
+            raise ValueError("best_cost cannot exceed final_cost")
+        return self
+
+
+class SaOptimizerStats(StrictModel):
+    seeds: list[SaSeedOptimizerStats]
+    best_seed: Annotated[int, Field(ge=0)]
+    best_cost: FiniteFloat
+    mean_best_cost: FiniteFloat
+    stddev_best_cost: Annotated[FiniteFloat, Field(ge=0)]
+
+    @model_validator(mode="after")
+    def _check_seeds(self) -> "SaOptimizerStats":
+        if [item.seed for item in self.seeds] != list(range(5)):
+            raise ValueError("SA optimizer stats require seeds 0 through 4 in order")
+        costs = [item.best_cost for item in self.seeds]
+        if self.best_cost != min(costs):
+            raise ValueError("best_cost must equal the minimum per-seed best_cost")
+        if self.best_seed not in [item.seed for item in self.seeds]:
+            raise ValueError("best_seed must be present in seeds")
+        return self
+
+
+class SaFinalBestEvent(StrictModel):
+    kind: Literal["sa_final_best"]
+    ordinal: Annotated[int, Field(ge=0)]
+    final_order: list[NodeId]
+    final_cost: FiniteFloat
+    optimizer_stats: SaOptimizerStats
+
+
+class OptimizationSummaryEvent(StrictModel):
+    kind: Literal["optimization_summary"]
+    ordinal: Annotated[int, Field(ge=0)]
+    method: TspMethod
+    final_order: list[NodeId]
+    final_cost: FiniteFloat
+
+
+OptimizationEvent = Annotated[
+    HeldKarpUpdateEvent
+    | HeldKarpReconstructEvent
+    | NnDecisionEvent
+    | LocalImprovementEvent
+    | SaSeedBoundaryEvent
+    | SaIterationEvent
+    | SaFinalBestEvent
+    | OptimizationSummaryEvent,
+    Field(discriminator="kind"),
+]
+
+
+class OptimizationTrace(StrictModel):
+    method: TspMethod
+    total_events: Annotated[int, Field(ge=0)]
+    recorded_events: Annotated[int, Field(ge=0)]
+    sampling_policy: Literal[
+        "all-or-stride-v1",
+        "chronological-prefix-final-v1",
+        "priority-periodic-20-v1",
+    ]
+    trace_truncated: bool
+    events: list[OptimizationEvent]
+
+    @model_validator(mode="after")
+    def _check(self) -> "OptimizationTrace":
+        if self.recorded_events != len(self.events):
+            raise ValueError("recorded_events must equal len(events)")
+        if self.total_events < self.recorded_events:
+            raise ValueError("total_events cannot be less than recorded_events")
+        if self.trace_truncated != (self.total_events > self.recorded_events):
+            raise ValueError("trace_truncated must reflect total_events > recorded_events")
+        expected_policy = {
+            "held_karp": "all-or-stride-v1",
+            "nn_2opt": "chronological-prefix-final-v1",
+            "sa": "priority-periodic-20-v1",
+        }[self.method]
+        if self.sampling_policy != expected_policy:
+            raise ValueError("sampling_policy does not match optimization method")
+        if not self.events or self.events[-1].kind != "optimization_summary":
+            raise ValueError("optimization_summary must be the final event")
+        if self.events[-1].method != self.method:
+            raise ValueError("optimization_summary method must match trace method")
+        ordinals = [event.ordinal for event in self.events]
+        if any(next_ordinal <= ordinal for ordinal, next_ordinal in zip(ordinals, ordinals[1:])):
+            raise ValueError("event ordinals must be strictly increasing")
+
+        kinds = {event.kind for event in self.events[:-1]}
+        allowed = {
+            "held_karp": {"held_karp_update", "held_karp_reconstruct"},
+            "nn_2opt": {"nn_decision", "local_improvement"},
+            "sa": {"sa_seed_boundary", "sa_iteration", "sa_final_best"},
+        }[self.method]
+        if not kinds <= allowed:
+            raise ValueError("optimization event kind does not match trace method")
+        if self.method == "held_karp":
+            if len(self.events) < 2 or self.events[-2].kind != "held_karp_reconstruct":
+                raise ValueError("held_karp reconstruction must precede the summary")
+        if self.method == "sa":
+            if len(self.events) < 2 or self.events[-2].kind != "sa_final_best":
+                raise ValueError("SA final-best event must precede the summary")
+        return self
+
+
 class MultirouteResponse(StrictModel):
     method: TspMethod
     mode: Mode
@@ -402,6 +659,8 @@ class MultirouteResponse(StrictModel):
     original_order_totals: LegMetrics | None
     savings_pct: float | None
     optimal_guarantee: bool
+    optimization_trace: OptimizationTrace | None = None
+    optimizer_stats: SaOptimizerStats | None = None
 
     @model_validator(mode="after")
     def _check(self) -> "MultirouteResponse":
@@ -417,6 +676,16 @@ class MultirouteResponse(StrictModel):
                 raise ValueError("first leg must start at order[0]")
         elif self.order or self.legs:
             raise ValueError("found=false requires empty order and legs")
+        if not self.found and (self.optimization_trace is not None or self.optimizer_stats is not None):
+            raise ValueError("found=false requires null optimization_trace and optimizer_stats")
+        if self.found and self.optimization_trace is not None:
+            if self.optimization_trace.method != self.method:
+                raise ValueError("optimization trace method must match response method")
+        if self.method == "sa":
+            if self.found and self.optimizer_stats is None:
+                raise ValueError("reachable SA response requires optimizer_stats")
+        elif self.optimizer_stats is not None:
+            raise ValueError("optimizer_stats is SA-only")
         return self
 
 

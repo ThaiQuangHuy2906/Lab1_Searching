@@ -29,7 +29,10 @@ from .models import (
     GraphLevel, GraphResponse, GraphView, HealthResponse, MultirouteRequest,
     MultirouteResponse, RouteRequest, TimeSlot, Trace, TrafficResponse,
 )
-from .scenario import GraphViewUnavailable, graph_response, resolve_scenario, resolve_view_store
+from .scenario import (
+    GraphViewUnavailable, ScenarioOverrideError, graph_response,
+    resolve_scenario, resolve_view_store,
+)
 from .search import ALGORITHMS
 from .search_advanced import ADVANCED_ALGORITHMS
 from .tsp import solve_multiroute
@@ -76,6 +79,22 @@ def error_json(status: int, code: str, message_vi: str) -> JSONResponse:
 
 @app.exception_handler(RequestValidationError)
 async def on_validation_error(_req: Request, exc: RequestValidationError):
+    override_issue_types = {
+        "edge_override_empty", "edge_override_empty_congestion", "edge_override_empty_risk",
+        "edge_override_duplicate", "greater_than", "greater_than_equal",
+        "less_than", "less_than_equal", "finite_number", "float_type",
+        "int_type", "string_pattern_mismatch",
+    }
+    if any(
+        "edge_overrides" in issue.get("loc", ())
+        and issue.get("type") in override_issue_types
+        for issue in exc.errors()
+    ) or any(issue.get("type") == "edge_override_duplicate" for issue in exc.errors()):
+        return error_json(
+            422,
+            "INVALID_EDGE_OVERRIDE",
+            "Cấu hình ghi đè cạnh không hợp lệ.",
+        )
     detail = "; ".join(
         f"{'.'.join(str(p) for p in e.get('loc', []))}: {e.get('msg', '')}"
         for e in exc.errors()[:3])
@@ -109,6 +128,16 @@ async def on_graph_view_unavailable(_req: Request, exc: GraphViewUnavailable):
     else:
         message = "G_real chỉ hỗ trợ graph view full."
     return error_json(exc.status_code, "GRAPH_VIEW_UNAVAILABLE", message)
+
+
+@app.exception_handler(ScenarioOverrideError)
+async def on_scenario_override_error(_req: Request, exc: ScenarioOverrideError):
+    message = (
+        "Cạnh được ghi đè không thuộc graph view đã chọn."
+        if exc.code == "EDGE_NOT_FOUND"
+        else "Cấu hình ghi đè cạnh không hợp lệ."
+    )
+    return error_json(exc.status_code, exc.code, message)
 
 
 @app.exception_handler(PydanticValidationError)
@@ -205,8 +234,9 @@ def post_route(req: RouteRequest) -> Trace:
 def post_multiroute(req: MultirouteRequest) -> MultirouteResponse:
     resolved = resolve_scenario(GraphStore.load(req.graph), req.scenario)
     result = solve_multiroute(resolved.store, req.start, req.stops, req.method,
-                              mode=req.mode, time_slot=req.time_slot,
-                              return_to_start=req.return_to_start)
+                               mode=req.mode, time_slot=req.time_slot,
+                               return_to_start=req.return_to_start,
+                               include_trace=req.include_trace)
     result.applied_scenario = resolved.applied_scenario
     return result
 

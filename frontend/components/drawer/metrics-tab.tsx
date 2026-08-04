@@ -118,6 +118,13 @@ export function MetricsTab() {
         {ALGO_LABEL[trace.algorithm].split(" — ")[0]} · {modeVi} · {trace.time_slot} ·{" "}
         {trace.graph === "demo" ? "G_demo" : "G_real"}
       </p>
+      {trace.applied_scenario && (
+        <p className="rounded-lg border border-surface-border bg-surface-control/55 px-2.5 py-2 text-[11px] leading-4 text-ink-dim">
+          Kịch bản: <span className="font-medium text-ink">{trace.applied_scenario.graph_view}</span>
+          {" · "}{trace.applied_scenario.override_count} ghi đè · {trace.applied_scenario.provenance}
+          <span className="block break-all font-mono text-[10px] text-ink-faint">{trace.applied_scenario.fingerprint}</span>
+        </p>
+      )}
       <div className="flex flex-wrap items-center gap-1.5">
         <Badge variant={m.optimal_guarantee ? "ok" : "warn"} className="gap-1">
           {m.optimal_guarantee && <BadgeCheck className="size-3.5" />}

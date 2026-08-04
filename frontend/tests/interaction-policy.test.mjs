@@ -4,8 +4,10 @@ import test from "node:test";
 import {
   effectiveTraceSteps,
   isEndpointOptionAllowed,
+  isGraphResponseCurrent,
   isStopOptionAllowed,
   isTrafficResponseCurrent,
+  graphViewChangePatch,
   routeRunBlockReason,
   slotChangePatch,
 } from "../lib/interaction-policy.ts";
@@ -24,17 +26,59 @@ test("same slot is a no-op and a real slot change clears dependent state", () =>
   });
 });
 
-test("traffic responses require both matching config and the latest token", () => {
+test("graph-view changes are no-ops for the same view and clear dependent state otherwise", () => {
+  assert.equal(graphViewChangePatch("full", "full"), null);
+  assert.deepEqual(graphViewChangePatch("full", "teach_7"), {
+    graphView: "teach_7",
+    graphData: null,
+    traffic: null,
+    trace: null,
+    compare: null,
+    multi: null,
+    start: null,
+    goal: null,
+    stops: [],
+    stepIdx: 0,
+    playing: false,
+    pickTarget: null,
+  });
+});
+
+test("graph and traffic responses require matching level, view, and latest token", () => {
   assert.equal(
-    isTrafficResponseCurrent("07:30", "demo", "07:30", "demo", true),
+    isGraphResponseCurrent("demo", "teach_7", "demo", "teach_7", "demo", "teach_7", true),
     true,
   );
   assert.equal(
-    isTrafficResponseCurrent("07:30", "demo", "12:00", "demo", true),
+    isGraphResponseCurrent("demo", "teach_7", "demo", "full", "demo", "teach_7", true),
     false,
   );
   assert.equal(
-    isTrafficResponseCurrent("07:30", "demo", "07:30", "demo", false),
+    isTrafficResponseCurrent(
+      "07:30", "demo", "teach_7", "demo", "teach_7",
+      "07:30", "demo", "teach_7", true,
+    ),
+    true,
+  );
+  assert.equal(
+    isTrafficResponseCurrent(
+      "07:30", "demo", "teach_7", "demo", "teach_7",
+      "12:00", "demo", "teach_7", true,
+    ),
+    false,
+  );
+  assert.equal(
+    isTrafficResponseCurrent(
+      "07:30", "demo", "teach_7", "demo", "full",
+      "07:30", "demo", "teach_7", true,
+    ),
+    false,
+  );
+  assert.equal(
+    isTrafficResponseCurrent(
+      "07:30", "demo", "teach_7", "demo", "teach_7",
+      "07:30", "demo", "teach_7", false,
+    ),
     false,
   );
 });

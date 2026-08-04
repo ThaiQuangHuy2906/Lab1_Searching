@@ -122,6 +122,22 @@ $v(e) \le v_{\max}$. Nếu nhóm đổi hằng số (phải hỏi trước — P
 chỉ cần giữ 4 điều kiện này, chứng minh giữ nguyên. Đặc biệt KHÔNG được: penalty âm
 (thưởng), $f < 1$ (congestion "tăng tốc"), hay đặt $v_{\max}$ nhỏ hơn max thực tế.
 
+### Mở rộng GraphView và scenario request-scoped
+
+Contract `SCHEMA.md §E` chỉ giữ chứng minh này khi resolve scenario theo đúng thứ tự:
+
+1. GraphView `teach_*` là induced subgraph của G_demo, nên mỗi edge còn lại vẫn là
+   edge có `length_m ≥ haversine(u,v)` và speed dương của base snapshot.
+2. Edge override chỉ được nhận khi `length_m ≥ ceil_dm(haversine(u,v))`,
+   `free_speed_kmh > 0`, congestion nguyên `≥1`, và mỗi risk penalty không âm.
+3. Sau override, server recompute `free_travel_time_s`, runtime weight và
+   `v_max = max speed` trên **toàn graph scenario đã resolve**, không tái dùng
+   `v_max` của base hoặc một cạnh cục bộ.
+
+Do đó Bổ đề 1–3 và Định lý 1–3 áp dụng nguyên vẹn cho cả base, GraphView và
+sandbox scenario. Nếu bất kỳ điều kiện nào bị nới, A*/IDA* không được tiếp tục
+tuyên bố admissible/consistent/optimal chỉ dựa vào chứng minh này.
+
 ## 6b. Xử lý làm tròn số (bài học thực nghiệm)
 
 Khi hiện thực, test consistency **từng phát hiện vi phạm ~3 cm** trên một cạnh G_real:

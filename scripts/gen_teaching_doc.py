@@ -5,8 +5,9 @@ SELF-DESIGNED example (no textbook copies). We fix ONE 7-node subgraph of
 G_demo around Chợ Bến Thành — real landmarks, real costs, real one-way
 streets — and run every actual implementation on it with full traces.
 The step tables below are therefore generated, not hand-typed, so they track
-the search code on this induced graph. They must not be claimed to match the
-current full-graph GUI until a backend `teach_7` view exists and is verified.
+the search code on this induced graph. They must not be claimed to match a
+full-graph GUI; parity is meaningful only when the GUI selects the same
+verified `teach_7` view and request settings.
 
 Re-run after any data rebuild:  python scripts/gen_teaching_doc.py
 """
@@ -22,18 +23,13 @@ sys.path.insert(0, str(ROOT / "backend"))
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
 from app.graph_store import GraphStore  # noqa: E402
-from app.models import GraphFile, TrafficProfiles  # noqa: E402
+from app.scenario import resolve_view_store  # noqa: E402
 from app.search import ALGORITHMS  # noqa: E402
 from app.search_advanced import ADVANCED_ALGORITHMS  # noqa: E402
 from app.tsp import build_matrix, held_karp, nearest_neighbour, tour_cost  # noqa: E402
 
 OUT = ROOT / "docs" / "GIAI-THICH-THUAT-TOAN.md"
 
-SUB_NAMES = [
-    "Chợ Bến Thành", "Công viên 23/9", "Đền Bà Mariamman",
-    "Bảo tàng Mỹ thuật TP.HCM", "Điểm trung chuyển Hàm Nghi",
-    "Bitexco Financial Tower", "Saigon Centre (Takashimaya)",
-]
 # short labels used in every table (declared up front in the doc)
 SHORT = {
     "Chợ Bến Thành": "BT", "Công viên 23/9": "CV", "Đền Bà Mariamman": "ĐB",
@@ -45,30 +41,8 @@ MODE = "balanced"
 
 
 def build_substore(demo: GraphStore) -> tuple[GraphStore, dict[str, str]]:
-    by_name = {n.name: n for n in demo.graph.nodes}
-    keep_ids = {by_name[nm].id for nm in SUB_NAMES}
-    nodes = [n for n in demo.graph.nodes if n.id in keep_ids]
-    edges = [e for e in demo.graph.edges if e.u in keep_ids and e.v in keep_ids]
-    graph = GraphFile.model_validate({
-        "meta": {**demo.graph.meta.model_dump(mode="json"), "name": "G_teach",
-                 "node_count": len(nodes), "edge_count": len(edges)},
-        "nodes": [n.model_dump() for n in nodes],
-        "edges": [e.model_dump() for e in edges],
-    })
-    eids = {e.id for e in edges}
-    profiles = TrafficProfiles.model_validate({
-        "meta": {"graph": "G_teach", "created": "2026-07-26", "source": "synthetic"},
-        "profiles": {slot: {k: v for k, v in demo.profiles.profiles[slot].items()
-                            if k in eids}
-                     for slot in demo.profiles.profiles},
-    })
-    label = {by_name[nm].id: SHORT[nm] for nm in SUB_NAMES}
-    sub = GraphStore(graph, profiles, "demo")
-    # Keep the full-G_demo v_max as a conservative teaching convention.
-    # The current GUI still runs on the full graph, so this does NOT establish
-    # step/path parity; only a future verified `teach_7` backend view may do so.
-    # A larger v_max only shrinks h, so admissibility is preserved.
-    sub.v_max_ms = demo.v_max_ms
+    sub = resolve_view_store(demo, "teach_7")
+    label = {node.id: SHORT[node.name] for node in sub.graph.nodes}
     return sub, label
 
 
@@ -232,9 +206,10 @@ def main() -> None:
 > **Cách dùng:** đây là kịch bản để MỖI THÀNH VIÊN tự giảng lại thuật toán trong video
 > (yêu cầu đề 4.10a — ví dụ TỰ THIẾT KẾ, cấm chép tutorial). Ví dụ dưới đây chạy trên
 > **dữ liệu thật của nhóm**, mọi bảng từng-bước được SINH TỰ ĐỘNG từ chính code
-> (`python scripts/gen_teaching_doc.py`) trên graph induced 7 node. Snapshot GUI
-> hiện chạy full G_demo, nên KHÔNG được tuyên bố hai bên khớp bước/path. Chỉ xác
-> nhận GUI parity sau khi backend view `teach_7` tương lai tồn tại và được test.
+> (`python scripts/gen_teaching_doc.py`) trên graph induced 7 node. Không được
+> tuyên bố GUI khớp bước/path khi GUI đang ở full G_demo hoặc một view khác. Chỉ
+> xác nhận GUI parity khi GUI chọn đúng backend view `teach_7` đã được test và
+> cùng cấu hình request.
 > **Đừng đọc nguyên văn** — hiểu bảng, tự nói bằng lời của mình.
 > ⚠️ **SỐ TẠM (chưa regen theo profile `tomtom+synthetic`):** MỌI con số ở đây
 > vẫn thuộc lượt cũ và sẽ đổi ở lượt generator cuối —
@@ -251,7 +226,9 @@ def main() -> None:
 
 | Viết tắt | Địa danh |
 |---|---|
-""" + "\n".join(f"| **{SHORT[nm]}** | {nm} |" for nm in SUB_NAMES) + f"""
+""" + "\n".join(
+    f"| **{label[node.id]}** | {node.name} |" for node in store.graph.nodes
+) + f"""
 
 **Bài toán xuyên suốt: đi từ `BT` (Chợ Bến Thành) đến `BX` (Bitexco).**
 Điểm thú vị của cặp này: có đường trực tiếp BX→BT nhưng đó là đường **MỘT CHIỀU** —
@@ -269,7 +246,7 @@ Trọng số cạnh = `t_free × f_cong + penalty` (SCHEMA §D, γ=1,5):
 lệch ±1 s so với tổng chính xác; app và test tính bằng số lẻ đầy đủ.)*
 
 Heuristic tới đích {lab[goal]}: `h(n) = haversine(n, {lab[goal]}) / v_max`, với
-v_max = **{store.v_max_ms * 3.6:.0f} km/h** — tốc độ lớn nhất có thật trong G_demo
+v_max = **{store.v_max_ms * 3.6:.0f} km/h** — tốc độ lớn nhất có thật trong view `teach_7`
 (không đoán quá ⇒ admissible, chứng minh trong `docs/HEURISTIC-PROOF.md`):
 
 | Node | haversine → {lab[goal]} (m) | **h (s)** |

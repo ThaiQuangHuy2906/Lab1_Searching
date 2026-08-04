@@ -179,3 +179,23 @@ Curie* (lệch ~900 m), *THPT Nguyễn Thị Minh Khai* (~445 m), *ĐH Mở TP.H
    đi vào); (b) trên G_demo, hành lang co cắt **2 vùng cùng loại** vẫn chỉ trả 1 lần
    (flag OR 0/1) trong khi G_real trả đúng 2 — vì vậy bất biến balanced chỉ có cận trên,
    không có sàn (mục 6).
+
+## 9. GraphView và scenario — ranh giới dữ liệu bất biến
+
+Mở rộng đã được duyệt trong `docs/SCHEMA.md §E` **không phải** một data rebuild.
+Khi Milestone implementation tạo `data/teaching_graph_presets.json`, file đó chỉ
+là config tracked xác định tập node nested của G_demo (`teach_7`, `teach_15`,
+`teach_25`) và count edge induced đã kỳ vọng. Nó không thay `graph_demo.json`,
+`traffic_profiles_demo.json`, `gdemo_corridors.json` hay bất kỳ raw artifact nào.
+
+Một GraphView được dựng trong memory bằng lọc induced node/edge và profile tương
+ứng; `full` vẫn là snapshot base. Edge override sandbox cũng chỉ clone/apply trong
+phạm vi request, tính lại field derived/weight/v_max rồi bỏ đi sau response. Vì vậy:
+
+- không chạy scripts 01–04/03b, crawler, benchmark, gamma calibration hay generator
+  để tạo view/scenario;
+- không ghi view/override vào base JSON, raw TomTom hoặc results;
+- fingerprint response ghi nhận base graph/profile/view/override **effective** để
+  benchmark/report sau này phân biệt đúng provenance;
+- raw TomTom vẫn Git-ignore và phải đi trong Data ZIP cuối; tám URL risk vẫn là
+  manual task trước final submission.

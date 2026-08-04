@@ -93,6 +93,14 @@ giữa 2 điểm theo nhiều tiêu chí, (ii) xếp thứ tự giao nhiều đ�
 - Trạng thái đầu: node xuất phát; đích: node đến; nghiệm: dãy cạnh liên tiếp.
 - Chi phí bước = trọng số cạnh theo chế độ (bảng dưới).
 
+**Mô hình cần diễn giải trong bản PDF:** đặt `G=(V,E)` là graph có hướng;
+`adj(u)` liệt kê cạnh đi từ `u`, còn `radj(v)` liệt kê cạnh đi vào `v` và chỉ dùng
+đúng chiều ngược trong Bidirectional Dijkstra. Một path hợp lệ là
+`P=(v₀,…,v_k)` sao cho `(v_i,v_{i+1})∈E`; với mode/slot đã chọn,
+`cost(P)=Σ_i w(v_i,v_{i+1})`. Cạnh một chiều chỉ có một hướng hợp lệ; cạnh hai
+chiều được biểu diễn bằng hai edge có hướng. Điều này giải thích cả route hai
+điểm lẫn vì sao ma trận multi-location có thể bất đối xứng `c(a,b) ≠ c(b,a)`.
+
 **Thuộc tính cạnh** *(chèn từ `docs/SCHEMA.md` §A.3 — bảng đầy đủ trong đó)*:
 `length_m`, `highway`, `oneway`, `free_speed_kmh`, `free_travel_time_s`,
 `risk{flood, construction, narrow_alley, traffic_light}`.
@@ -128,6 +136,14 @@ f = 1 + γ(c−1)/4 trên inflation freeFlow/current của từng điểm đo) =
 
 [ĐIỀN: ùn tắc đổi tuyến thế nào — trỏ exp4: 83,5% cặp OD đổi tuyến giữa 07:30 và 22:00.]
 
+**Ghi chú scenario dạy học/thử nghiệm (không thay dataset gốc):** bản triển khai
+mở rộng dùng graph view induced `full`/`teach_7`/`teach_15`/`teach_25` và sandbox
+edge override request-scoped. View/sandbox chỉ là graph hiệu lực của một request;
+không sửa `graph_*.json`, profile base hay benchmark. Mỗi result phải echo
+provenance/fingerprint do server sinh để người xem biết đang xem data gốc, graph
+dạy học hay kịch bản thử nghiệm. Phần này phải được mô tả theo `SCHEMA.md §E`,
+không thay thế provenance dataset ở mục d.
+
 ---
 
 ## d. Dataset (3–5 trang)
@@ -158,6 +174,22 @@ f = 1 + γ(c−1)/4 trên inflation freeFlow/current của từng điểm đo) =
 [ĐIỀN: luật TomTom + synthetic fallback (DATA.md §5), phạm vi phủ mẫu và khẳng
 định demo offline 100%.]
 
+**Bảng provenance bắt buộc trong PDF** *(không được gộp lẫn “thật” và “nhóm đặt”)*:
+
+| Nhóm | Field/ý nghĩa |
+|---|---|
+| Nguồn thực tế OSM | topology, toạ độ G_real, name/highway/oneway |
+| Suy ra từ graph thật | toạ độ/hướng/length/corridor của G_demo, free-time, traffic_light, narrow_alley |
+| Nhóm đặt thủ công | POI ban đầu, giả định free-speed, vùng flood/construction |
+| Synthetic deterministic fallback | congestion của edge không được TomTom gán ở slot tương ứng |
+
+Nêu rõ bốn snapshot TomTom là hai slot 2026-07-27 và hai slot 2026-08-03, cùng là
+thứ Hai cách nhau bảy ngày: chúng là snapshot đại diện theo slot, **không phải**
+time series cùng một ngày. Mỗi slot có 40 record hợp lệ và chỉ gán mức TomTom cho
+635/4 699 edge G_real; phần còn lại dùng fallback seed 42, còn G_demo kế thừa qua
+corridor weighted mean. Tám `source_url` manual risk vẫn TODO là việc tay chặn
+final submission, không được bịa nguồn để điền.
+
 [SCREENSHOT: `data/gdemo_preview.png` — sơ đồ G_demo 51 điểm]
 
 ---
@@ -175,6 +207,16 @@ Danh sách tiểu mục (theo thứ tự): BFS · DFS · IDDFS · UCS · Dijkstr
 · A* · Greedy Best-First · Bidirectional Dijkstra (đồ thị đảo cạnh, luật dừng μ) ·
 IDA* (ε=5 m ở distance, 5 s ở time/balanced; cap 1.000 vòng) · Beam Search
 (k, incomplete).
+
+**Khung thống nhất cho đủ 13 phương pháp** (10 search + Held–Karp + NN/local +
+SA): mỗi tiểu mục cần có (1) mục đích, (2) trực giác, (3) input/parameter/default,
+(4) output, (5) cấu trúc dữ liệu, (6) các bước, (7) pseudocode, (8) priority/đại
+lượng quyết định, (9) time complexity, (10) space complexity, (11) complete và
+điều kiện, (12) optimal và điều kiện, (13) ưu điểm, (14) nhược điểm/khi dùng,
+(15) ví dụ chạy tay + so sánh với phương pháp gần nhất. Không dùng benchmark để
+thay chứng minh guarantee. IDDFS chỉ complete khi depth nghiệm không vượt cap 100;
+IDA* chỉ giữ guarantee khi chưa chạm cap 1.000 round; Bidirectional Dijkstra
+không được quảng cáo tốt hơn Dijkstra trong worst case vô điều kiện.
 
 **Tiểu mục heuristic** *(chèn sẵn)*: toàn bộ chứng minh admissible + consistent lấy từ
 `docs/HEURISTIC-PROOF.md` (Bổ đề 1–3, Định lý 1–3, mục 6b về làm tròn số — bài học hay
@@ -246,16 +288,16 @@ error envelope), frontend store/timeline đồng bộ 2 chiều.]
 
 | Thuật toán | Thời gian | Bộ nhớ | Complete | Optimal |
 |---|---|---|---|---|
-| BFS | O(b^d) | O(b^d) | ✔ | ✘ (chỉ khi cạnh đều) |
-| DFS | O(b^m) | O(bm) | ✔ (hữu hạn+visited) | ✘ |
-| IDDFS | O(b^d) | theo stack/closed từng vòng | Có điều kiện: d≤cap 100 | ✘ (như BFS) |
-| UCS | O(b^(1+C*/ε)) | O(b^(1+C*/ε)) | ✔ | ✔ |
-| Dijkstra | O((V+E)logV) | O(V) | ✔ | ✔ |
-| A* | O(b^d) — thực tế ≪ UCS | O(b^d) | ✔ | ✔ (h admissible) |
-| Greedy | O(b^m) | O(b^m) | ✔ (visited) | ✘ |
-| BiDijkstra | Worst-case O((V+E)logV), không hơn Dijkstra vô điều kiện | O(V) | ✔ | ✔ |
-| IDA* | lặp lại theo ngưỡng, tối đa 1.000 vòng | O(V+Q): `best_g`/`parent`/`h_of` + explicit stack đang chờ Q | Có điều kiện: chưa chạm cap | ✔ trong C*+ε_IDA nếu chưa chạm cap |
-| Beam | O(k·d) | O(k) | ✘ | ✘ |
+| BFS | graph traversal O(V+E) | O(V) | trên graph hữu hạn | ✘ (chỉ cost-optimal khi cạnh đều) |
+| DFS | graph traversal O(V+E) | O(V) | trên graph hữu hạn + visited | ✘ |
+| IDDFS | textbook O(b^d) | stack/closed theo vòng | Có điều kiện: d≤cap 100 | ✘ (như BFS) |
+| UCS | O((V+E)logV) với heap | O(V+E) worst case với lazy heap | ✔ khi weight không âm | ✔ khi weight không âm |
+| Dijkstra | O((V+E)logV) | O(V+E) worst case với lazy heap | ✔ khi weight không âm | ✔ khi weight không âm |
+| A* | worst case có thể xét toàn graph | O(V+E) worst case với heap/lazy entry | ✔ với heuristic nhất quán | ✔ với heuristic admissible + consistent |
+| Greedy | phụ thuộc frontier/heap; không dùng g để chọn | O(V) | tìm path trên graph hữu hạn có closed set | ✘ |
+| BiDijkstra | worst-case cùng bậc Dijkstra, không hơn vô điều kiện | O(V+E) worst case với hai lazy heap | ✔ khi weight không âm + stop rule | ✔ khi weight không âm + stop rule |
+| IDA* | thường O(b^d), có lặp threshold, tối đa 1.000 vòng | O(V+Q): `best_g`/`parent`/`h_of` + explicit stack đang chờ Q | Có điều kiện: chưa chạm cap | ✔ trong C*+ε_IDA nếu chưa chạm cap |
+| Beam | xấp xỉ O(b·k·d) | O(V+b·k): maps + raw pool lớp kế | ✘ | ✘ |
 
 **Bảng thực nghiệm** *(điền sẵn từ [SỐ LIỆU → results/exp3_benchmark.csv] — trung bình
 200 cặp × 2 khung giờ trên G_real)*:
@@ -297,6 +339,12 @@ results/exp4_examples/ mô tả cụ thể đổi thế nào.]
 `results/exp6_routes/route_i.png`; nhận xét trùng/khác và VÌ SAO (Google có dữ liệu
 real-time, ta dùng snapshot 4 khung giờ)].
 
+**Mẫu provenance cho mọi số benchmark sau lượt cuối** (điền cạnh bảng/hình, không
+chỉ nêu một headline): graph `name/created`, profile `created/source`, GraphView và
+scenario fingerprint, mode/slot, OD hoặc stop set, algorithm/params, seed, command,
+commit và đường dẫn artifact. Trước khi có một lượt benchmark coherent mới, giữ mọi
+con số hiện hữu dưới banner **SỐ TẠM** và không gọi chúng là kết quả current.
+
 ---
 
 ## h. Tối ưu đa điểm (3–4 trang)
@@ -309,6 +357,14 @@ real-time, ta dùng snapshot 4 khung giờ)].
 **Phát biểu bài toán** [ĐIỀN: shipper từ kho (Bưu điện TP), thăm k điểm giao đúng 1 lần,
 không quay về (return_to_start=false — giả định ghi rõ); ma trận chi phí từ Dijkstra
 theo (mode, khung giờ); tổng điểm ≤ 16, Held-Karp ≤ 15].
+
+**Trace tối ưu thứ tự (nếu bật trong GUI):** đây là `OptimizationTrace` riêng, không
+phải `Trace` của mười thuật toán route. Nó chỉ giải thích việc chọn/thay đổi thứ tự
+ghé (DP update, NN decision, local improvement, SA seed/iteration), còn tuyến xe
+thật là các leg cuối. Cap Held–Karp 2 000, NN/local 2 000 và SA 1 500 chỉ cắt
+payload theo sampling deterministic; chúng không dừng optimizer. Phần report/video
+phải gọi đúng đây là quá trình tối ưu **thứ tự**, không gọi là frontier search trên
+graph đường phố.
 
 **Kết quả kịch bản 10 điểm** *(điền sẵn từ [SỐ LIỆU → results/exp7_tsp.csv])*:
 
@@ -325,7 +381,10 @@ theo (mode, khung giờ); tổng điểm ≤ 16, Held-Karp ≤ 15].
 (không gian nhỏ); độ lệch SA giữa seed (±9,7 s) minh hoạ tính ngẫu nhiên; với k lớn
 hơn 15 chỉ còn heuristic. Nêu giới hạn Held-Karp O(n²·2ⁿ); Nearest Neighbour hiện
 là O(n² log n) vì sort ở mỗi vòng; local 2-opt/Or-opt là O(Pn³) vì Θ(n²)
-candidate/pass × Θ(n) full re-cost.]
+candidate/pass × Θ(n) full re-cost; SA là O(S·I·n) với S=5 seed, I=2 000
+iteration/seed. “Nghiệm bằng Held–Karp ở instance này” không biến NN/local hoặc SA
+thành thuật toán đảm bảo tối ưu toàn cục; local optimum chỉ là điểm không còn nước
+cải thiện theo neighbourhood đã chọn.]
 
 [SCREENSHOT: GUI multiroute — thứ tự đánh số trên bản đồ + card "Tiết kiệm %"]
 

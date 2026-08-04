@@ -21,7 +21,7 @@ import {
   MULTI_ROUTE_ACTIVE_MESSAGE,
 } from "@/lib/interaction-policy";
 import { ALGO_LABEL, useApp } from "@/lib/store";
-import type { Algorithm, Mode, TimeSlot } from "@/lib/types";
+import type { Algorithm, GraphView, Mode, TimeSlot } from "@/lib/types";
 import { AtspSetup } from "./atsp/atsp-setup";
 
 const SLOTS: TimeSlot[] = ["07:30", "12:00", "17:30", "22:00"];
@@ -29,6 +29,12 @@ const MODES: { v: Mode; label: string }[] = [
   { v: "balanced", label: "Cân bằng" },
   { v: "time", label: "Nhanh nhất" },
   { v: "distance", label: "Ngắn nhất" },
+];
+const DEMO_VIEWS: { value: GraphView; label: string }[] = [
+  { value: "full", label: "Toàn bộ G_demo — 51 node" },
+  { value: "teach_7", label: "Dạy học — 7 node" },
+  { value: "teach_15", label: "Dạy học — 15 node" },
+  { value: "teach_25", label: "Dạy học — 25 node" },
 ];
 // Nhóm dropdown theo bảo đảm lý thuyết (SCHEMA §B.5): IDA* của dự án
 // dùng ngưỡng nới ε nên phải đứng riêng, không được gọi là tối ưu tuyệt đối.
@@ -228,6 +234,20 @@ export function ControlPanel() {
             <SelectContent>
               <SelectItem value="demo">G_demo — 51 địa danh thật</SelectItem>
               <SelectItem value="real">G_real — 2 118 nút OSM</SelectItem>
+            </SelectContent>
+          </Select>
+        </Field>
+        <Field label="Graph view"
+          tip="View dạy học là đồ thị con có hướng thật của G_demo; đổi view sẽ xoá hành trình và kết quả cũ.">
+          <Select value={s.graphView} disabled={busy || !isDemo}
+            onValueChange={(v) => s.setGraphView(v as GraphView)}>
+            <SelectTrigger aria-label="Graph view"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              {isDemo ? DEMO_VIEWS.map((view) => (
+                <SelectItem key={view.value} value={view.value}>{view.label}</SelectItem>
+              )) : (
+                <SelectItem value="full">Toàn bộ G_real — 2 118 node</SelectItem>
+              )}
             </SelectContent>
           </Select>
         </Field>

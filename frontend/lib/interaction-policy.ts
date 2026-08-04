@@ -1,4 +1,4 @@
-import type { GraphLevel, TimeSlot, Trace, TraceStep } from "./types";
+import type { GraphLevel, GraphView, TimeSlot, Trace, TraceStep } from "./types";
 
 export const MULTI_ROUTE_ACTIVE_MESSAGE =
   "Chế độ nhiều điểm — dùng nút Tối ưu thứ tự; xoá hết điểm giao để chạy tuyến 2 điểm.";
@@ -11,6 +11,42 @@ export interface SlotChangePatch {
   multi: null;
   stepIdx: 0;
   playing: false;
+}
+
+export interface GraphViewChangePatch {
+  graphView: GraphView;
+  graphData: null;
+  traffic: null;
+  trace: null;
+  compare: null;
+  multi: null;
+  start: null;
+  goal: null;
+  stops: [];
+  stepIdx: 0;
+  playing: false;
+  pickTarget: null;
+}
+
+export function graphViewChangePatch(
+  current: GraphView,
+  next: GraphView,
+): GraphViewChangePatch | null {
+  if (current === next) return null;
+  return {
+    graphView: next,
+    graphData: null,
+    traffic: null,
+    trace: null,
+    compare: null,
+    multi: null,
+    start: null,
+    goal: null,
+    stops: [],
+    stepIdx: 0,
+    playing: false,
+    pickTarget: null,
+  };
 }
 
 export function slotChangePatch(
@@ -29,16 +65,39 @@ export function slotChangePatch(
   };
 }
 
+export function isGraphResponseCurrent(
+  requestGraph: GraphLevel,
+  requestView: GraphView,
+  responseGraph: GraphLevel | undefined,
+  responseView: GraphView | undefined,
+  currentGraph: GraphLevel,
+  currentView: GraphView,
+  isLatestRequest: boolean,
+) {
+  return isLatestRequest
+    && requestGraph === currentGraph
+    && requestView === currentView
+    && responseGraph === requestGraph
+    && responseView === requestView;
+}
+
 export function isTrafficResponseCurrent(
   requestSlot: TimeSlot,
   requestGraph: GraphLevel,
+  requestView: GraphView,
+  responseGraph: GraphLevel | undefined,
+  responseView: GraphView | undefined,
   currentSlot: TimeSlot,
   currentGraph: GraphLevel,
+  currentView: GraphView,
   isLatestRequest: boolean,
 ) {
   return isLatestRequest
     && requestSlot === currentSlot
-    && requestGraph === currentGraph;
+    && requestGraph === currentGraph
+    && requestView === currentView
+    && responseGraph === requestGraph
+    && responseView === requestView;
 }
 
 export function routeRunBlockReason(

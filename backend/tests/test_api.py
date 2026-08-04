@@ -12,7 +12,7 @@ from fastapi.testclient import TestClient
 
 import app.main as main_module
 from app.main import app
-from app.models import MultirouteResponse, Trace
+from app.models import GraphResponse, MultirouteResponse, Trace
 
 client = TestClient(app, raise_server_exceptions=False)
 
@@ -43,7 +43,38 @@ def test_graph_demo_and_real():
     for level, nodes in (("demo", 51), ("real", 2118)):
         r = client.get("/api/graph", params={"level": level})
         assert r.status_code == 200
-        assert r.json()["meta"]["node_count"] == nodes
+        graph = GraphResponse.model_validate(r.json())
+        assert graph.meta.node_count == nodes
+        assert graph.view_meta.base_graph == level
+        assert graph.view_meta.graph_view == "full"
+        assert graph.view_meta.base_node_count == nodes
+
+
+def test_graph_teach_view_is_a_real_induced_payload():
+    r = client.get("/api/graph", params={"level": "demo", "view": "teach_7"})
+
+    assert r.status_code == 200
+    graph = GraphResponse.model_validate(r.json())
+    assert graph.meta.name == "G_demo:teach_7"
+    assert graph.meta.node_count == 7
+    assert graph.meta.edge_count == 24
+    assert graph.view_meta.model_dump() == {
+        "base_graph": "demo", "graph_view": "teach_7", "base_node_count": 51,
+    }
+
+
+def test_real_graph_rejects_teaching_view_with_typed_error():
+    r = client.get("/api/graph", params={"level": "real", "view": "teach_7"})
+
+    assert r.status_code == 422
+    assert r.json()["error"]["code"] == "GRAPH_VIEW_UNAVAILABLE"
+
+
+def test_unknown_graph_view_gives_validation_envelope():
+    r = client.get("/api/graph", params={"level": "demo", "view": "teach_99"})
+
+    assert r.status_code == 422
+    assert r.json()["error"]["code"] == "VALIDATION_ERROR"
 
 
 def test_graph_bad_level_gives_422_envelope():
@@ -57,7 +88,7 @@ def test_openapi_uses_runtime_success_and_error_contracts():
     schema = client.get("/openapi.json").json()
     graph_responses = schema["paths"]["/api/graph"]["get"]["responses"]
     assert graph_responses["200"]["content"]["application/json"]["schema"] == {
-        "$ref": "#/components/schemas/GraphFile"
+        "$ref": "#/components/schemas/GraphResponse"
     }
 
     error_statuses = {
@@ -83,8 +114,22 @@ def test_traffic_covers_all_edges():
     assert r.status_code == 200
     body = r.json()
     # coverage must track the CURRENT graph, never a hardcoded edge count
-    assert body["slot"] == "07:30" and len(body["congestion"]) == n_edges
+    assert body["slot"] == "07:30" and body["graph_view"] == "full"
+    assert len(body["congestion"]) == n_edges
     assert set(body["congestion"].values()) <= {1, 2, 3, 4, 5}
+
+
+def test_traffic_echoes_teaching_view_and_only_its_edges():
+    graph = client.get("/api/graph", params={"level": "demo", "view": "teach_15"}).json()
+    r = client.get("/api/traffic", params={
+        "slot": "07:30", "level": "demo", "view": "teach_15",
+    })
+
+    assert r.status_code == 200
+    body = r.json()
+    assert body["graph"] == "demo"
+    assert body["graph_view"] == "teach_15"
+    assert set(body["congestion"]) == {edge["id"] for edge in graph["edges"]}
 
 
 def test_traffic_bad_slot():
@@ -114,6 +159,38 @@ def test_route_all_ten_algorithms():
         t = Trace.model_validate(r.json())
         assert t.algorithm == algo
         assert t.explanation.summary_vi
+
+
+def test_route_resolves_teaching_scenario_and_echoes_it():
+    r = client.post("/api/route", json=route_body(
+        start="n0018", goal="n0038", scenario={"graph_view": "teach_7"},
+    ))
+
+    assert r.status_code == 200
+    trace = Trace.model_validate(r.json())
+    assert trace.applied_scenario is not None
+    assert trace.applied_scenario.graph_view == "teach_7"
+    assert trace.applied_scenario.provenance == "graph_view"
+    assert set(trace.path) <= {"n0018", "n0019", "n0020", "n0022", "n0028", "n0037", "n0038"}
+
+
+def test_route_without_scenario_echoes_base_applied_scenario():
+    r = client.post("/api/route", json=route_body())
+
+    assert r.status_code == 200
+    applied = Trace.model_validate(r.json()).applied_scenario
+    assert applied is not None
+    assert applied.graph_view == "full"
+    assert applied.provenance == "base"
+
+
+def test_route_node_outside_resolved_teaching_view_is_not_found():
+    r = client.post("/api/route", json=route_body(
+        scenario={"graph_view": "teach_7"},
+    ))
+
+    assert r.status_code == 404
+    assert r.json()["error"]["code"] == "NODE_NOT_FOUND"
 
 
 def test_route_real_defaults_to_no_trace():
@@ -197,6 +274,22 @@ def test_multiroute_nn2opt():
     resp = MultirouteResponse.model_validate(r.json())
     assert resp.found and resp.order[0] == "n0021"
     assert resp.savings_pct is not None
+
+
+def test_multiroute_resolves_teaching_scenario_and_echoes_it():
+    r = client.post("/api/multiroute", json={
+        "start": "n0018", "stops": ["n0020", "n0038"],
+        "method": "nn_2opt", "mode": "balanced", "time_slot": "07:30",
+        "graph": "demo", "scenario": {"graph_view": "teach_7"},
+    })
+
+    assert r.status_code == 200
+    response = MultirouteResponse.model_validate(r.json())
+    assert response.applied_scenario is not None
+    assert response.applied_scenario.graph_view == "teach_7"
+    assert {node for leg in response.legs for node in leg.path} <= {
+        "n0018", "n0019", "n0020", "n0022", "n0028", "n0037", "n0038",
+    }
 
 
 def test_multiroute_held_karp_16_points_gives_422_limit():

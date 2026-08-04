@@ -2,8 +2,8 @@
 // Every error is normalized to the {code, message_vi} envelope + a hint.
 
 import type {
-  Algorithm, ApiError, ExperimentResult, GraphFile, GraphLevel, Mode,
-  MultirouteResponse, TimeSlot, Trace, TrafficResponse, TspMethod,
+  Algorithm, ApiError, ExperimentResult, GraphLevel, GraphResponse, GraphView, Mode,
+  MultirouteResponse, ScenarioConfig, TimeSlot, Trace, TrafficResponse, TspMethod,
 } from "./types";
 
 const BASE = process.env.NEXT_PUBLIC_API_BASE ?? "http://localhost:8000";
@@ -45,20 +45,25 @@ async function call<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 export const api = {
-  graph: (level: GraphLevel) => call<GraphFile>(`/api/graph?level=${level}`),
+  graph: (level: GraphLevel, view: GraphView) =>
+    call<GraphResponse>(`/api/graph?level=${level}&view=${view}`),
 
-  traffic: (slot: TimeSlot, level: GraphLevel) =>
-    call<TrafficResponse>(`/api/traffic?slot=${encodeURIComponent(slot)}&level=${level}`),
+  traffic: (slot: TimeSlot, level: GraphLevel, view: GraphView) =>
+    call<TrafficResponse>(
+      `/api/traffic?slot=${encodeURIComponent(slot)}&level=${level}&view=${view}`,
+    ),
 
   route: (body: {
     start: string; goal: string; algorithm: Algorithm; mode: Mode;
     time_slot: TimeSlot; graph: GraphLevel; include_trace: boolean | null;
     params?: { beam_width?: number; epsilon?: number };
+    scenario?: ScenarioConfig;
   }) => call<Trace>("/api/route", { method: "POST", body: JSON.stringify(body) }),
 
   multiroute: (body: {
     start: string; stops: string[]; method: TspMethod; mode: Mode;
     time_slot: TimeSlot; graph: GraphLevel; return_to_start: boolean;
+    scenario?: ScenarioConfig;
   }) => call<MultirouteResponse>("/api/multiroute", {
     method: "POST", body: JSON.stringify(body),
   }),

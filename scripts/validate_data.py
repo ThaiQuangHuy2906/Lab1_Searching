@@ -30,6 +30,9 @@ Checks, per graph level (real, demo):
     Plus a named regression pair (Cung Văn hoá Lao Động <-> Hồ Con Rùa)
     must stay <= 2.0x both directions on time and dist.
     The build FAILS on any violation.
+9.  Teaching preset config: the tracked `teach_7`/`teach_15`/`teach_25`
+    selections match this G_demo snapshot, are nested induced subgraphs, and
+    are strongly connected in both directions.
 
 Exit code 0 = everything valid. Run:  python scripts/validate_data.py
 """
@@ -49,7 +52,9 @@ from pipeline_common import (  # noqa: E402
     DEFAULT_SPEED_KMH, MAIN_CLASSES, SPEED_BY_HIGHWAY, haversine_m, load_json,
 )
 from app.costs import GAMMA, PENALTY_S  # noqa: E402
+from app.graph_store import GraphStore  # noqa: E402
 from app.models import GraphFile, TrafficProfiles  # noqa: E402
+from app.scenario import validate_teaching_presets  # noqa: E402
 
 # same limits as scripts/04_build_gdemo.py — keep in sync
 INVARIANT_TIME_RATIO = 1.5
@@ -324,6 +329,8 @@ def validate_level(level: str) -> str:
 def main() -> None:
     for level in ("real", "demo"):
         print("OK -", validate_level(level))
+    validate_teaching_presets(GraphStore.load("demo"))
+    print("OK - teaching graph presets: 7/15/25 induced SCC views valid")
     print("ALL DATA VALID")
 
 

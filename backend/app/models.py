@@ -23,6 +23,7 @@ Algorithm = Literal[
 Mode = Literal["distance", "time", "balanced"]
 TimeSlot = Literal["07:30", "12:00", "17:30", "22:00"]
 GraphLevel = Literal["demo", "real"]
+GraphView = Literal["full", "teach_7", "teach_15", "teach_25"]
 TspMethod = Literal["held_karp", "nn_2opt", "sa"]
 NodeType = Literal["landmark", "intersection", "warehouse", "hospital", "school"]
 
@@ -165,6 +166,20 @@ class GraphFile(StrictModel):
         return self
 
 
+class GraphViewMeta(StrictModel):
+    """Response-only provenance for a resolved graph view."""
+
+    base_graph: GraphLevel
+    graph_view: GraphView
+    base_node_count: Annotated[int, Field(ge=1)]
+
+
+class GraphResponse(GraphFile):
+    """Graph payload returned by the API; persisted graph JSON stays GraphFile."""
+
+    view_meta: GraphViewMeta
+
+
 class ProfilesMeta(StrictModel):
     graph: str
     created: datetime.date
@@ -238,11 +253,24 @@ class Explanation(StrictModel):
     alternatives: list[Alternative] = []
 
 
+ScenarioProvenance = Literal["base", "graph_view", "sandbox_override"]
+
+
+class AppliedScenario(StrictModel):
+    """Server-authoritative scenario provenance echoed on API responses."""
+
+    graph_view: GraphView
+    override_count: Annotated[int, Field(ge=0)]
+    fingerprint: Annotated[str, Field(pattern=r"^scenario-v1:[0-9a-f]{64}$")]
+    provenance: ScenarioProvenance
+
+
 class Trace(StrictModel):
     algorithm: Algorithm
     mode: Mode
     time_slot: TimeSlot
     graph: GraphLevel
+    applied_scenario: AppliedScenario | None = None
     found: bool
     path: list[NodeId]
     metrics: Metrics
@@ -300,6 +328,16 @@ class RouteParams(StrictModel):
     epsilon: Annotated[float, Field(gt=0, allow_inf_nan=False)] | None = None
 
 
+class ScenarioConfig(StrictModel):
+    """Milestone 2 scenario surface: a request-scoped graph-view selection.
+
+    Edge overrides are deliberately introduced with their resolver in
+    Milestone 4 so this model cannot accept an override it cannot apply.
+    """
+
+    graph_view: GraphView = "full"
+
+
 class RouteRequest(StrictModel):
     start: NodeId
     goal: NodeId
@@ -307,6 +345,7 @@ class RouteRequest(StrictModel):
     mode: Mode = "balanced"
     time_slot: TimeSlot
     graph: GraphLevel = "demo"
+    scenario: ScenarioConfig | None = None
     include_trace: bool | None = None  # None -> default: demo=true, real=false
     params: RouteParams | None = None
 
@@ -318,6 +357,7 @@ class MultirouteRequest(StrictModel):
     mode: Mode = "balanced"
     time_slot: TimeSlot
     graph: GraphLevel = "demo"
+    scenario: ScenarioConfig | None = None
     return_to_start: bool = False
 
     @model_validator(mode="after")
@@ -354,6 +394,7 @@ class MultirouteResponse(StrictModel):
     mode: Mode
     time_slot: TimeSlot
     graph: GraphLevel
+    applied_scenario: AppliedScenario | None = None
     found: bool
     order: list[NodeId]
     legs: list[Leg]
@@ -387,6 +428,7 @@ class HealthResponse(StrictModel):
 class TrafficResponse(StrictModel):
     slot: TimeSlot
     graph: GraphLevel
+    graph_view: GraphView = "full"
     congestion: dict[str, Congestion]
 
 
@@ -407,7 +449,8 @@ class BenchmarkResponse(StrictModel):
 
 class ErrorDetail(StrictModel):
     code: Literal[
-        "NODE_NOT_FOUND", "RESULTS_NOT_FOUND", "VALIDATION_ERROR", "HELD_KARP_LIMIT", "INTERNAL"
+        "NODE_NOT_FOUND", "RESULTS_NOT_FOUND", "VALIDATION_ERROR", "HELD_KARP_LIMIT",
+        "GRAPH_VIEW_UNAVAILABLE", "EDGE_NOT_FOUND", "INVALID_EDGE_OVERRIDE", "INTERNAL",
     ]
     message_vi: str
 

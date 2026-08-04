@@ -445,3 +445,79 @@ header gọn → tiêu đề/ngữ cảnh → provenance → các chart card →
 nhận diện bằng SỰ VẮNG màu,
 cố ý chìm để lớp thuật toán nổi; nếu nâng đạt 3,0 thì toàn bản đồ sáng rực và
 frontier/expanded mất độ nổi. Cần mắt người xác nhận khi duyệt.
+
+## 11. Mở rộng đã duyệt 2026-08-04 — view, ATSP trace và sandbox
+
+Phần này khóa UX cho contract §E của `docs/SCHEMA.md`. Đây không cho phép UI
+tự dựng graph, tự hash scenario, hoặc giả kết quả chưa có backend; backend là
+authority của view, scenario và fingerprint.
+
+### 11.1. GraphView dạy học
+
+- Control `Graph view` chỉ có bốn identifier canonical: `full`, `teach_7`,
+  `teach_15`, `teach_25`. Label được phép là “Toàn bộ G_demo — 51 node”, “Dạy học
+  — 7 node”, “Dạy học — 15 node”, “Dạy học — 25 node”; không lộ identifier cũ
+  hoặc tự tạo tên khác.
+- Mặc định là `full`. Khi chọn `G_real`, UI chỉ cho `full`; nếu đang ở teach view
+  rồi đổi graph sang real thì ép về `full` trước request graph/traffic tiếp theo.
+- Chọn lại đúng view là no-op. Đổi view thật phải clear graph data, traffic, Đi,
+  Đến, stops, route, compare, multiroute, trace/timeline, selected edge và
+  overrides; UI không giữ kết quả thuộc node set khác.
+- Graph/traffic request mang cùng snapshot `graph + graphView`; response phải echo
+  `view_meta.graph_view`/`graph_view` khớp. Echo thiếu hoặc lệch là contract error
+  có copy Việt, clear dữ liệu pending và không fallback im lặng sang `full`.
+- Map chỉ render node/edge server trả về. Không dùng CSS/visibility chỉ để “ẩn” node
+  của base graph vì như vậy route/traffic/ATSP vẫn có thể đi qua node không nhìn thấy.
+
+### 11.2. ATSP optimization trace
+
+- Trong khối ATSP có switch “Hiện quá trình tối ưu”, mặc định tắt. Bật switch chỉ
+  đặt `include_trace=true` cho lần chạy mới; không bịa trace cho result cũ.
+- Timeline hiện có tái dùng play/pause/step/slider/speed nhưng phải mang source
+  discriminated `route` hoặc `optimization`. Run ATSP có trace bắt đầu ở step 0 và
+  paused; `prefers-reduced-motion: reduce` luôn paused và không route-flow autoplay.
+- Caption bắt buộc nói “Quá trình tối ưu thứ tự ghé”, không gọi event ATSP là bước
+  mở rộng graph search. Event conceptual (subset/đề xuất thứ tự) dùng nét đứt và
+  legend riêng; không gọi nó là đường xe chạy. Road leg thật chỉ được nhấn đầy đủ ở
+  reconstruction/summary/final state.
+- Player nêu method, event ordinal, policy sampling, `recorded_events/total_events`
+  và dấu hiệu truncated. Các event không liên tiếp sau sampling là bình thường.
+- Scenario/view/input đổi thật phải clear optimization trace cùng route trace;
+  kết quả không trace vẫn hiển thị legs/final order như hiện tại.
+
+### 11.3. Edge-override sandbox
+
+- State sandbox chỉ sống trong memory của frontend. Không localStorage,
+  sessionStorage, URL query, backend session hay persistence. Refresh tab mất
+  override là hành vi bắt buộc và phải nói rõ trong UI.
+- Chỉ khi bật “Chỉnh cạnh thử nghiệm” map mới có pick layer cho edge. Pick layer
+  rộng, không che node picker; node/route result layer giữ semantics cũ. Chọn edge
+  mở tab drawer “Thử nghiệm” và chuyển focus vào control đầu tiên.
+- Tab hiển thị edge ID, chiều `u → v`, tên, original/current length + speed,
+  congestion bốn slot, bốn risk switch, `t_free`, factor, từng penalty, total
+  penalty, distance/time/balanced weight theo slot hiện tại, override count và
+  provenance/fingerprint của lần run gần nhất. Không có ô nhập raw weight.
+- Control có `Reset edge` và `Reset all`, không tự âm thầm xóa dữ liệu khi user
+  chuyển mục. Mọi edit effective phải clear route/compare/multi/timeline ngay;
+  đổi slot giữ override nhưng refresh preview derived cho slot mới.
+- Effective traffic overlay = base traffic + override của slot hiện tại trong
+  render-derived state; tuyệt đối không mutate `traffic` base. Highlight edge
+  selected/overridden dùng semantic role `scenario-selected`/`scenario-override`
+  ánh xạ qua token hiện có (`algo-frontier`/`algo-path`), không hard-code hex.
+- Client có feedback sớm cho input nhưng backend là authority. Không clamp;
+  mismatch/error response được toast theo error envelope. Request route/compare/
+  multiroute giữ snapshot graph/view/slot/mode/journey/scenario; response chỉ được
+  nhận khi snapshot còn current. Compare còn phải khớp fingerprint của route chính.
+
+### 11.4. Trình bày provenance và accessibility
+
+- Result route/multiroute hiển thị `AppliedScenario`: view, số override effective,
+  provenance và fingerprint server echo (font mono, có copy button nếu primitive
+  sẵn có). Không tự phát minh fingerprint frontend.
+- Copy giải thích no-override là “Dữ liệu gốc” (`base`) hoặc “Graph dạy học”
+  (`graph_view`); chỉ dùng “Kịch bản thử nghiệm” khi provenance là
+  `sandbox_override`.
+- Legend chỉ xuất hiện cho lớp thực sự active. Route result legend vẫn giữ khi
+  `found=true`; optimizer conceptual legend không thay thế route legend.
+- Control mới dùng label Việt, focus ring §2, status/error `aria-live`, thứ tự
+  keyboard hợp lý và không chiếm Space/Arrow của input, select, switch hay slider.

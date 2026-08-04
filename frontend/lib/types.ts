@@ -6,6 +6,7 @@ export type Algorithm =
 export type Mode = "distance" | "time" | "balanced";
 export type TimeSlot = "07:30" | "12:00" | "17:30" | "22:00";
 export type GraphLevel = "demo" | "real";
+export type GraphView = "full" | "teach_7" | "teach_15" | "teach_25";
 export type TspMethod = "held_karp" | "nn_2opt" | "sa";
 
 export interface GraphNode {
@@ -41,6 +42,27 @@ export interface GraphFile {
   };
   nodes: GraphNode[];
   edges: GraphEdge[];
+}
+
+export interface GraphViewMeta {
+  base_graph: GraphLevel;
+  graph_view: GraphView;
+  base_node_count: number;
+}
+
+export interface GraphResponse extends GraphFile {
+  view_meta: GraphViewMeta;
+}
+
+export interface ScenarioConfig {
+  graph_view?: GraphView;
+}
+
+export interface AppliedScenario {
+  graph_view: GraphView;
+  override_count: number;
+  fingerprint: string;
+  provenance: "base" | "graph_view" | "sandbox_override";
 }
 
 export interface TraceStep {
@@ -88,6 +110,7 @@ export interface Trace {
   mode: Mode;
   time_slot: TimeSlot;
   graph: GraphLevel;
+  applied_scenario: AppliedScenario | null;
   found: boolean;
   path: string[];
   metrics: Metrics;
@@ -104,6 +127,7 @@ export interface MultirouteResponse {
   mode: Mode;
   time_slot: TimeSlot;
   graph: GraphLevel;
+  applied_scenario: AppliedScenario | null;
   found: boolean;
   order: string[];
   legs: Leg[];
@@ -116,6 +140,7 @@ export interface MultirouteResponse {
 export interface TrafficResponse {
   slot: TimeSlot;
   graph: GraphLevel;
+  graph_view: GraphView;
   congestion: Record<string, number>;
 }
 

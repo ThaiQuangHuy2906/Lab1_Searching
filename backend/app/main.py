@@ -13,7 +13,6 @@ import json
 import logging
 import platform
 import sys
-from functools import lru_cache
 from pathlib import Path
 
 from fastapi import FastAPI, Request
@@ -27,9 +26,10 @@ from .explain import build_explanation
 from .graph_store import GraphStore
 from .models import (
     BenchmarkRequest, BenchmarkResponse, ErrorResponse, ExperimentResult,
-    GraphFile, GraphLevel, HealthResponse, MultirouteRequest, MultirouteResponse,
-    RouteRequest, TimeSlot, Trace, TrafficResponse,
+    GraphLevel, GraphResponse, GraphView, HealthResponse, MultirouteRequest,
+    MultirouteResponse, RouteRequest, TimeSlot, Trace, TrafficResponse,
 )
+from .scenario import GraphViewUnavailable, graph_response, resolve_scenario, resolve_view_store
 from .search import ALGORITHMS
 from .search_advanced import ADVANCED_ALGORITHMS
 from .tsp import solve_multiroute
@@ -101,6 +101,16 @@ async def on_key_error(_req: Request, exc: KeyError):
                       "Lỗi không lường trước phía server; xem log để biết chi tiết.")
 
 
+@app.exception_handler(GraphViewUnavailable)
+async def on_graph_view_unavailable(_req: Request, exc: GraphViewUnavailable):
+    if exc.status_code == 500:
+        logger.error("Teaching graph-view configuration unavailable: %s", exc)
+        message = "Cấu hình graph view dạy học hiện không sẵn sàng."
+    else:
+        message = "G_real chỉ hỗ trợ graph view full."
+    return error_json(exc.status_code, "GRAPH_VIEW_UNAVAILABLE", message)
+
+
 @app.exception_handler(PydanticValidationError)
 async def on_internal_pydantic_validation_error(
     _req: Request, _exc: PydanticValidationError,
@@ -140,11 +150,6 @@ async def on_internal(_req: Request, exc: Exception):
                       "Lỗi không lường trước phía server; xem log để biết chi tiết.")
 
 
-@lru_cache(maxsize=2)
-def graph_payload(level: GraphLevel) -> dict:
-    return GraphStore.load(level).graph.model_dump(mode="json")
-
-
 # --------------------------------------------------------------- endpoints
 
 
@@ -155,20 +160,22 @@ def health() -> HealthResponse:
 
 
 @app.get(
-    "/api/graph", response_model=GraphFile,
+    "/api/graph", response_model=GraphResponse,
     responses=COMMON_ERROR_RESPONSES,
 )
-def get_graph(level: GraphLevel = "demo") -> dict:
-    return graph_payload(level)
+def get_graph(level: GraphLevel = "demo", view: GraphView = "full") -> GraphResponse:
+    return graph_response(GraphStore.load(level), view)
 
 
 @app.get(
     "/api/traffic", response_model=TrafficResponse,
     responses=COMMON_ERROR_RESPONSES,
 )
-def get_traffic(slot: TimeSlot, level: GraphLevel = "demo") -> TrafficResponse:
-    store = GraphStore.load(level)
-    return TrafficResponse(slot=slot, graph=level,
+def get_traffic(
+    slot: TimeSlot, level: GraphLevel = "demo", view: GraphView = "full",
+) -> TrafficResponse:
+    store = resolve_view_store(GraphStore.load(level), view)
+    return TrafficResponse(slot=slot, graph=level, graph_view=view,
                            congestion=store.profiles.profiles[slot])
 
 
@@ -177,7 +184,8 @@ def get_traffic(slot: TimeSlot, level: GraphLevel = "demo") -> TrafficResponse:
     responses=NOT_FOUND_ERROR_RESPONSES,
 )
 def post_route(req: RouteRequest) -> Trace:
-    store = GraphStore.load(req.graph)
+    resolved = resolve_scenario(GraphStore.load(req.graph), req.scenario)
+    store = resolved.store
     include_trace = req.include_trace
     if include_trace is None:
         include_trace = req.graph == "demo"  # SCHEMA §B.3 default
@@ -186,6 +194,7 @@ def post_route(req: RouteRequest) -> Trace:
         store, req.start, req.goal, mode=req.mode, time_slot=req.time_slot,
         include_trace=include_trace, **params)
     trace.explanation = build_explanation(store, trace)
+    trace.applied_scenario = resolved.applied_scenario
     return trace
 
 
@@ -194,10 +203,12 @@ def post_route(req: RouteRequest) -> Trace:
     responses=NOT_FOUND_ERROR_RESPONSES,
 )
 def post_multiroute(req: MultirouteRequest) -> MultirouteResponse:
-    store = GraphStore.load(req.graph)
-    return solve_multiroute(store, req.start, req.stops, req.method,
-                            mode=req.mode, time_slot=req.time_slot,
-                            return_to_start=req.return_to_start)
+    resolved = resolve_scenario(GraphStore.load(req.graph), req.scenario)
+    result = solve_multiroute(resolved.store, req.start, req.stops, req.method,
+                              mode=req.mode, time_slot=req.time_slot,
+                              return_to_start=req.return_to_start)
+    result.applied_scenario = resolved.applied_scenario
+    return result
 
 
 @app.post(

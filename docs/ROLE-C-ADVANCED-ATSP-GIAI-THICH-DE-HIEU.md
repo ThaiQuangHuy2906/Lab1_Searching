@@ -1586,3 +1586,48 @@ Theo thứ tự:
 
 Nếu một câu trong tài liệu này mâu thuẫn với contract hiện hành, ưu tiên
 `SCHEMA.md` và code/test hiện tại, rồi cập nhật lại tài liệu này.
+
+---
+
+## 18. Ghi chú contract đã khóa cho lượt mở rộng 2026-08-04
+
+Phần này là chuẩn thuật ngữ cho GraphView, sandbox và ATSP trace trong
+`docs/SCHEMA.md §E`. Chỉ được nói một tính năng “đã có trên GUI” sau khi backend,
+frontend và regression của tính năng đó thực sự được triển khai.
+
+### 18.1. Hai loại trace, hai câu chuyện khác nhau
+
+- `Trace.trace` là các bước expand của **một route search**: frontier, g/h/f,
+  Bidirectional side… Nó tiếp tục là contract duy nhất của mười thuật toán tìm đường.
+- `OptimizationTrace` là quá trình **chọn thứ tự ghé**: DP update của Held–Karp,
+  NN decision, local improvement, hay SA seed/iteration. Nó không phải frontier
+  trên graph đường phố và không được trộn vào `Trace.trace`.
+- Đường nét đứt của order/subset trong player chỉ là ý tưởng tối ưu; chặng xe chạy
+  thật vẫn là `legs` được Dijkstra cache. Câu nói an toàn khi bảo vệ:
+  “Trace này cho thấy thuật toán đổi thứ tự giao, còn các leg cuối mới là đường đi
+  trên mạng đường.”
+
+### 18.2. Cap chỉ giới hạn payload
+
+Held–Karp và NN/local có cap 2 000 event; SA có cap 1 500 event và periodic sample
+mỗi 20 iteration. `total_events` là số event eligible trước sampling,
+`recorded_events` là số event gửi về; final reconstruction/summary luôn được giữ.
+Cap không dừng optimizer, không đổi seed/RNG/result và không được dùng làm lý do để
+nói thuật toán đã chạy ít iteration hơn. Nếu bị sampling, ordinal có thể nhảy số.
+
+### 18.3. Không nói sai về local/global và độ phức tạp
+
+- Held–Karp là tối ưu **toàn cục trên ma trận ATSP đã mô hình hóa**, trong giới hạn
+  `n≤15` tổng điểm, với `O(n²·2ⁿ)` time và `O(n·2ⁿ)` memory.
+- NN + 2-opt/Or-opt chỉ dừng ở **local optimum theo neighbourhood hiện thực**;
+  nó không thành global optimum chỉ vì một test trùng cost Held–Karp. NN hiện tại
+  là `O(n² log n)` vì sort candidate mỗi vòng; local search là `O(Pn³)` vì
+  Θ(n²) candidate/pass × Θ(n) full re-cost.
+- SA có thể thoát local optimum nhờ nhận bước xấu lúc nóng, nhưng vẫn không có
+  bảo đảm global. Hiện thực chạy 5 seed × 2 000 iteration, nên mô tả cost ở mức
+  `O(S·I·n)` là trung thực.
+- Bidirectional Dijkstra không được quảng cáo tốt hơn Dijkstra vô điều kiện:
+  worst-case cùng bậc, lợi ích thực tế phụ thuộc cấu trúc graph/điểm gặp.
+- IDA* không dùng bound textbook recursive `O(bd)` cho implementation này. Nó
+  giữ `best_g`, `parent`, `h_of` và explicit stack pending, nên mô tả phù hợp là
+  `O(V+Q)`; guarantee `C*+ε` chỉ nói khi tìm được trước cap 1 000 round.

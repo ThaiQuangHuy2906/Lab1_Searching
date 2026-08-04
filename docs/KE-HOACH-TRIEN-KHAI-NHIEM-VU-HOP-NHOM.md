@@ -4,20 +4,22 @@
 > các thành viên A–E có thể dùng làm context khi đọc, thảo luận hoặc viết prompt
 > cho các lượt làm việc tiếp theo.
 >
-> **Trạng thái cập nhật 2026-08-05:** đây là blueprint/audit snapshot trước triển
-> khai. Người dùng đã duyệt bốn quyết định UI/API ở mục 9 và Milestone 1–4 đã
-> được triển khai trong worktree hiện hành. `PLAN.md`, `docs/SCHEMA.md`,
-> `README.md`, code và fresh gates là nguồn trạng thái hiện hành; các bảng
-> “Hiện trạng”, “Có một phần” và “Chưa có” bên dưới ghi lại baseline 2026-08-04,
-> không phải mô tả current code.
+> **Trạng thái cập nhật 2026-08-05:** người dùng đã duyệt bốn quyết định UI/API ở
+> mục 9; Milestone 1–5 đã được triển khai và kiểm tra trong worktree hiện hành.
+> Fresh evidence hiện tại: backend `148 passed` (1 dependency warning), validator
+> `ALL DATA VALID`, frontend `19/19`, TypeScript pass; runtime API và browser QA
+> 1366×768 đã kiểm tra các luồng GraphView, route/trace, ATSP, sandbox, theme,
+> offline và fingerprint. `PLAN.md`, `docs/SCHEMA.md`, `README.md`, code và fresh
+> gates là nguồn trạng thái hiện hành; các bảng “Hiện trạng”, “Có một phần” và
+> “Chưa có” bên dưới ghi lại baseline 2026-08-04, không phải mô tả current code.
 >
 > **Ngày audit:** 2026-08-04.
 
 ## 1. Tóm tắt baseline trước triển khai
 
 Lượt audit ban đầu hoàn tất ở chế độ chỉ đọc. Sau đó nhóm đã duyệt và hoàn tất
-chuỗi `03b real → 04 → 03b demo → validate_data`; benchmark, generator, build
-frontend, commit và push vẫn chưa chạy.
+chuỗi `03b real → 04 → 03b demo → validate_data`, rồi triển khai M1–M5. Benchmark,
+generator và build frontend vẫn chưa chạy; `results/` tiếp tục là `SỐ TẠM`.
 
 | Trạng thái | Hiện trạng |
 |---|---|
@@ -25,7 +27,8 @@ frontend, commit và push vẫn chưa chạy.
 | Có một phần | Báo cáo mục c/d mới ở mức tóm tắt. Tài liệu generated có ví dụ cho 10 thuật toán nhưng chưa theo template 15 mục và một số bảng IDDFS/IDA* còn provisional. Tài liệu Role C giải thích tốt bốn thuật toán nâng cao và ba ATSP nhưng không phủ sáu thuật toán lõi. UI hiển thị thứ tự/legs ATSP nhưng chưa hiển thị quá trình tối ưu thứ tự. |
 | Chưa có | Graph dạy học giảm node thực sự; contract `graph_view`; ATSP optimization trace; edge-override sandbox; provenance bốn nhóm đầy đủ; ví dụ chạy tay đồng nhất cho đủ 13 phương pháp trong report. |
 | Đã gỡ chặn dữ liệu | Raw TomTom đủ 4/4 snapshot đại diện trên hai ngày thứ Hai, hai profile là `tomtom+synthetic`, `G_demo` đã rebuild và validator đạt. Benchmark/hiệu chuẩn γ/generator vẫn chờ code ổn định và ủy quyền riêng; `results/` tiếp tục là `SỐ TẠM`. |
-| Bằng chứng hiện hành | Backend: **111 passed**; validator: **ALL DATA VALID**; frontend: **8 tests passed**; TypeScript: exit 0 (fresh 2026-08-04). |
+| Bằng chứng baseline 2026-08-04 | Backend: **111 passed**; validator: **ALL DATA VALID**; frontend: **8 tests passed**; TypeScript: exit 0. Đây là số lịch sử của audit trước M1–M5. |
+| Bằng chứng hiện hành 2026-08-05 | Backend: **148 passed** (1 dependency warning); validator: **ALL DATA VALID**; frontend: **19/19**; TypeScript: exit 0; browser/runtime QA M1–M5 đã kiểm tra theo phạm vi ghi trong `PLAN.md`. |
 
 Trạng thái dữ liệu cuối đã xác minh: raw TomTom đủ **4/4** tại 07:30, 12:00,
 17:30 và 22:00. Hai slot đầu thu ngày 2026-07-27, hai slot sau thu ngày
@@ -541,5 +544,6 @@ generator vẫn cần ủy quyền riêng.
 | 5 | Dữ liệu TomTom cuối | **ĐÃ CHỐT** | Giữ 4/4 snapshot đại diện trên hai ngày thứ Hai; profile `tomtom+synthetic`, `G_demo` 51/298 đã validate; benchmark/hiệu chuẩn γ/generator vẫn hoãn đến khi code ổn định | Không còn là quyết định mở; phải công bố giới hạn và đóng gói raw trong Data ZIP |
 
 Các quyết định trên đã được duyệt và triển khai theo thứ tự schema → backend →
-frontend. Lượt công việc tiếp theo bắt đầu từ Milestone 5 sau khi hoàn tất fresh
-integration/runtime QA của M1–M4.
+frontend. Milestone 5 đã hoàn tất fresh integration/runtime QA; bước tiếp theo
+là chuẩn bị submission và chỉ chạy benchmark/hiệu chuẩn γ/generator trong một
+lượt riêng có ủy quyền.

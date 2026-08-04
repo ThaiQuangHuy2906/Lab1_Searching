@@ -28,8 +28,8 @@ export interface Palette {
 
 const DARK: Palette = {
   deck: {
-    node: [161, 161, 170, 150], //       G_demo zinc-400 @59%
-    nodeReal: [161, 161, 170, 105], //   G_real zinc-400 @41%
+    node: [212, 212, 216, 170], //       G_demo zinc-300 @67%
+    nodeReal: [212, 212, 216, 125], //   G_real zinc-300 @49%
     frontier: [34, 211, 238, 255], //    cyan-400
     expanded: [167, 139, 250, 255], //   violet-400
     current: [255, 255, 255, 255],
@@ -39,8 +39,8 @@ const DARK: Palette = {
     routeFlowStatic: [255, 255, 255, 118],
     bidiForward: [34, 211, 238, 255],
     bidiBackward: [251, 113, 133, 255], // rose-400
-    edgeDim: [113, 113, 122, 102], //    G_demo zinc-500 @40%
-    edgeReal: [113, 113, 122, 64], //    G_real zinc-500 @25%
+    edgeDim: [161, 161, 170, 125], //    G_demo zinc-400 @49%
+    edgeReal: [161, 161, 170, 85], //    G_real zinc-400 @33%
     compareB: [34, 211, 238, 255],
     start: [16, 185, 129, 255], //       emerald-500
     goal: [239, 68, 68, 255], //         red-500
@@ -68,8 +68,8 @@ const DARK: Palette = {
 
 const LIGHT: Palette = {
   deck: {
-    node: [82, 82, 91, 140], //          G_demo zinc-600 @55%
-    nodeReal: [82, 82, 91, 112], //      G_real zinc-600 @44%
+    node: [39, 39, 42, 165], //          G_demo zinc-800 @65%
+    nodeReal: [39, 39, 42, 135], //      G_real zinc-800 @53%
     frontier: [8, 145, 178, 255], //     cyan-600
     expanded: [124, 58, 237, 255], //    violet-600
     current: [24, 24, 27, 255], //       zinc-900 (per review round 2)
@@ -79,8 +79,8 @@ const LIGHT: Palette = {
     routeFlowStatic: [255, 255, 255, 155],
     bidiForward: [8, 145, 178, 255],
     bidiBackward: [225, 29, 72, 255], // rose-600
-    edgeDim: [82, 82, 91, 92], //        G_demo zinc-600 @36%
-    edgeReal: [82, 82, 91, 71], //       G_real zinc-600 @28%
+    edgeDim: [63, 63, 70, 125], //       G_demo zinc-700 @49%
+    edgeReal: [63, 63, 70, 95], //        G_real zinc-700 @37%
     compareB: [8, 145, 178, 255],
     start: [5, 150, 105, 255], //        emerald-600
     goal: [220, 38, 38, 255], //         red-600

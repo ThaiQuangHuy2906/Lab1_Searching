@@ -27,7 +27,7 @@ gọi mạng.
   chỉ báo phần tuyến trùng/khác; đối chiếu ATSP trước/sau tối ưu.
 - Benchmark viewer chỉ đọc với cảnh báo nguồn dữ liệu rõ ràng.
 
-> **Trạng thái ngày 2026-08-05 — M1–M4 đã triển khai, chưa được nộp:**
+> **Trạng thái ngày 2026-08-05 — M1–M5 đã triển khai, chưa được nộp:**
 > Lượt data refresh cuối đã tích hợp đủ raw TomTom 07:30, 12:00, 17:30 và 22:00
 > dưới dạng bốn snapshot đại diện lấy trên hai ngày thứ Hai; profile hiện là
 > `tomtom+synthetic`. Fresh core gate đạt `148 passed` backend, `ALL DATA VALID`,
@@ -48,7 +48,7 @@ gọi mạng.
 | G_demo | **Hiện hành** | 51 node, 298 cạnh có hướng, 60 cạnh một chiều |
 | G_real | **Hiện hành** | 2.118 node, 4.699 cạnh có hướng, 1.433 cạnh một chiều |
 | Benchmark | **Chưa hiện hành** | `results/` cũ hơn graph; xem [`results/README.md`](results/README.md) |
-| UI/runtime | **Đạt browser QA M3–M4 ở G_demo/full + `teach_7`, 1366×768** | Đã đối chiếu API đang chạy với JSON trên đĩa; chạy player Held–Karp/NN+2-opt/SA, kiểm tra DP subset + map controls, chọn/chỉnh/reset cạnh, route có fingerprint/provenance và dark/light; vẫn phải chạy pre-flight đầy đủ trước demo/quay |
+| UI/runtime | **Đạt integration/browser QA M1–M5 ở 1366×768** | Đã đối chiếu API với JSON trên đĩa; xác nhận GraphView, route/trace, ATSP/fingerprint, sandbox, dark/light, offline và tương phản node/cạnh; vẫn phải chạy pre-flight sạch trước demo/quay |
 | Backend sau clean restart | **Cần pre-flight lại** | Snapshot trên đĩa là G_demo 51/298 và G_real 2.118/4.699; phải restart service rồi đối chiếu API trước demo |
 | Trước khi nộp | **Còn việc tay** | 8 URL nguồn risk thật, 40 marker cần điền trên 30 dòng nội dung (không tính dòng chú giải), screenshot, report PDF, slide, video/link và ZIP |
 

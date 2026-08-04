@@ -10,12 +10,15 @@
 > `AppliedScenario`/fingerprint.
 >
 > **Checkpoint hiện hành — 2026-08-05:** Milestone 1 (specification), 2
-> (GraphView), 3 (ATSP optimization trace) và 4 (edge-override sandbox) đã được
-> triển khai trong worktree. Core gates và luồng browser M3–M4 ở G_demo/full và
-> `teach_7`, 1366×768 đã đạt trên service có API khớp snapshot đĩa; điều này không thay
-> thế pre-flight đầy đủ trước demo/quay. Khi tiếp tục plan này,
-> **không lặp lại M1–M4**. Bắt đầu từ Milestone 5 để chạy integration/runtime QA,
-> sau khi luôn kiểm tra `git status --short` và diff hiện hữu.
+> (GraphView), 3 (ATSP optimization trace), 4 (edge-override sandbox) và 5
+> (integration/runtime/browser QA) đã hoàn tất trong worktree hiện hành. Fresh core
+> gates đạt: backend `148 passed` (1 dependency deprecation warning), validator
+> `ALL DATA VALID`, frontend `19/19`, TypeScript pass. Browser QA 1366×768 đã xác
+> nhận các luồng theme, offline, route/trace, GraphView và fingerprint; các giới hạn
+> pre-flight trước demo/quay vẫn phải được kiểm tra lại trên service sạch.
+>
+> PLAN này đã hoàn tất đến Milestone 5. Không tự chạy benchmark, hiệu chuẩn γ,
+> teaching generator hoặc đóng gói submission nếu chưa có ủy quyền riêng.
 >
 > Tài liệu này là execution plan đã khóa. Không tạo thêm một kế hoạch tổng quát
 > khác và không audit lại toàn repository. Trước mỗi milestone chỉ xác minh
@@ -1243,7 +1246,7 @@ nhiệm rõ hơn khi sửa file hiện có. Không được bỏ trách nhiệm 
 ## 14. Final review checklist
 
 > Checklist này là template kiểm tra, không phải trạng thái resume. Checkpoint ở
-> đầu file là nguồn chuẩn để agent nhận handoff biết M1–M4 đã hoàn thành.
+> đầu file là nguồn chuẩn để agent nhận handoff biết M1–M5 đã hoàn thành.
 
 ### Contract
 

@@ -1,7 +1,7 @@
 # DESIGN.md — Hợp đồng thiết kế giao diện (Phase 5)
 
 > **Trạng thái 2026-08-05:** đây là nguồn chuẩn về ý đồ, token và hành vi UI.
-> M1–M4 đã có implementation; `npm test` (19 test) và `npx tsc --noEmit` đạt.
+> M1–M5 đã có implementation; `npm test` (19 test) và `npx tsc --noEmit` đạt.
 > Browser QA vẫn là bằng chứng riêng: các khẳng định về cuộn, bàn phím, map, theme,
 > offline, responsive và accessibility vẫn phải được kiểm tra trên trình
 > duyệt/độ phân giải dùng để quay hoặc bảo vệ.
@@ -75,16 +75,16 @@ trên nền trắng; node đang expand đảo trắng→đen.
 
 | Token | Tối | Sáng | Ý nghĩa |
 |---|---|---|---|
-| `algo-node` | zinc-400 `#a1a1aa` @59% | zinc-600 `#52525b` @55% | node nền G_demo; trace state dùng màu + kích thước lớn hơn để nổi bật |
-| `algo-node-real` | zinc-400 @41% | zinc-600 @44% | node nền G_real; picking radius vẫn giữ riêng ở 8px |
+| `algo-node` | zinc-300 `#d4d4d8` @67% | zinc-800 `#27272a` @65% | node nền G_demo; tăng tương phản với nền map theo từng chế độ; trace state dùng màu + kích thước lớn hơn để nổi bật |
+| `algo-node-real` | zinc-300 @49% | zinc-800 @53% | node nền G_real; picking radius vẫn giữ riêng ở 8px |
 | `algo-frontier` | cyan-400 `#22d3ee` | cyan-600 `#0891b2` | node trong frontier |
 | `algo-expanded` | violet-400 `#a78bfa` | violet-600 `#7c3aed` | node đã expand |
 | `algo-current` | white `#ffffff` + pulse trắng | zinc-900 `#18181b` + pulse đen | node đang expand |
 | `algo-path` | amber-400 `#fbbf24` | amber-600 `#d97706` | tuyến kết quả, nét dày 6px |
 | `bidi-forward` | cyan-400 `#22d3ee` | cyan-600 `#0891b2` | phía xuôi (side=forward) |
 | `bidi-backward` | rose-400 `#fb7185` | rose-600 `#e11d48` | phía ngược (side=backward) |
-| `edge-dim` | zinc-500 @40% | zinc-600 @36% | cạnh nền G_demo; phải lùi sau route/trace |
-| `edge-real` | zinc-500 @25% | zinc-600 @28% | cạnh nền G_real; giảm “white hairball” |
+| `edge-dim` | zinc-400 @49% | zinc-700 `#3f3f46` @49% | cạnh nền G_demo; sáng hơn trên dark và đậm hơn trên light, nhưng vẫn lùi sau route/trace |
+| `edge-real` | zinc-400 @33% | zinc-700 @37% | cạnh nền G_real; tăng độ nhận biết mà không tạo “white hairball” |
 | `cong-1..5` | `#10b981 #a3e635 #facc15 #f97316 #ef4444` | `#059669 #4d7c0f #a16207 #ea580c #dc2626` (lime-700/yellow-700 — đo WCAG trên nền positron) | thang ùn tắc 1→5 |
 | Start | chip **"Đi"**: nền emerald-700 `#047857`, chữ trắng — CỐ ĐỊNH 2 chế độ (chữ 5,48) | | điểm xuất phát; token `start` (marker/badge) vẫn emerald-500/600 theo chế độ |
 | Goal | chip **"Đến"**: nền red-600 `#dc2626`, chữ trắng — CỐ ĐỊNH 2 chế độ (đồ hoạ ≥3,5 / chữ 4,83) | | điểm đích; token `goal` vẫn red-500/600 theo chế độ |
@@ -142,7 +142,7 @@ với panel). Chặn TẬP TRUNG một chỗ trong `store.set` — mọi đườ
 kết quả (dòng nguồn kết quả trong drawer ghi rõ cấu hình đã chạy).
 Kèm yêu cầu user (v10f): khối "Phương pháp tối ưu thứ tự" LUÔN HIỆN thay vì ẩn —
 chưa có điểm giao thì select + nút MỜ (disabled).
-→ **v11 SỬA LẠI điểm này (chờ user duyệt khi rà UI):** label khối đổi thành
+→ **v11 SỬA LẠI điểm này (đã được duyệt và kiểm tra trong M5):** label khối đổi thành
 "Tối ưu thứ tự ghé (ATSP)" và VẪN luôn hiện (giữ discoverability đúng tinh thần
 v10f), nhưng 2 control disabled được thay bằng MỘT dòng hint viền đứt "Thêm ít
 nhất 1 điểm giao ở trên để mở phần tối ưu thứ tự ghé (bài toán ATSP)" — hết

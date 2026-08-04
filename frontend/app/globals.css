@@ -19,7 +19,7 @@
   --ink-dim: 166 166 176;
   --ink-faint: 118 118 128;
   --hl: 255 255 255; /*         row highlight base (dùng /10) */
-  --algo-node: 161 161 170;
+  --algo-node: 212 212 216;
   --algo-frontier: 34 211 238; /* cyan-400 */
   --algo-expanded: 167 139 250; /* violet-400 */
   --algo-current: 255 255 255;
@@ -45,7 +45,7 @@
   --ink-dim: 82 82 91;
   --ink-faint: 113 113 122;
   --hl: 9 9 11;
-  --algo-node: 82 82 91;
+  --algo-node: 39 39 42;
   --algo-frontier: 8 145 178; /* cyan-600 */
   --algo-expanded: 124 58 237; /* violet-600 */
   --algo-current: 24 24 27; /*  zinc-900 */

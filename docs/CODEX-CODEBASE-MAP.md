@@ -610,9 +610,10 @@ The map route retained root body overflow ownership.
 
 ## 20. Test architecture
 
-Current collection produces **111 pytest items**. All 111 passed on the
-2026-08-04 worktree after the baseline repair batch; frontend has a separate
-**8-test** Node suite and TypeScript check.
+Current collection produces **148 pytest items**. All 148 passed on the
+2026-08-05 worktree after M1–M5; frontend has a separate **19-test** Node suite
+and TypeScript check. The suite includes GraphView, ATSP trace, sandbox,
+fingerprint and regression coverage.
 
 | Test file | Module/type | Main invariant/oracle | Dataset | Important gap |
 |---|---|---|---|---|

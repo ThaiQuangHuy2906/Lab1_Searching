@@ -33,7 +33,7 @@ const SelectTrigger = React.forwardRef<
   <SelectPrimitive.Trigger
     ref={ref}
     className={cn(
-      "flex h-10 w-full items-center justify-between rounded-lg border border-surface-border bg-surface-control px-3 text-sm text-ink transition-colors duration-150 hover:border-surface-strong hover:bg-surface-raised focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-algo-frontier focus-visible:ring-offset-2 focus-visible:ring-offset-surface-panel data-[placeholder]:text-ink-dim disabled:cursor-not-allowed disabled:opacity-55",
+      "flex h-10 w-full items-center justify-between rounded-xl border border-surface-border bg-surface-control/85 px-3 text-sm text-ink shadow-sm transition-colors duration-150 hover:border-surface-strong hover:bg-surface-raised focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-algo-frontier focus-visible:ring-offset-2 focus-visible:ring-offset-surface-panel data-[placeholder]:text-ink-dim disabled:cursor-not-allowed disabled:opacity-55",
       className,
     )}
     {...props}
@@ -82,7 +82,7 @@ const SelectContent = React.forwardRef<
       // affordance — the 10-algorithm menu ended silently at DFS. The chevron
       // scroll buttons below appear automatically whenever the list overflows.
       className={cn(
-        "relative z-50 max-h-[min(20rem,var(--radix-select-content-available-height))] min-w-[var(--radix-select-trigger-width)] overflow-hidden rounded-lg border border-surface-strong bg-surface-raised text-ink shadow-float",
+        "pastel-floating relative z-50 max-h-[min(20rem,var(--radix-select-content-available-height))] min-w-[var(--radix-select-trigger-width)] overflow-hidden rounded-2xl border border-surface-strong text-ink",
         className,
       )}
       {...props}
@@ -102,7 +102,7 @@ const SelectItem = React.forwardRef<
   <SelectPrimitive.Item
     ref={ref}
     className={cn(
-      "relative flex min-h-9 w-full cursor-pointer select-none items-center rounded-md py-1.5 pl-2 pr-8 text-sm outline-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50 data-[highlighted]:bg-surface-control data-[state=checked]:font-medium data-[state=checked]:text-algo-frontier",
+      "relative flex min-h-9 w-full cursor-pointer select-none items-center rounded-xl py-1.5 pl-2 pr-8 text-sm outline-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50 data-[highlighted]:bg-algo-frontier/10 data-[state=checked]:font-medium data-[state=checked]:text-algo-frontier",
       className,
     )}
     {...props}

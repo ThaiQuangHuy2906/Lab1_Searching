@@ -81,7 +81,9 @@ function DeltaCell({ fa, fb }: { fa: number | null; fb: number | null }) {
 }
 
 /** One-sentence takeaway: who pays more, and what the loser buys instead. */
-function Verdict({ a, b }: { a: Trace; b: Trace }) {
+function Verdict({ a, b, multiPoint = false }: {
+  a: Trace; b: Trace; multiPoint?: boolean;
+}) {
   const nameA = shortName(a.algorithm);
   const nameB = shortName(b.algorithm);
   const fmtCost = a.mode === "distance" ? fmtKm : fmtSeconds;
@@ -121,7 +123,7 @@ function Verdict({ a, b }: { a: Trace; b: Trace }) {
       Tuyến của <b>{lName}</b> đắt hơn <b>{wName}</b>{" "}
       <b className="font-mono">{fmtCost(lCost - wCost)}</b>
       <span className="font-mono"> (+{fmtVi(pct, pct < 10 ? 1 : 0)} %)</span> trên
-      cùng cặp Đi/Đến.{expClause}
+      {multiPoint ? "cùng hành trình nhiều điểm." : "cùng cặp Đi/Đến."}{expClause}
     </p>
   );
 }
@@ -210,7 +212,7 @@ export function CompareTab() {
 
       {!a && (
         <p className="py-6 text-center text-sm text-ink-dim">
-          Chạy thuật toán chính trước, rồi chọn thuật toán B để so sánh cùng cặp Đi/Đến.
+          Chạy thuật toán chính trước, rồi chọn thuật toán B để so sánh cùng hành trình.
         </p>
       )}
       {a && !b && !s.comparing && (
@@ -221,7 +223,7 @@ export function CompareTab() {
 
       {a && b && (
         <>
-          <Verdict a={a} b={b} />
+          <Verdict a={a} b={b} multiPoint={Boolean(s.sequentialRoute)} />
           <RouteOverlap a={a} b={b} />
 
           {/* overflow-x-auto chứ không hidden: 4 cột + tên dài không bao giờ
@@ -237,7 +239,7 @@ export function CompareTab() {
                     A · {shortName(a.algorithm)}
                   </th>
                   <th scope="col" className="whitespace-nowrap px-2 py-2 text-right font-medium text-algo-frontier">
-                    {/* swatch = map legend: B dashed cyan */}
+                    {/* swatch = map legend: B dashed pink */}
                     <span aria-hidden className="mr-1 inline-block w-3.5 border-t-2 border-dashed border-algo-frontier align-middle" />
                     B · {shortName(b.algorithm)}
                   </th>

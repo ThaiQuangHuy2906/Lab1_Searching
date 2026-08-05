@@ -37,7 +37,7 @@ const config: Config = {
         sans: ["var(--font-be-vietnam)", "sans-serif"],
         mono: ["var(--font-jetbrains)", "monospace"],
       },
-      borderRadius: { lg: "8px" },
+      borderRadius: { lg: "12px", xl: "16px", "2xl": "20px" },
       boxShadow: { float: "var(--shadow-float)" },
     },
   },

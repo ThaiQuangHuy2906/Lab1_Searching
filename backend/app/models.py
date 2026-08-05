@@ -24,7 +24,10 @@ Algorithm = Literal[
 Mode = Literal["distance", "time", "balanced"]
 TimeSlot = Literal["07:30", "12:00", "17:30", "22:00"]
 GraphLevel = Literal["demo", "real"]
-GraphView = Literal["full", "teach_7", "teach_15", "teach_25"]
+GraphView = Annotated[
+    str,
+    Field(pattern=r"^(?:full|teach_(?:[3-9]|[1-4][0-9]|50))$"),
+]
 TspMethod = Literal["held_karp", "nn_2opt", "sa"]
 NodeType = Literal["landmark", "intersection", "warehouse", "hospital", "school"]
 

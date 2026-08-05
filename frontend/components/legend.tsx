@@ -64,7 +64,7 @@ export function Legend() {
   const lift = timelineVisible;
 
   return (
-    <div className={`pointer-events-none absolute left-3 z-10 flex flex-col gap-1.5 rounded-lg border border-surface-strong bg-surface-raised px-3 py-2.5 text-xs text-ink-dim shadow-float transition-[bottom] duration-200 ${
+    <div className={`pastel-floating pointer-events-none absolute left-3 z-10 flex flex-col gap-1.5 rounded-2xl border border-surface-strong/80 px-3 py-2.5 text-xs text-ink-dim transition-[bottom] duration-200 ${
       lift ? "bottom-[5.5rem]" : "bottom-4"}`}>
       <span className="text-[10px] font-bold uppercase tracking-wider text-ink">Chú giải</span>
       {trace && hasTraceLegend && !multi && (

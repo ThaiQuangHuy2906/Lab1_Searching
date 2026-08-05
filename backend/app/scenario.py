@@ -29,8 +29,10 @@ from .models import (
 
 ROOT = Path(__file__).resolve().parents[2]
 PRESET_PATH = ROOT / "data" / "teaching_graph_presets.json"
-TEACHING_VIEWS = ("teach_7", "teach_15", "teach_25")
-EXPECTED_VIEW_SHAPES = {
+MIN_TEACHING_NODES = 3
+MAX_TEACHING_NODES = 50
+CHECKPOINT_VIEWS = ("teach_7", "teach_15", "teach_25")
+EXPECTED_CHECKPOINT_SHAPES = {
     "teach_7": (7, 24),
     "teach_15": (15, 62),
     "teach_25": (25, 114),
@@ -127,23 +129,34 @@ def validate_teaching_presets(
         raise _config_error(f"cannot read teaching preset config: {exc}") from exc
 
     if not isinstance(raw, dict) or set(raw) != {
-        "version", "base_graph", "base_created", "views",
+        "version", "base_graph", "base_created", "node_order", "views",
     }:
         raise _config_error("teaching preset config has an invalid top-level shape")
-    if raw["version"] != 1:
-        raise _config_error("teaching preset config version must be 1")
+    if raw["version"] != 2:
+        raise _config_error("teaching preset config version must be 2")
     if raw["base_graph"] != base.graph.meta.name:
         raise _config_error("teaching preset base_graph does not match G_demo")
     if raw["base_created"] != base.graph.meta.created.isoformat():
         raise _config_error("teaching preset base_created does not match G_demo")
 
-    views = raw["views"]
-    if not isinstance(views, dict) or set(views) != set(TEACHING_VIEWS):
-        raise _config_error("teaching preset config must define exactly the three teach views")
-
     base_node_ids = {node.id for node in base.graph.nodes}
-    presets: dict[str, TeachingPreset] = {}
-    for view in TEACHING_VIEWS:
+    node_order = raw["node_order"]
+    if (not isinstance(node_order, list)
+            or not all(isinstance(node_id, str) for node_id in node_order)):
+        raise _config_error("teaching node_order must be a list of node IDs")
+    if len(node_order) != base.graph.meta.node_count or len(set(node_order)) != len(node_order):
+        raise _config_error("teaching node_order must contain every base node exactly once")
+    if set(node_order) != base_node_ids:
+        raise _config_error("teaching node_order does not match the G_demo node set")
+    if len(node_order) != MAX_TEACHING_NODES + 1:
+        raise _config_error("teaching node_order must contain the canonical 51 nodes")
+
+    views = raw["views"]
+    if not isinstance(views, dict) or set(views) != set(CHECKPOINT_VIEWS):
+        raise _config_error("teaching preset config must define the three compatibility checkpoints")
+
+    checkpoints: dict[str, TeachingPreset] = {}
+    for view in CHECKPOINT_VIEWS:
         item = views[view]
         if not isinstance(item, dict) or set(item) != {"node_ids", "expected_edge_count"}:
             raise _config_error(f"{view} has an invalid shape")
@@ -152,7 +165,7 @@ def validate_teaching_presets(
         if (not isinstance(node_ids, list) or not all(isinstance(node_id, str) for node_id in node_ids)
                 or isinstance(expected_edge_count, bool) or not isinstance(expected_edge_count, int)):
             raise _config_error(f"{view} has invalid node_ids or expected_edge_count")
-        expected_nodes, expected_edges = EXPECTED_VIEW_SHAPES[view]
+        expected_nodes, expected_edges = EXPECTED_CHECKPOINT_SHAPES[view]
         if len(node_ids) != expected_nodes or expected_edge_count != expected_edges:
             raise _config_error(f"{view} does not match its canonical size")
         if len(set(node_ids)) != len(node_ids):
@@ -160,27 +173,38 @@ def validate_teaching_presets(
         unknown = set(node_ids) - base_node_ids
         if unknown:
             raise _config_error(f"{view} contains unknown node IDs: {sorted(unknown)}")
-        presets[view] = TeachingPreset(tuple(node_ids), expected_edge_count)
+        checkpoints[view] = TeachingPreset(tuple(node_ids), expected_edge_count)
 
-    if presets["teach_7"].node_ids != CANONICAL_TEACH_7:
+    if set(checkpoints["teach_7"].node_ids) != set(CANONICAL_TEACH_7):
         raise _config_error("teach_7 no longer matches the teaching-generator source set")
 
-    node_sets = {view: set(preset.node_ids) for view, preset in presets.items()}
-    if not (node_sets["teach_7"] < node_sets["teach_15"] < node_sets["teach_25"] < base_node_ids):
-        raise _config_error("teaching views are no longer strict nested subsets of G_demo")
-
-    for view, preset in presets.items():
-        node_set = node_sets[view]
+    for view, checkpoint in checkpoints.items():
+        count = int(view.removeprefix("teach_"))
+        node_set = set(node_order[:count])
+        if node_set != set(checkpoint.node_ids):
+            raise _config_error(f"{view} no longer matches its canonical prefix")
         induced_edges = [
             edge for edge in base.graph.edges
             if edge.u in node_set and edge.v in node_set
         ]
-        if len(induced_edges) != preset.expected_edge_count:
+        if len(induced_edges) != checkpoint.expected_edge_count:
             raise _config_error(
-                f"{view} has {len(induced_edges)} induced edges, expected {preset.expected_edge_count}"
+                f"{view} has {len(induced_edges)} induced edges, expected "
+                f"{checkpoint.expected_edge_count}"
             )
+
+    presets: dict[str, TeachingPreset] = {}
+    for count in range(MIN_TEACHING_NODES, len(node_order) + 1):
+        node_ids = tuple(node_order[:count])
+        node_set = set(node_ids)
+        induced_edges = [
+            edge for edge in base.graph.edges
+            if edge.u in node_set and edge.v in node_set
+        ]
         if not _strongly_connected(node_set, induced_edges):
-            raise _config_error(f"{view} is not strongly connected")
+            raise _config_error(f"canonical {count}-node prefix is not strongly connected")
+        if count <= MAX_TEACHING_NODES:
+            presets[f"teach_{count}"] = TeachingPreset(node_ids, len(induced_edges))
     return presets
 
 
@@ -192,7 +216,9 @@ def resolve_view_store(base: GraphStore, view: GraphView) -> GraphStore:
         raise GraphViewUnavailable("G_real only supports view=full", status_code=422)
 
     presets = validate_teaching_presets(base)
-    preset = presets[view]
+    preset = presets.get(view)
+    if preset is None:
+        raise GraphViewUnavailable(f"unsupported graph view: {view}", status_code=422)
     node_set = set(preset.node_ids)
     nodes = [node for node in base.graph.nodes if node.id in node_set]
     edges = [

@@ -229,7 +229,7 @@ export default function BenchmarkPage() {
   const palette = usePalette();
   const inkDim = palette.hex.inkDim;
   const grid = palette.hex.grid;
-  const cyan = palette.hex.frontier;
+  const pink = palette.hex.frontier;
   const amber = palette.hex.path;
   const violet = palette.hex.expanded;
   const animateCharts = !reducedMotion;
@@ -271,15 +271,15 @@ export default function BenchmarkPage() {
     contentStyle: {
       background: palette.hex.panel,
       border: `1px solid ${grid}`,
-      borderRadius: 8,
+      borderRadius: 14,
       color: "rgb(var(--ink))",
     },
     labelStyle: { color: inkDim },
   };
 
   return (
-    <main className="h-screen overflow-y-auto bg-surface text-ink">
-      <header className="sticky top-0 z-20 border-b border-surface-border bg-surface-rail">
+    <main className="pastel-app-bg h-screen overflow-y-auto text-ink">
+      <header className="pastel-header sticky top-0 z-20 border-b border-surface-border/80 shadow-sm">
         <div className="mx-auto flex h-[60px] max-w-6xl items-center gap-3 px-4 sm:px-6">
           <Button asChild variant="ghost" size="sm">
             <Link href="/">
@@ -395,7 +395,7 @@ export default function BenchmarkPage() {
                               cursor={{ fill: `${grid}55` }}
                               formatter={(value: number | string): [string, string] => [fmtInt(Number(value)), "Node expand"]}
                             />
-                            <Bar dataKey="expanded" name="Node expand" fill={cyan} radius={[4, 4, 0, 0]} isAnimationActive={animateCharts} />
+                            <Bar dataKey="expanded" name="Node expand" fill={pink} radius={[4, 4, 0, 0]} isAnimationActive={animateCharts} />
                           </BarChart>
                         </ResponsiveContainer>
                       </div>

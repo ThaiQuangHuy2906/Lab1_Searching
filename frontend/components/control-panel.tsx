@@ -5,7 +5,7 @@
 // Tooltip = icon ? cạnh label (InfoTip); switch rows thẳng hàng (§8).
 
 import * as React from "react";
-import { ArrowDownUp, ChevronDown, Crosshair, Loader2, Play, Route, X } from "lucide-react";
+import { ArrowDownUp, ChevronDown, Crosshair, Loader2, Play, Route, Sparkles, X } from "lucide-react";
 import { Button } from "./ui/button";
 import { Switch } from "./ui/switch";
 import { InfoTip } from "./ui/info-tip";
@@ -14,27 +14,28 @@ import {
   SelectTrigger, SelectValue,
 } from "./ui/select";
 import { Skeleton } from "./ui/skeleton";
-import { toast } from "sonner";
 import { ALGORITHM_GROUPS } from "@/lib/algorithm-policy";
 import {
   isEndpointOptionAllowed,
   MULTI_ROUTE_ACTIVE_MESSAGE,
 } from "@/lib/interaction-policy";
+import {
+  graphViewForNodeCount,
+  MAX_DEMO_NODE_COUNT,
+  MIN_DEMO_NODE_COUNT,
+  nodeCountForGraphView,
+  parseDemoNodeCount,
+} from "@/lib/graph-view";
 import { ALGO_LABEL, useApp } from "@/lib/store";
-import type { Algorithm, GraphView, Mode, TimeSlot } from "@/lib/types";
+import type { Algorithm, Mode, TimeSlot } from "@/lib/types";
 import { AtspSetup } from "./atsp/atsp-setup";
+import { EdgeWeightPresets } from "./edge-weight-presets";
 
 const SLOTS: TimeSlot[] = ["07:30", "12:00", "17:30", "22:00"];
 const MODES: { v: Mode; label: string }[] = [
   { v: "balanced", label: "Cân bằng" },
   { v: "time", label: "Nhanh nhất" },
   { v: "distance", label: "Ngắn nhất" },
-];
-const DEMO_VIEWS: { value: GraphView; label: string }[] = [
-  { value: "full", label: "Toàn bộ G_demo — 51 node" },
-  { value: "teach_7", label: "Dạy học — 7 node" },
-  { value: "teach_15", label: "Dạy học — 15 node" },
-  { value: "teach_25", label: "Dạy học — 25 node" },
 ];
 // Nhóm dropdown theo bảo đảm lý thuyết (SCHEMA §B.5): IDA* của dự án
 // dùng ngưỡng nới ε nên phải đứng riêng, không được gọi là tối ưu tuyệt đối.
@@ -81,7 +82,7 @@ function Section({ title, tip, children }: {
   // mặc định MỞ hết, trạng thái chỉ sống trong phiên (không persist)
   const [open, setOpen] = React.useState(true);
   return (
-    <div className="flex shrink-0 flex-col gap-2.5 rounded-xl border border-surface-border/80 bg-surface-panel p-3">
+    <div className="pastel-card flex shrink-0 flex-col gap-2.5 rounded-2xl border border-surface-border/80 p-3.5">
       <div className="flex items-center gap-2">
         <button
           type="button"
@@ -89,7 +90,7 @@ function Section({ title, tip, children }: {
           onClick={() => setOpen(!open)}
           className="-m-1 flex min-h-9 min-w-0 flex-1 items-center gap-2 rounded-lg px-1 text-[11px] font-bold uppercase tracking-wider text-ink transition-colors hover:bg-surface-control"
         >
-          <span className="h-3 w-0.5 shrink-0 rounded-full bg-algo-frontier" />
+          <Sparkles className="size-3.5 shrink-0 text-algo-frontier" />
           <span className="truncate">{title}</span>
           <ChevronDown
             className={"ml-auto size-3.5 shrink-0 text-ink-dim transition-transform " +
@@ -207,6 +208,67 @@ function SwapButton() {
   );
 }
 
+function GraphNodeCountInput({ isDemo, busy }: { isDemo: boolean; busy: boolean }) {
+  const graphView = useApp((s) => s.graphView);
+  const graphLoading = useApp((s) => s.graphLoading);
+  const setGraphView = useApp((s) => s.setGraphView);
+  const selectedCount = isDemo ? nodeCountForGraphView(graphView) : 2118;
+  const [draft, setDraft] = React.useState(String(selectedCount));
+
+  React.useEffect(() => {
+    setDraft(String(selectedCount));
+  }, [selectedCount]);
+
+  const parsed = isDemo ? parseDemoNodeCount(draft) : null;
+  const invalid = isDemo && parsed === null;
+  const unchanged = parsed === selectedCount;
+  const apply = () => {
+    if (parsed === null || busy || graphLoading) return;
+    setGraphView(graphViewForNodeCount(parsed));
+  };
+
+  return (
+    <div className="flex flex-col gap-1.5">
+      <div className="flex gap-1.5">
+        <div className="relative min-w-0 flex-1">
+          <input
+            type="number"
+            inputMode="numeric"
+            min={MIN_DEMO_NODE_COUNT}
+            max={MAX_DEMO_NODE_COUNT}
+            step={1}
+            aria-label="Số node muốn hiển thị"
+            aria-invalid={invalid}
+            value={draft}
+            disabled={!isDemo || busy || graphLoading}
+            onChange={(event) => setDraft(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") apply();
+            }}
+            className="h-10 w-full appearance-none rounded-lg border border-surface-border bg-surface-control px-3 pr-14 text-sm font-semibold text-ink outline-none transition-colors [appearance:textfield] focus:border-algo-frontier focus:ring-2 focus:ring-algo-frontier/25 disabled:cursor-not-allowed disabled:opacity-60 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+          />
+          <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[11px] text-ink-faint">
+            node
+          </span>
+        </div>
+        <Button type="button" size="sm" className="h-10 px-3"
+          disabled={!isDemo || busy || graphLoading || invalid || unchanged}
+          onClick={apply}>
+          {graphLoading ? <Loader2 className="animate-spin" /> : "Hiện"}
+        </Button>
+      </div>
+      <p aria-live="polite"
+        className={`text-[10px] leading-4 ${invalid ? "text-goal" : "text-ink-faint"}`}>
+        {!isDemo
+          ? "G_real luôn dùng toàn bộ 2 118 node OSM."
+          : invalid
+            ? `Nhập một số nguyên từ ${MIN_DEMO_NODE_COUNT} đến ${MAX_DEMO_NODE_COUNT}.`
+            : `Đang hiển thị ${selectedCount}/51 node; nhập số khác rồi bấm Hiện.`}
+      </p>
+    </div>
+  );
+}
+
 export function ControlPanel() {
   const s = useApp();
   const isDemo = s.graph === "demo";
@@ -214,18 +276,20 @@ export function ControlPanel() {
   const epsilonUnit = s.mode === "distance" ? "mét" : "giây";
 
   return (
-    <aside aria-label="Bảng điều khiển định tuyến" className="relative z-10 flex h-full w-80 shrink-0 flex-col border-r border-surface-border bg-surface-rail shadow-float max-[900px]:w-[280px]">
-      <div className="flex h-[60px] shrink-0 items-center gap-2.5 border-b border-surface-border bg-surface-rail px-4">
-        <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-algo-frontier/15 text-algo-frontier">
-          <Route className="size-4" />
+    <aside aria-label="Bảng điều khiển định tuyến" className="pastel-rail relative z-10 flex h-full w-80 shrink-0 flex-col overflow-hidden rounded-[22px] border border-surface-border/80 max-[900px]:w-[280px]">
+      <div className="pastel-header flex h-[72px] shrink-0 items-center gap-2.5 border-b border-surface-border/80 px-4">
+        <span className="flex size-10 shrink-0 items-center justify-center rounded-2xl border border-algo-frontier/25 bg-surface-raised/80 text-algo-frontier shadow-sm">
+          <Route className="size-[18px]" />
         </span>
         <div className="min-w-0">
           <h1 className="truncate text-[15px] font-bold leading-5">Định tuyến giao thông TP.HCM</h1>
-          <p className="truncate text-xs text-ink-dim">Shipper giao hàng đa điểm — Lab 1 AI</p>
+          <p className="flex items-center gap-1 truncate text-xs text-ink-dim">
+            Shipper đa điểm — Lab 1 AI <Sparkles className="size-3 text-algo-frontier" />
+          </p>
         </div>
       </div>
 
-      <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-x-hidden overflow-y-auto p-2.5">
+      <div className="flex min-h-0 flex-1 flex-col gap-2.5 overflow-x-hidden overflow-y-auto p-3">
       <Section title="Bối cảnh">
         <Field label="Đồ thị">
           <Select value={s.graph} disabled={busy}
@@ -238,18 +302,8 @@ export function ControlPanel() {
           </Select>
         </Field>
         <Field label="Graph view"
-          tip="View dạy học là đồ thị con có hướng thật của G_demo; đổi view sẽ xoá hành trình và kết quả cũ.">
-          <Select value={s.graphView} disabled={busy || !isDemo}
-            onValueChange={(v) => s.setGraphView(v as GraphView)}>
-            <SelectTrigger aria-label="Graph view"><SelectValue /></SelectTrigger>
-            <SelectContent>
-              {isDemo ? DEMO_VIEWS.map((view) => (
-                <SelectItem key={view.value} value={view.value}>{view.label}</SelectItem>
-              )) : (
-                <SelectItem value="full">Toàn bộ G_real — 2 118 node</SelectItem>
-              )}
-            </SelectContent>
-          </Select>
+          tip="Nhập từ 3 đến 51. Backend tạo đồ thị con thật với đúng số node; đổi số sẽ xoá hành trình và kết quả cũ.">
+          <GraphNodeCountInput isDemo={isDemo} busy={busy} />
         </Field>
         <Field label="Khung giờ" tip="Mức ùn tắc của từng đoạn đường thay đổi theo 4 mốc giờ chụp.">
           <div
@@ -306,6 +360,11 @@ export function ControlPanel() {
         </div>
       </Section>
 
+      <Section title="Trọng số cạnh"
+        tip="Chọn một cạnh trên bản đồ rồi thử vận tốc, distance, ùn tắc và rủi ro. Các thay đổi chỉ sống trong phiên hiện tại.">
+        <EdgeWeightPresets />
+      </Section>
+
       <Section title="Thuật toán"
         tip="UCS, Dijkstra, A* và Hai chiều đảm bảo tối ưu; IDA* nằm trong biên C* + ε; BFS, DFS, IDDFS, Greedy và Beam không đảm bảo tối ưu theo cost.">
         <Select value={s.algorithm} disabled={busy}
@@ -350,13 +409,9 @@ export function ControlPanel() {
           </Field>
         )}
         {!isDemo && (
-          <SwitchRow label="Trace trên G_real"
-            tip="Trace từng bước trên G_real có thể rất lớn — chỉ bật khi thật cần."
-            checked={s.traceOnReal} onChange={(v) => {
-              s.set({ traceOnReal: v });
-              if (v && s.graph === "real" && s.trace?.found && s.trace.trace.length === 0)
-                toast.info("Đã bật trace — bấm Chạy thuật toán lại để xem từng bước.");
-            }} />
+          <p className="rounded-lg border border-algo-frontier/30 bg-algo-frontier/5 px-2.5 py-2 text-[11px] leading-4 text-ink-dim">
+            Trace từng bước được bật tự động trên G_real; tối đa 5.000 bước hiển thị cho mỗi chặng.
+          </p>
         )}
       </Section>
 
@@ -365,7 +420,7 @@ export function ControlPanel() {
           <NodePicker kind="start" />
         </Field>
         <SwapButton />
-        <Field label={s.stops.length > 0 ? "Đến — không dùng trong ATSP" : "Đến — điểm đích"}>
+        <Field label={s.stops.length > 0 ? "Đến — điểm giao cuối trong danh sách" : "Đến — điểm đích"}>
           <NodePicker kind="goal" />
         </Field>
         <AtspSetup />
@@ -373,17 +428,23 @@ export function ControlPanel() {
 
       </div>
       {/* CTA ghim đáy panel — luôn nhìn thấy (DESIGN 4, duyệt v4) */}
-      <div className="flex shrink-0 flex-col gap-1.5 border-t border-surface-border bg-surface-rail px-4 py-3">
+      <div className="pastel-footer flex shrink-0 flex-col gap-1.5 border-t border-surface-border/80 px-4 py-3">
         <Button size="lg" className="w-full" disabled={busy} onClick={() => void s.runRoute()}>
           {s.running ? <Loader2 className="animate-spin" /> : <Play />}
-          {s.running ? "Đang chạy…" : "Chạy thuật toán"}
+          {s.running
+            ? s.routeProgress
+              ? `Đang chạy chặng ${s.routeProgress.current}/${s.routeProgress.total}…`
+              : "Đang chạy…"
+            : s.stops.length > 0
+              ? `Chạy qua ${s.stops.length} điểm giao`
+              : "Chạy thuật toán"}
         </Button>
         {/* min-h cố định 1 dòng: hint xuất hiện/biến mất không làm nút Chạy
             nhảy lên xuống (review v11) */}
         {!s.graphLoading && (
           <p className="min-h-4 text-center text-[11px] leading-4 text-ink-dim">
             {s.stops.length > 0
-              ? MULTI_ROUTE_ACTIVE_MESSAGE
+              ? !s.start ? "Còn thiếu điểm Đi." : MULTI_ROUTE_ACTIVE_MESSAGE
               : !s.start || !s.goal
               ? !s.start && !s.goal ? "Chọn điểm Đi và Đến ở mục Hành trình trước."
                 : !s.start ? "Còn thiếu điểm Đi." : "Còn thiếu điểm Đến."

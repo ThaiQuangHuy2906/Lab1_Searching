@@ -11,6 +11,8 @@ import {
   graphViewChangePatch,
   isGraphResponseCurrent,
   isTrafficResponseCurrent,
+  promoteGoalWhenAddingStop,
+  routeTraceRequestFlag,
   routeRunBlockReason,
   slotChangePatch,
 } from "./interaction-policy";
@@ -20,6 +22,11 @@ import {
   activeTimelineLength, atspInputsChanged, type TimelineSource,
 } from "./atsp-trace-policy";
 import { buildScenario, scenarioKey } from "./scenario";
+import {
+  mergeSequentialRouteTraces,
+  sequentialWaypoints,
+  type SequentialRouteRun,
+} from "./sequential-route";
 import type {
   Algorithm, EdgeOverride, GraphLevel, GraphResponse, GraphView, Mode,
   MultirouteResponse, OptimizationTrace, TimeSlot, Trace, TspMethod,
@@ -41,7 +48,7 @@ export const ALGO_LABEL: Record<Algorithm, string> = {
 export type DrawerTab = "metrics" | "explain" | "compare" | "scenario";
 export type Theme = "dark" | "light";
 
-const THEME_KEY = "traffic-theme";
+const THEME_KEY = "traffic-theme-pastel-v1";
 const graphRequests = createLatestRequestGuard();
 const trafficRequests = createLatestRequestGuard();
 
@@ -65,7 +72,7 @@ interface AppState {
   epsilon: number | "";
   offlineMode: boolean;
   trafficLayer: boolean;
-  traceOnReal: boolean; // guardrail: G_real defaults to no trace
+  traceOnReal: boolean; // kept for store compatibility; route trace is always enabled
   includeOptimizationTrace: boolean; // opt-in; affects the next ATSP run only
   pickTarget: "start" | "goal" | "stop" | null;
   edgeOverrides: Record<string, EdgeOverride>;
@@ -77,6 +84,8 @@ interface AppState {
   graphLoading: boolean;
   traffic: Record<string, number> | null;
   trace: Trace | null;
+  sequentialRoute: SequentialRouteRun | null;
+  routeProgress: { current: number; total: number } | null;
   running: boolean;
   compareAlgo: Algorithm;
   compare: Trace | null;
@@ -112,11 +121,11 @@ interface AppState {
 }
 
 export const useApp = create<AppState>((set, get) => ({
-  theme: "dark",
+  theme: "light",
   initTheme: () => {
     const saved = (typeof window !== "undefined"
       ? window.localStorage.getItem(THEME_KEY) : null) as Theme | null;
-    const theme: Theme = saved === "light" ? "light" : "dark";
+    const theme: Theme = saved === "dark" ? "dark" : "light";
     document.documentElement.setAttribute("data-theme", theme);
     set({ theme });
   },
@@ -140,7 +149,7 @@ export const useApp = create<AppState>((set, get) => ({
   epsilon: "",
   offlineMode: false,
   trafficLayer: false,
-  traceOnReal: false,
+  traceOnReal: true,
   includeOptimizationTrace: false,
   pickTarget: null,
   edgeOverrides: {},
@@ -151,6 +160,8 @@ export const useApp = create<AppState>((set, get) => ({
   graphLoading: false,
   traffic: null,
   trace: null,
+  sequentialRoute: null,
+  routeProgress: null,
   running: false,
   compareAlgo: "dijkstra",
   compare: null,
@@ -201,6 +212,8 @@ export const useApp = create<AppState>((set, get) => ({
         if (state.timelineSource === "route" && !("timelineSource" in patch))
           extra.timelineSource = null;
       }
+      if (routeInputChanged && state.sequentialRoute && !("sequentialRoute" in patch))
+        extra.sequentialRoute = null;
       if (routeInputChanged && state.compare && !("compare" in patch)) extra.compare = null;
       if (optimizerInputChanged && state.multi && !("multi" in patch)) extra.multi = null;
       if (optimizerInputChanged && state.optimizationTrace && !("optimizationTrace" in patch)) {
@@ -210,22 +223,23 @@ export const useApp = create<AppState>((set, get) => ({
         if (state.timelineSource === "optimization" && !("timelineSource" in patch))
           extra.timelineSource = null;
       }
-      // v11: ADDING a delivery stop switches the journey to tour mode —
-      // the ATSP tour is Đi + stops only, so a lingering "Đến" is dead
-      // input that confuses the map (goal chip) and the run button.
+      // Adding C to A→B should produce A→B→C: promote the old goal B to
+      // the first ordered delivery point instead of silently deleting it.
       // Removing a stop never touches the goal.
       if (stopsChanged && Array.isArray(patch.stops) &&
           patch.stops.length > state.stops.length &&
           state.goal && !("goal" in patch)) {
         extra.goal = null;
+        extra.stops = promoteGoalWhenAddingStop(state.goal, state.stops, patch.stops);
         queueMicrotask(() => toast.info(
-          "Đã bỏ điểm Đến — tối ưu nhiều điểm chỉ cần điểm Đi và các điểm giao."));
+          "Đã chuyển điểm Đến thành điểm giao đầu tiên của hành trình nhiều điểm."));
       }
       return { ...patch, ...extra };
     }),
 
   clearMap: () => {
-    set({ trace: null, compare: null, multi: null, start: null, goal: null,
+    set({ trace: null, sequentialRoute: null, routeProgress: null,
+          compare: null, multi: null, start: null, goal: null,
           stops: [], optimizationTrace: null, timelineSource: null,
           stepIdx: 0, playing: false, pickTarget: null });
     toast.success("Đã xoá kết quả và lựa chọn trên bản đồ.");
@@ -236,7 +250,8 @@ export const useApp = create<AppState>((set, get) => ({
     const requestToken = graphRequests.begin();
     set({
       graphLoading: true, graph: level, graphView, graphData: null, traffic: null,
-      trace: null, compare: null, multi: null, optimizationTrace: null, timelineSource: null,
+      trace: null, sequentialRoute: null, routeProgress: null,
+      compare: null, multi: null, optimizationTrace: null, timelineSource: null,
       start: null, goal: null,
       stops: [], stepIdx: 0, playing: false, pickTarget: null,
       edgeOverrides: {}, edgeEditMode: false, selectedEdgeId: null,
@@ -359,38 +374,61 @@ export const useApp = create<AppState>((set, get) => ({
     }
     // routeRunBlockReason already rejects this state; keep an explicit
     // narrowing guard so the request contract remains string-only.
-    if (!s.start || !s.goal) return;
+    if (!s.start || (s.stops.length === 0 && !s.goal)) return;
+    const waypoints = sequentialWaypoints(s.start, s.goal, s.stops);
+    const totalLegs = waypoints.length - 1;
     set({
-      running: true, playing: false, multi: null, compare: null,
+      running: true, routeProgress: { current: 1, total: totalLegs },
+      trace: null, sequentialRoute: null, playing: false, multi: null, compare: null,
       optimizationTrace: null, timelineSource: null, stepIdx: 0,
     });
     try {
-      const includeTrace = s.graph === "demo" ? true : s.traceOnReal;
+      // The teaching UI always requests route trace on both graph levels.
+      // The backend still caps recorded steps at 5,000, so metrics remain safe.
+      const includeTrace = routeTraceRequestFlag(s.graph);
       const params: { beam_width?: number; epsilon?: number } = {};
       if (s.algorithm === "beam" && s.beamWidth !== "") params.beam_width = Number(s.beamWidth);
       if (s.algorithm === "idastar" && s.epsilon !== "") params.epsilon = Number(s.epsilon);
       const scenario = buildScenario(s.graphView, s.edgeOverrides);
       const requestScenarioKey = scenarioKey(s.graphView, s.edgeOverrides);
-      const t = await api.route({
-        start: s.start, goal: s.goal, algorithm: s.algorithm, mode: s.mode,
-        time_slot: s.slot, graph: s.graph, include_trace: includeTrace,
-        params: Object.keys(params).length ? params : undefined,
-        scenario,
-      });
-      // ANY input this result depends on switched mid-flight -> drop it:
-      // the journey fields too, not just graph/slot — a response landing
-      // after start/goal changed drew the OLD route under NEW chips (L3-04)
-      const n = get();
-      if (n.graph !== s.graph || n.graphView !== s.graphView || n.slot !== s.slot || n.mode !== s.mode ||
-          n.algorithm !== s.algorithm || n.start !== s.start || n.goal !== s.goal)
-        return;
-      if (scenarioKey(n.graphView, n.edgeOverrides) !== requestScenarioKey) return;
-      if (!t.applied_scenario || t.applied_scenario.graph_view !== s.graphView) {
-        toast.error("Backend không echo graph view đã chọn; đã bỏ kết quả tuyến.");
-        return;
+      const traces: Trace[] = [];
+      for (let index = 0; index < totalLegs; index += 1) {
+        set({ routeProgress: { current: index + 1, total: totalLegs } });
+        const t = await api.route({
+          start: waypoints[index], goal: waypoints[index + 1],
+          algorithm: s.algorithm, mode: s.mode,
+          time_slot: s.slot, graph: s.graph, include_trace: includeTrace,
+          params: Object.keys(params).length ? params : undefined,
+          scenario,
+        });
+        // ANY input this result depends on switched mid-flight -> drop it.
+        const n = get();
+        if (n.graph !== s.graph || n.graphView !== s.graphView || n.slot !== s.slot ||
+            n.mode !== s.mode || n.algorithm !== s.algorithm || n.start !== s.start ||
+            n.goal !== s.goal || JSON.stringify(n.stops) !== JSON.stringify(s.stops))
+          return;
+        if (scenarioKey(n.graphView, n.edgeOverrides) !== requestScenarioKey) return;
+        if (!t.applied_scenario || t.applied_scenario.graph_view !== s.graphView)
+          throw new BackendError(
+            "CONTRACT_ERROR",
+            "Backend không echo graph view đã chọn; đã bỏ kết quả tuyến.",
+          );
+        traces.push(t);
+        // Không gọi các chặng sau nếu chặng hiện tại đã không có đường.
+        if (!t.found) break;
       }
+
+      const nameOf = (id: string) =>
+        s.graphData?.nodes.find((node) => node.id === id)?.name ?? id;
+      const merged = s.stops.length > 0
+        ? mergeSequentialRouteTraces(
+          waypoints, traces, nameOf, ALGO_LABEL[s.algorithm].split(" — ")[0],
+        )
+        : { trace: traces[0], run: null };
+      const t = merged.trace;
       set({
         trace: t,
+        sequentialRoute: merged.run,
         stepIdx: Math.max(0, t.trace.length - 1),
         timelineSource: t.trace.length > 0 ? "route" : null,
         optimizationTrace: null,
@@ -398,26 +436,29 @@ export const useApp = create<AppState>((set, get) => ({
         ...(t.found ? {} : { drawerOpen: true }),
       });
       if (t.found) {
-        toast.success(`Đã chạy ${ALGO_LABEL[s.algorithm]} — ${t.trace.length > 0
+        const legCopy = s.stops.length > 0 ? `${totalLegs} chặng, ` : "";
+        toast.success(`Đã chạy ${ALGO_LABEL[s.algorithm]} — ${legCopy}${t.trace.length > 0
           ? `${t.trace.length} bước, ` : ""}${t.metrics.nodes_expanded} node expand.`);
       } else {
         toast.warning(`${ALGO_LABEL[s.algorithm]} không tìm thấy đường — xem tab Giải thích.`);
       }
     } catch (e) {
-      toast.error(e instanceof BackendError ? e.message : "Chạy thuật toán thất bại.");
+      toast.error(e instanceof Error ? e.message : "Chạy thuật toán thất bại.");
     } finally {
-      set({ running: false });
+      set({ running: false, routeProgress: null });
     }
   },
 
   runCompare: async () => {
     const s = get();
     if (s.running || s.comparing || s.multiRunning) return; // L3-04
-    if (!s.trace || !s.start || !s.goal) {
+    if (!s.trace || !s.start || (s.stops.length === 0 && !s.goal)) {
       toast.error("Hãy chạy thuật toán chính trước, rồi mới so sánh.");
       return;
     }
     const compareAlgo = chooseCompareAlgorithm(s.trace.algorithm, s.compareAlgo);
+    const waypoints = s.sequentialRoute?.waypoints
+      ?? sequentialWaypoints(s.start, s.goal, s.stops);
     set({ comparing: true, compareAlgo });
     try {
       const scenario = buildScenario(s.graphView, s.edgeOverrides);
@@ -425,26 +466,40 @@ export const useApp = create<AppState>((set, get) => ({
       // B chạy bằng ĐÚNG cấu hình của tuyến A (review v11 — UX MAJOR):
       // đổi Tiêu chí không xoá trace A (luật v10f), nên lấy s.mode hiện tại
       // từng làm B chạy mode khác A → bảng so sánh in mét như giây.
-      const t = await api.route({
-        start: s.start, goal: s.goal, algorithm: compareAlgo,
-        mode: s.trace.mode, time_slot: s.trace.time_slot, graph: s.trace.graph,
-        include_trace: false,
-        scenario,
-      });
+      const traces: Trace[] = [];
+      for (let index = 0; index < waypoints.length - 1; index += 1) {
+        const leg = await api.route({
+          start: waypoints[index], goal: waypoints[index + 1], algorithm: compareAlgo,
+          mode: s.trace.mode, time_slot: s.trace.time_slot, graph: s.trace.graph,
+          include_trace: false,
+          scenario,
+        });
+        if (!leg.applied_scenario || !s.trace.applied_scenario ||
+            leg.applied_scenario.fingerprint !== s.trace.applied_scenario.fingerprint)
+          throw new BackendError(
+            "CONTRACT_ERROR",
+            "Backend trả so sánh cho graph scenario khác; đã bỏ kết quả.",
+          );
+        traces.push(leg);
+        if (!leg.found) break;
+      }
       // stale guards (L3-04): inputs unchanged AND the main trace this
       // comparison was made against must still be on screen (mode B đã
       // khoá theo trace nên không cần so mode hiện tại)
       const n = get();
       if (n.graph !== s.graph || n.graphView !== s.graphView || n.slot !== s.slot ||
           n.start !== s.start || n.goal !== s.goal ||
+          JSON.stringify(n.stops) !== JSON.stringify(s.stops) ||
           n.compareAlgo !== compareAlgo || n.trace !== s.trace)
         return;
       if (scenarioKey(n.graphView, n.edgeOverrides) !== requestScenarioKey) return;
-      if (!t.applied_scenario || !s.trace.applied_scenario ||
-          t.applied_scenario.fingerprint !== s.trace.applied_scenario.fingerprint) {
-        toast.error("Backend trả so sánh cho graph scenario khác; đã bỏ kết quả.");
-        return;
-      }
+      const t = s.sequentialRoute
+        ? mergeSequentialRouteTraces(
+          waypoints, traces,
+          (id) => s.graphData?.nodes.find((node) => node.id === id)?.name ?? id,
+          ALGO_LABEL[compareAlgo].split(" — ")[0],
+        ).trace
+        : traces[0];
       set({ compare: t, drawerTab: "compare" });
       toast.success(`Đã so sánh với ${ALGO_LABEL[compareAlgo]}.`);
     } catch (e) {
@@ -462,7 +517,8 @@ export const useApp = create<AppState>((set, get) => ({
       return;
     }
     set({
-      multiRunning: true, trace: null, compare: null, playing: false,
+      multiRunning: true, trace: null, sequentialRoute: null, routeProgress: null,
+      compare: null, playing: false,
       optimizationTrace: null, timelineSource: null, stepIdx: 0,
     });
     try {

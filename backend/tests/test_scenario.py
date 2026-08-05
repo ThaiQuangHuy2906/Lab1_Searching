@@ -1,8 +1,8 @@
-"""Regression coverage for the Milestone 2 graph-view boundary.
+"""Regression coverage for the dynamic G_demo graph-view boundary.
 
-The independent oracle is the tracked preset IDs plus an induced-edge scan of
-the committed G_demo snapshot. Product search/TSP code is deliberately not
-used to derive the expected edge sets.
+The independent oracle is the tracked canonical order/checkpoints plus an
+induced-edge scan of the committed snapshot. Product search/TSP code is
+deliberately not used to derive the expected edge sets.
 """
 
 from __future__ import annotations
@@ -22,7 +22,7 @@ from app.scenario import (
 )
 
 
-EXPECTED_VIEWS = {
+EXPECTED_CHECKPOINTS = {
     "teach_7": (7, 24),
     "teach_15": (15, 62),
     "teach_25": (25, 114),
@@ -44,7 +44,7 @@ def _reachable_count(store: GraphStore, reverse: bool = False) -> int:
 
 
 @pytest.mark.parametrize(("view", "node_count", "edge_count"), [
-    (view, *counts) for view, counts in EXPECTED_VIEWS.items()
+    (view, *counts) for view, counts in EXPECTED_CHECKPOINTS.items()
 ])
 def test_teaching_view_is_induced_profile_complete_and_strongly_connected(
     view: str, node_count: int, edge_count: int,
@@ -79,7 +79,24 @@ def test_teaching_preset_validator_accepts_the_committed_snapshot():
 
     validated = validate_teaching_presets(base)
 
-    assert set(validated) == set(EXPECTED_VIEWS)
+    assert set(validated) == {f"teach_{count}" for count in range(3, 51)}
+    assert len(validated["teach_3"].node_ids) == 3
+    assert len(validated["teach_50"].node_ids) == 50
+    assert {
+        view: (len(validated[view].node_ids), validated[view].expected_edge_count)
+        for view in EXPECTED_CHECKPOINTS
+    } == EXPECTED_CHECKPOINTS
+
+
+@pytest.mark.parametrize("node_count", [3, 4, 5, 10, 17, 26, 37, 50])
+def test_dynamic_teaching_views_have_exact_node_count_and_are_strongly_connected(
+    node_count: int,
+):
+    store = resolve_view_store(GraphStore.load("demo"), f"teach_{node_count}")
+
+    assert store.graph.meta.node_count == node_count
+    assert _reachable_count(store) == node_count
+    assert _reachable_count(store, reverse=True) == node_count
 
 
 def test_real_graph_rejects_teaching_view_explicitly():

@@ -183,9 +183,11 @@ Curie* (lệch ~900 m), *THPT Nguyễn Thị Minh Khai* (~445 m), *ĐH Mở TP.H
 ## 9. GraphView và scenario — ranh giới dữ liệu bất biến
 
 Mở rộng đã được duyệt trong `docs/SCHEMA.md §E` **không phải** một data rebuild.
-Khi Milestone implementation tạo `data/teaching_graph_presets.json`, file đó chỉ
-là config tracked xác định tập node nested của G_demo (`teach_7`, `teach_15`,
-`teach_25`) và count edge induced đã kỳ vọng. Nó không thay `graph_demo.json`,
+`data/teaching_graph_presets.json` version 2 chứa thứ tự canonical đủ 51 node;
+mọi prefix từ 3 đến 51 node tạo một induced graph liên thông mạnh. File đó chỉ
+thứ tự đó là config tracked xác định các tập node nested của G_demo
+(`teach_3`…`teach_50`); các mốc 7/15/25 còn giữ count edge hồi quy đã kỳ vọng.
+Nó không thay `graph_demo.json`,
 `traffic_profiles_demo.json`, `gdemo_corridors.json` hay bất kỳ raw artifact nào.
 
 Một GraphView được dựng trong memory bằng lọc induced node/edge và profile tương

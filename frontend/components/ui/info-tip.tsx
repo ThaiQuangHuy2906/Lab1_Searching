@@ -13,7 +13,7 @@ export function InfoTip({ text }: { text: string }) {
         <button
           type="button"
           aria-label={`Giải thích: ${text}`}
-          className="-m-2 inline-flex size-9 shrink-0 cursor-help items-center justify-center rounded-lg align-middle text-ink-dim transition-colors hover:bg-surface-control hover:text-ink"
+          className="-m-2 inline-flex size-9 shrink-0 cursor-help items-center justify-center rounded-xl align-middle text-ink-dim transition-colors hover:bg-algo-frontier/10 hover:text-algo-frontier"
         >
           <CircleHelp className="size-4" />
         </button>

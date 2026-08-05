@@ -42,6 +42,8 @@ export function Timeline() {
   const traceOnReal = useApp((s) => s.traceOnReal);
   const optimizationTrace = useApp((s) => s.optimizationTrace);
   const timelineSource = useApp((s) => s.timelineSource);
+  const sequentialRoute = useApp((s) => s.sequentialRoute);
+  const graphData = useApp((s) => s.graphData);
   const [reducedMotion, setReducedMotion] = React.useState(false);
 
   // Route and optimizer traces share player controls, not event shapes.
@@ -52,6 +54,15 @@ export function Timeline() {
   const optimizerEvent = isOptimization && optimizationTrace
     ? optimizationTrace.events[Math.min(stepIdx, optimizationTrace.events.length - 1)]
     : null;
+  const activeLeg = !isOptimization && sequentialRoute
+    ? sequentialRoute.legs.find((leg) => leg.trace_start !== null && leg.trace_end !== null
+      && stepIdx >= leg.trace_start && stepIdx <= leg.trace_end)
+    : null;
+  const nameOf = (nodeId: string) =>
+    graphData?.nodes.find((node) => node.id === nodeId)?.name ?? nodeId;
+  const routeLabel = activeLeg
+    ? `Chặng ${activeLeg.index + 1}/${sequentialRoute?.legs.length}: ${nameOf(activeLeg.from_node)} → ${nameOf(activeLeg.to_node)}`
+    : sequentialRoute ? `Tìm đường · ${sequentialRoute.legs.length} chặng` : "Tìm đường";
 
   React.useEffect(() => {
     const query = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -115,9 +126,9 @@ export function Timeline() {
   if (n === 0) return null;
 
   return (
-    <div className="absolute bottom-3 left-1/2 z-10 flex h-[52px] w-[min(760px,calc(100%-2rem))] -translate-x-1/2 items-center gap-2 rounded-lg border border-surface-strong bg-surface-raised px-2.5 py-2 shadow-float max-[900px]:overflow-x-auto">
-      <span className="hidden max-w-40 truncate text-[11px] font-medium text-ink-dim min-[700px]:inline" title={isOptimization ? "Quá trình tối ưu thứ tự ghé" : "Các bước tìm đường"}>
-        {isOptimization ? `ATSP · ${optimizationTrace?.method ?? "optimization"}` : "Tìm đường"}
+    <div className="pastel-floating absolute bottom-3 left-1/2 z-10 flex h-[56px] w-[min(760px,calc(100%-2rem))] -translate-x-1/2 items-center gap-2 rounded-2xl border border-surface-strong/80 px-2.5 py-2 max-[900px]:overflow-x-auto">
+      <span className="hidden max-w-52 truncate text-[11px] font-medium text-ink-dim min-[700px]:inline" title={isOptimization ? "Quá trình tối ưu thứ tự ghé" : routeLabel}>
+        {isOptimization ? `ATSP · ${optimizationTrace?.method ?? "optimization"}` : routeLabel}
       </span>
       <div className="flex items-center gap-1">
         <Button

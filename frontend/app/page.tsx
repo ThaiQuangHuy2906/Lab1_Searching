@@ -37,14 +37,14 @@ export default function Home() {
 
   return (
     <TooltipProvider delayDuration={250}>
-      <main className="flex h-screen">
+      <main className="pastel-app-bg flex h-screen gap-2 overflow-hidden p-2">
         <ControlPanel />
-        <div className="relative min-w-0 flex-1">
+        <div className="pastel-map-frame relative min-w-0 flex-1 overflow-hidden rounded-[22px] border border-surface-border/80">
           <MapView />
           <div
             aria-label="Công cụ ứng dụng"
             role="toolbar"
-            className="absolute right-3 top-3 z-20 flex h-11 items-center gap-1 rounded-lg border border-surface-strong bg-surface-raised p-1 shadow-float"
+            className="pastel-floating absolute right-3 top-3 z-20 flex h-11 items-center gap-1 rounded-2xl border border-surface-strong/80 p-1"
           >
             {offline && (
               <span

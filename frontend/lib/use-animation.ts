@@ -14,7 +14,7 @@ export interface AnimationState {
   current: TraceStep | null;
   /** nodes expanded strictly BEFORE the current step (violet) */
   expandedSet: Set<string>;
-  /** frontier of the current step (cyan) */
+  /** frontier of the current step (pink) */
   frontierSet: Set<string>;
   /** bidijkstra: node -> side it was expanded on (up to current step) */
   sideByNode: Map<string, "forward" | "backward">;

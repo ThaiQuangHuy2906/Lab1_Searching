@@ -24,11 +24,11 @@ export const metadata: Metadata = {
 };
 
 // đặt data-theme TRƯỚC khi paint để không nháy theme (FOUC)
-const themeInit = `(function(){try{var t=localStorage.getItem("traffic-theme");document.documentElement.setAttribute("data-theme",t==="light"?"light":"dark");}catch(e){document.documentElement.setAttribute("data-theme","dark");}})();`;
+const themeInit = `(function(){try{var t=localStorage.getItem("traffic-theme-pastel-v1");document.documentElement.setAttribute("data-theme",t==="dark"?"dark":"light");}catch(e){document.documentElement.setAttribute("data-theme","light");}})();`;
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="vi" data-theme="dark" suppressHydrationWarning
+    <html lang="vi" data-theme="light" suppressHydrationWarning
       className={`${beVietnam.variable} ${jetbrains.variable}`}>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeInit }} />

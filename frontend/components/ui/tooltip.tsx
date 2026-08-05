@@ -18,7 +18,7 @@ const TooltipContent = React.forwardRef<
       sideOffset={sideOffset}
       className={cn(
         // inverted colors via tokens: readable at ~17:1 in BOTH themes (v9c)
-        "z-50 max-w-72 rounded-lg bg-ink px-3.5 py-2.5 text-[13px] font-medium leading-5 text-surface-panel shadow-float",
+        "z-50 max-w-72 rounded-2xl bg-ink px-3.5 py-2.5 text-[13px] font-medium leading-5 text-surface-panel shadow-float",
         className,
       )}
       {...props}

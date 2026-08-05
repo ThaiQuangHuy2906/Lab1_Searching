@@ -26,7 +26,11 @@ import {
   isOptimizationFinalEvent,
   mapControlsBottomClass,
 } from "@/lib/atsp-trace-policy";
-import { isEndpointOptionAllowed, isStopOptionAllowed } from "@/lib/interaction-policy";
+import {
+  isEndpointOptionAllowed,
+  isStopOptionAllowed,
+  journeyNodePickRadius,
+} from "@/lib/interaction-policy";
 import { effectiveCongestion } from "@/lib/scenario";
 import type { GraphNode, OptimizationEvent } from "@/lib/types";
 import { Legend } from "./legend";
@@ -446,15 +450,15 @@ export function MapView() {
         },
       }),
     );
-    if (isDemo) {
+    if (pickTarget !== null && !edgeEditMode) {
       out.push(
         new ScatterplotLayer({
-          id: "nodes-pick-demo",
+          id: "nodes-pick-journey",
           data: graphData.nodes,
-          pickable: pickTarget !== null && !edgeEditMode,
+          pickable: true,
           opacity: 0,
           getPosition: (n: GraphNode) => [n.lon, n.lat],
-          getRadius: 14,
+          getRadius: journeyNodePickRadius(graph),
           radiusUnits: "pixels",
         }),
       );
@@ -546,7 +550,7 @@ export function MapView() {
   }, [graphData, coord, toPath, traffic, slot, edgeOverrides, edgeEditMode, selectedEdgeId,
       trafficLayer, congestedSet, trace, compare,
       multi, optimizationEvent, heldKarpHighlightSet, showFinalMultiRoute, anim, nodeColor, isDemo, showLabels, start, goal, stops,
-      pickTarget, drawerTab, C, CONGESTION, theme, zoomBucket]);
+      pickTarget, drawerTab, graph, C, CONGESTION, theme, zoomBucket]);
 
   const routeFlowLayers = React.useMemo(() => {
     if (!routeFlowActive) return [];
@@ -747,7 +751,7 @@ export function MapView() {
       ref={containerRef}
       role={offline ? "region" : undefined}
       aria-label={offline ? "Bản đồ định tuyến giao thông — chế độ ngoại tuyến" : undefined}
-      className="relative h-full w-full bg-surface-map"
+      className="relative h-full w-full overflow-hidden rounded-[21px] bg-surface-map"
     >
       <DeckGL
         _animate={routeFlowActive && !reducedMotion}
@@ -770,7 +774,7 @@ export function MapView() {
                   background: "rgb(var(--surface-raised))",
                   color: "rgb(var(--ink))",
                   border: "1px solid rgb(var(--surface-border))",
-                  borderRadius: "8px", fontSize: "12px", padding: "4px 8px",
+                  borderRadius: "12px", fontSize: "12px", padding: "6px 10px",
                 },
               }
             : null
@@ -794,7 +798,7 @@ export function MapView() {
       </DeckGL>
       {graphLoading && (
         <div role="status" className="pointer-events-none absolute inset-0 z-30 flex items-center justify-center bg-surface-map/65">
-          <span className="flex h-11 items-center gap-2 rounded-lg border border-surface-strong bg-surface-raised px-3 text-sm font-medium shadow-float">
+          <span className="pastel-floating flex h-11 items-center gap-2 rounded-2xl border border-surface-strong/80 px-3 text-sm font-medium">
             <Loader2 className="size-4 animate-spin text-algo-frontier" />
             Đang tải đồ thị…
           </span>
@@ -806,7 +810,7 @@ export function MapView() {
         </div>
       )}
       {/* map controls (DESIGN 6, v6): zoom +/- and fly-home */}
-      <div className={`absolute right-3 z-10 flex flex-col gap-1 rounded-lg border border-surface-strong bg-surface-raised p-1 shadow-float ${mapControlsBottomClass(timelineVisible)}`}>
+      <div className={`pastel-floating absolute right-3 z-10 flex flex-col gap-1 rounded-2xl border border-surface-strong/80 p-1 ${mapControlsBottomClass(timelineVisible)}`}>
         <Button variant="ghost" size="iconSm" aria-label="Phóng to"
           onClick={() => setViewState((v) => v && ({ ...v, zoom: (v.zoom ?? 0) + 0.7, transitionDuration: 250 }))}>
           <Plus />
@@ -839,7 +843,7 @@ export function MapView() {
         </Button>
       </div>
       {edgeEditMode && (
-        <div className="absolute left-1/2 top-3 z-20 flex min-h-11 max-w-[min(680px,calc(100%-8rem))] -translate-x-1/2 items-center gap-2 rounded-lg border border-algo-frontier/60 bg-surface-raised px-3 text-sm shadow-float">
+        <div className="pastel-floating absolute left-1/2 top-3 z-20 flex min-h-11 max-w-[min(680px,calc(100%-8rem))] -translate-x-1/2 items-center gap-2 rounded-2xl border border-algo-frontier/60 px-3 text-sm">
           <span>Bấm một cạnh để chỉnh thử trong phiên hiện tại.</span>
           <button type="button"
             className="inline-flex h-9 items-center rounded-lg border border-surface-border bg-surface-control px-2.5 text-xs font-medium text-ink-dim transition-colors hover:border-surface-strong hover:text-ink"
@@ -849,7 +853,7 @@ export function MapView() {
         </div>
       )}
       {pickTarget && !edgeEditMode && (
-        <div className="absolute left-1/2 top-3 z-20 flex min-h-11 max-w-[min(680px,calc(100%-8rem))] -translate-x-1/2 items-center gap-2 rounded-lg border border-surface-strong bg-surface-raised px-3 text-sm shadow-float">
+        <div className="pastel-floating absolute left-1/2 top-3 z-20 flex min-h-11 max-w-[min(680px,calc(100%-8rem))] -translate-x-1/2 items-center gap-2 rounded-2xl border border-surface-strong/80 px-3 text-sm">
           {pickTarget === "stop" ? (
             <span>
               Bấm các nút giao để thêm điểm giao{" "}

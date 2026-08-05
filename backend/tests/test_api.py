@@ -63,6 +63,17 @@ def test_graph_teach_view_is_a_real_induced_payload():
     }
 
 
+@pytest.mark.parametrize("node_count", [3, 4, 5, 10, 26, 50])
+def test_graph_accepts_an_arbitrary_teaching_node_count(node_count: int):
+    view = f"teach_{node_count}"
+    r = client.get("/api/graph", params={"level": "demo", "view": view})
+
+    assert r.status_code == 200
+    graph = GraphResponse.model_validate(r.json())
+    assert graph.meta.node_count == node_count
+    assert graph.view_meta.graph_view == view
+
+
 def test_real_graph_rejects_teaching_view_with_typed_error():
     r = client.get("/api/graph", params={"level": "real", "view": "teach_7"})
 
@@ -70,8 +81,9 @@ def test_real_graph_rejects_teaching_view_with_typed_error():
     assert r.json()["error"]["code"] == "GRAPH_VIEW_UNAVAILABLE"
 
 
-def test_unknown_graph_view_gives_validation_envelope():
-    r = client.get("/api/graph", params={"level": "demo", "view": "teach_99"})
+@pytest.mark.parametrize("view", ["teach_2", "teach_51", "teach_99", "teach_3.5"])
+def test_unknown_graph_view_gives_validation_envelope(view: str):
+    r = client.get("/api/graph", params={"level": "demo", "view": view})
 
     assert r.status_code == 422
     assert r.json()["error"]["code"] == "VALIDATION_ERROR"
@@ -174,6 +186,19 @@ def test_route_resolves_teaching_scenario_and_echoes_it():
     assert set(trace.path) <= {"n0018", "n0019", "n0020", "n0022", "n0028", "n0037", "n0038"}
 
 
+def test_route_runs_inside_an_arbitrary_four_node_view():
+    r = client.post("/api/route", json=route_body(
+        start="n0018", goal="n0022", scenario={"graph_view": "teach_4"},
+    ))
+
+    assert r.status_code == 200
+    trace = Trace.model_validate(r.json())
+    assert trace.found is True
+    assert trace.applied_scenario is not None
+    assert trace.applied_scenario.graph_view == "teach_4"
+    assert set(trace.path) <= {"n0018", "n0019", "n0020", "n0022"}
+
+
 def test_route_without_scenario_echoes_base_applied_scenario():
     r = client.post("/api/route", json=route_body())
 
@@ -200,6 +225,16 @@ def test_route_real_defaults_to_no_trace():
     body = r.json()
     assert body["trace"] == [] and body["found"] is True
     assert body["explanation"]["summary_vi"]
+
+
+def test_route_real_returns_steps_when_frontend_explicitly_requests_trace():
+    r = client.post("/api/route", json=route_body(
+        graph="real", start="n0100", goal="n2000", include_trace=True))
+    assert r.status_code == 200
+    body = r.json()
+    assert body["found"] is True
+    assert len(body["trace"]) > 0
+    assert body["trace"][0]["step"] == 1
 
 
 def test_route_params_beam_width():

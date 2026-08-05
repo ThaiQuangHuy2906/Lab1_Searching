@@ -28,30 +28,30 @@ export interface Palette {
 
 const DARK: Palette = {
   deck: {
-    node: [212, 212, 216, 170], //       G_demo zinc-300 @67%
-    nodeReal: [212, 212, 216, 125], //   G_real zinc-300 @49%
-    frontier: [34, 211, 238, 255], //    cyan-400
-    expanded: [167, 139, 250, 255], //   violet-400
+    node: [226, 208, 235, 170],
+    nodeReal: [226, 208, 235, 125],
+    frontier: [255, 133, 187, 255],
+    expanded: [192, 163, 245, 255],
     current: [255, 255, 255, 255],
-    path: [251, 191, 36, 255], //        amber-400
+    path: [255, 195, 105, 255],
     routeFlowCore: [255, 255, 255, 245],
-    routeFlowHalo: [251, 191, 36, 92],
+    routeFlowHalo: [255, 195, 105, 92],
     routeFlowStatic: [255, 255, 255, 118],
-    bidiForward: [34, 211, 238, 255],
-    bidiBackward: [251, 113, 133, 255], // rose-400
-    edgeDim: [161, 161, 170, 125], //    G_demo zinc-400 @49%
-    edgeReal: [161, 161, 170, 85], //    G_real zinc-400 @33%
-    compareB: [34, 211, 238, 255],
-    start: [16, 185, 129, 255], //       emerald-500
-    goal: [239, 68, 68, 255], //         red-500
-    stop: [251, 191, 36, 255],
-    stopText: [9, 9, 11, 255], //        zinc-950 on bright amber (>= 4.5)
-    chipStart: [4, 120, 87, 255], //     emerald-700 — white text >= 4.5 both themes
-    chipGoal: [220, 38, 38, 255], //     red-600 — graphics >= 3.0 & white text >= 4.5 both themes
+    bidiForward: [255, 133, 187, 255],
+    bidiBackward: [192, 163, 245, 255],
+    edgeDim: [181, 161, 192, 125],
+    edgeReal: [181, 161, 192, 85],
+    compareB: [255, 133, 187, 255],
+    start: [99, 214, 174, 255],
+    goal: [255, 121, 151, 255],
+    stop: [255, 195, 105, 255],
+    stopText: [36, 26, 44, 255],
+    chipStart: [22, 134, 107, 255],
+    chipGoal: [202, 72, 110, 255],
     chipText: [255, 255, 255, 255],
     pulse: [255, 255, 255, 180],
-    label: [250, 250, 250, 255], //      zinc-50 (v8d: full white — zinc-200 still read as dim)
-    labelOutline: [9, 9, 11, 235],
+    label: [253, 246, 255, 255],
+    labelOutline: [36, 26, 44, 235],
   },
   congestion: {
     1: [16, 185, 129, 220], 2: [163, 230, 53, 220], 3: [250, 204, 21, 220],
@@ -59,38 +59,38 @@ const DARK: Palette = {
   },
   congestionHex: { 1: "#10b981", 2: "#a3e635", 3: "#facc15", 4: "#f97316", 5: "#ef4444" },
   hex: {
-    frontier: "#22d3ee", expanded: "#a78bfa", current: "#ffffff", path: "#fbbf24",
-    bidiForward: "#22d3ee", bidiBackward: "#fb7185", node: "#d4d4d8",
-    inkDim: "#a1a1aa", grid: "#27272a", panel: "#18181b",
+    frontier: "#ff85bb", expanded: "#c0a3f5", current: "#ffffff", path: "#ffc369",
+    bidiForward: "#ff85bb", bidiBackward: "#c0a3f5", node: "#e2d0eb",
+    inkDim: "#d3bedc", grid: "#60496d", panel: "#34263e",
   },
   basemap: "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
 };
 
 const LIGHT: Palette = {
   deck: {
-    node: [39, 39, 42, 165], //          G_demo zinc-800 @65%
-    nodeReal: [39, 39, 42, 135], //      G_real zinc-800 @53%
-    frontier: [8, 145, 178, 255], //     cyan-600
-    expanded: [124, 58, 237, 255], //    violet-600
-    current: [24, 24, 27, 255], //       zinc-900 (per review round 2)
-    path: [217, 119, 6, 255], //         amber-600
+    node: [92, 72, 104, 165],
+    nodeReal: [92, 72, 104, 135],
+    frontier: [196, 65, 133, 255],
+    expanded: [121, 82, 179, 255],
+    current: [74, 55, 84, 255],
+    path: [185, 94, 28, 255],
     routeFlowCore: [255, 255, 255, 255],
-    routeFlowHalo: [217, 119, 6, 82],
+    routeFlowHalo: [185, 94, 28, 82],
     routeFlowStatic: [255, 255, 255, 155],
-    bidiForward: [8, 145, 178, 255],
-    bidiBackward: [225, 29, 72, 255], // rose-600
-    edgeDim: [63, 63, 70, 125], //       G_demo zinc-700 @49%
-    edgeReal: [63, 63, 70, 95], //        G_real zinc-700 @37%
-    compareB: [8, 145, 178, 255],
-    start: [5, 150, 105, 255], //        emerald-600
-    goal: [220, 38, 38, 255], //         red-600
-    stop: [217, 119, 6, 255], //         amber-600
-    stopText: [9, 9, 11, 255], //        zinc-950 on amber-600 (white measured 3.19 < 4.5)
-    chipStart: [4, 120, 87, 255], //     emerald-700
-    chipGoal: [220, 38, 38, 255], //     red-600 (measured: see check_contrast)
+    bidiForward: [196, 65, 133, 255],
+    bidiBackward: [121, 82, 179, 255],
+    edgeDim: [92, 72, 104, 125],
+    edgeReal: [92, 72, 104, 95],
+    compareB: [196, 65, 133, 255],
+    start: [22, 134, 107, 255],
+    goal: [201, 63, 98, 255],
+    stop: [185, 119, 22, 255],
+    stopText: [36, 26, 44, 255],
+    chipStart: [22, 134, 107, 255],
+    chipGoal: [202, 72, 110, 255],
     chipText: [255, 255, 255, 255],
-    pulse: [24, 24, 27, 170],
-    label: [39, 39, 42, 255], //         zinc-800 (v8e: darker to match always-on labels)
+    pulse: [74, 55, 84, 170],
+    label: [74, 55, 84, 255],
     labelOutline: [255, 255, 255, 240],
   },
   congestion: {
@@ -99,9 +99,9 @@ const LIGHT: Palette = {
   },
   congestionHex: { 1: "#059669", 2: "#4d7c0f", 3: "#a16207", 4: "#ea580c", 5: "#dc2626" },
   hex: {
-    frontier: "#0891b2", expanded: "#7c3aed", current: "#18181b", path: "#d97706",
-    bidiForward: "#0891b2", bidiBackward: "#e11d48", node: "#52525b",
-    inkDim: "#71717a", grid: "#e4e4e7", panel: "#ffffff",
+    frontier: "#c44185", expanded: "#7952b3", current: "#4a3754", path: "#b95e1c",
+    bidiForward: "#c44185", bidiBackward: "#7952b3", node: "#5c4868",
+    inkDim: "#705b7c", grid: "#eadbf0", panel: "#fffcff",
   },
   basemap: "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json",
 };

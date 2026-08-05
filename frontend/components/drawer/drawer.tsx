@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { PanelRightClose, PanelRightOpen } from "lucide-react";
+import { PanelRightClose, PanelRightOpen, Sparkles } from "lucide-react";
 import { Button } from "../ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { MetricsTab } from "./metrics-tab";
@@ -29,7 +29,7 @@ export function Drawer() {
 
   if (!open) {
     return (
-      <div className="relative z-10 flex h-full items-start border-l border-surface-border bg-surface-rail p-2 shadow-float">
+      <div className="pastel-rail relative z-10 flex h-full items-start rounded-[22px] border border-surface-border/80 p-2">
         <Button ref={openButtonRef} variant="ghost" size="iconSm" aria-label="Mở panel kết quả"
           onClick={() => set({ drawerOpen: true })}>
           <PanelRightOpen />
@@ -38,9 +38,12 @@ export function Drawer() {
     );
   }
   return (
-    <aside aria-label="Kết quả định tuyến" className="relative z-10 flex h-full w-[400px] shrink-0 flex-col border-l border-surface-border bg-surface-rail shadow-float max-[900px]:w-[280px]">
-      <div className="flex h-[60px] shrink-0 items-center gap-2 border-b border-surface-border px-4">
-        <div className="flex-1">
+    <aside aria-label="Kết quả định tuyến" className="pastel-rail relative z-10 flex h-full w-[400px] shrink-0 flex-col overflow-hidden rounded-[22px] border border-surface-border/80 max-[900px]:w-[280px]">
+      <div className="pastel-header flex h-[72px] shrink-0 items-center gap-2 border-b border-surface-border/80 px-4">
+        <span className="flex size-9 shrink-0 items-center justify-center rounded-2xl border border-algo-frontier/25 bg-surface-raised/80 text-algo-frontier shadow-sm">
+          <Sparkles className="size-4" />
+        </span>
+        <div className="min-w-0 flex-1">
           <span className="text-[15px] font-bold leading-5">Kết quả</span>
           <p className="text-xs text-ink-dim">Số liệu, giải thích và đối chiếu hành trình</p>
         </div>

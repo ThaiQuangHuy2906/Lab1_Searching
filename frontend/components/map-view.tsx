@@ -22,6 +22,7 @@ import { Button } from "./ui/button";
 import { useAnimation } from "@/lib/use-animation";
 import {
   activeTimelineLength,
+  conceptualOptimizationOrder,
   heldKarpHighlightIds,
   isOptimizationFinalEvent,
   mapControlsBottomClass,
@@ -32,7 +33,7 @@ import {
   journeyNodePickRadius,
 } from "@/lib/interaction-policy";
 import { effectiveCongestion } from "@/lib/scenario";
-import type { GraphNode, OptimizationEvent } from "@/lib/types";
+import type { GraphNode } from "@/lib/types";
 import { Legend } from "./legend";
 import { Timeline } from "./timeline";
 
@@ -57,20 +58,6 @@ function getLayerId(layer: unknown): string | undefined {
   return typeof layer === "object" && layer !== null && "id" in layer
     ? (layer as { id?: string }).id
     : undefined;
-}
-
-function conceptualOrder(event: OptimizationEvent | null): string[] {
-  if (!event) return [];
-  switch (event.kind) {
-    case "held_karp_update": return [event.predecessor, event.endpoint];
-    case "held_karp_reconstruct": return event.order;
-    case "nn_decision": return event.order;
-    case "local_improvement": return event.after_order;
-    case "sa_seed_boundary": return event.best_order;
-    case "sa_iteration": return event.best_order;
-    case "sa_final_best": return event.final_order;
-    case "optimization_summary": return event.final_order;
-  }
 }
 
 export function MapView() {
@@ -393,7 +380,7 @@ export function MapView() {
       casedPath("multi-path", legPaths.map((path) => ({ path })), C.path);
       routeArrows("multi-arrows", legPaths, C.path);
     } else if (optimizationEvent) {
-      const orderPath = toPath(conceptualOrder(optimizationEvent));
+      const orderPath = toPath(conceptualOptimizationOrder(optimizationEvent));
       if (orderPath.length > 1) {
         out.push(new PathLayer({
           id: "optimization-conceptual-order",

@@ -4,11 +4,18 @@ import test from "node:test";
 import {
   activeTimelineLength,
   atspInputsChanged,
+  classifySaMove,
+  conceptualOptimizationOrder,
   heldKarpHighlightIds,
   isOptimizationFinalEvent,
   mapControlsBottomClass,
   optimizationTraceChangePatch,
+  saAcceptanceProbability,
 } from "../lib/atsp-trace-policy.ts";
+import {
+  ATSP_METHOD_EXPLANATION,
+  ATSP_METHOD_LABEL,
+} from "../components/atsp/atsp-copy.ts";
 
 const routeTrace = { trace: [{ step: 1 }, { step: 2 }] };
 const optimizationTrace = { events: [{ ordinal: 0 }, { ordinal: 3 }, { ordinal: 7 }] };
@@ -71,6 +78,38 @@ test("a Held–Karp DP update highlights every node in its active subset", () =>
   assert.deepEqual(heldKarpHighlightIds(event), ["n0001", "n0005", "n0008"]);
   assert.deepEqual(heldKarpHighlightIds({ kind: "nn_decision" }), []);
   assert.deepEqual(heldKarpHighlightIds(null), []);
+});
+
+test("conceptual optimizer paths distinguish SA current state from best-so-far", () => {
+  assert.deepEqual(conceptualOptimizationOrder({
+    kind: "held_karp_update",
+    predecessor: "depot",
+    endpoint: "b",
+  }), ["depot", "b"]);
+  assert.deepEqual(conceptualOptimizationOrder({
+    kind: "sa_seed_boundary",
+    current_order: ["depot", "current"],
+    best_order: ["depot", "best"],
+  }), ["depot", "current"]);
+  assert.deepEqual(conceptualOptimizationOrder({
+    kind: "sa_iteration",
+    resulting_order: ["depot", "accepted-state"],
+    best_order: ["depot", "best"],
+  }), ["depot", "accepted-state"]);
+});
+
+test("SA presentation uses the implementation's exact Metropolis semantics", () => {
+  assert.equal(classifySaMove(-1, true), "accepted_non_worse");
+  assert.equal(classifySaMove(3, true), "accepted_worse");
+  assert.equal(classifySaMove(3, false), "rejected_worse");
+  assert.equal(saAcceptanceProbability(-1, 5.2), 1);
+  assert.ok(Math.abs(saAcceptanceProbability(3, 5.2) - Math.exp(-3 / 5.2)) < 1e-12);
+});
+
+test("NN method copy names both local-improvement neighborhoods", () => {
+  assert.equal(ATSP_METHOD_LABEL.nn_2opt, "NN + 2-opt/Or-opt");
+  assert.match(ATSP_METHOD_EXPLANATION.nn_2opt, /2-opt/);
+  assert.match(ATSP_METHOD_EXPLANATION.nn_2opt, /Or-opt/);
 });
 
 test("map controls move above a visible timeline instead of sharing its bottom band", () => {

@@ -27,9 +27,9 @@ const METHOD_DETAILS: Record<TspMethod, {
     guarantee: true,
   },
   nn_2opt: {
-    label: "NN + 2-opt",
-    option: "NN + 2-opt — xấp xỉ nhanh",
-    description: "Nghiệm xấp xỉ bằng láng giềng gần rồi cải thiện thứ tự ghé.",
+    label: "NN + 2-opt/Or-opt",
+    option: "NN + 2-opt/Or-opt — xấp xỉ nhanh",
+    description: "NN chọn điểm gần nhất; 2-opt đảo đoạn và Or-opt di chuyển đoạn để cải thiện.",
     guarantee: false,
   },
   sa: {
@@ -229,7 +229,7 @@ export function AtspSetup() {
               role="status"
               className="rounded-lg border border-algo-path/35 bg-algo-path/10 px-2.5 py-2 text-[11px] leading-4 text-ink"
             >
-              Held-Karp nhận tối đa 14 điểm giao + 1 điểm Đi (15 điểm tổng). Hãy đổi sang NN + 2-opt hoặc Simulated Annealing; danh sách sẽ được giữ nguyên.
+              Held-Karp nhận tối đa 14 điểm giao + 1 điểm Đi (15 điểm tổng). Hãy đổi sang NN + 2-opt/Or-opt hoặc Simulated Annealing; danh sách sẽ được giữ nguyên.
             </p>
           )}
           <Button

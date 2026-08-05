@@ -67,6 +67,35 @@ export function heldKarpHighlightIds(event: OptimizationEvent | null): string[] 
   return event?.kind === "held_karp_update" ? event.subset : [];
 }
 
+/** The dashed map path follows the optimizer's active order, not its best-so-far. */
+export function conceptualOptimizationOrder(event: OptimizationEvent | null): string[] {
+  if (!event) return [];
+  switch (event.kind) {
+    case "held_karp_update": return [event.predecessor, event.endpoint];
+    case "held_karp_reconstruct": return event.order;
+    case "nn_decision": return event.order;
+    case "local_improvement": return event.after_order;
+    case "sa_seed_boundary": return event.current_order;
+    case "sa_iteration": return event.resulting_order;
+    case "sa_final_best": return event.final_order;
+    case "optimization_summary": return event.final_order;
+  }
+}
+
+export type SaMoveOutcome = "accepted_non_worse" | "accepted_worse" | "rejected_worse";
+
+/** Classify the exact Metropolis decision represented by one SA iteration event. */
+export function classifySaMove(delta: number, accepted: boolean): SaMoveOutcome {
+  if (!accepted) return "rejected_worse";
+  return delta > 0 ? "accepted_worse" : "accepted_non_worse";
+}
+
+/** Metropolis acceptance probability before the RNG draw. */
+export function saAcceptanceProbability(delta: number, temperature: number): number {
+  if (delta <= 0) return 1;
+  return temperature > 0 ? Math.exp(-delta / temperature) : 0;
+}
+
 /** Keep map controls above the timeline's fixed bottom band when it is visible. */
 export function mapControlsBottomClass(timelineVisible: boolean): string {
   return timelineVisible ? "bottom-[5.5rem]" : "bottom-10";

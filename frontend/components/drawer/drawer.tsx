@@ -55,10 +55,10 @@ export function Drawer() {
       <div className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto p-3">
         <Tabs value={tab} onValueChange={(v) => set({ drawerTab: v as DrawerTab })}>
           <TabsList className="sticky top-0 z-20 shadow-sm">
-            <TabsTrigger value="metrics">Số liệu</TabsTrigger>
-            <TabsTrigger value="explain">Giải thích</TabsTrigger>
-            <TabsTrigger value="compare">So sánh</TabsTrigger>
-            <TabsTrigger value="scenario">Thử nghiệm</TabsTrigger>
+            <TabsTrigger className="max-[900px]:px-1 max-[900px]:text-[11px]" value="metrics">Số liệu</TabsTrigger>
+            <TabsTrigger className="max-[900px]:px-1 max-[900px]:text-[11px]" value="explain">Giải thích</TabsTrigger>
+            <TabsTrigger className="max-[900px]:px-1 max-[900px]:text-[11px]" value="compare">So sánh</TabsTrigger>
+            <TabsTrigger className="max-[900px]:px-1 max-[900px]:text-[11px]" value="scenario">Thử nghiệm</TabsTrigger>
           </TabsList>
           <TabsContent value="metrics"><MetricsTab /></TabsContent>
           <TabsContent value="explain"><ExplainTab /></TabsContent>

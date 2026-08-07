@@ -8,7 +8,8 @@
 > Chỉ thay số theo Phụ lục A của `docs/KIEMTOAN.md` sau lượt đó rồi mới nộp.
 >
 > **Tiến độ:** raw TomTom đủ 4/4 snapshot đại diện trên hai ngày thứ Hai;
-> profile hiện là `tomtom+synthetic`, `G_demo` là 51/298. Đây là kịch bản, chưa
+> profile hiện là `tomtom+synthetic`, `G_demo` là 51/298; raw GraphML/TomTom/cache
+> hiện được Git track dưới `data/raw/`. Đây là kịch bản, chưa
 > có video hoặc file link nộp. Chỉ quay sau benchmark/generator cuối, restart
 > service và QA trình duyệt ở đúng độ phân giải quay.
 
@@ -35,16 +36,16 @@
 > h MỘT LẦN ở 2:00 rồi giảng từng thuật toán trên đúng đồ thị đó. Với MỖI thuật toán
 > phải chỉ rõ trên màn hình (checklist đề): điểm đầu/cuối · thứ tự expand · frontier/
 > open list · giá trị cost (UCS/Dijkstra/A*) · giá trị heuristic (A*/Greedy) · cách
-> suy ra tuyến cuối. Snapshot hiện hành chỉ có GUI full G_demo, không phải induced
-> graph 7 node, nên chưa được gọi GUI là "bảng động" khớp bảng tĩnh. Chỉ quay parity
-> từng bước sau khi view backend `teach_7` tương lai tồn tại và đã được test; nếu
-> chưa có thì dùng riêng bảng tĩnh 7 node và demo GUI full graph như hai bằng chứng khác nhau.
+> suy ra tuyến cuối. Backend/UI hiện hỗ trợ induced view `teach_7`; preset này có
+> đúng 7 node/24 cạnh của generator. Chỉ quay và tuyên bố parity khi UI chọn đúng
+> 7 node, cùng slot/mode/start/goal/parameter với tài liệu generated; full G_demo
+> hoặc request khác vẫn là bằng chứng khác, không được gọi là khớp từng bước.
 
-- (2:00) **Đồ thị ví dụ** — 7 địa danh, 24 cạnh THẬT, chỉ vào cạnh một chiều
+- (2:00) **Đồ thị ví dụ** — 7 POI, 24 cạnh induced của G_demo, chỉ vào cạnh một chiều
   BX→BT (Công trường Quách Thị Trang) + bảng h (haversine/v_max). Nêu bài toán chính
   BT → BX: "có đường trực tiếp nhưng chỉ chiều VỀ — chiều đi phải vòng".
-- (3:00) **BFS** [người B]: dùng bảng 7 node BT→BX; chỉ chạy GUI bước-một trên đúng
-  bài này nếu `teach_7` đã triển khai và xác minh parity. BFS chọn tuyến ít cạnh
+- (3:00) **BFS** [người B]: dùng bảng 7 node BT→BX; chạy GUI bước-một trên đúng
+  `teach_7` và cùng request settings sau pre-flight parity. BFS chọn tuyến ít cạnh
   nhưng đắt (446 s) vs tối ưu (341 s) — đắt hơn +31%; chốt "ít cạnh ≠ rẻ".
 - (4:00) **DFS + IDDFS** [người B]: DFS lao sâu (chỉ thứ tự expand); IDDFS cột
   "giới hạn d" tăng dần, số expand CỘNG DỒN — cái giá của chạy lại; chỉ complete
@@ -112,8 +113,9 @@
 - (23:00) 3 hạn chế trung thực (TomTom chỉ phủ mẫu và còn synthetic fallback;
   heuristic lỏng h/h*≈0,57; chưa turn-penalty) + 2 hướng phát triển (TomTom
   real-time, ALT).
-- (24:00) Chốt: 10 thuật toán một hợp đồng trace, 3 phương pháp TSP, graph/địa
-  danh thật từ OSM; profile traffic hiện là `tomtom+synthetic` từ bốn snapshot
+- (24:00) Chốt: 10 thuật toán một hợp đồng trace, 3 phương pháp TSP, topology
+  G_real dẫn xuất từ OSM và 51 POI G_demo do nhóm curate rồi snap; profile traffic
+  hiện là `tomtom+synthetic` từ bốn snapshot
   đại diện trên hai ngày thứ Hai; demo route engine chạy offline. Cảm ơn.
 
 ---

@@ -6,19 +6,29 @@ giao hàng bằng 3 phương pháp ATSP. Backend dùng FastAPI; frontend dùng N
 MapLibre và deck.gl; dữ liệu chạy demo được lưu cục bộ nên thuật toán không cần
 gọi mạng.
 
+Implementation frontend hiện hành và duy nhất trong tracked tree là
+`frontend/`. Thư mục draft cũ `frontend1/` đã bị xoá và không được dùng làm
+bằng chứng cho hành vi sản phẩm.
+
 ## Xem nhanh
 
-| Tìm đường và trực quan hoá A* — dark mode | Tối ưu thứ tự giao hàng — light mode |
+| A* + route trace — giao diện Đen | Held–Karp + optimization trace — giao diện Trắng |
 |---|---|
-| ![Kết quả tìm đường A* ở dark mode](artifacts/readme/dark-route-result.png) | ![Kết quả tối ưu ATSP ở light mode](artifacts/readme/light-atsp-result.png) |
+| ![Kết quả A* và timeline route trace trên giao diện Đen](artifacts/readme/dark-route-result.png) | ![Kết quả Held-Karp và timeline optimization trace trên giao diện Trắng](artifacts/readme/light-atsp-result.png) |
+
+Hai ảnh trên được chụp lại từ current worktree ngày 2026-08-07 ở 1366×768 sau
+clean restart. Chúng minh hoạ đúng GraphView hiện hành, sandbox trọng số, bộ chọn
+bảy giao diện và hai timeline tách biệt cho route/ATSP; đây không phải ảnh thay
+thế cho toàn bộ screenshot bắt buộc trong report/video.
 
 ### Tính năng nổi bật
 
 - 10 thuật toán tìm đường dùng chung contract `Trace`, timeline và bảng g/h/f.
 - Ba phương pháp ATSP cho hành trình nhiều điểm trên đồ thị có hướng, bất đối xứng.
 - Bản đồ G_demo/G_real, lớp ùn tắc, offline mode và chọn điểm trực tiếp trên map.
-- GraphView backend thật cho G_demo: `full`, `teach_7`, `teach_15`, `teach_25`;
-  mọi graph, traffic, route và multiroute cùng resolve một view.
+- GraphView backend thật cho G_demo: `full` hoặc `teach_3`…`teach_50`; UI nhận
+  số node nguyên 3…51, với 51 ánh xạ về `full`. Mọi graph, traffic, route và
+  multiroute cùng resolve một view; G_real chỉ hỗ trợ `full`.
 - ATSP optimization trace opt-in có player riêng; không trộn với route `Trace`.
 - Sandbox chỉnh cạnh chỉ trong request/phiên hiện tại, có preview cost, provenance và
   fingerprint do backend sinh; không sửa graph/profile gốc.
@@ -27,12 +37,13 @@ gọi mạng.
   chỉ báo phần tuyến trùng/khác; đối chiếu ATSP trước/sau tối ưu.
 - Benchmark viewer chỉ đọc với cảnh báo nguồn dữ liệu rõ ràng.
 
-> **Trạng thái ngày 2026-08-05 — M1–M5 đã triển khai, chưa được nộp:**
+> **Trạng thái ngày 2026-08-07 — M1–M5 đã triển khai, chưa được nộp:**
 > Lượt data refresh cuối đã tích hợp đủ raw TomTom 07:30, 12:00, 17:30 và 22:00
 > dưới dạng bốn snapshot đại diện lấy trên hai ngày thứ Hai; profile hiện là
-> `tomtom+synthetic`. Fresh core gate đạt `148 passed` backend, `ALL DATA VALID`,
-> `19/19` frontend test và TypeScript check trên
-> `G_demo` đã rebuild 51 node / 298 cạnh.
+> `tomtom+synthetic`. Raw GraphML, bốn TomTom JSON và OSMnx cache hiện được Git
+> track dưới `data/raw/`. Fresh core gate đạt `176 passed` backend,
+> `ALL DATA VALID`, `35/35` frontend test và TypeScript check; `G_demo` hiện có
+> 51 node / 298 cạnh.
 > `results/` vẫn là số tạm từ lượt 2026-07-26 và không được dùng làm kết quả
 > chính thức. Không rerun data; benchmark/hiệu chuẩn γ/generator vẫn chờ một
 > lượt cuối được cho phép riêng sau khi code ổn định.
@@ -41,16 +52,17 @@ gọi mạng.
 
 | Hạng mục | Trạng thái hiện tại | Bằng chứng |
 |---|---|---|
-| Backend | **Đạt** | `148 passed, 1 warning` trên current worktree ngày 2026-08-05 |
-| Data contract | **Đạt** | `ALL DATA VALID`; profile `tomtom+synthetic`, raw TomTom đủ 4/4 slot |
-| Frontend automated | **Đạt** | `npm test`: 19/19 pass |
+| Backend | **Đạt** | `176 passed, 1 warning` trên current worktree ngày 2026-08-07 |
+| Data contract | **Đạt** | `ALL DATA VALID`; profile `tomtom+synthetic`; raw GraphML và TomTom 4/4 hiện diện, được Git track |
+| Frontend automated | **Đạt** | `npm test`: 35/35 pass |
 | TypeScript | **Đạt** | `npx tsc --noEmit` exit 0 |
+| Frontend production build | **Đạt** | `npm run build` sau khi dừng dev services: compile thành công, 6/6 static pages |
 | G_demo | **Hiện hành** | 51 node, 298 cạnh có hướng, 60 cạnh một chiều |
 | G_real | **Hiện hành** | 2.118 node, 4.699 cạnh có hướng, 1.433 cạnh một chiều |
 | Benchmark | **Chưa hiện hành** | `results/` cũ hơn graph; xem [`results/README.md`](results/README.md) |
-| UI/runtime | **Đạt integration/browser QA M1–M5 ở 1366×768** | Đã đối chiếu API với JSON trên đĩa; xác nhận GraphView, route/trace, ATSP/fingerprint, sandbox, dark/light, offline và tương phản node/cạnh; vẫn phải chạy pre-flight sạch trước demo/quay |
-| Backend sau clean restart | **Cần pre-flight lại** | Snapshot trên đĩa là G_demo 51/298 và G_real 2.118/4.699; phải restart service rồi đối chiếu API trước demo |
-| Trước khi nộp | **Còn việc tay** | 8 URL nguồn risk thật, 40 marker cần điền trên 30 dòng nội dung (không tính dòng chú giải), screenshot, report PDF, slide, video/link và ZIP |
+| UI/runtime | **Đạt representative browser QA ở 1366×768** | Fresh check xác nhận A*/route trace, Held–Karp/optimization trace, giao diện Đen/Trắng, API 200 và không có console error; vẫn phải lặp full pre-flight ở máy/độ phân giải dùng để demo |
+| Backend sau clean restart | **Đạt tại lượt audit; phải lặp trước demo** | `/api/graph?level=demo&view=full` trả G_demo 51/298 từ snapshot trên đĩa |
+| Trước khi nộp | **Còn việc tay** | 8 URL nguồn risk thật, 40 marker cần điền trên 30 dòng nội dung (không tính dòng chú giải), ảnh/sơ đồ cho report ngoài hai ảnh README, report PDF, slide, video/link và ZIP |
 
 Backend dùng cache theo vòng đời process. Trước khi demo hoặc chụp hình, phải
 restart cả hai service, hard-refresh trình duyệt và xác nhận
@@ -65,7 +77,7 @@ restart cả hai service, hard-refresh trình duyệt và xác nhận
 | Thuật toán bắt buộc | BFS, DFS, UCS, A* |
 | Thuật toán bổ sung | IDDFS, Dijkstra, Greedy, Bidirectional Dijkstra, IDA*, Beam |
 | Đa điểm | Held–Karp, Nearest Neighbor + cải thiện bất đối xứng, Simulated Annealing |
-| GUI | Shell điều hành dark/light, chọn điểm trên map, animation trace và luồng sáng tuyến có reduced-motion, timeline, bảng g/h/f, ATSP, so sánh tuyến có độ trùng, giải thích tiếng Việt cho route/ATSP, trang benchmark có trạng thái dữ liệu tạm |
+| GUI | Shell điều hành với bảy giao diện, chọn điểm trên map, animation trace và luồng sáng tuyến có reduced-motion, timeline, bảng g/h/f, ATSP, so sánh tuyến có độ trùng, giải thích tiếng Việt cho route/ATSP, trang benchmark có trạng thái dữ liệu tạm |
 | Báo cáo và video | Có khung a–j, outline 14 slide và kịch bản video; vẫn cần nhóm hoàn thiện artifact thật |
 
 Rubric chính thức 100 điểm và yêu cầu đóng gói nằm trong

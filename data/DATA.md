@@ -1,10 +1,12 @@
 # DATA.md — Nguồn dữ liệu, luật xây dựng và giả định
 
-> **Trạng thái 2026-08-03:** `G_real` giữ topology OSM 2026-07-27; raw TomTom đã
+> **Trạng thái kiểm lại 2026-08-07:** `G_real` được build ngày 2026-07-27 từ
+> GraphML OSMnx có `created_date=2026-07-26 18:47:01`; raw TomTom đã
 > đủ bốn slot 07:30, 12:00, 17:30 và 22:00. Chuỗi `03b real → 04 → 03b demo →
 > validate_data` đã hoàn tất; hai profile hiện là `tomtom+synthetic` và `G_demo`
 > đã rebuild theo profile cuối. Benchmark/hiệu chuẩn γ/generator vẫn chưa chạy
-> lại. Schema chi tiết: `docs/SCHEMA.md`.
+> lại. `data/raw/graph_raw.graphml`, bốn TomTom JSON và OSMnx cache hiện diện
+> trong workspace và đều được Git track. Schema chi tiết: `docs/SCHEMA.md`.
 
 ## 1. Tổng quan pipeline (chạy offline một lần, demo không gọi mạng)
 
@@ -26,18 +28,20 @@ Thứ tự chạy đầy đủ: `01 → 02 → 03b real → 04 → 03b demo → 
 | Nguồn | Dùng cho | Ghi chú |
 |---|---|---|
 | OpenStreetMap qua **OSMnx 2.1.1** (API v2) | Cấu trúc mạng đường: node, cạnh, length, highway type, tên đường | Query bằng **bbox tuple** `(106.680, 10.760, 106.720, 10.800)` — không dùng tên quận (bỏ cấp quận từ 01/7/2025). `network_type="drive"`, lấy **thành phần liên thông mạnh lớn nhất** |
-| **TomTom Traffic Flow API** (tuỳ chọn) | Mức ùn tắc thật tại ~40 điểm mẫu trên trục chính, 4 khung giờ | `currentSpeed/freeFlowSpeed` → thang 1–5 (mục 5). Đã thu đủ bốn slot 07:30/12:00/17:30/22:00; thời điểm query thực tế được ghi ngay dưới bảng |
-| Cổng giao thông TP.HCM `giaothong.hochiminhcity.gov.vn` | Đối chiếu **định tính** mức ùn tắc + nguồn cho manual_risks | Nhóm tự đối chiếu, dán link vào `manual_risks.json` |
+| **TomTom Traffic Flow API** (tuỳ chọn) | Payload `currentSpeed`/`freeFlowSpeed` tại 40 điểm mẫu trên trục chính, 4 khung giờ | Raw local đủ bốn slot 07:30/12:00/17:30/22:00 và đã qua kiểm tra cấu trúc/derivation; audit hiện tại không gọi lại TomTom nên không xem đây là ground truth độc lập hay dữ liệu real-time |
+| Cổng giao thông TP.HCM `giaothong.hochiminhcity.gov.vn` | Nguồn dự kiến để đối chiếu định tính và dẫn nguồn cho `manual_risks` | Chưa có URL nào được điền: cả 8 `source_url` vẫn TODO, vì vậy current risk data chưa được nguồn này xác minh |
 | `data/manual_risks.json` (nhóm tự định nghĩa) | Điểm ngập (5) + lô cốt (3) khu trung tâm | Vị trí đặt theo các tuyến nổi tiếng (Nguyễn Hữu Cảnh, Đinh Tiên Hoàng đoạn cầu Bông, Cống Quỳnh, Calmette, Trần Hưng Đạo…). `meta.description_vi` đã mô tả đúng luật cạnh đi vào vùng và giới hạn route bắt đầu trong vùng. **Cả 8 `source_url` vẫn là placeholder và phải được bổ sung nguồn thật trước khi nộp.** |
-| `data/gdemo_pois.json` (nhóm tự chọn) | 51 POI địa danh thật cho G_demo | Toạ độ gần đúng ±100 m, được snap vào node lưới đường gần nhất. **Chờ nhóm/giảng viên review** |
+| `data/gdemo_pois.json` (nhóm tự chọn) | 51 POI mang tên địa danh hiện hữu cho G_demo | Toạ độ gần đúng ±100 m, được snap vào node lưới đường gần nhất. Nhóm đã ghi nhận lượt review thủ công ngày 2026-07-26; đây vẫn là dữ liệu POI do nhóm quản lý, không phải feed địa danh bên ngoài. |
 
 Bốn snapshot TomTom được query thực tế lúc `07:40:03` và `12:49:57` ngày
 2026-07-27, `17:30:01` và `22:27:52` ngày 2026-08-03. Các nhãn
 07:30/12:00/17:30/22:00 là tên slot đại diện, không phải cam kết timestamp chính
 xác đến từng phút. Hai ngày đều là thứ Hai, cách nhau bảy ngày; nhóm chấp nhận
 đây là bộ snapshot đại diện theo slot, **không** mô tả thành chuỗi đo cùng ngày.
-Bốn raw JSON nằm dưới `data/raw/` nên bị Git ignore theo thiết kế; phải đưa chúng
-vào Data ZIP cuối để lưu bằng chứng provenance và khả năng dựng lại profile.
+Bốn raw JSON, `graph_raw.graphml` và OSMnx cache hiện đều nằm dưới `data/raw/`
+và được Git track. Chúng đồng thời phải có trong Data ZIP cuối để giữ bằng chứng
+provenance và khả năng dựng lại profile; không được mô tả chúng là local-only
+hoặc Git-ignore ở snapshot repository hiện tại.
 
 ## 3. Tốc độ free-flow theo loại đường (nhóm tự đặt — KHÔNG phải tốc độ pháp lý)
 
@@ -82,8 +86,11 @@ thật của tuyến (hành lang có đi vào vùng ⇒ flag 1 lần); `narrow_a
 
 ## 5. Luật sinh congestion (traffic_profiles_*.json)
 
-**Ưu tiên TomTom** (nếu `data/raw/tomtom/<slot>/` có snapshot): cạnh thuộc nhóm đường chính
-(motorway/trunk/primary/secondary) nhận mức từ điểm đo gần nhất trong bán kính 250 m.
+**Ưu tiên TomTom** (nếu `data/raw/tomtom/<slot>/` có snapshot): chỉ cạnh thuộc
+`MAIN_CLASSES` (motorway/trunk/primary/secondary và các lớp `_link`) được xét;
+pipeline lấy điểm đo gần nhất với **node nguồn `u` của cạnh** trong bán kính
+250 m. Implementation hiện không so tên đường, `frc`, segment geometry hay yêu
+cầu sample và edge cùng subclass ngoài điều kiện edge thuộc `MAIN_CLASSES`.
 Quy đổi `ratio = currentSpeed/freeFlowSpeed`: ≥0.85→1, ≥0.70→2, ≥0.55→3, ≥0.40→4, <0.40→5.
 
 **Synthetic fallback** (seed 42, tái lập 100%) cho mọi cạnh còn lại:
@@ -101,7 +108,7 @@ các cạnh còn lại dùng synthetic fallback seed 42. Vì vậy không đư�
 là “100% dữ liệu thật”. `G_demo` kế thừa profile hỗn hợp này qua corridor weighted mean.
 
 **G_demo KHÔNG quay ngẫu nhiên (sửa 2026-07-27):** mỗi cạnh co kế thừa mức congestion
-= **trung bình trọng số** (theo thời gian free-flow) của các cạnh thật dọc hành lang
+= **trung bình trọng số** (theo thời gian free-flow) của các cạnh G_real dọc hành lang
 (`data/gdemo_corridors.json` do 04 sinh), làm tròn về nguyên 1–5
 (`pipeline_common.corridor_mean_level`). Nhờ vậy: (1) hai tầng kể cùng một câu chuyện
 chi phí ở mode balanced (bất biến ≤1,5× kiểm được, mục 6); (2) khi có TomTom, mức thật
@@ -146,9 +153,9 @@ trên G_real **tự lan sang G_demo** không cần luật riêng.
 
 | | G_real | G_demo |
 |---|---|---|
-| Node | **2 118** (raw 2 230, SCC 2 118) | **51** (đủ 51 POI sau review, không POI nào bị gộp) |
-| Cạnh | **4 699** (raw 4 922; gộp 22 cạnh song song, bỏ self-loop) | **298** (kề 177 → vá 6 bất biến +1 094 & thay 429 hành lang → tỉa an-toàn-toàn-cục −973) |
-| Một chiều | 1 433 | 60 (chỉ khi G_real thật sự không có chiều ngược) |
+| Node | **2 118**. Log tải ban đầu ghi 2 230 node trước SCC; file GraphML được lưu **sau** SCC và hiện có 2 118 node | **51** (đủ 51 POI sau review, không POI nào bị gộp) |
+| Cạnh | **4 699**. Log tải ban đầu ghi 4 922 cạnh trước SCC; GraphML được track có 4 721 cạnh, rồi bước 02 bỏ 2 self-loop và 20 bản song song dư để còn 4 699 ordered pair | **298** (kề 177 → vá 6 bất biến +1 094 & thay 429 hành lang → tỉa an-toàn-toàn-cục −973) |
+| Một chiều | 1 433 (`oneway` suy từ việc ordered pair ngược có tồn tại sau dedup, không copy trực tiếp OSM tag) | 60 (suy từ cấu trúc directed cuối; một hướng có thể bị loại vì xuyên POI thứ ba hoặc không có path, rồi còn chịu repair/prune toàn cục) |
 | Đèn tín hiệu | 185 cạnh / 77 node | 130 cạnh |
 | Ngập / lô cốt / hẻm | 54 / 19 / 8 (flag tại cạnh ĐI VÀO vùng — mục 4) | 24 / 24 / 0 |
 | Bất biến demo/real (mục 6) | — | time ≤1,5 (median 1,11 · p90 1,30 · max 1,50, sàn ≥1,0); dist ≤1,8 (median 1,07 · p90 1,26 · max 1,57, sàn ≥1,0); balanced ≤1,5 cả 4 khung giờ (max 1,50) |
@@ -172,8 +179,9 @@ Curie* (lệch ~900 m), *THPT Nguyễn Thị Minh Khai* (~445 m), *ĐH Mở TP.H
    gần nhất, không phải cổng chính của địa điểm.
 5. Điểm ngập/lô cốt là **danh sách minh hoạ có chủ đích** đặt đúng các tuyến nổi tiếng;
    hiệu lực thực tế thay đổi theo mùa — nhóm cập nhật link nguồn trước khi nộp.
-6. `meta.created` thay đổi theo ngày build; cấu trúc còn lại tái lập 100% với cùng OSM cache
-   (raw graphml được cache trong `data/raw/`, gitignore).
+6. `meta.created` thay đổi theo ngày build; cấu trúc còn lại tái lập với cùng
+   GraphML/config/code. Raw GraphML và cache hiện được Git track dưới `data/raw/`;
+   việc gọi lại nguồn OSM ở thời điểm khác có thể cho snapshot khác.
 7. Penalty vùng (ngập/lô cốt) tính **một lần mỗi lượt đi vào vùng** (mục 4). Hai giới hạn
    chấp nhận: (a) tuyến **xuất phát bên trong** vùng không bị tính lượt đầu (không có cạnh
    đi vào); (b) trên G_demo, hành lang co cắt **2 vùng cùng loại** vẫn chỉ trả 1 lần
@@ -199,5 +207,5 @@ phạm vi request, tính lại field derived/weight/v_max rồi bỏ đi sau res
 - không ghi view/override vào base JSON, raw TomTom hoặc results;
 - fingerprint response ghi nhận base graph/profile/view/override **effective** để
   benchmark/report sau này phân biệt đúng provenance;
-- raw TomTom vẫn Git-ignore và phải đi trong Data ZIP cuối; tám URL risk vẫn là
-  manual task trước final submission.
+- raw GraphML/TomTom/cache hiện được Git track và vẫn phải đi trong Data ZIP
+  cuối; tám URL risk vẫn là manual task trước final submission.

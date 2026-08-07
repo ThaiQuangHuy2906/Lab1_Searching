@@ -9,7 +9,7 @@
 >
 > **Tiến độ dữ liệu:** raw TomTom đã đủ 4/4 snapshot đại diện lấy trên hai ngày
 > thứ Hai; profile hiện là `tomtom+synthetic`; `G_demo` đã rebuild 51/298 và
-> validator đạt.
+> validator đạt. Raw GraphML/TomTom/cache hiện được Git track dưới `data/raw/`.
 > **Tiến độ nội dung:** đây vẫn là khung Markdown, còn 40 chỗ cần điền
 > trên 30 dòng nội dung (không tính dòng chú giải marker), cùng các marker
 > screenshot/hình. Chưa phải report PDF để nộp.
@@ -54,7 +54,7 @@
 | Cài đúng 4 thuật toán bắt buộc | 20 | [ĐIỀN] | +đối chứng NetworkX 1200/1200 (exp1) |
 | Thuật toán bổ sung (≥2) | 10 | [ĐIỀN] | nhóm làm 6: Dijkstra, Greedy, BiDijkstra, IDA*, Beam, IDDFS |
 | Tối ưu đa điểm | 10 | [ĐIỀN] | Held-Karp + NN+2-opt + SA (3 phương pháp) |
-| GUI + visualize quá trình tìm kiếm | 10 | [ĐIỀN] | animation từng bước, bảng g/h/f, 2 theme; hạn chế: chưa responsive mobile |
+| GUI + visualize quá trình tìm kiếm | 10 | [ĐIỀN] | animation từng bước, bảng g/h/f, 7 theme; hạn chế: chưa xác minh responsive mobile đầy đủ |
 | Giải thích tuyến + so sánh phương án | 10 | [ĐIỀN] | explanation tiếng Việt + ≥1 alternative |
 | Chất lượng báo cáo | 10 | [ĐIỀN] | |
 | Chất lượng video | 5 | [ĐIỀN] | |
@@ -130,14 +130,15 @@ sang γ=0 thì "cực tiểu" nhảy về 0). Trình bày exp5 đúng vai PHÂN 
 [HÌNH → results/figs/exp5_gamma_curves.png] — thời gian tuyến chênh trên CẢ DẢI γ∈[0;3]
 chỉ ~2,6% [SỐ LIỆU → results/exp5_gamma.csv: 790,8 s tại γ=1,5 vs 811,8 s tại γ=0]
 ⇒ kết luận của hệ ít nhạy với lựa chọn γ. Sau lượt crawl TomTom bổ sung thêm một câu:
-γ̂ ước lượng ĐỘC LẬP từ dữ liệu thật (scripts/05_calibrate_gamma.py — fit
+γ̂ ước lượng riêng từ raw TomTom local (scripts/05_calibrate_gamma.py — fit
 f = 1 + γ(c−1)/4 trên inflation freeFlow/current của từng điểm đo) =
 [SỐ LIỆU → results/gamma_calibration.csv] — đối chiếu với hằng số 1,5.]
 
 [ĐIỀN: ùn tắc đổi tuyến thế nào — trỏ exp4: 83,5% cặp OD đổi tuyến giữa 07:30 và 22:00.]
 
 **Ghi chú scenario dạy học/thử nghiệm (không thay dataset gốc):** bản triển khai
-mở rộng dùng graph view induced `full`/`teach_7`/`teach_15`/`teach_25` và sandbox
+mở rộng dùng graph view induced `full` hoặc `teach_3`…`teach_50` (UI nhận 3…51,
+51 ánh xạ về `full`) và sandbox
 edge override request-scoped. View/sandbox chỉ là graph hiệu lực của một request;
 không sửa `graph_*.json`, profile base hay benchmark. Mỗi result phải echo
 provenance/fingerprint do server sinh để người xem biết đang xem data gốc, graph
@@ -163,13 +164,14 @@ không thay thế provenance dataset ở mục d.
 
 | | G_real | G_demo |
 |---|---|---|
-| Node | 2 118 (raw 2 230, lấy SCC) | 51 địa danh thật |
+| Node | 2 118 (log download trước SCC: 2 230; GraphML được lưu sau SCC: 2 118) | 51 POI do nhóm curate rồi snap vào G_real |
 | Cạnh | 4 699 (1 433 một chiều) | 298 (60 một chiều) |
 | Đèn / ngập / lô cốt / hẻm | 185 / 54 / 19 / 8 | 130 / 24 / 24 / 0 |
 | Bất biến demo/real | — | time ≤1,5× · dist ≤1,8× · balanced ≤1,5× cả 4 khung giờ, mọi cặp POI (validator chặn) |
 
 [ĐIỀN: kiến trúc 2 tầng — vì sao cần cả hai: G_demo để visualize/giảng/quay video
-(tên thật, cạnh co kế thừa hình học thật), G_real để benchmark/chứng minh scale.]
+(tên POI do nhóm curate, cạnh co kế thừa chiều dài/hướng/thuộc tính tổng hợp của corridor G_real;
+JSON không lưu polyline geometry), G_real để benchmark/chứng minh scale.]
 
 [ĐIỀN: luật TomTom + synthetic fallback (DATA.md §5), phạm vi phủ mẫu và khẳng
 định demo offline 100%.]
@@ -178,8 +180,9 @@ không thay thế provenance dataset ở mục d.
 
 | Nhóm | Field/ý nghĩa |
 |---|---|
-| Nguồn thực tế OSM | topology, toạ độ G_real, name/highway/oneway |
-| Suy ra từ graph thật | toạ độ/hướng/length/corridor của G_demo, free-time, traffic_light, narrow_alley |
+| Artifact OSM-derived | topology/toạ độ và thuộc tính name/highway dùng để build G_real; raw GraphML local hiện được track, nhưng không được live re-query trong audit |
+| Suy ra từ topology/thuộc tính OSM | `oneway` public của G_real (có/không ordered pair ngược sau dedup), free-time, traffic_light, narrow_alley |
+| Suy ra từ G_real | toạ độ/hướng/length/corridor và thuộc tính tổng hợp của G_demo |
 | Nhóm đặt thủ công | POI ban đầu, giả định free-speed, vùng flood/construction |
 | Synthetic deterministic fallback | congestion của edge không được TomTom gán ở slot tương ứng |
 
@@ -187,8 +190,13 @@ Nêu rõ bốn snapshot TomTom là hai slot 2026-07-27 và hai slot 2026-08-03, 
 thứ Hai cách nhau bảy ngày: chúng là snapshot đại diện theo slot, **không phải**
 time series cùng một ngày. Mỗi slot có 40 record hợp lệ và chỉ gán mức TomTom cho
 635/4 699 edge G_real; phần còn lại dùng fallback seed 42, còn G_demo kế thừa qua
-corridor weighted mean. Tám `source_url` manual risk vẫn TODO là việc tay chặn
+corridor weighted mean. Assignment hiện dùng khoảng cách từ node nguồn cạnh tới
+sample gần nhất trong 250 m trên edge thuộc `MAIN_CLASSES`; không map-match tên
+đường/segment geometry/`frc`. Tám `source_url` manual risk vẫn TODO là việc tay chặn
 final submission, không được bịa nguồn để điền.
+
+Các nhãn OSM/TomTom ở bảng trên mô tả provenance của artifact local và phép dẫn
+xuất có thể tái kiểm, không tuyên bố ground truth ngoài đời hay traffic real-time.
 
 [SCREENSHOT: `data/gdemo_preview.png` — sơ đồ G_demo 51 điểm]
 

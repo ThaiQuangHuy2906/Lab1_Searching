@@ -9,20 +9,27 @@
 > request-scoped edge override, ATSP optimization trace và
 > `AppliedScenario`/fingerprint.
 >
-> **Checkpoint hiện hành — 2026-08-05:** Milestone 1 (specification), 2
+> **Ghi chú audit hiện hành — 2026-08-07:** đây là execution plan lịch sử của
+> M1–M5, không phải contract hiện hành. Quyết định bốn view cố định
+> `full/teach_7/teach_15/teach_25` trong thân plan đã được implementation sau đó
+> mở rộng thành `full` hoặc `teach_3`…`teach_50` với preset version 2. Current
+> contract xem `docs/SCHEMA.md`; current behavior xem code/data và gate fresh.
+>
+> **Checkpoint triển khai — 2026-08-05:** Milestone 1 (specification), 2
 > (GraphView), 3 (ATSP optimization trace), 4 (edge-override sandbox) và 5
-> (integration/runtime/browser QA) đã hoàn tất trong worktree hiện hành. Fresh core
-> gates đạt: backend `148 passed` (1 dependency deprecation warning), validator
-> `ALL DATA VALID`, frontend `19/19`, TypeScript pass. Browser QA 1366×768 đã xác
-> nhận các luồng theme, offline, route/trace, GraphView và fingerprint; các giới hạn
-> pre-flight trước demo/quay vẫn phải được kiểm tra lại trên service sạch.
+> (integration/runtime/browser QA) đã hoàn tất. Gate audit 2026-08-07 đạt:
+> backend `176 passed` (1 dependency deprecation warning), validator
+> `ALL DATA VALID`, frontend `35/35`, TypeScript và production build pass.
+> Checkpoint 2026-08-05 đã kiểm các luồng M1–M5; fresh browser QA đại diện ngày
+> 2026-08-07 xác nhận A*/route trace, Held–Karp/optimization trace, giao diện
+> Đen/Trắng, API thành công và không có console error. Full pre-flight vẫn phải
+> được lặp trên service sạch và đúng máy/độ phân giải quay.
 >
 > PLAN này đã hoàn tất đến Milestone 5. Không tự chạy benchmark, hiệu chuẩn γ,
 > teaching generator hoặc đóng gói submission nếu chưa có ủy quyền riêng.
 >
-> Tài liệu này là execution plan đã khóa. Không tạo thêm một kế hoạch tổng quát
-> khác và không audit lại toàn repository. Trước mỗi milestone chỉ xác minh
-> nhanh những facts trực tiếp liên quan vì code có thể đã thay đổi.
+> Các chỉ dẫn thực thi/stop gate phía dưới chỉ bảo toàn lịch sử của lượt M1–M5;
+> không áp dụng như run-book cho task mới.
 
 ## 0. Cách dùng plan
 
@@ -90,8 +97,8 @@ Không làm trong lượt triển khai này:
 | Results | synthetic 2026-07-26, vẫn là `SỐ TẠM` |
 | Manual risk | metadata luật cạnh đi vào vùng đã đúng; tám `source_url` vẫn TODO |
 
-Raw TomTom bị Git ignore và chỉ được đưa vào Data ZIP cuối, không đưa vào commit
-source.
+Raw GraphML, bốn TomTom JSON và OSMnx cache hiện được Git track dưới
+`data/raw/`; vẫn phải đưa chúng vào Data ZIP cuối để giữ provenance.
 
 ## 2. Source-of-truth và thứ tự đọc
 

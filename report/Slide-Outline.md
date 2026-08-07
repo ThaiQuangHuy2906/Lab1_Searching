@@ -8,7 +8,8 @@
 > Chỉ thay số theo Phụ lục A của `docs/KIEMTOAN.md` sau lượt đó rồi mới nộp.
 >
 > **Tiến độ:** raw TomTom đủ 4/4 snapshot đại diện trên hai ngày thứ Hai;
-> profile hiện là `tomtom+synthetic`, `G_demo` là 51/298. Đây vẫn là outline,
+> profile hiện là `tomtom+synthetic`, `G_demo` là 51/298; raw GraphML/TomTom/cache
+> hiện được Git track dưới `data/raw/`. Đây vẫn là outline,
 > chưa phải file PPTX/PDF. Phải thay số, điền danh tính và chèn hình/screenshot
 > thật trước khi xuất bản nộp.
 
@@ -21,7 +22,7 @@
 - Tên đề tài: *Tìm đường tối ưu cho shipper giao hàng đa điểm tại TP.HCM*
 - Nhóm [ĐIỀN] — 5 thành viên + vai trò một dòng
 - Ảnh nền: screenshot bản đồ dark + lớp ùn tắc (cảnh đẹp nhất của app)
-> 🗣 45s: một câu vấn đề ("giờ cao điểm, tuyến ngắn nhất không phải tuyến nhanh nhất") + một câu sản phẩm ("web app 10 thuật toán tìm kiếm + 3 thuật toán TSP trên dữ liệu OSM thật khu trung tâm").
+> 🗣 45s: một câu vấn đề ("giờ cao điểm, tuyến ngắn nhất không phải tuyến nhanh nhất") + một câu sản phẩm ("web app 10 thuật toán tìm kiếm + 3 thuật toán TSP trên topology dẫn xuất từ snapshot OSM khu trung tâm").
 
 **Slide 2 — Bối cảnh & bài toán** *(rubric: VN context 10đ)*
 - Shipper TP.HCM: ùn tắc theo giờ, 1 433/4 699 cạnh MỘT CHIỀU, ngập + lô cốt
@@ -38,8 +39,8 @@
 
 **Slide 4 — Dữ liệu 2 tầng** *(rubric: dataset trong 15đ modeling)*
 - G_real: 2 118 nút / 4 699 cạnh từ OSM (OSMnx v2, bbox trung tâm) — để benchmark
-- G_demo: 51 địa danh thật / 298 cạnh co kế thừa hình học thật (mọi cặp ≤1,5× thời gian thật, ≤1,5× cả chi phí balanced 4 khung giờ) — để giảng + demo
-- Congestion: `tomtom+synthetic` — TomTom trên 635/4 699 cạnh thật mỗi slot, phần còn lại fallback seed 42; demo OFFLINE 100%
+- G_demo: 51 POI do nhóm curate / 298 cạnh co kế thừa chiều dài/hướng corridor G_real, không lưu polyline (mọi cặp ≤1,5× thời gian G_real, ≤1,8× distance, ≤1,5× balanced ở 4 khung giờ) — để giảng + demo
+- Congestion: `tomtom+synthetic` — TomTom trên 635/4 699 cạnh G_real mỗi slot, phần còn lại fallback seed 42; demo OFFLINE 100%
 - Hình: `data/gdemo_preview.png`
 > 🗣 45s: vì sao 2 tầng (một để NHÌN, một để ĐO); mọi thứ tái lập được.
 

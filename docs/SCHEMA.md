@@ -1,6 +1,6 @@
 # SCHEMA.md — Các hợp đồng dữ liệu và API
 
-> **Trạng thái 2026-08-05:** §A–§D mô tả contract base đang chạy. §E khóa phần
+> **Trạng thái kiểm lại 2026-08-07:** §A–§D mô tả contract base đang chạy. §E khóa phần
 > mở rộng đã được người dùng duyệt: GraphView dạy học, scenario edge-override
 > request-scoped, `AppliedScenario`/fingerprint và ATSP optimization trace.
 > **Milestone 2 đã triển khai** GraphView, graph/traffic response echo và
@@ -27,7 +27,7 @@
 | `mode` | `distance` · `time` · `balanced` (mặc định `balanced`) |
 | `time_slot` | `07:30` · `12:00` · `17:30` · `22:00` |
 | `graph` | `demo` · `real` |
-| `graph_view` | `full` · `teach_7` · `teach_15` · `teach_25` |
+| `graph_view` | `full` hoặc `teach_N` với số nguyên `N ∈ [3,50]` |
 | `tsp_method` | `held_karp` · `nn_2opt` · `sa` |
 | `scenario_provenance` | `base` · `graph_view` · `sandbox_override` |
 | `node.type` | `landmark` · `intersection` · `warehouse` · `hospital` · `school` |
@@ -402,10 +402,12 @@ Milestone 2–4 của `PLAN.md`; khi một mô tả cũ ở §C.2–§C.5 thiế
 ### E.1. GraphView và graph response dẫn xuất
 
 ```text
-GraphView = "full" | "teach_7" | "teach_15" | "teach_25"
+GraphView = "full" | "teach_N", N là số nguyên từ 3 đến 50
 ```
 
 - `view` vắng mặt luôn là `full`.
+- G_demo đủ 51 node được biểu diễn bằng `full`, không có `teach_51`. Frontend
+  cho nhập số node 3…51 và ánh xạ 51 về `full`.
 - `G_real` chỉ hỗ trợ `full`; mọi `teach_*` trên `graph=real` là lỗi 422.
 - `full` dùng nguyên base snapshot. `teach_*` là **induced directed subgraph**
   của `G_demo`: giữ node thuộc preset và chỉ giữ edge có cả `u`, `v` thuộc preset.
@@ -421,9 +423,10 @@ phải dữ liệu persist thêm vào `graph_*.json`:
 
 ```jsonc
 {
-  "version": 1,
+  "version": 2,
   "base_graph": "G_demo",
   "base_created": "2026-08-03",
+  "node_order": ["n0018", "n0019", "...", "n0051"],
   "views": {
     "teach_7":  { "node_ids": ["..."], "expected_edge_count": 24 },
     "teach_15": { "node_ids": ["..."], "expected_edge_count": 62 },
@@ -432,7 +435,12 @@ phải dữ liệu persist thêm vào `graph_*.json`:
 }
 ```
 
-Danh sách node canonical của snapshot hiện hành:
+`node_order` chứa đúng 51 node base, mỗi node đúng một lần. `teach_N` lấy đúng
+prefix `N` phần tử của thứ tự này; runtime kiểm mọi prefix 3…51 đều strongly
+connected, nhưng chỉ materialize `teach_3`…`teach_50` vì 51 là `full`. Object
+`views` chỉ giữ ba checkpoint compatibility 7/15/25 và edge count kỳ vọng.
+
+Danh sách node của ba checkpoint hiện hành:
 
 ```text
 teach_7  = n0018 n0019 n0020 n0022 n0028 n0037 n0038
@@ -450,10 +458,11 @@ teach_25 = n0002 n0004 n0005 n0007 n0016 n0017 n0018 n0019
 | `teach_25` | 25 | 114 | có |
 | `full` (G_demo) | 51 | 298 | có |
 
-Quan hệ bắt buộc: `teach_7 ⊂ teach_15 ⊂ teach_25 ⊂ full`. Validator phải kiểm
-base graph/name/created, duplicate/node lạ, nesting, edge induced đúng,
-expected count, SCC bằng duyệt xuôi/ngược, và bảy node `teach_7` khớp source
-của teaching generator.
+Mọi prefix tạo quan hệ nested; cụ thể `teach_7 ⊂ teach_15 ⊂ teach_25 ⊂ full`.
+Loader/validator phải kiểm version 2, base graph/name/created, `node_order` đủ
+51 node không trùng/lạ, ba checkpoint khớp prefix và expected edge count, mọi
+prefix 3…51 có induced edge đúng và SCC bằng duyệt xuôi/ngược, và bảy node
+`teach_7` khớp source của teaching generator.
 
 `GET /api/graph` trả `GraphResponse`, tức mọi field của `GraphFile` cộng:
 
@@ -716,4 +725,8 @@ Xem 4 file mock sinh bởi `scripts/00_generate_mock.py` (seed 42, tái lập 10
 | `data/mock/multiroute_mock.json` | §C.5 response multiroute nn_2opt |
 | `data/mock/scenario_cost_golden.json` | fixture formula chung cho preview TypeScript và `edge_cost_breakdown` Python |
 
-> ⚠️ Mock chỉ để frontend làm song song + test schema. Chiều một chiều của vài đường trong mock là **đơn giản hoá**, không cam kết đúng thực địa — G_demo thật (Phase 1) lấy `oneway` từ OSM.
+> ⚠️ Mock chỉ để frontend làm song song + test schema. Chiều một chiều của vài
+> đường trong mock là **đơn giản hoá**, không cam kết đúng thực địa. Với snapshot
+> thật, `oneway` public là semantics structural của directed edge set cuối:
+> G_real suy từ reverse ordered pair sau dedup; G_demo suy từ các corridor được
+> giữ/repair/prune. Nó không phải raw OSM tag được copy nguyên xi.

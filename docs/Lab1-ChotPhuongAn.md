@@ -1,6 +1,6 @@
 # CHỐT PHƯƠNG ÁN — Lab 1: Search Algorithms for Vietnamese Traffic
 
-> **Cập nhật 2026-07-27:** đây là bản quyết định dự án hiện hành, đứng sau đề bài
+> **Kiểm lại 2026-08-07:** đây là bản quyết định dự án hiện hành, đứng sau đề bài
 > và trước đặc tả thi công lịch sử `PROMPT-MASTER.md`. ✅ = đã chốt; ⬜ = việc
 > con người hoặc dữ liệu cuối chưa hoàn tất.
 
@@ -28,6 +28,9 @@ gồm ngập, lô cốt, hẻm nhỏ và đèn tín hiệu.
 | Profile hiện hành | ✅ `traffic_profiles_demo.json` và `traffic_profiles_real.json`, cả hai là `source="tomtom+synthetic"` |
 | Risk | ⬜ 8 mục trong `manual_risks.json`; 8 `source_url` còn TODO |
 | Free-flow | ✅ Nhóm đặt theo `highway`, không tuyên bố là tốc độ giới hạn pháp lý |
+
+Raw GraphML, bốn TomTom JSON và OSMnx cache hiện được Git track dưới
+`data/raw/`; chúng vẫn phải có trong Data ZIP cuối để giữ provenance.
 
 ### Hai tầng graph hiện hành
 

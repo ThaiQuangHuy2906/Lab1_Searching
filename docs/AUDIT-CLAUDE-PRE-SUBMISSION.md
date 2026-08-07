@@ -2,10 +2,11 @@
 
 > **Phạm vi thời gian:** báo cáo nguyên bản Claude gửi trước lượt onboarding Codex
 > ngày 2026-07-27. Toàn bộ số test, graph count, trạng thái B-* và kết luận bên
-> dưới chỉ phản ánh snapshot lịch sử, không phải trạng thái hiện hành. Mốc
-> 2026-08-04 có 111 backend test, 8 frontend test và `ALL DATA VALID`; tra
-> `README.md`, phần current-state của `docs/CODEX-CODEBASE-MAP.md` và
-> `docs/KE-HOACH-TRIEN-KHAI-NHIEM-VU-HOP-NHOM.md`, rồi xác minh bằng lệnh fresh.
+> dưới chỉ phản ánh snapshot lịch sử, không phải trạng thái hiện hành. Audit
+> documentation ngày 2026-08-07 có 176 backend test, 35 frontend test,
+> `ALL DATA VALID` và TypeScript pass; tra `README.md`, `data/DATA.md`,
+> `docs/SCHEMA.md` và phần current-state của `docs/CODEX-CODEBASE-MAP.md`, rồi
+> vẫn xác minh bằng lệnh fresh.
 > Nội dung gốc được giữ bên dưới để bảo toàn bằng chứng và mạch quyết định.
 
 ## Báo cáo nguyên bản

@@ -1,12 +1,12 @@
 # TIENDO.md — Bảng tiến độ theo phase
 
-> **Lưu ý hiện hành (2026-08-04):** đây là nhật ký lịch sử; số test, số cạnh và
+> **Lưu ý audit 2026-08-07:** đây là nhật ký lịch sử; số test, số cạnh và
 > trạng thái ở từng dòng đúng theo thời điểm của phase đó, không phải mốc hiện tại.
 > Baseline 2026-07-27, UI-01–UI-04 và FINAL-01 đều là evidence lịch sử.
-> Current-state nằm trong `README.md`, phần current-state của
-> `docs/CODEX-CODEBASE-MAP.md` và
-> `docs/KE-HOACH-TRIEN-KHAI-NHIEM-VU-HOP-NHOM.md`; số hiện hành phải được xác nhận
-> lại bằng code/data và lệnh fresh.
+> Current-state nằm trong `README.md`, `data/DATA.md`, `docs/SCHEMA.md` và phần
+> current-state của `docs/CODEX-CODEBASE-MAP.md`; audit fresh 2026-08-07 đạt
+> 176 backend/35 frontend tests, validator và TypeScript. Các con số hiện hành
+> vẫn phải được xác nhận lại bằng code/data và lệnh fresh ở lượt sử dụng.
 >
 > Cập nhật cuối mỗi phase (PROMPT-MASTER luật 1). Trạng thái: ⬜ chưa làm · 🔄 đang làm · ✅ xong.
 

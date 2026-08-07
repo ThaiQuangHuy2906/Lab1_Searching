@@ -2,6 +2,11 @@
 
 Baseline date: 2026-07-27 (Asia/Saigon).
 
+> This is a historical baseline, not current-state documentation. The absolute
+> repository path and dirty-worktree inventory below describe the audit machine
+> on 2026-07-27. For the 2026-08-07 state, use `README.md`, `data/DATA.md`,
+> `docs/SCHEMA.md`, current code/data, and fresh commands.
+
 This file began as a read-only onboarding except for the three permitted
 context files. Subsequent user-authorized repair batches on the same date fixed
 B-3, B-4, and B-5 plus the verified Beam, IDA*, Pydantic-error, keyboard, and

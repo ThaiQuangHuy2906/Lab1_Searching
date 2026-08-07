@@ -4,13 +4,14 @@
 > các thành viên A–E có thể dùng làm context khi đọc, thảo luận hoặc viết prompt
 > cho các lượt làm việc tiếp theo.
 >
-> **Trạng thái cập nhật 2026-08-05:** người dùng đã duyệt bốn quyết định UI/API ở
-> mục 9; Milestone 1–5 đã được triển khai và kiểm tra trong worktree hiện hành.
-> Fresh evidence hiện tại: backend `148 passed` (1 dependency warning), validator
-> `ALL DATA VALID`, frontend `19/19`, TypeScript pass; runtime API và browser QA
+> **Ghi chú audit 2026-08-07:** đây là kế hoạch/biên bản triển khai lịch sử.
+> Mô tả bốn GraphView cố định ở phần thân phản ánh quyết định M1–M5 khi đó; code
+> hiện hành đã mở rộng thành `full` hoặc `teach_3`…`teach_50`, preset version 2.
+> Fresh evidence hiện tại: backend `176 passed` (1 dependency warning), validator
+> `ALL DATA VALID`, frontend `35/35`, TypeScript pass; runtime API và browser QA
 > 1366×768 đã kiểm tra các luồng GraphView, route/trace, ATSP, sandbox, theme,
-> offline và fingerprint. `PLAN.md`, `docs/SCHEMA.md`, `README.md`, code và fresh
-> gates là nguồn trạng thái hiện hành; các bảng “Hiện trạng”, “Có một phần” và
+> offline và fingerprint ở checkpoint 2026-08-05. `docs/SCHEMA.md`, `README.md`,
+> code và fresh gates là nguồn trạng thái hiện hành; các bảng “Hiện trạng”, “Có một phần” và
 > “Chưa có” bên dưới ghi lại baseline 2026-08-04, không phải mô tả current code.
 >
 > **Ngày audit:** 2026-08-04.
@@ -28,23 +29,25 @@ generator và build frontend vẫn chưa chạy; `results/` tiếp tục là `S�
 | Chưa có | Graph dạy học giảm node thực sự; contract `graph_view`; ATSP optimization trace; edge-override sandbox; provenance bốn nhóm đầy đủ; ví dụ chạy tay đồng nhất cho đủ 13 phương pháp trong report. |
 | Đã gỡ chặn dữ liệu | Raw TomTom đủ 4/4 snapshot đại diện trên hai ngày thứ Hai, hai profile là `tomtom+synthetic`, `G_demo` đã rebuild và validator đạt. Benchmark/hiệu chuẩn γ/generator vẫn chờ code ổn định và ủy quyền riêng; `results/` tiếp tục là `SỐ TẠM`. |
 | Bằng chứng baseline 2026-08-04 | Backend: **111 passed**; validator: **ALL DATA VALID**; frontend: **8 tests passed**; TypeScript: exit 0. Đây là số lịch sử của audit trước M1–M5. |
-| Bằng chứng hiện hành 2026-08-05 | Backend: **148 passed** (1 dependency warning); validator: **ALL DATA VALID**; frontend: **19/19**; TypeScript: exit 0; browser/runtime QA M1–M5 đã kiểm tra theo phạm vi ghi trong `PLAN.md`. |
+| Bằng chứng sau M1–M5 (2026-08-05) | Backend: **148 passed** (1 dependency warning); validator: **ALL DATA VALID**; frontend: **19/19**; TypeScript: exit 0; browser/runtime QA M1–M5 đã kiểm tra theo phạm vi ghi trong `PLAN.md`. Đây là checkpoint lịch sử. |
+| Bằng chứng audit 2026-08-07 | Backend: **176 passed** (1 dependency warning); validator: **ALL DATA VALID**; frontend: **35/35**; TypeScript: exit 0; production build: 6/6 static pages. Fresh browser QA đại diện ở 1366×768 xác nhận A*/route trace, Held–Karp/optimization trace, giao diện Đen/Trắng, API thành công và không có console error; full pre-flight vẫn phải lặp trước khi quay. |
 
 Trạng thái dữ liệu cuối đã xác minh: raw TomTom đủ **4/4** tại 07:30, 12:00,
 17:30 và 22:00. Hai slot đầu thu ngày 2026-07-27, hai slot sau thu ngày
 2026-08-03; cả hai là thứ Hai. Nhóm chấp nhận đây là snapshot đại diện, không
 phải chuỗi đo cùng ngày. `G_real` dùng TomTom cho các cạnh trục chính được gán
 và synthetic fallback cho phần còn lại; `G_demo` kế thừa qua corridor weighted
-mean. Raw JSON bị Git ignore và phải được đưa vào Data ZIP cuối.
+mean. Raw GraphML, bốn TomTom JSON và OSMnx cache hiện được Git track dưới
+`data/raw/` và vẫn phải được đưa vào Data ZIP cuối.
 
 Các số hiện hành đã xác minh:
 
 - `G_demo`: 51 node, 298 cạnh có hướng, 60 cạnh `oneway`.
 - `G_real`: 2.118 node, 4.699 cạnh có hướng, 1.433 cạnh `oneway`.
 - Cả hai strongly connected và có profile `tomtom+synthetic` đủ bốn slot.
-- Tập bảy node hiện dùng trong generator có 24 cạnh induced và cũng strongly
-  connected; đây chưa phải view backend hiện hành nên không được tuyên bố parity
-  với GUI full G_demo.
+- Tập bảy node hiện dùng trong generator có 24 cạnh induced, strongly connected
+  và chính là checkpoint `teach_7` của backend. Chỉ tuyên bố parity khi GUI chọn
+  đúng view đó và dùng cùng request settings với generator.
 - Tám manual risk vẫn có tám `source_url` TODO. Metadata đã được đồng bộ với luật
   cạnh đi vào vùng (`u` ngoài, `v` trong); URL thật vẫn là việc tay trước submission.
 
@@ -62,6 +65,10 @@ Các số hiện hành đã xác minh:
 | So sánh bằng số liệu | Protocol tái lập, chưa sinh số | `results/`, report g/h | `results/` cũ hơn graph | Chỉ thêm bảng placeholder/protocol trong lượt triển khai tài liệu | Mỗi dòng cuối có graph/date/profile/mode/slot/OD/seed/command/commit |
 
 ## 3. Thiết kế đề xuất cho ba tính năng UI
+
+> **Ngữ cảnh lịch sử:** phần C1 dưới đây ghi quyết định preset cố định của lượt
+> thiết kế 2026-08-04. Sau đó implementation đã chuyển sang node-count động
+> 3…51 trên một `node_order` version 2 đã kiểm SCC; xem `docs/SCHEMA.md §E.1`.
 
 ### C1. Graph dạy học giảm node
 
@@ -307,6 +314,13 @@ Bốn artifact minh họa:
 
 Bảng provenance dự kiến:
 
+> **Superseded wording note 2026-08-07:** bảng dưới giữ nguyên ngôn ngữ đề xuất
+> của kế hoạch 2026-08-04. Khi viết deliverable hiện hành, phải gọi topology,
+> tọa độ và tag là **OSM-derived từ raw GraphML local**, không phải ground truth
+> được live re-query; `oneway` public của G_real là reverse-pair semantics sau
+> dedup, không phải raw OSM tag. Raw TomTom local kiểm được payload/derivation
+> nhưng không chứng minh tính đại diện ngoài đời.
+
 | Hạng mục | Phân loại đúng | Diễn giải report |
 |---|---|---|
 | Topology đường | Nguồn thực tế | OSM/OSMnx, SCC mạng `drive` |
@@ -537,13 +551,13 @@ generator vẫn cần ủy quyền riêng.
 
 | # | Quyết định | Trạng thái | Khuyến nghị đủ để duyệt | Trade-off |
 |---:|---|---|---|---|
-| 1 | Cách chọn số node demo | **ĐÃ DUYỆT · ĐÃ TRIỂN KHAI M2** | Preset nested UI 7/15/25/51, identifier API canonical `full/teach_7/teach_15/teach_25`; absent=`full`, real chỉ `full` | Ít linh hoạt hơn slider tùy ý, nhưng ổn định, strong-connected và quay bài giảng tốt |
+| 1 | Cách chọn số node demo | **ĐÃ TRIỂN KHAI M2 · SAU ĐÓ ĐƯỢC MỞ RỘNG** | Quyết định ban đầu là preset 7/15/25/51; current implementation dùng UI 3…51, API `teach_3`…`teach_50` và `full` ở 51; real chỉ `full` | Mọi prefix vẫn nested, strong-connected; ba mốc 7/15/25 được giữ làm checkpoint hồi quy |
 | 2 | Nơi giữ edge override | **ĐÃ DUYỆT · ĐÃ TRIỂN KHAI M4** | Frontend memory + `scenario` optional request-scoped; backend rollout trước, duplicate/non-finite/out-of-view reject, base bất biến | Payload lớn hơn chút, đổi lại stateless, refresh reset và không cần backend session |
 | 3 | ATSP trace policy | **ĐÃ DUYỆT · ĐÃ TRIỂN KHAI M3** | Cap HK/NN/SA = **2.000/2.000/1.500**, SA periodic mỗi 20 iteration; priority/stride deterministic, reserve final, cap không dừng optimizer | Payload có sampling với bài lớn, nhưng kết quả và final summary vẫn đầy đủ |
 | 4 | Provenance scenario trong response | **ĐÃ DUYỆT · ĐÃ TRIỂN KHAI M2/M4** | Additive `AppliedScenario` + server-generated `scenario-v1` SHA-256 fingerprint trong route và multiroute | Contract rộng hơn, nhưng chứng minh được UI và backend chạy cùng scenario |
 | 5 | Dữ liệu TomTom cuối | **ĐÃ CHỐT** | Giữ 4/4 snapshot đại diện trên hai ngày thứ Hai; profile `tomtom+synthetic`, `G_demo` 51/298 đã validate; benchmark/hiệu chuẩn γ/generator vẫn hoãn đến khi code ổn định | Không còn là quyết định mở; phải công bố giới hạn và đóng gói raw trong Data ZIP |
 
 Các quyết định trên đã được duyệt và triển khai theo thứ tự schema → backend →
-frontend. Milestone 5 đã hoàn tất fresh integration/runtime QA; bước tiếp theo
+frontend; riêng quyết định 1 đã được mở rộng như ghi ở bảng. Milestone 5 đã hoàn tất integration/runtime QA ở checkpoint 2026-08-05; bước tiếp theo
 là chuẩn bị submission và chỉ chạy benchmark/hiệu chuẩn γ/generator trong một
 lượt riêng có ủy quyền.

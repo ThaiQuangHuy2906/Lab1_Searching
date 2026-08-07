@@ -2,7 +2,10 @@
 
 ## Trạng thái hiện hành
 
-Mốc kiểm mới nhất: **2026-08-04** (current worktree, chưa commit).
+Mốc kiểm mới nhất: **2026-08-07**, HEAD
+`5693ae754926cfbcc5b3a05c7544127d9308cc90`; current worktree mang các thay đổi
+documentation/ảnh README của lượt audit, không có source implementation hoặc
+graph/profile data change.
 
 - 10 thuật toán hai điểm: `bfs`, `dfs`, `iddfs`, `ucs`, `dijkstra`, `astar`,
   `greedy`, `bidijkstra`, `idastar`, `beam`.
@@ -12,10 +15,13 @@ Mốc kiểm mới nhất: **2026-08-04** (current worktree, chưa commit).
 - Profile hiện tại là `tomtom+synthetic`; raw TomTom đủ 07:30, 12:00, 17:30 và
   22:00. Hai slot đầu lấy ngày 2026-07-27, hai slot sau lấy ngày 2026-08-03:
   hai ngày thứ Hai cách nhau bảy ngày, không phải time series cùng ngày.
+- `data/raw/graph_raw.graphml`, bốn raw TomTom JSON và OSMnx cache hiện đều được
+  Git track; đây không còn là artifact local-only/Git-ignore.
 - `results/` là benchmark tạm ngày 2026-07-26, cũ hơn graph ngày 2026-07-27.
-- Gate mới nhất: **111 backend pytest pass**, **8 frontend test pass**,
-  `ALL DATA VALID` và `npx tsc --noEmit` pass.
-- Các regression nền ngày 2026-08-04 đã đạt; benchmark/gamma/generator cuối và
+- Gate mới nhất: **176 backend pytest pass**, **35 frontend test pass**,
+  `ALL DATA VALID`, `npx tsc --noEmit` và production `npm run build` pass ngày
+  2026-08-07.
+- Các regression hiện hành đã đạt; benchmark/gamma/generator cuối và
   các deliverable thủ công vẫn được hoãn có chủ đích.
 
 Chuỗi `03b real → 04 → 03b demo → validate_data` đã hoàn tất. Không chạy lại

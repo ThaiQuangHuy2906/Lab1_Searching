@@ -34,8 +34,10 @@ và **Simulated Annealing** (stochastic metaheuristic). Bài toán thuộc lớp
 
 ## 1. Mục tiêu và phạm vi
 
-**Phạm vi tài liệu.** Tài liệu bám theo implementation tại source snapshot
-`2328d5f` trong repository, không viết theo kiến thức thuật toán chung. Mọi claim về
+**Phạm vi tài liệu.** Tài liệu ban đầu bám theo implementation tại source snapshot
+`2328d5f`; audit 2026-08-07 tại HEAD
+`5693ae754926cfbcc5b3a05c7544127d9308cc90` xác nhận các source ATSP liên quan
+không đổi semantics kể từ mốc đó. Tài liệu không viết theo kiến thức thuật toán chung. Mọi claim về
 hành vi thuật toán, số lượng iteration, tie-breaking, acceptance condition, v.v. đều
 đối chiếu với code thực thi.
 

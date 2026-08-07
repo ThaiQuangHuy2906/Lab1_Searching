@@ -1,13 +1,16 @@
 # KIEMTOAN.md — Báo cáo Hội đồng phản biện độc lập
 
-> **Lưu ý hiện hành (2026-08-04):** phần từ “TRẠNG THÁI FIX BATCH” trở xuống là
+> **Lưu ý audit 2026-08-07:** phần từ “TRẠNG THÁI FIX BATCH” trở xuống là
 > sổ kiểm toán/fix lịch sử tại các commit
 > ghi trong tài liệu. Không dùng các số test, line number hay kết luận cũ làm bằng
 > chứng cho worktree hiện tại. FINAL-01 và các mục cập nhật UI dưới đây cũng là
 > evidence lịch sử. Current-state nằm trong `README.md`, phần current-state của
 > `docs/CODEX-CODEBASE-MAP.md` và
 > `docs/KE-HOACH-TRIEN-KHAI-NHIEM-VU-HOP-NHOM.md`; kết luận cuối vẫn phải dựa trên
-> code/data hiện hành và lệnh kiểm chứng fresh.
+> code/data hiện hành và lệnh kiểm chứng fresh. Gate documentation-audit gần
+> nhất: 176 backend tests, 35 frontend tests, `ALL DATA VALID`, TypeScript pass;
+> raw GraphML/TomTom/cache hiện được Git track. Không sửa lại các entry lịch sử
+> phía dưới để mang số hiện tại.
 >
 > **Ngày kiểm:** 2026-07-27 · **Commit kiểm:** `9598141` (git sạch, đồng bộ origin/main)
 > **Phương pháp:** Lượt 0 (mốc chân lý) chạy trước; 6 lượt kiểm toán độc lập chạy **song song**
@@ -306,7 +309,7 @@ Mức: theo thang đã giao (BLOCKER/MAJOR/MINOR/NIT). Cột **PBC** = phản bi
 5. ☐ **Chụp 8 screenshot GUI (chế độ TỐI)** + 5 ảnh Google Maps đối chứng exp6; đối chiếu bằng mắt hình PNG figs với số CSV khi dán.
 6. ☐ **Quay video 18–25′** theo Video-KichBan; cảnh multiroute **phải chọn đúng 9 điểm EXP7_STOPS** (`benchmark.py:423-427`: Chợ Bến Thành, Nhà thờ Đức Bà, Bitexco, Chợ Tân Định, Thảo Cầm Viên, BV Từ Dũ, Bùi Viện, Chùa Vĩnh Nghiêm, CV Lê Văn Tám) thì card mới hiện đúng "53,6%"; đọc số theo màn hình (L6-03); upload xong **mở thử tab ẩn danh**.
 7. ☐ **Xuất PDF báo cáo** (mục tiêu tự đặt 35–50 trang) + dựng slide từ 14 trang outline.
-8. ☐ **Đóng gói `[GroupID].zip`** đủ 5 file theo đề §1 (bảng nguồn ở Phụ lục A-H): `SC.txt` (link GitHub — **⚠ repo đang khuyến nghị Private: phải public hoặc mời giảng viên TRƯỚC hạn chấm, nếu không link chết**), `Report.pdf`, `Slide.pptx/pdf`, `Video.txt`, `Data.zip` (graph_*.json + traffic_profiles_*.json + gdemo_pois + manual_risks + DATA.md; **loại data/raw/**). Khi nén repo: loại `node_modules/`, `.venv/`, `.next/`, `__pycache__/` (pyc chứa đường dẫn máy cá nhân), `audit_tmp/`, `.env`.
+8. ☐ **Đóng gói `[GroupID].zip`** đủ 5 file theo đề §1 (bảng nguồn ở Phụ lục A-H): `SC.txt` (link GitHub — **⚠ repo đang khuyến nghị Private: phải public hoặc mời giảng viên TRƯỚC hạn chấm, nếu không link chết**), `Report.pdf`, `Slide.pptx/pdf`, `Video.txt`, `Data.zip` (graph_*.json + traffic_profiles_*.json + gdemo_pois + manual_risks + DATA.md; ghi chú lịch sử từng nói **loại data/raw/**). **Superseded 2026-08-07:** raw GraphML/TomTom/cache hiện được Git track và phải có trong Data ZIP provenance. Khi nén source repo vẫn loại `node_modules/`, `.venv/`, `.next/`, `__pycache__/` (pyc chứa đường dẫn máy cá nhân), `audit_tmp/`, `.env`.
 
 **Fix code/hồ sơ chờ lệnh batch (không tự làm trong cuộc kiểm này):** L1-01 · L3-01 · L3-02 · L3-03 · L3-04 · L4-01 · L4-02 · L4-03 · L4-04 · L6-01 (kèm L4-05) · nhóm MINOR/NIT. Sau batch: chạy lại pytest + `gen_teaching_doc.py` + check_contrast; các fix chạm costs/data (L1-01) phải rebuild + rerun benchmark trong cùng lượt TomTom cuối để chỉ tốn một lần thay số.
 

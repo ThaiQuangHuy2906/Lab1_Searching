@@ -1,11 +1,13 @@
 # HDCRAWL — Nhật ký TomTom closeout và checklist artifact cuối
 
-> **Trạng thái 2026-08-04:** raw TomTom đã đủ 4/4 slot. Hai slot 07:30, 12:00
+> **Trạng thái kiểm lại 2026-08-07:** raw TomTom đã đủ 4/4 slot. Hai slot 07:30, 12:00
 > lấy ngày 2026-07-27; hai slot 17:30, 22:00 lấy ngày 2026-08-03. Đây là hai
 > ngày thứ Hai cách nhau bảy ngày, dùng làm bốn snapshot đại diện, **không phải**
 > time series cùng ngày. Chuỗi `03b real → 04 → 03b demo → validate_data` đã
 > hoàn tất và cho `ALL DATA VALID` với G_demo 51/298/60, G_real
 > 2.118/4.699/1.433, profile `tomtom+synthetic`.
+> `graph_raw.graphml`, bốn TomTom JSON và OSMnx cache hiện đều được Git track
+> dưới `data/raw/`; Data ZIP cuối vẫn phải chứa chúng để giữ provenance.
 >
 > **Không chạy lại §0–§2.** Các lệnh ở đó chỉ được giữ như nhật ký tái lập.
 > Benchmark, gamma calibration và teaching generator trong §3–§5 vẫn được hoãn
@@ -44,8 +46,8 @@ là traffic tại đúng THỜI ĐIỂM bấm lệnh → phải canh giờ (±10
 - [x] 22:00 — `flow_20260803T222752.json`
 
 - Mỗi slot có 40 record hợp lệ tại
-  `data/raw/tomtom/<slot>/flow_<stamp>.json`. Thư mục raw bị Git ignore và phải
-  được đóng trong Data ZIP cuối.
+  `data/raw/tomtom/<slot>/flow_<stamp>.json`. Các file này hiện được Git track
+  và phải được đóng trong Data ZIP cuối.
 - Được phép chạy **2 lần cách nhau ~10 phút trong cùng mốc** — 03b gộp mọi
   snapshot trong thư mục, tăng độ bền nếu một điểm đo trả null.
 
@@ -93,7 +95,7 @@ Hình exp5 giờ tự mang tiêu đề trung tính đã sửa (KIEMTOAN C9).
 
 In bảng inflation theo mức + **γ̂** và độ lệch so 1,5; ghi
 `results/gamma_calibration.csv`. Dán γ̂ vào chỗ chờ sẵn ở **BaoCao mục c**
-(dòng "γ̂ ước lượng ĐỘC LẬP từ dữ liệu thật… = [SỐ LIỆU →
+(dòng "γ̂ ước lượng từ raw TomTom local… = [SỐ LIỆU →
 results/gamma_calibration.csv]").
 
 ## 5. Regen tài liệu giảng — DEFERRED sau benchmark/gamma

@@ -13,11 +13,11 @@
 > **Tái sinh (chạy MỘT MÌNH, ~7 phút, không tiến trình song song):**
 > từ `backend/` chạy `..\.venv\Scripts\python.exe -m app.benchmark` (PowerShell)
 > hoặc `../.venv/Scripts/python.exe -m app.benchmark` (Git Bash).
-> Sau đó từ repo root chạy
-> `.venv\Scripts\python.exe scripts\gen_teaching_doc.py` + đồng bộ số theo Phụ lục A
-> của `docs/KIEMTOAN.md`. Hiệu chuẩn γ từ TomTom:
+> Sau đó từ repo root hiệu chuẩn γ từ raw TomTom:
 > `.venv\Scripts\python.exe scripts\05_calibrate_gamma.py`
-> → `results/gamma_calibration.csv`.
+> → `results/gamma_calibration.csv`; cuối cùng chạy
+> `.venv\Scripts\python.exe scripts\gen_teaching_doc.py` và đồng bộ số/banner theo
+> Phụ lục A của `docs/KIEMTOAN.md`. Chỉ thực hiện trọn chuỗi này khi được ủy quyền.
 
 | File | Thí nghiệm |
 |---|---|

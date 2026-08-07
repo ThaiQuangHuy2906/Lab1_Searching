@@ -1,10 +1,13 @@
 # DESIGN.md — Hợp đồng thiết kế giao diện (Phase 5)
 
-> **Trạng thái 2026-08-05:** đây là nguồn chuẩn về ý đồ, token và hành vi UI.
-> M1–M5 đã có implementation; `npm test` (19 test) và `npx tsc --noEmit` đạt.
-> Browser QA vẫn là bằng chứng riêng: các khẳng định về cuộn, bàn phím, map, theme,
-> offline, responsive và accessibility vẫn phải được kiểm tra trên trình
-> duyệt/độ phân giải dùng để quay hoặc bảo vệ.
+> **Trạng thái kiểm lại 2026-08-07:** đây là nguồn chuẩn về ý đồ, token và hành vi UI.
+> M1–M5 đã có implementation; `npm test` (35 test), `npx tsc --noEmit` và
+> production `npm run build` (6/6 static pages) đạt.
+> Fresh browser QA đại diện ở 1366×768 đã xác nhận A*/route trace,
+> Held–Karp/optimization trace, giao diện Đen/Trắng, API thành công và không có
+> console error. Các khẳng định đầy đủ về cuộn, bàn phím, offline, responsive,
+> accessibility, projector và hardware GPU vẫn phải được kiểm tra trên đúng
+> trình duyệt/độ phân giải dùng để quay hoặc bảo vệ.
 >
 > **Luật:** mọi màu/font/hiệu ứng trên UI phải tra được về token trong file này và
 > `frontend/tailwind.config.ts`. Không tự thêm hiệu ứng ngoài đặc tả. Nếu cần token
@@ -481,10 +484,9 @@ authority của view, scenario và fingerprint.
 
 ### 11.1. GraphView dạy học
 
-- Control `Graph view` chỉ có bốn identifier canonical: `full`, `teach_7`,
-  `teach_15`, `teach_25`. Label được phép là “Toàn bộ G_demo — 51 node”, “Dạy học
-  — 7 node”, “Dạy học — 15 node”, “Dạy học — 25 node”; không lộ identifier cũ
-  hoặc tự tạo tên khác.
+- Control `Graph view` là ô nhập số node nguyên từ 3 đến 51. Số 3…50 ánh xạ
+  chính xác tới identifier backend `teach_3`…`teach_50`; số 51 ánh xạ tới
+  `full`. UI hiển thị số node thân thiện, không buộc người dùng nhập identifier.
 - Mặc định là `full`. Khi chọn `G_real`, UI chỉ cho `full`; nếu đang ở teach view
   rồi đổi graph sang real thì ép về `full` trước request graph/traffic tiếp theo.
 - Chọn lại đúng view là no-op. Đổi view thật phải clear graph data, traffic, Đi,

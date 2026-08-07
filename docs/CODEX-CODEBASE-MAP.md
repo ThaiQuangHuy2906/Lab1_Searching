@@ -11,6 +11,18 @@ The current-state sections were refreshed again on 2026-08-04 from the dirty,
 validated worktree at HEAD `9a790dee005ffc13016094749b92c0375d16929b`; these
 uncommitted changes are user work, not a release commit.
 
+**Current audit refresh — 2026-08-07:** current-state claims in this map were
+rechecked at HEAD `5693ae754926cfbcc5b3a05c7544127d9308cc90`. The active and only
+tracked application frontend is `frontend/`; `frontend1/` was deleted in
+commit `faf9866` and is not a current implementation. Fresh gates are 176
+backend tests, 35 frontend tests, `ALL DATA VALID`, and a passing TypeScript
+check. A clean `npm run build` also completed all 6 static pages. A
+representative browser run at 1366×768 verified A* route trace,
+Held–Karp optimization trace, the Black/White themes, successful route and
+multiroute API calls, and zero console errors. Dated onboarding/FINAL-01
+sections below remain historical evidence; this run is not a replacement for
+the complete projector/accessibility matrix before recording.
+
 ### Current frontend and release delta — through 2026-08-04
 
 - `d44b96a`: refreshed the shared pathfinding shell and dark/light control-room
@@ -26,10 +38,11 @@ uncommitted changes are user work, not a release commit.
 - FINAL-01 verdict: **DEMO-READY WITH WARNINGS**, **SUBMISSION BLOCKED** and
   **FINAL-DATA NOT ALLOWED**. Backend/API/schema/data/results were unchanged by
   the four UI commits.
-- The current worktree adds finite-epsilon/API/benchmark regressions and the
-  frontend slot/traffic, route–multiroute, effective-trace legend and
-  sign-aware ATSP-savings repairs. Automated gates pass; browser QA for this
-  latest interaction batch remains `UNVERIFIED`.
+- Subsequent work through the current HEAD adds finite-epsilon/API/benchmark
+  regressions, dynamic GraphView/scenario sandbox, ATSP optimization trace,
+  seven themes and frontend interaction repairs. Automated gates pass; the
+  representative current browser flow is verified as recorded above, while a
+  full viewport/keyboard/offline/accessibility matrix remains pre-flight work.
 
 ## 1. Project purpose and rubric
 
@@ -435,7 +448,9 @@ apart, so these are representative slot snapshots rather than a same-day time
 series. Each slot has 40 valid sample points. The real profile assigns TomTom
 levels to 635/4,699 edges per slot and uses deterministic synthetic fallback for
 the other 4,064 edges. The demo profile is derived from real-profile corridor
-weighted means. Validator reports `ALL DATA VALID`.
+weighted means. `graph_raw.graphml`, all four TomTom JSON files and the OSMnx
+cache are present under `data/raw/` and Git-tracked in the current repository.
+Validator reports `ALL DATA VALID`.
 
 `manual_risks.json` has 8 records and 8 placeholder `source_url` strings, hence
 zero usable cited URLs. Its `meta.description_vi` now matches the current
@@ -518,14 +533,15 @@ loads `MapView` client-side. `useApp` is the single global state/action store.
 backend error envelope.
 
 The separate `/benchmark` page loads cached experiment results and renders
-Recharts. There is no repository frontend test runner; the executed gates are
-TypeScript checking plus targeted headless-Chrome behavior probes.
+Recharts. `frontend/package.json` defines the repository test runner as
+`npm test`; the current suite contains 35 deterministic Node tests. TypeScript
+checking and browser/runtime QA remain separate gates.
 
 ## 18. Zustand state and invalidation
 
 | State | Initial value | Setter/owner | Persisted | Invalidates/async behavior |
 |---|---|---|---|---|
-| theme | dark | `initTheme`, `toggleTheme` | `traffic-theme` | none |
+| theme | `default` | `initTheme`, `setTheme` | `traffic-theme-v2` | none |
 | graph | demo | `loadGraph` | no | clears journey/results; reloads graph/traffic |
 | slot | 07:30 | `setSlot` | no | same-value is a no-op; a real change clears dependent results and old traffic, then reloads with a latest-request/graph-slot guard |
 | mode | balanced | `set` | no | not immediately invalidated |
@@ -610,8 +626,8 @@ The map route retained root body overflow ownership.
 
 ## 20. Test architecture
 
-Current collection produces **148 pytest items**. All 148 passed on the
-2026-08-05 worktree after M1–M5; frontend has a separate **19-test** Node suite
+Current collection produces **176 pytest items**. All 176 passed on the
+2026-08-07 worktree; frontend has a separate **35-test** Node suite
 and TypeScript check. The suite includes GraphView, ATSP trace, sandbox,
 fingerprint and regression coverage.
 
@@ -623,7 +639,11 @@ fingerprint and regression coverage.
 | `test_search_advanced.py` | advanced search | Dijkstra comparison, epsilon bounds, Bidijkstra ownership, IDA* trace/cap, Beam top-k trace | demo + sampled real + tiny controlled stores | broader termination/property coverage |
 | `test_tsp.py` | ATSP | brute force, asymmetry, determinism | demo | unreachable multistop and fuller API method coverage |
 | `test_api.py` | FastAPI | endpoint shapes/errors; three-mode units; internal-error secrecy/logging | current stores/results-dependent | broader injected internal failures |
+| `test_artifact_generation.py` | generator/benchmark semantics | exp5 cost mode and generated ATSP gap wording | synthetic fixtures | full generated artifact refresh intentionally not run |
 | `test_data.py` | built data | Pydantic load, size/regression | current demo/real | benchmark/data provenance fingerprint |
+| `test_optimization_trace.py` | ATSP recorder | strict event union, caps/sampling, trace-on/off equality | demo + controlled cases | dedicated frontend render test |
+| `test_scenario.py` | GraphView/scenario | dynamic 3…50 views, SCC, preset/generator parity, fingerprint | current demo/real | browser parity after final generator run |
+| `test_scenario_overrides.py` | sandbox | validation, immutability, recomputation, fingerprint/API errors | current demo | long-running concurrent request stress |
 
 Scale statements such as thousands of NetworkX comparisons inside loops are
 not pytest item counts.
@@ -642,7 +662,8 @@ Completed semantic regressions:
 9. typed OpenAPI graph/error responses and experiment-6 JSON benchmark rows;
 10. Bidirectional Dijkstra initial frontier and trivial-route mode units;
 11. slot/traffic coherence, route–multiroute guards, effective-trace legend and
-    sign-aware ATSP savings in the frontend 8-test suite.
+    sign-aware ATSP savings, dynamic GraphView and theme behavior in the
+    frontend 35-test suite.
 
 Priority semantic tests still missing:
 
@@ -723,7 +744,7 @@ Statuses use the onboarding vocabulary requested by the handoff.
 | P-03 Beam frontier schema | `RESOLVED` | trace/metric expose selected top-k only | controlled width-1 regression |
 | P-04 IDA* exhausted-round guarantee | `RESOLVED` | capped exit false; exhaustive-unreachable true | controlled termination regressions |
 | P-05 light-theme contrast | `RESOLVED` | contrast checker passed and FINAL-01 exercised dark/light runtime states | formal WCAG/screen-reader audit not run |
-| P-06 offline mode/Google font | `PARTIALLY_CONFIRMED` | offline not persisted; `next/font/google` present | disconnected build not run |
+| P-06 offline mode/Google font | `PARTIALLY_CONFIRMED` | offline not persisted; `next/font/google` present; online production build passes | disconnected build not run |
 | P-07 same-value invalidation / stale traffic | `RESOLVED` | semantic slot comparison precedes invalidation; real slot changes clear traffic and guard graph/slot/request identity | automated regression; latest browser interaction is unverified |
 | P-08 manual risk description | `RESOLVED` | metadata now states `u` outside/`v` inside and the start-inside limitation | JSON/prose inspection |
 | P-09 result README/run-book defects | `RESOLVED` | exp1 now names UCS/Dijkstra/A*; run-book lists all five banners | final coherent refresh still pending |
@@ -757,7 +778,7 @@ Statuses use the onboarding vocabulary requested by the handoff.
 
 ## 25. Safe change workflow
 
-1. Preserve the user's modified `.gitignore` and untracked audit document.
+1. Inspect `git status --short` and preserve all existing user work.
 2. Identify requirement, intended contract, current producer, consumer, and
    semantic test before patching.
 3. If a public contract should change, patch `SCHEMA.md` first with approval.
@@ -771,18 +792,15 @@ Statuses use the onboarding vocabulary requested by the handoff.
 
 ## 26. Recommended fix order
 
-The authorized data closeout and current semantic repair batch are complete.
-Remaining safe order:
+The authorized data closeout and GraphView/ATSP-trace/sandbox implementation
+are complete. Remaining safe order:
 
-1. Obtain approval for the four implementation decisions in
-   `KE-HOACH-TRIEN-KHAI-NHIEM-VU-HOP-NHOM.md`, then update schema before code.
-2. Implement and regression-test the approved graph-view, ATSP-trace and
-   request-scoped scenario work without rebuilding the validated data snapshot.
-3. After code stabilizes and only with separate authorization, run one isolated
+1. After code stabilizes and only with separate authorization, run one isolated
    benchmark, gamma calibration and teaching-generator pass; then synchronize
    all five banners/numbers.
-4. Restart services, verify live graph metadata, capture UI/Maps evidence.
-5. Complete URLs, names/contributions, report PDF, slides, video, links, and
+2. Restart services, verify live graph metadata, and redo browser QA at the
+   actual capture/projector resolution before recording.
+3. Complete URLs, names/contributions, report PDF, slides, video, links, and
    final ZIP.
 
 ## 27. Unresolved questions
@@ -794,7 +812,9 @@ Remaining safe order:
 - `/api/benchmark` now has explicit partial semantics: bulk returns available
   artifacts, while an explicitly requested missing experiment returns 404.
 - FINAL-01 verified map/theme/contrast, offline, keyboard/focus, reduced motion
-  and three desktop viewport sizes in browser. The 2026-08-04 frontend repair
-  batch has not been rechecked in a browser. A fresh production build, real
-  screen reader/formal WCAG run, mobile layout, projector hardware, and
-  hardware-GPU route-flow performance remain unverified.
+  and three desktop viewport sizes in browser. A fresh 2026-08-07 representative
+  run additionally verified the current A* and Held–Karp trace flows plus
+  Black/White theme rendering at 1366×768 with no console errors. The production
+  build now passes; the full current keyboard/offline matrix, real screen
+  reader/formal WCAG run, mobile layout, projector hardware, and hardware-GPU
+  route-flow performance remain unverified.

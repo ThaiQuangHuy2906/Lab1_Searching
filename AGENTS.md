@@ -178,8 +178,9 @@ npm run dev
   four slots 07:30, 12:00, 17:30, and 22:00. TomTom supplies sampled main-road
   congestion while uncovered edges still use the deterministic synthetic
   fallback. The snapshots were collected on two Mondays seven days apart and
-  are representative time slots, not a same-day time series. The raw JSON files
-  are Git-ignored and must be included in the final Data ZIP.
+  are representative time slots, not a same-day time series. The raw GraphML,
+  four TomTom JSON snapshots, and OSMnx cache are currently Git-tracked under
+  `data/raw/`; keep them in the final Data ZIP as provenance artifacts.
 - The final data chain `03b real -> 04 -> 03b demo -> validate_data` completed on
   2026-08-03. Do not rerun profiles/graphs or start the benchmark/gamma
   calibration/generator chain unless the user explicitly authorizes that next

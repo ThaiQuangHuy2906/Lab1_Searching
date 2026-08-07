@@ -23,6 +23,12 @@ import {
 } from "./atsp-trace-policy";
 import { buildScenario, scenarioKey } from "./scenario";
 import {
+  DEFAULT_THEME,
+  THEME_STORAGE_KEY,
+  resolveStoredTheme,
+  type Theme,
+} from "./theme";
+import {
   mergeSequentialRouteTraces,
   sequentialWaypoints,
   type SequentialRouteRun,
@@ -46,17 +52,15 @@ export const ALGO_LABEL: Record<Algorithm, string> = {
 };
 
 export type DrawerTab = "metrics" | "explain" | "compare" | "scenario";
-export type Theme = "dark" | "light";
-
-const THEME_KEY = "traffic-theme-pastel-v1";
+export type { Theme } from "./theme";
 const graphRequests = createLatestRequestGuard();
 const trafficRequests = createLatestRequestGuard();
 
 interface AppState {
-  // ---- giao diện Sáng/Tối (DESIGN.md §1 — mặc định Tối)
+  // ---- giao diện nhiều theme (DESIGN.md §1 — mặc định control room)
   theme: Theme;
   initTheme: () => void;
-  toggleTheme: () => void;
+  setTheme: (theme: Theme) => void;
 
   // ---- cấu hình
   graph: GraphLevel;
@@ -121,18 +125,17 @@ interface AppState {
 }
 
 export const useApp = create<AppState>((set, get) => ({
-  theme: "light",
+  theme: DEFAULT_THEME,
   initTheme: () => {
-    const saved = (typeof window !== "undefined"
-      ? window.localStorage.getItem(THEME_KEY) : null) as Theme | null;
-    const theme: Theme = saved === "dark" ? "dark" : "light";
+    const saved = typeof window !== "undefined"
+      ? window.localStorage.getItem(THEME_STORAGE_KEY) : null;
+    const theme = resolveStoredTheme(saved);
     document.documentElement.setAttribute("data-theme", theme);
     set({ theme });
   },
-  toggleTheme: () => {
-    const theme: Theme = get().theme === "dark" ? "light" : "dark";
+  setTheme: (theme) => {
     document.documentElement.setAttribute("data-theme", theme);
-    window.localStorage.setItem(THEME_KEY, theme);
+    window.localStorage.setItem(THEME_STORAGE_KEY, theme);
     set({ theme });
   },
 

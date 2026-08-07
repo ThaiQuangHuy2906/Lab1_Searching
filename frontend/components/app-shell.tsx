@@ -5,6 +5,7 @@
 import * as React from "react";
 import { Toaster } from "sonner";
 import { useApp } from "@/lib/store";
+import { themeAppearance } from "@/lib/theme";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const theme = useApp((s) => s.theme);
@@ -16,7 +17,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     <>
       {children}
       <Toaster
-        theme={theme}
+        theme={themeAppearance(theme)}
         position="top-center"
         toastOptions={{
           style: {

@@ -2,65 +2,210 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Token 2 chế độ (docs/DESIGN.md §2–3) — giá trị là RGB triplet cho
+/* Token 7 theme (docs/DESIGN.md §2–3) — giá trị là RGB triplet cho
    tailwind alpha modifier. Component KHÔNG dùng mã màu trực tiếp. */
 :root,
-:root[data-theme="dark"] {
+:root[data-theme="default"] {
   color-scheme: dark;
-  --surface: 36 26 44;
-  --surface-map: 23 19 29;
-  --surface-rail: 43 32 52;
-  --surface-panel: 52 38 62;
-  --surface-control: 43 32 53;
-  --surface-raised: 64 48 75;
-  --surface-border: 96 73 109;
-  --surface-border-strong: 128 99 143;
-  --ink: 253 246 255;
-  --ink-dim: 211 190 220;
-  --ink-faint: 168 143 179;
+  --surface: 9 9 11;
+  --surface-map: 7 10 14;
+  --surface-rail: 13 14 17;
+  --surface-panel: 22 23 27;
+  --surface-control: 9 10 13;
+  --surface-raised: 28 29 34;
+  --surface-border: 42 43 48;
+  --surface-border-strong: 63 65 72;
+  --ink: 244 244 245;
+  --ink-dim: 166 166 176;
+  --ink-faint: 118 118 128;
   --hl: 255 255 255; /*         row highlight base (dùng /10) */
-  --algo-node: 226 208 235;
-  --algo-frontier: 255 133 187;
-  --algo-expanded: 192 163 245;
+  --algo-node: 212 212 216;
+  --algo-frontier: 34 211 238;
+  --algo-expanded: 167 139 250;
   --algo-current: 255 255 255;
-  --algo-path: 255 195 105;
-  --bidi-forward: 255 133 187;
-  --bidi-backward: 192 163 245;
-  --start: 99 214 174;
-  --goal: 255 121 151;
-  --decor-pink: 255 133 187;
-  --decor-lilac: 192 163 245;
-  --decor-mint: 147 224 207;
-  --shadow-float: 0 14px 34px rgb(15 8 20 / 0.34), 0 3px 10px rgb(255 133 187 / 0.10);
+  --algo-path: 251 191 36;
+  --bidi-forward: 34 211 238;
+  --bidi-backward: 251 113 133;
+  --start: 16 185 129;
+  --goal: 239 68 68;
+  --decor-pink: 34 211 238;
+  --decor-lilac: 167 139 250;
+  --decor-mint: 251 191 36;
+  --shadow-float: 0 12px 30px rgb(0 0 0 / 0.42), 0 3px 10px rgb(34 211 238 / 0.08);
 }
 
 :root[data-theme="light"] {
   color-scheme: light;
-  --surface: 251 247 255;
-  --surface-map: 246 241 250;
-  --surface-rail: 250 244 255;
-  --surface-panel: 255 252 255;
-  --surface-control: 247 238 251;
+  --surface: 245 247 250;
+  --surface-map: 242 245 248;
+  --surface-rail: 248 249 251;
+  --surface-panel: 255 255 255;
+  --surface-control: 246 247 249;
   --surface-raised: 255 255 255;
-  --surface-border: 234 219 240;
-  --surface-border-strong: 215 191 223;
-  --ink: 74 55 84;
-  --ink-dim: 112 91 124;
-  --ink-faint: 151 130 162;
-  --hl: 74 55 84;
-  --algo-node: 92 72 104;
-  --algo-frontier: 196 65 133;
-  --algo-expanded: 121 82 179;
-  --algo-current: 74 55 84;
-  --algo-path: 185 94 28;
-  --bidi-forward: 196 65 133;
-  --bidi-backward: 121 82 179;
+  --surface-border: 218 222 227;
+  --surface-border-strong: 190 195 204;
+  --ink: 24 24 27;
+  --ink-dim: 82 82 91;
+  --ink-faint: 113 113 122;
+  --hl: 24 24 27;
+  --algo-node: 39 39 42;
+  --algo-frontier: 8 145 178;
+  --algo-expanded: 124 58 237;
+  --algo-current: 24 24 27;
+  --algo-path: 217 119 6;
+  --bidi-forward: 8 145 178;
+  --bidi-backward: 225 29 72;
+  --start: 5 150 105;
+  --goal: 220 38 38;
+  --decor-pink: 125 211 252;
+  --decor-lilac: 196 181 253;
+  --decor-mint: 253 230 138;
+  --shadow-float: 0 12px 28px rgb(15 23 42 / 0.13), 0 3px 10px rgb(8 145 178 / 0.06);
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --surface: 0 0 0;
+  --surface-map: 3 5 8;
+  --surface-rail: 7 9 12;
+  --surface-panel: 12 15 20;
+  --surface-control: 3 6 10;
+  --surface-raised: 18 22 28;
+  --surface-border: 36 44 55;
+  --surface-border-strong: 68 79 94;
+  --ink: 248 250 252;
+  --ink-dim: 174 183 194;
+  --ink-faint: 120 130 143;
+  --hl: 255 255 255;
+  --algo-node: 203 213 225;
+  --algo-frontier: 56 189 248;
+  --algo-expanded: 129 140 248;
+  --algo-current: 255 255 255;
+  --algo-path: 250 204 21;
+  --bidi-forward: 56 189 248;
+  --bidi-backward: 244 114 182;
+  --start: 52 211 153;
+  --goal: 251 113 133;
+  --decor-pink: 56 189 248;
+  --decor-lilac: 129 140 248;
+  --decor-mint: 250 204 21;
+  --shadow-float: 0 14px 34px rgb(0 0 0 / 0.72), 0 3px 10px rgb(56 189 248 / 0.08);
+}
+
+:root[data-theme="pink"] {
+  color-scheme: light;
+  --surface: 255 247 251;
+  --surface-map: 248 246 255;
+  --surface-rail: 255 241 248;
+  --surface-panel: 255 252 254;
+  --surface-control: 253 238 246;
+  --surface-raised: 255 255 255;
+  --surface-border: 244 203 223;
+  --surface-border-strong: 225 161 194;
+  --ink: 88 46 67;
+  --ink-dim: 126 76 100;
+  --ink-faint: 163 113 136;
+  --hl: 88 46 67;
+  --algo-node: 121 78 100;
+  --algo-frontier: 214 75 135;
+  --algo-expanded: 71 140 191;
+  --algo-current: 88 46 67;
+  --algo-path: 197 111 19;
+  --bidi-forward: 214 75 135;
+  --bidi-backward: 55 122 173;
   --start: 22 134 107;
-  --goal: 201 63 98;
+  --goal: 190 46 93;
   --decor-pink: 244 169 204;
-  --decor-lilac: 206 185 242;
-  --decor-mint: 176 226 213;
-  --shadow-float: 0 14px 32px rgb(96 61 116 / 0.12), 0 3px 10px rgb(196 65 133 / 0.09);
+  --decor-lilac: 189 219 242;
+  --decor-mint: 255 225 235;
+  --shadow-float: 0 14px 32px rgb(135 71 102 / 0.14), 0 3px 10px rgb(214 75 135 / 0.10);
+}
+
+:root[data-theme="lavender"] {
+  color-scheme: light;
+  --surface: 249 246 255;
+  --surface-map: 244 241 252;
+  --surface-rail: 244 238 252;
+  --surface-panel: 253 251 255;
+  --surface-control: 239 233 249;
+  --surface-raised: 255 255 255;
+  --surface-border: 218 206 239;
+  --surface-border-strong: 185 165 220;
+  --ink: 65 49 92;
+  --ink-dim: 94 76 125;
+  --ink-faint: 133 115 162;
+  --hl: 65 49 92;
+  --algo-node: 92 76 119;
+  --algo-frontier: 112 78 184;
+  --algo-expanded: 190 70 130;
+  --algo-current: 65 49 92;
+  --algo-path: 180 94 14;
+  --bidi-forward: 112 78 184;
+  --bidi-backward: 190 70 130;
+  --start: 34 132 103;
+  --goal: 190 52 94;
+  --decor-pink: 228 183 221;
+  --decor-lilac: 201 184 235;
+  --decor-mint: 216 228 251;
+  --shadow-float: 0 14px 32px rgb(89 66 132 / 0.14), 0 3px 10px rgb(112 78 184 / 0.09);
+}
+
+:root[data-theme="sage"] {
+  color-scheme: light;
+  --surface: 247 249 242;
+  --surface-map: 241 246 238;
+  --surface-rail: 238 244 232;
+  --surface-panel: 255 253 247;
+  --surface-control: 236 242 230;
+  --surface-raised: 255 254 249;
+  --surface-border: 203 214 193;
+  --surface-border-strong: 160 179 149;
+  --ink: 55 68 50;
+  --ink-dim: 82 99 73;
+  --ink-faint: 119 136 109;
+  --hl: 55 68 50;
+  --algo-node: 73 91 65;
+  --algo-frontier: 55 118 90;
+  --algo-expanded: 181 83 110;
+  --algo-current: 55 68 50;
+  --algo-path: 176 110 20;
+  --bidi-forward: 55 118 90;
+  --bidi-backward: 181 83 110;
+  --start: 36 120 91;
+  --goal: 190 62 88;
+  --decor-pink: 237 177 193;
+  --decor-lilac: 180 202 169;
+  --decor-mint: 214 228 204;
+  --shadow-float: 0 14px 30px rgb(71 91 62 / 0.14), 0 3px 10px rgb(55 118 90 / 0.08);
+}
+
+:root[data-theme="lemon"] {
+  color-scheme: light;
+  --surface: 255 252 242;
+  --surface-map: 250 250 235;
+  --surface-rail: 255 249 225;
+  --surface-panel: 255 254 248;
+  --surface-control: 250 244 217;
+  --surface-raised: 255 255 255;
+  --surface-border: 237 220 153;
+  --surface-border-strong: 201 178 94;
+  --ink: 72 67 38;
+  --ink-dim: 106 98 57;
+  --ink-faint: 145 135 87;
+  --hl: 72 67 38;
+  --algo-node: 91 84 48;
+  --algo-frontier: 0 118 139;
+  --algo-expanded: 106 91 173;
+  --algo-current: 72 67 38;
+  --algo-path: 174 112 0;
+  --bidi-forward: 0 118 139;
+  --bidi-backward: 190 65 105;
+  --start: 57 124 64;
+  --goal: 188 53 72;
+  --decor-pink: 253 230 138;
+  --decor-lilac: 221 231 160;
+  --decor-mint: 255 244 194;
+  --shadow-float: 0 14px 30px rgb(120 101 26 / 0.13), 0 3px 10px rgb(174 112 0 / 0.08);
 }
 
 @layer base {

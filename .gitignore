@@ -21,9 +21,6 @@ dist/
 .env.*
 !.env.example
 
-# Raw intermediate data (graphml, tomtom raw) — rebuilt by scripts/01-03
-data/raw/
-
 # Node / Next.js (frontend, Phase 5)
 node_modules/
 .next/

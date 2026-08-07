@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Be_Vietnam_Pro, JetBrains_Mono } from "next/font/google";
 import { AppShell } from "@/components/app-shell";
+import { DEFAULT_THEME, THEME_STORAGE_KEY, THEME_VALUES } from "@/lib/theme";
 import "./globals.css";
 
 const beVietnam = Be_Vietnam_Pro({
@@ -24,11 +25,11 @@ export const metadata: Metadata = {
 };
 
 // đặt data-theme TRƯỚC khi paint để không nháy theme (FOUC)
-const themeInit = `(function(){try{var t=localStorage.getItem("traffic-theme-pastel-v1");document.documentElement.setAttribute("data-theme",t==="dark"?"dark":"light");}catch(e){document.documentElement.setAttribute("data-theme","light");}})();`;
+const themeInit = `(function(){try{var a=${JSON.stringify(THEME_VALUES)};var t=localStorage.getItem(${JSON.stringify(THEME_STORAGE_KEY)});document.documentElement.setAttribute("data-theme",a.indexOf(t)>=0?t:${JSON.stringify(DEFAULT_THEME)});}catch(e){document.documentElement.setAttribute("data-theme",${JSON.stringify(DEFAULT_THEME)});}})();`;
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="vi" data-theme="light" suppressHydrationWarning
+    <html lang="vi" data-theme={DEFAULT_THEME} suppressHydrationWarning
       className={`${beVietnam.variable} ${jetbrains.variable}`}>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeInit }} />

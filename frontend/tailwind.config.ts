@@ -1,6 +1,6 @@
 // Design tokens — the single source of truth is docs/DESIGN.md.
 // Colors resolve through CSS variables (app/globals.css) so the whole UI
-// switches Dark/Light by flipping [data-theme] on <html>.
+// switches the selected palette by flipping [data-theme] on <html>.
 import type { Config } from "tailwindcss";
 
 const v = (name: string) => `rgb(var(--${name}) / <alpha-value>)`;

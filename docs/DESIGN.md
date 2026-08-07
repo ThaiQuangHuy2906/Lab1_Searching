@@ -12,13 +12,21 @@
 
 ## 1. Định hướng
 
-Cảm hứng: **phòng điều khiển giao thông + app gọi xe Việt Nam**. Có **2 chế độ**
-(cập nhật theo yêu cầu duyệt vòng 1, 2026-07-26):
-- **Tối (mặc định)** — lý do chức năng: nền tối làm lớp phủ thuật toán và thang màu
-  ùn tắc nổi rõ nhất. **Quy ước: video demo + screenshot báo cáo dùng chế độ Tối**
-  để mọi hình nhất quán (nhóm có thể đổi quy ước này, nhưng phải chọn MỘT).
-- **Sáng** — cùng hệ token, giá trị đổi qua CSS variables; basemap đổi sang Carto
-  positron. Toggle ở góc phải-trên, lưu lựa chọn vào localStorage.
+Cảm hứng: **phòng điều khiển giao thông + app gọi xe Việt Nam**. Bộ chọn giao diện
+ở góc phải-trên cung cấp bảy theme và lưu lựa chọn vào `localStorage`:
+
+- **Mặc định** — control room tối, cyan/violet/amber; đây là theme khởi tạo và là
+  quy ước dùng cho video demo + screenshot báo cáo để mọi hình nhất quán.
+- **Trắng** — nền sáng trung tính, basemap Carto positron.
+- **Đen** — nền gần đen, điểm nhấn xanh điện; basemap Carto dark-matter.
+- **Hồng baby** — hồng phấn + xanh baby theo ảnh tham khảo người dùng.
+- **Lavender** — tím lavender + hồng berry.
+- **Sage & kem** — xanh sage + kem + hồng chỉ.
+- **Lemon** — vàng chanh + xanh lá nhạt.
+
+Đổi theme chỉ thay token màu/basemap; bố cục, dữ liệu, trạng thái hành trình,
+semantic của thuật toán và khả năng tương tác không đổi. Mọi theme sáng dùng
+`color-scheme: light`; `default` và `dark` dùng `color-scheme: dark`.
 
 **Cấm:** gradient, glassmorphism, shadow MÀU, animation trang trí. Hiệu ứng được phép:
 vòng pulse ở node đang expand (§3), transition ẩn/hiện drawer, và các **micro-feedback
@@ -39,10 +47,11 @@ Header hai rail, toolbar map, timeline, legend và banner chọn điểm cùng d
 nhịp cao 36–52 px, bán kính 8 px và chrome nổi trung tính. Light mode có giá trị
 surface/border riêng, không suy ra bằng cách đảo màu dark mode.
 
-## 2. Token nền tảng (Dark | Light)
+## 2. Token nền tảng
 
 Mọi token là CSS variable trên `:root[data-theme]`; tailwind trỏ vào biến — component
-chỉ dùng tên token, KHÔNG dùng mã màu trực tiếp.
+chỉ dùng tên token, KHÔNG dùng mã màu trực tiếp. Bảng Dark | Light bên dưới tiếp tục
+là cặp chuẩn để kiểm tra semantic; năm palette còn lại ánh xạ cùng bộ token.
 
 | Token | Tối | Sáng | Dùng cho |
 |---|---|---|---|
@@ -60,6 +69,25 @@ chỉ dùng tên token, KHÔNG dùng mã màu trực tiếp.
 | `hl` (row highlight) | white @10% | zinc-950 @8% | hàng đang expand trong bảng g/h/f |
 | Bo góc | **8px** (`rounded-lg`) — cả 2 chế độ | | thống nhất mọi panel/card/nút/input |
 | Focus ring | 2px `algo-frontier`, offset 2px | | mọi phần tử focus bằng bàn phím |
+
+### 2.1. Palette theme mở rộng
+
+Các giá trị trong bảng là mã màu chuẩn; CSS dùng RGB triplet tương đương. `surface`
+là nền trang, `panel` là card, `ink` là chữ chính; ba cột cuối là màu semantic
+frontier / expanded / path nên không được dùng như màu trang trí tùy ý.
+
+| Theme ID | Surface | Panel | Ink | Frontier | Expanded | Path | Bộ trang trí |
+|---|---|---|---|---|---|---|---|
+| `default` | `#09090b` | `#16171b` | `#f4f4f5` | `#22d3ee` | `#a78bfa` | `#fbbf24` | cyan · violet · amber |
+| `light` | `#f5f7fa` | `#ffffff` | `#18181b` | `#0891b2` | `#7c3aed` | `#d97706` | sky · lavender · amber |
+| `dark` | `#000000` | `#0c0f14` | `#f8fafc` | `#38bdf8` | `#818cf8` | `#facc15` | blue · indigo · yellow |
+| `pink` | `#fff7fb` | `#fffcfe` | `#582e43` | `#d64b87` | `#478cbf` | `#c56f13` | `#f4a9cc` · `#bddbf2` · `#ffe1eb` |
+| `lavender` | `#f9f6ff` | `#fdfbff` | `#41315c` | `#704eb8` | `#be4682` | `#b45e0e` | `#e4b7dd` · `#c9b8eb` · `#d8e4fb` |
+| `sage` | `#f7f9f2` | `#fffdf7` | `#374432` | `#37765a` | `#b5536e` | `#b06e14` | `#edb1c1` · `#b4caa9` · `#d6e4cc` |
+| `lemon` | `#fffcf2` | `#fffef8` | `#484326` | `#00768b` | `#6a5bad` | `#ae7000` | `#fde68a` · `#dde7a0` · `#fff4c2` |
+
+Theme picker hiển thị nhãn tiếng Việt và ba swatch xem nhanh; danh sách dùng
+Radix Select, điều khiển được bằng bàn phím, có accessible label “Chọn giao diện”.
 
 **Font:** `Be Vietnam Pro` (400/500/700) toàn UI — đủ dấu Việt đẹp. `JetBrains Mono`
 cho **mọi con số** (metrics, g/h/f, bước, toạ độ) với `tabular-nums`.
@@ -88,7 +116,7 @@ trên nền trắng; node đang expand đảo trắng→đen.
 | `cong-1..5` | `#10b981 #a3e635 #facc15 #f97316 #ef4444` | `#059669 #4d7c0f #a16207 #ea580c #dc2626` (lime-700/yellow-700 — đo WCAG trên nền positron) | thang ùn tắc 1→5 |
 | Start | chip **"Đi"**: nền emerald-700 `#047857`, chữ trắng — CỐ ĐỊNH 2 chế độ (chữ 5,48) | | điểm xuất phát; token `start` (marker/badge) vẫn emerald-500/600 theo chế độ |
 | Goal | chip **"Đến"**: nền red-600 `#dc2626`, chữ trắng — CỐ ĐỊNH 2 chế độ (đồ hoạ ≥3,5 / chữ 4,83) | | điểm đích; token `goal` vẫn red-500/600 theo chế độ |
-| Stops | số trên nền amber theo chế độ, chữ **zinc-950** cả 2 (đo: trắng trên amber-600 chỉ 3,19) | | điểm giao multiroute |
+| Stops | số trên nền amber theo từng theme; chữ sáng/tối được ghép theo palette để đạt tương phản chữ ≥4,5 | | điểm giao multiroute |
 | So sánh | A `algo-path` liền 6px · B `algo-frontier` nét đứt DÀY 5px [10,5] trên CASING liền, dịch ngang **4 px chỉ ở tầng hiển thị** để lộ các cạnh trùng (tọa độ/metrics không đổi) | | 2 tuyến dễ đối chiếu |
 | Nhãn POI trên map | zinc-50 TRẮNG HẲN, 12,5px đậm 600, halo tối 3px (v8d — kèm fix stale updateTriggers khi đổi theme) | zinc-800 ĐẬM HẲN viền trắng (v8e) | TextLayer G_demo |
 | Basemap | Carto **dark-matter** | Carto **positron** | không cần key |

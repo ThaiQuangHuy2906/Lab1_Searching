@@ -1,6 +1,6 @@
 # SCHEMA.md — Các hợp đồng dữ liệu và API
 
-> **Trạng thái kiểm lại 2026-08-07:** §A–§D mô tả contract base đang chạy. §E khóa phần
+> **Trạng thái kiểm lại 2026-08-08:** §A–§D mô tả contract base đang chạy. §E khóa phần
 > mở rộng đã được người dùng duyệt: GraphView dạy học, scenario edge-override
 > request-scoped, `AppliedScenario`/fingerprint và ATSP optimization trace.
 > **Milestone 2 đã triển khai** GraphView, graph/traffic response echo và
@@ -11,6 +11,8 @@
 > derived cost/`v_max`, fingerprint server-authoritative và editor frontend.
 > Không được tự coi code cũ là authority để bỏ hoặc đổi các semantics đã khóa ở §E.
 > Dữ liệu benchmark trong `results/` là artifact cũ và không thay đổi contract này.
+> UI Clarity Phase không đổi API/schema: backend/store tiếp tục dùng mét/giây;
+> frontend chỉ chuyển sang km/phút ở tầng presentation theo `docs/DESIGN.md` §12.
 >
 > **Quy tắc vàng của nhóm:** không ai code trước khi 3 hợp đồng này được duyệt.
 > Sau khi duyệt, **mọi** thay đổi schema phải cập nhật file này và báo rõ trong tóm tắt phase (PROMPT-MASTER luật 2).

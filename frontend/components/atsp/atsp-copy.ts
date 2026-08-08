@@ -20,7 +20,3 @@ export const ATSP_METHOD_EXPLANATION: Record<TspMethod, string> = {
   sa:
     "Simulated Annealing thử các thay đổi thứ tự và có thể tạm chấp nhận bước kém hơn để thoát nghiệm cục bộ. Kết quả là nghiệm xấp xỉ, không phải chứng minh tối ưu toàn cục.",
 };
-
-export function atspCostUnit(mode: Mode) {
-  return mode === "distance" ? "m" : "s";
-}

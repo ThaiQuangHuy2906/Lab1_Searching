@@ -1,11 +1,9 @@
 "use client";
 
-// Panel trái 320px — thứ tự nhóm CỐ ĐỊNH theo DESIGN.md §4:
-// Bối cảnh -> Thuật toán -> Hành trình -> nút CHẠY lớn.
-// Tooltip = icon ? cạnh label (InfoTip); switch rows thẳng hàng (§8).
-
 import * as React from "react";
-import { ArrowDownUp, ChevronDown, Crosshair, Loader2, Play, Route, Sparkles, X } from "lucide-react";
+import {
+  ArrowDownUp, ChevronDown, Crosshair, Loader2, PanelLeftClose, Play, Route, X,
+} from "lucide-react";
 import { Button } from "./ui/button";
 import { Switch } from "./ui/switch";
 import { InfoTip } from "./ui/info-tip";
@@ -15,6 +13,12 @@ import {
 } from "./ui/select";
 import { Skeleton } from "./ui/skeleton";
 import { ALGORITHM_GROUPS } from "@/lib/algorithm-policy";
+import {
+  presentationEpsilonToRaw,
+  presentationUnitForMode,
+  rawEpsilonToPresentation,
+} from "@/lib/metric-presentation";
+import { ALGORITHM_SUMMARY } from "@/lib/ui-copy";
 import {
   isEndpointOptionAllowed,
   MULTI_ROUTE_ACTIVE_MESSAGE,
@@ -27,9 +31,11 @@ import {
   parseDemoNodeCount,
 } from "@/lib/graph-view";
 import { ALGO_LABEL, useApp } from "@/lib/store";
+import { useMobileDialogFocus } from "@/lib/use-mobile-dialog-focus";
+import { fmtVi } from "@/lib/format";
 import type { Algorithm, Mode, TimeSlot } from "@/lib/types";
 import { AtspSetup } from "./atsp/atsp-setup";
-import { EdgeWeightPresets } from "./edge-weight-presets";
+import { EdgeExperimentLauncher } from "./edge-weight-presets";
 
 const SLOTS: TimeSlot[] = ["07:30", "12:00", "17:30", "22:00"];
 const MODES: { v: Mode; label: string }[] = [
@@ -37,15 +43,12 @@ const MODES: { v: Mode; label: string }[] = [
   { v: "time", label: "Nhanh nhất" },
   { v: "distance", label: "Ngắn nhất" },
 ];
-// Nhóm dropdown theo bảo đảm lý thuyết (SCHEMA §B.5): IDA* của dự án
-// dùng ngưỡng nới ε nên phải đứng riêng, không được gọi là tối ưu tuyệt đối.
-// Màu label = đúng ngữ nghĩa Badge ok/warn dùng khắp drawer (start / algo-path).
 
 function FieldLabel({ children, tip, dot }: {
   children: React.ReactNode; tip?: string; dot?: string;
 }) {
   return (
-    <span className="flex items-center gap-1.5 text-xs font-medium text-ink-dim">
+    <span className="flex items-center gap-1.5 text-sm font-medium text-ink-dim">
       {dot && <span className="size-2 rounded-full" style={{ background: dot }} />}
       {children}
       {tip && <InfoTip text={tip} />}
@@ -65,59 +68,49 @@ function Field({ label, tip, dot, children }: {
 }
 
 function SwitchRow({ label, tip, checked, onChange }: {
-  label: string; tip?: string; checked: boolean; onChange: (v: boolean) => void;
+  label: string; tip?: string; checked: boolean; onChange: (value: boolean) => void;
 }) {
   return (
-    <div className="flex min-h-9 items-center justify-between gap-2">
+    <div className="flex min-h-11 items-center justify-between gap-2">
       <FieldLabel tip={tip}>{label}</FieldLabel>
       <Switch checked={checked} onCheckedChange={onChange} aria-label={label} />
     </div>
   );
 }
 
-function Section({ title, tip, children }: {
-  title: string; tip?: string; children: React.ReactNode;
+function Section({ title, tip, children, defaultOpen = true }: {
+  title: string; tip?: string; children: React.ReactNode; defaultOpen?: boolean;
 }) {
-  // v11: thu gọn được — 1080p từng phải cuộn mới thấy trọn Hành trình;
-  // mặc định MỞ hết, trạng thái chỉ sống trong phiên (không persist)
-  const [open, setOpen] = React.useState(true);
+  const [open, setOpen] = React.useState(defaultOpen);
   return (
-    <div className="pastel-card flex shrink-0 flex-col gap-2.5 rounded-2xl border border-surface-border/80 p-3.5">
+    <section className="app-card flex shrink-0 flex-col gap-2.5 rounded-lg border border-surface-border/80 p-3">
       <div className="flex items-center gap-2">
         <button
           type="button"
           aria-expanded={open}
-          onClick={() => setOpen(!open)}
-          className="-m-1 flex min-h-9 min-w-0 flex-1 items-center gap-2 rounded-lg px-1 text-[11px] font-bold uppercase tracking-wider text-ink transition-colors hover:bg-surface-control"
+          onClick={() => setOpen((value) => !value)}
+          className="-m-1 flex min-h-10 min-w-0 flex-1 items-center gap-2 rounded-lg px-1 text-sm font-bold text-ink transition-colors hover:bg-surface-control"
         >
-          <Sparkles className="size-3.5 shrink-0 text-algo-frontier" />
           <span className="truncate">{title}</span>
-          <ChevronDown
-            className={"ml-auto size-3.5 shrink-0 text-ink-dim transition-transform " +
-              (open ? "" : "-rotate-90")}
-          />
+          <ChevronDown className={`ml-auto size-4 shrink-0 text-ink-dim transition-transform ${open ? "" : "-rotate-90"}`} />
         </button>
         {tip && <InfoTip text={tip} />}
       </div>
       {open && children}
-    </div>
+    </section>
   );
 }
 
 function NodePicker({ kind }: { kind: "start" | "goal" }) {
-  const graphData = useApp((s) => s.graphData);
-  const graph = useApp((s) => s.graph);
-  const value = useApp((s) => (kind === "start" ? s.start : s.goal));
-  // the OTHER endpoint is excluded from this dropdown: Đi === Đến used to
-  // reach the server and 500 before the L3-01 backend guard existed
-  const other = useApp((s) => (kind === "start" ? s.goal : s.start));
-  const stops = useApp((s) => s.stops);
-  const pickTarget = useApp((s) => s.pickTarget);
-  const busy = useApp((s) => s.running || s.comparing || s.multiRunning);
-  const set = useApp((s) => s.set);
+  const graphData = useApp((state) => state.graphData);
+  const graph = useApp((state) => state.graph);
+  const value = useApp((state) => (kind === "start" ? state.start : state.goal));
+  const other = useApp((state) => (kind === "start" ? state.goal : state.start));
+  const stops = useApp((state) => state.stops);
+  const pickTarget = useApp((state) => state.pickTarget);
+  const busy = useApp((state) => state.running || state.comparing || state.multiRunning);
+  const set = useApp((state) => state.set);
   const isDemo = graph === "demo";
-
-  // ride-hailing style (DESIGN v9d): fixed role color, hollow dot -> filled
   const roleColor = kind === "start" ? "rgb(var(--start))" : "rgb(var(--goal))";
   const roleDot = (
     <span
@@ -127,16 +120,15 @@ function NodePicker({ kind }: { kind: "start" | "goal" }) {
     />
   );
   const roleBorder = value ? { borderColor: roleColor } : undefined;
-
-  // nút ✕ xoá chọn — cùng kiểu với ✕ của hàng Stops (DESIGN §4, duyệt v8)
   const clear = value ? (
     <button
+      type="button"
       aria-label={kind === "start" ? "Xoá điểm đi" : "Xoá điểm đến"}
       className="inline-flex size-9 shrink-0 items-center justify-center rounded-lg text-ink-dim transition-colors hover:bg-goal/10 hover:text-goal disabled:pointer-events-none disabled:opacity-40"
       disabled={busy}
       onClick={() => set(kind === "start" ? { start: null } : { goal: null })}
     >
-      <X className="size-3.5" />
+      <X className="size-4" />
     </button>
   ) : null;
 
@@ -146,22 +138,24 @@ function NodePicker({ kind }: { kind: "start" | "goal" }) {
         <div className="relative min-w-0 flex-1">
           {roleDot}
           <Select
-            value={value ?? ""} disabled={busy || (kind === "goal" && stops.length > 0)}
-            onValueChange={(v) => {
-              if (isEndpointOptionAllowed(kind, v, other, stops))
-                set(kind === "start" ? { start: v } : { goal: v });
+            value={value ?? ""}
+            disabled={busy || (kind === "goal" && stops.length > 0)}
+            onValueChange={(nodeId) => {
+              if (isEndpointOptionAllowed(kind, nodeId, other, stops))
+                set(kind === "start" ? { start: nodeId } : { goal: nodeId });
             }}
           >
-            <SelectTrigger aria-label={kind === "start" ? "Điểm đi" : "Điểm đến"}
-              className={"pl-8 " + (value ? "font-medium" : "")} style={roleBorder}>
+            <SelectTrigger
+              aria-label={kind === "start" ? "Điểm đi" : "Điểm đến"}
+              className={`pl-8 ${value ? "font-medium" : ""}`}
+              style={roleBorder}
+            >
               <SelectValue placeholder={kind === "start" ? "Chọn điểm xuất phát…" : "Chọn điểm đến…"} />
             </SelectTrigger>
             <SelectContent>
               {graphData?.nodes
-                .filter((n) => isEndpointOptionAllowed(kind, n.id, other, stops))
-                .map((n) => (
-                  <SelectItem key={n.id} value={n.id}>{n.name ?? n.id}</SelectItem>
-                ))}
+                .filter((node) => isEndpointOptionAllowed(kind, node.id, other, stops))
+                .map((node) => <SelectItem key={node.id} value={node.id}>{node.name ?? node.id}</SelectItem>)}
             </SelectContent>
           </Select>
         </div>
@@ -169,21 +163,21 @@ function NodePicker({ kind }: { kind: "start" | "goal" }) {
       </div>
     );
   }
+
   const active = pickTarget === kind;
   return (
     <div className="flex items-center gap-1">
       <div className="relative min-w-0 flex-1">
         {roleDot}
         <Button
-          variant="secondary" disabled={busy || (kind === "goal" && stops.length > 0)}
-          className={"w-full pl-8 " + (active ? "border-algo-frontier text-algo-frontier" : "")}
+          variant="secondary"
+          disabled={busy || (kind === "goal" && stops.length > 0)}
+          className={`w-full pl-8 ${active ? "border-algo-frontier text-algo-frontier" : ""}`}
           style={active ? undefined : roleBorder}
           onClick={() => set({ pickTarget: active ? null : kind })}
         >
           <Crosshair />
-          {value
-            ? <>Đã chọn: <span className="font-mono">{value}</span></>
-            : active ? "Bấm vào bản đồ…" : "Chọn trên bản đồ"}
+          {value ? <>Đã chọn: <span className="font-mono">{value}</span></> : active ? "Bấm vào bản đồ…" : "Chọn trên bản đồ"}
         </Button>
       </div>
       {clear}
@@ -192,32 +186,32 @@ function NodePicker({ kind }: { kind: "start" | "goal" }) {
 }
 
 function SwapButton() {
-  const s = useApp();
-  const busy = s.running || s.comparing || s.multiRunning;
+  const state = useApp();
+  const busy = state.running || state.comparing || state.multiRunning;
   return (
     <div className="z-10 -mt-1.5 -mb-3.5 flex justify-center">
       <Button
-        variant="ghost" size="iconSm" aria-label="Đảo chiều Đi ↔ Đến"
+        variant="ghost"
+        size="iconSm"
+        aria-label="Đảo chiều Đi và Đến"
         className="rounded-full border border-surface-border bg-surface-control shadow-sm"
-        disabled={busy || s.stops.length > 0 || (!s.start && !s.goal)}
-        onClick={() => s.set({ start: s.goal, goal: s.start })}
+        disabled={busy || state.stops.length > 0 || (!state.start && !state.goal)}
+        onClick={() => state.set({ start: state.goal, goal: state.start })}
       >
-        <ArrowDownUp className="size-3.5" />
+        <ArrowDownUp className="size-4" />
       </Button>
     </div>
   );
 }
 
 function GraphNodeCountInput({ isDemo, busy }: { isDemo: boolean; busy: boolean }) {
-  const graphView = useApp((s) => s.graphView);
-  const graphLoading = useApp((s) => s.graphLoading);
-  const setGraphView = useApp((s) => s.setGraphView);
+  const graphView = useApp((state) => state.graphView);
+  const graphLoading = useApp((state) => state.graphLoading);
+  const setGraphView = useApp((state) => state.setGraphView);
   const selectedCount = isDemo ? nodeCountForGraphView(graphView) : 2118;
   const [draft, setDraft] = React.useState(String(selectedCount));
 
-  React.useEffect(() => {
-    setDraft(String(selectedCount));
-  }, [selectedCount]);
+  React.useEffect(() => setDraft(String(selectedCount)), [selectedCount]);
 
   const parsed = isDemo ? parseDemoNodeCount(draft) : null;
   const invalid = isDemo && parsed === null;
@@ -237,221 +231,206 @@ function GraphNodeCountInput({ isDemo, busy }: { isDemo: boolean; busy: boolean 
             min={MIN_DEMO_NODE_COUNT}
             max={MAX_DEMO_NODE_COUNT}
             step={1}
-            aria-label="Số node muốn hiển thị"
+            aria-label="Số điểm muốn hiển thị"
+            aria-describedby={invalid ? "graph-view-error" : undefined}
             aria-invalid={invalid}
             value={draft}
             disabled={!isDemo || busy || graphLoading}
             onChange={(event) => setDraft(event.target.value)}
-            onKeyDown={(event) => {
-              if (event.key === "Enter") apply();
-            }}
-            className="h-10 w-full appearance-none rounded-lg border border-surface-border bg-surface-control px-3 pr-14 text-sm font-semibold text-ink outline-none transition-colors [appearance:textfield] focus:border-algo-frontier focus:ring-2 focus:ring-algo-frontier/25 disabled:cursor-not-allowed disabled:opacity-60 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+            onKeyDown={(event) => { if (event.key === "Enter") apply(); }}
+            className="h-10 w-full appearance-none rounded-lg border border-surface-border bg-surface-control px-3 pr-16 text-sm font-semibold text-ink outline-none transition-colors [appearance:textfield] focus:border-algo-frontier focus:ring-2 focus:ring-algo-frontier/25 disabled:cursor-not-allowed disabled:opacity-60 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
           />
-          <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[11px] text-ink-faint">
-            node
-          </span>
+          <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-ink-faint">điểm</span>
         </div>
-        <Button type="button" size="sm" className="h-10 px-3"
-          disabled={!isDemo || busy || graphLoading || invalid || unchanged}
-          onClick={apply}>
-          {graphLoading ? <Loader2 className="animate-spin" /> : "Hiện"}
+        <Button type="button" size="sm" className="h-10 px-3" disabled={!isDemo || busy || graphLoading || invalid || unchanged} onClick={apply}>
+          {graphLoading ? <Loader2 className="animate-spin" /> : "Áp dụng"}
         </Button>
       </div>
-      <p aria-live="polite"
-        className={`text-[10px] leading-4 ${invalid ? "text-goal" : "text-ink-faint"}`}>
-        {!isDemo
-          ? "G_real luôn dùng toàn bộ 2 118 node OSM."
-          : invalid
-            ? `Nhập một số nguyên từ ${MIN_DEMO_NODE_COUNT} đến ${MAX_DEMO_NODE_COUNT}.`
-            : `Đang hiển thị ${selectedCount}/51 node; nhập số khác rồi bấm Hiện.`}
-      </p>
+      {invalid && (
+        <p id="graph-view-error" role="alert" className="text-xs leading-5 text-goal">
+          Nhập số nguyên từ {MIN_DEMO_NODE_COUNT} đến {MAX_DEMO_NODE_COUNT}.
+        </p>
+      )}
     </div>
   );
 }
 
-export function ControlPanel() {
-  const s = useApp();
-  const isDemo = s.graph === "demo";
-  const busy = s.running || s.comparing || s.multiRunning;
-  const epsilonUnit = s.mode === "distance" ? "mét" : "giây";
+type ControlPanelProps = {
+  mobileOpen?: boolean;
+  onMobileClose?: () => void;
+};
+
+export function ControlPanel({ mobileOpen = false, onMobileClose }: ControlPanelProps) {
+  const state = useApp();
+  const isDemo = state.graph === "demo";
+  const busy = state.running || state.comparing || state.multiRunning;
+  const epsilonUnit = presentationUnitForMode(state.mode);
+  const epsilonDisplay = state.epsilon === "" ? "" : rawEpsilonToPresentation(state.mode, state.epsilon);
+  const epsilonMin = state.mode === "distance" ? 0.001 : 0.01;
+  const epsilonStep = state.mode === "distance" ? 0.001 : 0.1;
+  const epsilonDefault = rawEpsilonToPresentation(state.mode, 5);
+  const epsilonDefaultText = fmtVi(epsilonDefault, state.mode === "distance" ? 3 : 1);
+  const panelRef = React.useRef<HTMLElement>(null);
+  const headingRef = React.useRef<HTMLHeadingElement>(null);
+  const closeMobile = React.useCallback(() => onMobileClose?.(), [onMobileClose]);
+  const onMobilePanelKeyDownCapture = useMobileDialogFocus(mobileOpen, panelRef, headingRef, closeMobile);
+  const algorithmShortName = ALGO_LABEL[state.algorithm];
+  const routeAction = state.stops.length > 0
+    ? `Chạy qua ${state.stops.length} điểm`
+    : `Chạy ${algorithmShortName}`;
+  const overrideCount = Object.keys(state.edgeOverrides).length;
+  const ctaLabel = overrideCount > 0
+    ? `${routeAction} · ${overrideCount} đoạn thử`
+    : routeAction;
+  const mobileClasses = mobileOpen
+    ? "max-[959px]:fixed max-[959px]:inset-0 max-[959px]:z-50 max-[959px]:flex max-[959px]:h-[100dvh] max-[959px]:w-full max-[959px]:rounded-none"
+    : "max-[959px]:hidden";
 
   return (
-    <aside aria-label="Bảng điều khiển định tuyến" className="pastel-rail relative z-10 flex h-full w-80 shrink-0 flex-col overflow-hidden rounded-[22px] border border-surface-border/80 max-[900px]:w-[280px]">
-      <div className="pastel-header flex h-[72px] shrink-0 items-center gap-2.5 border-b border-surface-border/80 px-4">
-        <span className="flex size-10 shrink-0 items-center justify-center rounded-2xl border border-algo-frontier/25 bg-surface-raised/80 text-algo-frontier shadow-sm">
+    <aside
+      ref={panelRef}
+      aria-label="Bảng điều khiển định tuyến"
+      aria-modal={mobileOpen || undefined}
+      role={mobileOpen ? "dialog" : undefined}
+      onKeyDownCapture={mobileOpen ? onMobilePanelKeyDownCapture : undefined}
+      className={`app-rail relative z-10 flex h-full w-80 shrink-0 flex-col overflow-hidden rounded-xl border border-surface-border/80 min-[960px]:max-[1279px]:w-[304px] ${mobileClasses}`}
+    >
+      <div className="app-header flex min-h-[72px] shrink-0 items-center gap-2.5 border-b border-surface-border/80 px-4 py-2">
+        <span className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-algo-frontier/25 bg-surface-raised text-algo-frontier">
           <Route className="size-[18px]" />
         </span>
-        <div className="min-w-0">
-          <h1 className="truncate text-[15px] font-bold leading-5">Định tuyến giao thông TP.HCM</h1>
-          <p className="flex items-center gap-1 truncate text-xs text-ink-dim">
-            Shipper đa điểm — Lab 1 AI <Sparkles className="size-3 text-algo-frontier" />
-          </p>
+        <div className="min-w-0 flex-1">
+          <h1 ref={headingRef} tabIndex={-1} className="break-words text-[19px] font-bold leading-5 text-ink">Định tuyến giao thông TP.HCM</h1>
+          <p className="text-xs leading-5 text-ink-dim">Shipper đa điểm — Lab 1 AI</p>
         </div>
+        <Button
+          variant="ghost"
+          size="iconSm"
+          className="hidden max-[959px]:inline-flex"
+          aria-label="Đóng bảng thiết lập"
+          onClick={closeMobile}
+        >
+          <PanelLeftClose />
+        </Button>
       </div>
 
       <div className="flex min-h-0 flex-1 flex-col gap-2.5 overflow-x-hidden overflow-y-auto p-3">
-      <Section title="Bối cảnh">
-        <Field label="Đồ thị">
-          <Select value={s.graph} disabled={busy}
-            onValueChange={(v) => void s.loadGraph(v as "demo" | "real")}>
-            <SelectTrigger aria-label="Đồ thị"><SelectValue /></SelectTrigger>
+        <Section title="Thiết lập bài toán">
+          <Field label="Đồ thị">
+            <Select value={state.graph} disabled={busy} onValueChange={(value) => void state.loadGraph(value as "demo" | "real")}>
+              <SelectTrigger aria-label="Đồ thị"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="demo">G_demo — 51 địa danh minh hoạ</SelectItem>
+                <SelectItem value="real">G_real — 2.118 nút từ topology OSM</SelectItem>
+              </SelectContent>
+            </Select>
+          </Field>
+          <Field
+            label="Số điểm hiển thị"
+            tip="Nhập từ 3 đến 51. Đổi số sẽ tải lại đồ thị con và xoá hành trình, kết quả cũ."
+          >
+            <GraphNodeCountInput isDemo={isDemo} busy={busy} />
+          </Field>
+          <Field label="Khung giờ" tip="Mức ùn tắc trên từng đoạn đường thay đổi theo bốn mốc giờ chụp.">
+            <div role="group" aria-label="Chọn khung giờ" className="grid grid-cols-4 gap-0.5 rounded-lg border border-surface-border bg-surface-control p-0.5">
+              {SLOTS.map((slot) => (
+                <Button key={slot} size="sm" disabled={busy} aria-pressed={state.slot === slot}
+                  variant={state.slot === slot ? "default" : "ghost"} className="h-9 px-0 font-mono text-xs" onClick={() => state.setSlot(slot)}>
+                  {slot}
+                </Button>
+              ))}
+            </div>
+          </Field>
+          <Field label="Tiêu chí tối ưu" tip="Cân bằng cộng phần phạt rủi ro vào thời gian; hai chế độ còn lại lần lượt chỉ tối ưu thời gian hoặc quãng đường.">
+            <div role="group" aria-label="Chọn tiêu chí tối ưu" className="grid grid-cols-3 gap-0.5 rounded-lg border border-surface-border bg-surface-control p-0.5">
+              {MODES.map((mode) => (
+                <Button key={mode.v} size="sm" disabled={busy} aria-pressed={state.mode === mode.v}
+                  variant={state.mode === mode.v ? "default" : "ghost"} className="h-9 px-0 text-xs" onClick={() => state.set({ mode: mode.v })}>
+                  {mode.label}
+                </Button>
+              ))}
+            </div>
+          </Field>
+        </Section>
+
+        <Section title="Hành trình">
+          <Field label="Đi — điểm xuất phát"><NodePicker kind="start" /></Field>
+          <SwapButton />
+          <Field label={state.stops.length > 0 ? "Đến — điểm giao cuối trong danh sách" : "Đến — điểm đích"}><NodePicker kind="goal" /></Field>
+          <AtspSetup />
+        </Section>
+
+        <Section
+          title="Thuật toán"
+          tip="UCS, Dijkstra, A* và Dijkstra hai chiều đảm bảo tối ưu; IDA* dùng biên ε; các thuật toán còn lại là đánh đổi."
+        >
+          <Select value={state.algorithm} disabled={busy} onValueChange={(value) => state.set({ algorithm: value as Algorithm })}>
+            <SelectTrigger aria-label="Thuật toán"><SelectValue /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="demo">G_demo — 51 địa danh thật</SelectItem>
-              <SelectItem value="real">G_real — 2 118 nút OSM</SelectItem>
+              {ALGORITHM_GROUPS.map((group) => (
+                <SelectGroup key={group.label}>
+                  <SelectLabel className={`flex items-center gap-1.5 ${group.cls}`}>
+                    <span className="size-1.5 rounded-full bg-current" />{group.label}
+                  </SelectLabel>
+                  {group.algos.map((algorithm) => <SelectItem key={algorithm} value={algorithm}>{ALGO_LABEL[algorithm]}</SelectItem>)}
+                </SelectGroup>
+              ))}
             </SelectContent>
           </Select>
-        </Field>
-        <Field label="Graph view"
-          tip="Nhập từ 3 đến 51. Backend tạo đồ thị con thật với đúng số node; đổi số sẽ xoá hành trình và kết quả cũ.">
-          <GraphNodeCountInput isDemo={isDemo} busy={busy} />
-        </Field>
-        <Field label="Khung giờ" tip="Mức ùn tắc của từng đoạn đường thay đổi theo 4 mốc giờ chụp.">
-          <div
-            role="group"
-            aria-label="Chọn khung giờ"
-            className="grid grid-cols-4 gap-0.5 rounded-lg border border-surface-border bg-surface-control p-0.5"
-          >
-            {SLOTS.map((slot) => (
-              <Button
-                key={slot}
-                size="sm"
-                disabled={busy}
-                aria-pressed={s.slot === slot}
-                variant={s.slot === slot ? "default" : "ghost"}
-                className="h-8 px-0 font-mono text-xs"
-                onClick={() => s.setSlot(slot)}
-              >
-                {slot}
-              </Button>
-            ))}
-          </div>
-        </Field>
-        <Field label="Tiêu chí tối ưu"
-          tip="Cân bằng (mặc định) = thời gian + phạt rủi ro (giây); Nhanh nhất = chỉ thời gian; Ngắn nhất = chỉ quãng đường.">
-          {/* segmented thay dropdown (v11): thấy đủ 3 tiêu chí một lúc — đúng
-              điểm nhấn "3 mode" khi demo chấm, đỡ một cú click */}
-          <div
-            role="group"
-            aria-label="Chọn tiêu chí tối ưu"
-            className="grid grid-cols-3 gap-0.5 rounded-lg border border-surface-border bg-surface-control p-0.5"
-          >
-            {MODES.map((m) => (
-              <Button
-                key={m.v}
-                size="sm"
-                disabled={busy}
-                aria-pressed={s.mode === m.v}
-                variant={s.mode === m.v ? "default" : "ghost"}
-                className="h-8 px-0 text-xs"
-                onClick={() => s.set({ mode: m.v })}
-              >
-                {m.label}
-              </Button>
-            ))}
-          </div>
-        </Field>
-        <div className="flex flex-col">
-          <SwitchRow label="Lớp ùn tắc"
-            tip="Tô màu từng đoạn đường theo mức ùn tắc 1→5 của khung giờ đang chọn."
-            checked={s.trafficLayer} onChange={(v) => s.set({ trafficLayer: v })} />
-          <SwitchRow label="Chế độ offline"
-            tip="Tắt bản đồ nền, vẽ thuần đồ thị — bảo hiểm khi wifi chập chờn."
-            checked={s.offlineMode} onChange={(v) => s.set({ offlineMode: v })} />
-        </div>
-      </Section>
+          <p className="rounded-lg border border-surface-border bg-surface-control/70 px-2.5 py-2 text-xs leading-5 text-ink-dim">{ALGORITHM_SUMMARY[state.algorithm]}</p>
+          {state.algorithm === "beam" && (
+            <Field label="Độ rộng Beam (k)" tip="Số điểm tốt nhất giữ lại ở mỗi lớp; k nhỏ nhanh hơn nhưng có thể mất đường đi.">
+              <input type="number" min={1} disabled={busy} value={state.beamWidth}
+                placeholder={isDemo ? "Mặc định 5" : "Mặc định 50"}
+                className="h-10 rounded-lg border border-surface-border bg-surface-control px-3 font-mono text-sm hover:border-surface-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-algo-frontier focus-visible:ring-offset-2 focus-visible:ring-offset-surface-panel disabled:cursor-not-allowed disabled:opacity-55"
+                onChange={(event) => state.set({ beamWidth: event.target.value === "" ? "" : Number(event.target.value) })} />
+            </Field>
+          )}
+          {state.algorithm === "idastar" && (
+            <Field label={`ε — nới ngưỡng (${epsilonUnit})`} tip={`Mỗi vòng IDA* nới ngưỡng thêm ε ${epsilonUnit}; nghiệm nằm trong khoảng tối ưu + ε.`}>
+              <input type="number" min={epsilonMin} step={epsilonStep} disabled={busy} value={epsilonDisplay} placeholder={`Mặc định ${epsilonDefaultText}`}
+                className="h-10 rounded-lg border border-surface-border bg-surface-control px-3 font-mono text-sm hover:border-surface-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-algo-frontier focus-visible:ring-offset-2 focus-visible:ring-offset-surface-panel disabled:cursor-not-allowed disabled:opacity-55"
+                onChange={(event) => {
+                  const value = event.target.value;
+                  const parsed = Number(value);
+                  state.set({ epsilon: value === "" || !Number.isFinite(parsed) ? "" : presentationEpsilonToRaw(state.mode, parsed) });
+                }} />
+            </Field>
+          )}
+        </Section>
 
-      <Section title="Trọng số cạnh"
-        tip="Chọn một cạnh trên bản đồ rồi thử vận tốc, distance, ùn tắc và rủi ro. Các thay đổi chỉ sống trong phiên hiện tại.">
-        <EdgeWeightPresets />
-      </Section>
+        <Section title="Hiển thị">
+          <SwitchRow label="Lớp ùn tắc" tip="Tô màu đoạn đường theo mức ùn tắc 1 đến 5 của khung giờ đang chọn." checked={state.trafficLayer} onChange={(value) => state.set({ trafficLayer: value })} />
+          <SwitchRow label="Chế độ offline" tip="Tắt bản đồ nền và chỉ vẽ đồ thị khi không có mạng ổn định." checked={state.offlineMode} onChange={(value) => state.set({ offlineMode: value })} />
+          {!isDemo && <p className="text-xs leading-5 text-ink-dim">Trace từng bước được yêu cầu cho G_real; chỉ nên dùng khi cần quan sát vì có thể rất dài. Giới hạn hiển thị 5.000 bước không cắt công việc tìm kiếm.</p>}
+        </Section>
 
-      <Section title="Thuật toán"
-        tip="UCS, Dijkstra, A* và Hai chiều đảm bảo tối ưu; IDA* nằm trong biên C* + ε; BFS, DFS, IDDFS, Greedy và Beam không đảm bảo tối ưu theo cost.">
-        <Select value={s.algorithm} disabled={busy}
-          onValueChange={(v) => s.set({ algorithm: v as Algorithm })}>
-          <SelectTrigger aria-label="Thuật toán"><SelectValue /></SelectTrigger>
-          <SelectContent>
-            {ALGORITHM_GROUPS.map((g) => (
-              <SelectGroup key={g.label}>
-                <SelectLabel className={`flex items-center gap-1.5 ${g.cls}`}>
-                  <span className="size-1.5 rounded-full bg-current" />
-                  {g.label}
-                </SelectLabel>
-                {g.algos.map((a) => (
-                  <SelectItem key={a} value={a}>{ALGO_LABEL[a]}</SelectItem>
-                ))}
-              </SelectGroup>
-            ))}
-          </SelectContent>
-        </Select>
-        {s.algorithm === "beam" && (
-          <Field label="Beam width (k)"
-            tip="Số node tốt nhất giữ lại mỗi lớp — k nhỏ chạy nhanh nhưng có thể không tìm thấy đường.">
-            <input
-              type="number" min={1} disabled={busy}
-              className="h-10 rounded-lg border border-surface-border bg-surface-control px-3 font-mono text-sm hover:border-surface-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-algo-frontier focus-visible:ring-offset-2 focus-visible:ring-offset-surface-panel disabled:cursor-not-allowed disabled:opacity-55"
-              placeholder={isDemo ? "mặc định 5" : "mặc định 50"}
-              value={s.beamWidth}
-              onChange={(e) => s.set({ beamWidth: e.target.value === "" ? "" : Number(e.target.value) })}
-            />
-          </Field>
-        )}
-        {s.algorithm === "idastar" && (
-          <Field label={`ε — nới ngưỡng (${epsilonUnit})`}
-            tip={`Mỗi vòng IDA* nới ngưỡng thêm ε ${epsilonUnit}; nghiệm nằm trong khoảng tối ưu + ε.`}>
-            <input
-              type="number" min={0.1} step={0.5} disabled={busy}
-              className="h-10 rounded-lg border border-surface-border bg-surface-control px-3 font-mono text-sm hover:border-surface-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-algo-frontier focus-visible:ring-offset-2 focus-visible:ring-offset-surface-panel disabled:cursor-not-allowed disabled:opacity-55"
-              placeholder="mặc định 5"
-              value={s.epsilon}
-              onChange={(e) => s.set({ epsilon: e.target.value === "" ? "" : Number(e.target.value) })}
-            />
-          </Field>
-        )}
-        {!isDemo && (
-          <p className="rounded-lg border border-algo-frontier/30 bg-algo-frontier/5 px-2.5 py-2 text-[11px] leading-4 text-ink-dim">
-            Trace từng bước được bật tự động trên G_real; tối đa 5.000 bước hiển thị cho mỗi chặng.
-          </p>
-        )}
-      </Section>
-
-      <Section title="Hành trình">
-        <Field label="Đi — điểm xuất phát">
-          <NodePicker kind="start" />
-        </Field>
-        <SwapButton />
-        <Field label={s.stops.length > 0 ? "Đến — điểm giao cuối trong danh sách" : "Đến — điểm đích"}>
-          <NodePicker kind="goal" />
-        </Field>
-        <AtspSetup />
-      </Section>
-
+        <Section
+          title="Kịch bản thử nghiệm"
+          defaultOpen={false}
+          tip="Chọn một đoạn đường trên bản đồ; trình chỉnh đầy đủ sẽ mở ở panel bên phải. Dữ liệu gốc không bị sửa."
+        >
+          <EdgeExperimentLauncher />
+        </Section>
       </div>
-      {/* CTA ghim đáy panel — luôn nhìn thấy (DESIGN 4, duyệt v4) */}
-      <div className="pastel-footer flex shrink-0 flex-col gap-1.5 border-t border-surface-border/80 px-4 py-3">
-        <Button size="lg" className="w-full" disabled={busy} onClick={() => void s.runRoute()}>
-          {s.running ? <Loader2 className="animate-spin" /> : <Play />}
-          {s.running
-            ? s.routeProgress
-              ? `Đang chạy chặng ${s.routeProgress.current}/${s.routeProgress.total}…`
-              : "Đang chạy…"
-            : s.stops.length > 0
-              ? `Chạy qua ${s.stops.length} điểm giao`
-              : "Chạy thuật toán"}
+
+      <div className="app-footer flex shrink-0 flex-col gap-1.5 border-t border-surface-border/80 px-4 py-3">
+        <Button size="lg" className="w-full" disabled={busy} onClick={() => void state.runRoute()}>
+          {state.running ? <Loader2 className="animate-spin" /> : <Play />}
+          {state.running
+            ? state.routeProgress ? `Đang chạy chặng ${state.routeProgress.current}/${state.routeProgress.total}…` : "Đang chạy…"
+            : ctaLabel}
         </Button>
-        {/* min-h cố định 1 dòng: hint xuất hiện/biến mất không làm nút Chạy
-            nhảy lên xuống (review v11) */}
-        {!s.graphLoading && (
-          <p className="min-h-4 text-center text-[11px] leading-4 text-ink-dim">
-            {s.stops.length > 0
-              ? !s.start ? "Còn thiếu điểm Đi." : MULTI_ROUTE_ACTIVE_MESSAGE
-              : !s.start || !s.goal
-              ? !s.start && !s.goal ? "Chọn điểm Đi và Đến ở mục Hành trình trước."
-                : !s.start ? "Còn thiếu điểm Đi." : "Còn thiếu điểm Đến."
-              : ""}
+        {!state.graphLoading && (
+          <p className="min-h-5 text-center text-xs leading-5 text-ink-dim">
+            {state.stops.length > 0
+              ? !state.start ? "Còn thiếu điểm Đi." : MULTI_ROUTE_ACTIVE_MESSAGE
+              : !state.start || !state.goal
+                ? !state.start && !state.goal ? "Chọn điểm Đi và Đến ở mục Hành trình trước." : !state.start ? "Còn thiếu điểm Đi." : "Còn thiếu điểm Đến."
+                : ""}
           </p>
         )}
-        {s.graphLoading && <Skeleton className="h-4 w-full" />}
+        {state.graphLoading && <Skeleton className="h-5 w-full" />}
       </div>
     </aside>
   );

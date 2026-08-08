@@ -1,12 +1,14 @@
 # GIẢI THÍCH THUẬT TOÁN — tài liệu ôn tập & quay video
 
-> **AUDIT NOTE 2026-08-07 — GENERATED BODY FROZEN:** toàn bộ bảng/số và banner
+> **AUDIT NOTE 2026-08-08 — GENERATED BODY FROZEN:** toàn bộ bảng/số và banner
 > generation bên dưới là output tạm của dependency chain cũ, không mô tả current
 > profile. Current workspace đã có raw TomTom 4/4, profile
 > `tomtom+synthetic`, và checkpoint `teach_7` là 7 node/24 cạnh; `results/` vẫn
 > stale. Không trích body này làm current evidence. Audit documentation không
 > hand-edit bảng generated và không chạy generator trước coherent authorized
 > benchmark → gamma → generator refresh; note này chỉ phân loại trạng thái output.
+> UI hiện trình bày km/phút, nhưng thay đổi presentation đó không làm body generated
+> cũ trở thành evidence hiện hành.
 
 > **Cách dùng:** đây là kịch bản để MỖI THÀNH VIÊN tự giảng lại thuật toán trong video
 > (yêu cầu đề 4.10a — ví dụ TỰ THIẾT KẾ, cấm chép tutorial). Ví dụ dưới đây chạy trên

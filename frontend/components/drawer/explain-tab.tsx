@@ -9,7 +9,7 @@
 // - card tuyến thay thế: thêm Δ so tuyến chính (xanh nhanh hơn / đỏ chậm
 //   hơn) — cùng ngữ nghĩa màu với cột Δ của tab So sánh.
 
-import { ArrowRight, Clock, MessageSquareText, Route as RouteIcon } from "lucide-react";
+import { ArrowRight, Clock, MessageSquareText, Route as RouteIcon, Sigma } from "lucide-react";
 import { Badge } from "../ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { AtspExplanation } from "../atsp/atsp-explanation";
@@ -17,15 +17,23 @@ import { AtspLoading } from "../atsp/atsp-result";
 import { EmptyState } from "./metrics-tab";
 import { useApp } from "@/lib/store";
 import { routeGuaranteeLabel } from "@/lib/algorithm-policy";
+import {
+  formatOutcomeMetricValue,
+  outcomeMetricsForMode,
+  presentationUnitForMode,
+  presentRouteNarrative,
+  primaryOutcomeMetric,
+  rawEpsilonToPresentation,
+} from "@/lib/metric-presentation";
 import { usePalette } from "@/lib/use-palette";
-import { fmtKm, fmtMinutes, fmtSeconds } from "@/lib/format";
+import { fmtKm, fmtMinutes } from "@/lib/format";
 import type { Trace } from "@/lib/types";
 
 const MODE_LABEL = {
   balanced: "Cân bằng", time: "Nhanh nhất", distance: "Ngắn nhất",
 } as const;
 
-const fmtDur = (s: number) => (s >= 90 ? fmtMinutes(s) : fmtSeconds(s));
+const fmtDur = fmtMinutes;
 
 /** Signed, colored delta vs the main route; lower = better (greener). */
 function Delta({ value, fmt, eps }: {
@@ -73,7 +81,10 @@ export function ExplainTab() {
         hint="Chạy một thuật toán để đọc phần giải thích lộ trình bằng tiếng Việt." />
     );
   }
-  const ex = trace.explanation;
+  const ex = {
+    ...trace.explanation,
+    summary_vi: presentRouteNarrative(trace.explanation.summary_vi),
+  };
   const nameOf = (id: string) =>
     graphData?.nodes.find((n) => n.id === id)?.name ?? id;
   const startId = sequentialRoute?.waypoints[0] ?? trace.path[0];
@@ -82,7 +93,12 @@ export function ExplainTab() {
   const start = startId ? nameOf(startId) : null;
   const goal = goalId ? nameOf(goalId) : null;
   const viaCount = sequentialRoute ? Math.max(0, sequentialRoute.waypoints.length - 2) : 0;
-  const costUnit = trace.mode === "distance" ? "m" : "s";
+  const costUnit = presentationUnitForMode(trace.mode);
+  const primaryMetric = primaryOutcomeMetric(trace.mode);
+  const secondaryMetric = outcomeMetricsForMode(trace.mode)[1];
+  const primaryValue = trace.metrics[primaryMetric.key] ?? 0;
+  const primaryDisplay = formatOutcomeMetricValue(primaryMetric, primaryValue);
+  const PrimaryIcon = trace.mode === "distance" ? RouteIcon : trace.mode === "time" ? Clock : Sigma;
 
   // Lead/body: sentence 1 carries the "why" -> emphasized; the rest is
   // supporting detail. Safe to split on ". " in this copy: Vietnamese
@@ -126,18 +142,20 @@ export function ExplainTab() {
             <div className="flex flex-wrap items-center gap-1.5">
               <Badge>{MODE_LABEL[trace.mode]} · {trace.time_slot}</Badge>
               <Badge className="gap-1 font-mono">
-                <Clock className="size-3" />
-                {fmtDur(trace.metrics.total_time_s ?? 0)}
+                <PrimaryIcon className="size-3" />
+                {primaryDisplay}
               </Badge>
-              <Badge className="gap-1 font-mono">
-                <RouteIcon className="size-3" />
-                {fmtKm(trace.metrics.total_distance_m ?? 0)}
-              </Badge>
+              {secondaryMetric && (
+                <Badge className="gap-1 font-mono">
+                  <RouteIcon className="size-3" />
+                  {formatOutcomeMetricValue(secondaryMetric, trace.metrics[secondaryMetric.key] ?? 0)}
+                </Badge>
+              )}
               <Badge variant={trace.metrics.optimal_guarantee ? "ok" : "warn"}>
                 {routeGuaranteeLabel(
                   trace.algorithm,
                   trace.metrics.optimal_guarantee,
-                  trace.metrics.epsilon_bound,
+                  rawEpsilonToPresentation(trace.mode, trace.metrics.epsilon_bound),
                   costUnit,
                 )}
               </Badge>
@@ -149,7 +167,7 @@ export function ExplainTab() {
             <ol className="mb-3 flex flex-wrap items-center gap-1.5" aria-label="Thứ tự chạy các điểm">
               {sequentialRoute.waypoints.map((nodeId, index) => (
                 <li key={`${index}-${nodeId}`} className="flex items-center gap-1.5">
-                  <span className="rounded-md border border-surface-border bg-surface-control px-2 py-1 text-[11px] font-medium text-ink">
+                  <span className="rounded-md border border-surface-border bg-surface-control px-2 py-1 text-xs font-medium text-ink">
                     <span className="mr-1 font-mono text-algo-frontier">{index + 1}.</span>
                     {nameOf(nodeId)}
                   </span>
@@ -162,7 +180,10 @@ export function ExplainTab() {
           )}
           <p className="text-[13px] font-medium leading-6 text-ink">{lead}</p>
           {body && (
-            <p className="mt-1.5 text-[13px] leading-6 text-ink-dim">{body}</p>
+            <details className="mt-2 rounded-md bg-surface-control/60 px-2.5 py-2 text-[13px] leading-6 text-ink-dim">
+              <summary className="cursor-pointer font-medium text-ink">Xem giải thích đầy đủ</summary>
+              <p className="mt-1.5">{body}</p>
+            </details>
           )}
         </CardContent>
       </Card>
@@ -172,11 +193,11 @@ export function ExplainTab() {
           <CardHeader className="gap-1">
             <CardTitle className="flex items-center gap-2">
               Đoạn ùn tắc trên tuyến
-              <Badge className="px-1.5 py-0 font-mono text-[10px]">
+              <Badge className="px-1.5 py-0 font-mono text-xs">
                 {ex.congested_segments.length}
               </Badge>
             </CardTitle>
-            <p className="text-[11px] leading-4 text-ink-dim">
+            <p className="text-xs leading-5 text-ink-dim">
               Đang tô màu tương ứng trên bản đồ — gộp theo tên đường, lấy mức cao nhất.
             </p>
           </CardHeader>
@@ -201,7 +222,7 @@ export function ExplainTab() {
       )}
 
       {ex.alternatives.length > 0 && (
-        <p className="px-0.5 text-[11px] font-bold uppercase tracking-wider text-ink-dim">
+        <p className="px-0.5 text-xs font-bold text-ink-dim">
           Tuyến thay thế đã xét — và vì sao bị loại
         </p>
       )}
@@ -210,13 +231,14 @@ export function ExplainTab() {
           <CardHeader className="gap-1">
             <CardTitle className="border-l-2 border-algo-frontier pl-2">{alt.label}</CardTitle>
             <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 font-mono text-xs text-ink">
-              {fmtDur(alt.total_time_s)} · {fmtKm(alt.total_distance_m)}
+              <span>Chi phí cân bằng: {fmtDur(alt.total_time_s)}</span>
+              <span>Quãng đường: {fmtKm(alt.total_distance_m)}</span>
               <AltDeltas altTime={alt.total_time_s} altDist={alt.total_distance_m}
                 trace={trace} />
             </div>
           </CardHeader>
           <CardContent>
-            <p className="text-[13px] leading-5 text-ink-dim">{alt.why_not_vi}</p>
+            <p className="text-[13px] leading-5 text-ink-dim">{presentRouteNarrative(alt.why_not_vi)}</p>
           </CardContent>
         </Card>
       ))}

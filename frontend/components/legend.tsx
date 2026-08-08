@@ -64,9 +64,9 @@ export function Legend() {
   const lift = timelineVisible;
 
   return (
-    <div className={`pastel-floating pointer-events-none absolute left-3 z-10 flex flex-col gap-1.5 rounded-2xl border border-surface-strong/80 px-3 py-2.5 text-xs text-ink-dim transition-[bottom] duration-200 ${
+    <div className={`floating-chrome pointer-events-none absolute left-3 z-10 flex flex-col gap-1.5 rounded-lg border border-surface-strong/80 px-3 py-2.5 text-xs text-ink-dim transition-[bottom] duration-200 max-[639px]:bottom-[8.5rem] ${
       lift ? "bottom-[5.5rem]" : "bottom-4"}`}>
-      <span className="text-[10px] font-bold uppercase tracking-wider text-ink">Chú giải</span>
+      <span className="text-xs font-bold text-ink">Chú giải</span>
       {trace && hasTraceLegend && !multi && (
         <>
           {hasStepLegend && (
@@ -77,19 +77,19 @@ export function Legend() {
               </>
             ) : (
               <>
-                <span className="flex items-center gap-2"><Dot color={H.frontier} /> Frontier</span>
-                <span className="flex items-center gap-2"><Dot color={H.expanded} /> Đã expand</span>
+                <span className="flex items-center gap-2"><Dot color={H.frontier} /> Đang chờ xét</span>
+                <span className="flex items-center gap-2"><Dot color={H.expanded} /> Đã duyệt</span>
               </>
             )
           )}
           {hasStepLegend && (
-            <span className="flex items-center gap-2"><Dot color={H.current} ring /> Đang expand</span>
+            <span className="flex items-center gap-2"><Dot color={H.current} ring /> Đang duyệt</span>
           )}
           {trace.found && !comparing && (
             <span className="flex items-center gap-2"><Line color={H.path} /> Tuyến kết quả</span>
           )}
           {trace.found && !comparing && (
-            <span className="flex items-center gap-2"><span className="w-4 text-center text-[10px] leading-none">▶</span> Hướng di chuyển</span>
+            <span className="flex items-center gap-2"><span className="w-4 text-center text-xs leading-none">▶</span> Hướng di chuyển</span>
           )}
         </>
       )}
@@ -99,7 +99,7 @@ export function Legend() {
             <span className="flex items-center gap-2"><Dot color={H.frontier} /> Tập DP đang xét</span>
           )}
           <span className="flex items-center gap-2"><Line color={H.path} dashed /> Thứ tự ghé đang xét</span>
-          <span className="max-w-44 pl-[26px] text-[10px] leading-4 text-ink-faint">
+          <span className="max-w-44 pl-[26px] text-xs leading-5 text-ink-faint">
             Minh hoạ khái niệm, không phải đường xe chạy.
           </span>
         </>
@@ -107,9 +107,9 @@ export function Legend() {
       {multi?.found && showFinalMultiRoute && (
         <>
           <span className="flex items-center gap-2"><Line color={H.path} /> Lộ trình giao hàng</span>
-          <span className="flex items-center gap-2"><span className="w-4 text-center text-[10px] leading-none">▶</span> Hướng di chuyển</span>
+          <span className="flex items-center gap-2"><span className="w-4 text-center text-xs leading-none">▶</span> Hướng di chuyển</span>
           <span className="flex items-center gap-2">
-            <span className="flex size-3.5 items-center justify-center rounded-full bg-algo-path font-mono text-[9px] font-bold text-surface">1</span>
+            <span className="flex size-4 items-center justify-center rounded-full bg-algo-path font-mono text-[11px] font-bold text-surface">1</span>
             Thứ tự giao tối ưu
           </span>
         </>
@@ -118,7 +118,7 @@ export function Legend() {
         <>
           <span className="flex items-center gap-2"><Line color={H.path} /> Thuật toán A</span>
           <span className="flex items-center gap-2"><Line color={H.frontier} dashed /> Thuật toán B</span>
-          <span className="max-w-44 pl-[26px] text-[10px] leading-4 text-ink-faint">
+          <span className="max-w-44 pl-[26px] text-xs leading-5 text-ink-faint">
             B lệch hiển thị 4 px; tọa độ không đổi.
           </span>
         </>

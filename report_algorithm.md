@@ -35,9 +35,10 @@ và **Simulated Annealing** (stochastic metaheuristic). Bài toán thuộc lớp
 ## 1. Mục tiêu và phạm vi
 
 **Phạm vi tài liệu.** Tài liệu ban đầu bám theo implementation tại source snapshot
-`2328d5f`; audit 2026-08-07 tại HEAD
-`5693ae754926cfbcc5b3a05c7544127d9308cc90` xác nhận các source ATSP liên quan
-không đổi semantics kể từ mốc đó. Tài liệu không viết theo kiến thức thuật toán chung. Mọi claim về
+`2328d5f`; audit 2026-08-08 trên base HEAD `98a82b2` cùng current worktree xác
+nhận solver ATSP không đổi semantics. UI presentation đã được đồng bộ theo
+`docs/DESIGN.md` §12: bốn tab kết quả và đơn vị nhìn thấy là km/phút. Tài liệu
+không viết theo kiến thức thuật toán chung. Mọi claim về
 hành vi thuật toán, số lượng iteration, tie-breaking, acceptance condition, v.v. đều
 đối chiếu với code thực thi.
 
@@ -204,11 +205,13 @@ cost** gồm matrix construction, solver, và path materialization.
 | Số stop | 1–15 stop; tổng `k ≤ 16` | Tối đa 15 stop |
 | Held–Karp limit | `k ≤ 15` | Disable khi có trên 14 stop |
 | `time_slot` | Bắt buộc (không có default trong request) | Chọn từ dropdown |
-| `mode` | Default `"balanced"` | Dropdown với nhãn "Cân bằng" / "Nhanh nhất" / "Ngắn nhất" |
+| `mode` | Default `"balanced"` | Segmented control "Cân bằng" / "Nhanh nhất" / "Ngắn nhất" |
 | `return_to_start` | Hỗ trợ open và closed | **Luôn gửi `false`** — workflow UI là open tour |
 | `include_trace` | Default `false` | Switch "Hiện quá trình tối ưu" |
 | `optimal_guarantee` | `true` chỉ cho Held–Karp | Badge "Tối ưu tuyệt đối" vs "Nghiệm xấp xỉ" |
 | `optimizer_stats` | Có trong SA reachable response | Được giữ trong response/type; chưa có bảng per-seed riêng trong `AtspResult` |
+| Đơn vị kết quả | Distance raw là mét; time/balanced raw là giây | Hiển thị quãng đường bằng km và thời lượng/cost bằng phút; runtime vẫn là ms |
+| Khu vực kết quả | Response route/multiroute/scenario tách theo contract | Bốn tab `Số liệu`, `Giải thích`, `So sánh`, `Thử nghiệm`; editor scenario chỉ ở tab cuối |
 
 UI ghi "nghiệm xấp xỉ" cho NN và SA — đây là nhãn giao diện, không phải tuyên bố
 có approximation ratio.

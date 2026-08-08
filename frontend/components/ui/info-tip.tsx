@@ -6,14 +6,14 @@
 import { CircleHelp } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./tooltip";
 
-export function InfoTip({ text }: { text: string }) {
+export function InfoTip({ text, label = "Mở giải thích" }: { text: string; label?: string }) {
   return (
     <Tooltip>
       <TooltipTrigger asChild>
         <button
           type="button"
-          aria-label={`Giải thích: ${text}`}
-          className="-m-2 inline-flex size-9 shrink-0 cursor-help items-center justify-center rounded-xl align-middle text-ink-dim transition-colors hover:bg-algo-frontier/10 hover:text-algo-frontier"
+          aria-label={label}
+          className="-m-2 inline-flex size-9 shrink-0 cursor-help items-center justify-center rounded-lg align-middle text-ink-dim transition-colors hover:bg-algo-frontier/10 hover:text-algo-frontier"
         >
           <CircleHelp className="size-4" />
         </button>

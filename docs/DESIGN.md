@@ -1,13 +1,12 @@
 # DESIGN.md — Hợp đồng thiết kế giao diện (Phase 5)
 
-> **Trạng thái kiểm lại 2026-08-07:** đây là nguồn chuẩn về ý đồ, token và hành vi UI.
-> M1–M5 đã có implementation; `npm test` (35 test), `npx tsc --noEmit` và
+> **Trạng thái kiểm lại 2026-08-08:** đây là nguồn chuẩn về ý đồ, token và hành vi UI.
+> M1–M5 và UI Clarity Phase đã có implementation; `npm test` (40 test), `npx tsc --noEmit` và
 > production `npm run build` (6/6 static pages) đạt.
-> Fresh browser QA đại diện ở 1366×768 đã xác nhận A*/route trace,
-> Held–Karp/optimization trace, giao diện Đen/Trắng, API thành công và không có
-> console error. Các khẳng định đầy đủ về cuộn, bàn phím, offline, responsive,
-> accessibility, projector và hardware GPU vẫn phải được kiểm tra trên đúng
-> trình duyệt/độ phân giải dùng để quay hoặc bảo vệ.
+> Fresh browser QA ở 1366×768, 1024×768 và 390×844 đã xác nhận route/ATSP,
+> responsive shell, keyboard/focus, reduced motion, bảy theme, API thành công và
+> không có console error. Đây không phải chứng nhận screen-reader hay GPU đa thiết
+> bị; vẫn phải pre-flight trên đúng trình duyệt/độ phân giải dùng để quay hoặc bảo vệ.
 >
 > **Luật:** mọi màu/font/hiệu ứng trên UI phải tra được về token trong file này và
 > `frontend/tailwind.config.ts`. Không tự thêm hiệu ứng ngoài đặc tả. Nếu cần token
@@ -95,7 +94,7 @@ Radix Select, điều khiển được bằng bàn phím, có accessible label �
 **Font:** `Be Vietnam Pro` (400/500/700) toàn UI — đủ dấu Việt đẹp. `JetBrains Mono`
 cho **mọi con số** (metrics, g/h/f, bước, toạ độ) với `tabular-nums`.
 **Số kiểu VN:** dấu phẩy thập phân + NHÓM NGHÌN bằng non-breaking space (v11) —
-`2 000,5 s` · `3,12 km` · `1 226` · `41 %` (helper `fmtVi`; tự cắt đuôi `,0`;
+`33,3 phút` · `3,12 km` · `1 226` · `41 %` (helper `fmtVi`; tự cắt đuôi `,0`;
 `fmtInt` quy về `fmtVi(n, 0)` — KHÔNG dùng `toLocaleString("vi-VN")` vì dấu chấm
 nghìn của nó đá dấu phẩy thập phân).
 
@@ -282,20 +281,19 @@ Button/SelectTrigger/Switch/input. Switch: thumb TRẮNG cố định + viền
 `surface-border` (off) / `algo-frontier` (on). Placeholder Đi/Đến phân biệt:
 "Chọn điểm xuất phát…" / "Chọn điểm đến…".
 
-**Drawer phải — 3 tab:** `Số liệu` | `Giải thích` | `So sánh`
+**Drawer phải — 4 tab:** `Số liệu` | `Giải thích` | `So sánh` | `Thử nghiệm`
 - Đầu tab Số liệu có **dòng nguồn kết quả**: "A* · Cân bằng · 07:30 · G_demo" —
   kết quả đang xem thuộc cấu hình nào (tránh nhầm khi user đã đổi lựa chọn ở panel).
-- Số liệu: card metrics (cost/time/km/expanded/max frontier/runtime + badge
-  "Đảm bảo tối ưu"/"Tối ưu trong ε"/"Không đảm bảo") + **bảng g/h/f** của frontier
-  tại bước hiện tại.
-  (v11 — redesign sau góp ý UI): stat card chia 2 TẦNG có kicker — "TUYẾN TÌM ĐƯỢC"
-  (card Tổng chi phí bản rộng col-span-2 + Thời gian đi + Quãng đường) và "CÔNG SỨC
-  TÌM KIẾM" (Đã expand · Frontier max · Runtime, lưới 3 cột gọn); card chi phí mang
-  sub-line theo mode nói thẳng vì sao có thể trùng số card khác ("= thời gian đi +
-  phạt rủi ro…", "= quãng đường, tính bằng mét") — hết cảnh 2 card cùng "2 000,5"
-  không lời giải thích. `fmtVi` toàn cục thêm PHÂN NHÓM NGHÌN bằng space ("2 000,5 s",
-  "1 226" — khớp phong cách docs/GIAI-THICH; fmtInt quy về fmtVi, bỏ toLocaleString
-  vi-VN vì dấu chấm nghìn đá dấu phẩy thập phân). Bảng g/h/f: `table-fixed` + cột số
+- Số liệu: card objective/quãng đường/expanded/max frontier/runtime + badge
+  "Đảm bảo tối ưu"/"Tối ưu trong ε"/"Không đảm bảo" và **bảng g/h/f** của frontier
+  tại bước hiện tại. Objective theo mode lấy từ `total_cost`: Quãng đường ở mode
+  distance; Thời gian chạy ở mode time; Chi phí cân bằng ở mode balanced.
+  (v12 — current): mode time/balanced đặt objective và quãng đường thành hai card
+  50/50 cùng hàng trên desktop; dưới 640 px tự xếp một cột. Mode distance chỉ có
+  một card toàn hàng để không lặp cùng metric. Mọi distance/travel-cost nhìn thấy
+  dùng km/phút; sub-line chỉ giải thích có/không gồm phạt rủi ro. "CÔNG SỨC TÌM
+  KIẾM" giữ ba card Đã expand · Frontier max · Runtime, trong đó runtime dùng ms.
+  `fmtVi` toàn cục phân nhóm nghìn bằng non-breaking space. Bảng g/h/f: `table-fixed` + cột số
   bề rộng cố định (g/f w-16, h w-12) — tên node dài hết đẩy cột f tràn khỏi drawer
   (bug cắt cụt v10), tên tự truncate kèm title tooltip; "mức x/5" ở card ùn tắc tô
   congestionHex (chỉ xuất hiện mức ≥4 nên tương phản cao, cần mắt người xác nhận).
@@ -305,18 +303,18 @@ Button/SelectTrigger/Switch/input. Switch: thumb TRẮNG cố định + viền
   truncate ("Chùa X…" hết cắt cụt); summary tách câu đầu làm LEAD in đậm `ink`, phần
   còn lại `ink-dim` (tách tại ". " — an toàn vì số liệu tiếng Việt dùng dấu phẩy thập
   phân); hàng chips thêm Badge ok/warn theo đúng contract (IDA* ghi biên ε thay vì
-  "Đảm bảo tối ưu") đồng bộ 2 tab kia; thời gian
-  <90 s đọc bằng giây thay vì "0,x phút"; card ùn tắc: badge đếm tổng đoạn + caption
+  "Đảm bảo tối ưu") đồng bộ 2 tab kia; mọi thời lượng hành trình đọc trực tiếp
+  bằng phút, kể cả giá trị dưới 90 giây; card ùn tắc: badge đếm tổng đoạn + caption
   "gộp theo tên đường, lấy mức cao nhất" + chữ "mức x/5" tô đúng `congestionHex` của
   mức; nhóm alternatives có kicker "Tuyến thay thế đã xét — và vì sao bị loại", mỗi
-  card thêm **Δ so tuyến chính** (thời gian + km, `start` nhanh/ngắn hơn · `goal`
+  card thêm **Δ so tuyến chính** (phút + km, `start` nhanh/ngắn hơn · `goal`
   chậm/dài hơn — cùng ngữ nghĩa màu với cột Δ tab So sánh).
 - So sánh (v11 — redesign sau góp ý UI): **câu kết luận** đứng trước bảng ("Tuyến của
-  Greedy đắt hơn A* 337,4 s (+17 %)… Về công sức, Greedy expand ít hơn" — Δ ≥ 10 %
+  Greedy đắt hơn A* 5,6 phút (+17 %)… Về công sức, Greedy expand ít hơn" — Δ ≥ 10 %
   in 0 chữ số lẻ, < 10 % in 1 chữ số), tự phân
   nhánh: cùng chi phí / một bên found=false. Bảng 4 cột `Chỉ số · A · B · Δ B/A`:
   (a) dòng theo mode — không bao giờ có 2 dòng trùng số (balanced bỏ dòng thời gian
-  giây thô, thay bằng "Thời gian đi" đọc theo PHÚT khi ≥90 s; distance bỏ dòng quãng
+  giây thô, chỉ hiển thị phút; distance bỏ dòng quãng
   đường trùng); (b) **màu tuyến chỉ nằm ở header** (kèm vạch swatch liền vàng / đứt
   lam trùng chú giải bản đồ) — bên THẮNG in đậm `ink`, bên thua `ink-dim`, không dùng
   màu tuyến tô giá trị (hết lẫn "màu của ai" với "ai tốt hơn"); (c) cột Δ = % B so A,
@@ -432,8 +430,9 @@ Thanh nổi giữa-đáy bản đồ, nền `surface-raised`, viền `surface-bo
   giữa theo trục dọc; không dùng label rỗng để căn.
 - Không lặp label: heading nhóm đã nói rõ thì control đầu nhóm không cần label
   trùng tên (vd nhóm "Thuật toán" → select đứng trực tiếp).
-- Stat card (drawer Số liệu): icon lucide 14px `ink-dim` cạnh label, giá trị
-  `font-mono` 15px đậm, đơn vị/chú thích 10px `ink-dim`.
+- Stat card (drawer Số liệu): icon lucide 14px `ink-dim` cạnh label; objective dùng
+  `font-mono` 20px đậm, metric phụ 16px và công sức 15px. Label/chú thích giữ độ
+  tương phản theo token; card objective có viền `algo-frontier` nhẹ.
 - Bảng g/h/f có chú thích cột cố định dưới bảng: "g: chi phí đã đi · h: ước lượng
   còn lại · f = g + h".
 - **G_real guardrails:** ẩn bảng g/h/f, `include_trace` mặc định tắt, cảnh báo khi
@@ -556,3 +555,180 @@ authority của view, scenario và fingerprint.
   `found=true`; optimizer conceptual legend không thay thế route legend.
 - Control mới dùng label Việt, focus ring §2, status/error `aria-live`, thứ tự
   keyboard hợp lý và không chiếm Space/Arrow của input, select, switch hay slider.
+
+## 12. UI Clarity Phase 2026-08-07 — hợp đồng hiện hành
+
+> Phần này được thêm trước khi triển khai UI Clarity Phase. Nó làm rõ và, khi có
+> mâu thuẫn, được ưu tiên hơn các mô tả visual lịch sử ở §1–§11. Mọi claim runtime
+> trong phần này chỉ được ghi là đã kiểm chứng sau browser QA của phase.
+
+### 12.1. Mục tiêu và thứ tự thông tin
+
+Đối tượng chính là giảng viên/người chấm, thành viên quay demo và người mới học
+search. Màn hình phải ưu tiên theo thứ tự: **hành động hoặc kết luận → giải thích
+theo ngữ cảnh → chi tiết kỹ thuật**. Kết quả route luôn cho thấy trạng thái tìm
+thấy, thuật toán/tiêu chí/slot/graph, bảo đảm và metric chính đúng đơn vị trước khi
+lộ fingerprint, enum hoặc raw event: `distance` là **Quãng đường**,
+`time` là **Thời gian chạy**, còn `balanced` là **Chi phí cân bằng**. Ba metric này
+đều lấy từ `total_cost` theo mode hiện hành. `total_time_s` là balanced path weight
+theo contract `docs/SCHEMA.md`, không được gọi mơ hồ là “Thời gian đi”; ở mode
+`balanced` nó trùng `total_cost` nên không xuất hiện thành card/hàng so sánh thứ hai.
+Quãng đường chỉ là metric phụ khi nó không trùng objective. Kết quả ATSP theo cùng
+quy tắc mode-aware, đồng thời cho thấy thứ tự nhập, thứ tự sau tối ưu, mức thay đổi
+chi phí, phương pháp và bảo đảm trước payload kỹ thuật.
+
+Phần kỹ thuật vẫn là một phần của sản phẩm để bảo vệ đồ án, nhưng nằm trong
+`<details>` có summary tiếng Việt: view, số override, nguồn kịch bản, fingerprint,
+raw event kind/ordinal, sampling, ID, seed, nhiệt độ, delta và probability. UI
+không tự tạo fingerprint hoặc diễn giải khác contract `docs/SCHEMA.md`.
+
+### 12.1a. Quy ước hiển thị rút gọn — 2026-08-08
+
+- Menu/chip/copy tên thuật toán dùng nhãn ngắn: `BFS`, `DFS`, `IDDFS`, `UCS`,
+  `Dijkstra`, `A*`, `Greedy Best-First`, `Dijkstra hai chiều`, `IDA*`, `Beam
+  Search`. Không lặp các diễn giải “tìm theo bề rộng”, “tìm theo chiều sâu”,
+  “đào sâu dần” hoặc “chi phí đồng nhất” trong nhãn tên; phần giải thích chỉ
+  xuất hiện khi người dùng chủ động mở tab **Giải thích**.
+- Contract API/store vẫn giữ `total_distance_m` theo mét và cost/epsilon theo
+  giây. Mọi số liệu hành trình nhìn thấy trong **Số liệu**, **Giải thích**,
+  **So sánh**, kết quả ATSP và summary/thông số của đoạn thử nghiệm hiển thị
+  theo **km** và **phút**. Không hiển thị chuỗi kép dạng `254 s ≈ 4,2 phút`.
+  `Thời gian xử lý` vẫn dùng `ms` vì đó là thời gian tính toán, không phải thời
+  lượng hành trình.
+- Trình chỉnh chi tiết nhận chiều dài theo km; UI đổi sang mét ngay trước khi
+  ghi override. Ô ε của IDA* nhận/hiển thị km cho mode `distance` và phút cho
+  mode `time`/`balanced`, rồi đổi về raw mét/giây trước khi gửi request. Đây là
+  chuyển đổi presentation-only, không đổi schema, API hay dữ liệu.
+- `summary_vi` và `why_not_vi` từ backend là dữ liệu nguyên gốc. Frontend chỉ
+  áp adapter render để rút gọn bốn tên thuật toán nêu trên và đổi số thô
+  `m`/`s` sang km/phút; không sửa response, dữ liệu hay logic tạo giải thích.
+- Ba nhãn `Đi — điểm xuất phát`, `Đến — điểm đích` và `Điểm giao hàng` dùng cùng
+  role `text-sm`; không hạ riêng nhãn điểm giao xuống caption.
+- Khi có metric phụ, objective và quãng đường chia hai cột bằng nhau ở desktop;
+  dưới 640 px chuyển về một cột. Mode distance không dựng card phụ trùng nghĩa.
+
+### 12.2. Ngôn ngữ, chữ và thao tác
+
+- Primary UI là tiếng Việt. Thuật ngữ chuẩn như A*, BFS, ATSP, Held–Karp, `g/h/f`,
+  2-opt, Or-opt và Simulated Annealing được giữ nguyên, nhưng có ngữ cảnh Việt
+  trước khi cần thiết.
+- Dùng các nhãn chính: `Số điểm hiển thị`, `Đang chờ xét (frontier)`, `Đã duyệt
+  (expanded)`, `Đang duyệt`, `Số điểm chờ lớn nhất`, `Thời gian xử lý`, `Sự kiện
+  tối ưu`, `Nghiệm hiện tại`, `Nghiệm đang thử`, `Nghiệm tốt nhất đến lúc này`,
+  `Nguồn kịch bản`, `Mã xác thực kịch bản`, và `Khôi phục`.
+- Page/panel title là 18–20 px; section title 13–14 px; body/control 14 px;
+  helper/actionable text tối thiểu 12 px với line-height tối thiểu 18 px. Chỉ
+  attribution bản đồ và raw hash trong chi tiết kỹ thuật có thể là 10–11 px.
+- Nút/icon thao tác đạt ít nhất 36 px; CTA và control chính hướng đến 40–44 px.
+  Focus ring 2 px vẫn dùng token `algo-frontier` và không được bị che/cắt.
+- Tooltip chỉ bổ sung định nghĩa ngắn; hướng dẫn cần thiết để hoàn tất task phải
+  thấy trực tiếp. Tooltip, disclosure và tab giữ pattern keyboard/Radix hiện có.
+
+### 12.3. Surface và hierarchy
+
+Giữ bảy theme, token semantic, font và map palette hiện hữu. Bỏ toàn bộ gradient
+trang trí, pseudo-content `✦`/`♡`, shadow màu và decorative sparkle. Các surface
+đổi sang nền đặc theo vai trò: `app-shell-surface`, `app-rail`, `app-header`,
+`app-card`, `map-frame` và `floating-chrome`. `shadow-float` chỉ là bóng trung
+tính dùng cho chrome nổi trên bản đồ; không được mang màu theme.
+
+Rail là surface liên tục. Card chỉ dùng để gom một đơn vị thông tin; không bọc mọi
+khối nhỏ bằng card lồng nhau. Map giữ visual weight lớn nhất. Khi đã có route,
+cạnh/node nền giảm emphasis bằng opacity/width token nhưng vẫn còn context, còn
+casing, arrow, chip `Đi`/`Đến`, stop ordinal, current ring, route A/B solid/dashed
+và chú giải không-màu giữ nguyên semantics đã khóa. Điểm Đi và Đến có marker tròn
+đặc riêng theo token `start`/`goal`, viền tương phản và chip chữ tương ứng; không
+chỉ dựa vào màu. Tooltip phải gọi đúng “Nút” cho node và “Đoạn” cho edge, không
+được cast edge thành node chỉ vì cả hai cùng có `id`.
+
+### 12.4. Responsive shell và disclosure
+
+- Từ 1280 px: giữ ba vùng (controls 304–320 px, map nhận phần còn lại, result
+  384–400 px) với CTA sticky trong panel trái.
+- Từ 960 đến 1279 px: chỉ controls là rail cố định; kết quả là side panel overlay
+  mở bằng trigger `Kết quả`, rộng `min(400px, 44vw)`. Mở panel đưa focus vào panel;
+  nút đóng hoặc `Escape` (sau khi đóng tooltip/select lồng nếu có) phải đóng panel và
+  trả focus về trigger.
+- Dưới 960 px: controls và kết quả là sheet/panel một cột mở từ app bar; không giữ
+  hai rail cạnh nhau. Dưới 640 px sheet gần toàn viewport, cuộn độc lập, CTA sticky
+  nằm trong sheet và không che input cuối. Nội dung ngoài map không tạo horizontal
+  page scroll; bảng rộng chỉ cuộn trong wrapper có nhãn.
+- Timeline reflow theo ba mức: một hàng ở desktop; hai hàng ở 640–959 px; dưới
+  640 px ưu tiên back/play/next, slider và `Bước x/y`, còn tốc độ đi vào menu.
+
+Panel controls theo thứ tự: **Thiết lập bài toán → Hành trình → Thuật toán → Tùy
+chọn hiển thị → Kịch bản thử nghiệm → CTA**. `Kịch bản thử nghiệm` mặc định đóng và
+chỉ chứa launcher cùng trạng thái số đoạn đang chỉnh; không chứa một editor thứ
+hai. Bật launcher tự mở panel phải ở tab `Thử nghiệm`, nơi duy nhất chứa editor.
+Editor có hai cách nhập loại trừ nhau: `Chọn nhanh` dùng preset, `Chỉnh chi tiết`
+dùng số chính xác và đủ bốn khung giờ. Reset một đoạn/tất cả, công thức và bảng ba
+cột `Thông số / Gốc / Đang thử` chỉ nằm ở editor phải. Khi tab này active, header
+panel phải là `Thử nghiệm`, không gọi vùng nhập liệu là `Kết quả`. Store, request và
+cost formula giữ nguyên.
+
+Chọn một đoạn đường trên map là thao tác **một lần**: sau khi chọn đúng edge, pick
+layer và banner chọn phải tắt nhưng edge đang chọn vẫn được giữ để chỉnh; hành động
+`Chọn đoạn khác` mới bật lại pick mode. Preset luôn biểu diễn đủ mức ùn tắc 1–5 và
+không lặp một preset trùng tốc độ gốc. Trong `Chỉnh chi tiết`, Enter áp dụng draft,
+Escape trả draft chưa áp dụng về giá trị effective hiện tại, và lỗi input phải liên
+kết bằng `aria-describedby`.
+
+Tab bốn mục vẫn giữ nhãn `Số liệu`, `Giải thích`, `So sánh`, `Thử nghiệm`; tablist
+có accessible label. Khi cuộn, nền sticky của vùng tab phải đặc để nội dung không
+xuyên qua. Mọi bảng có thể cuộn ngang phải nằm trong vùng có nhãn và focus được bằng
+bàn phím. Đổi `Thuật toán B` là một context change: kết quả B cũ và lớp map B phải
+biến mất ngay, rồi UI nêu rõ thuật toán B đang chờ chạy; không được hiển thị dropdown
+mới cùng số liệu của thuật toán cũ.
+
+### 12.5. Motion, states và evidence
+
+`prefers-reduced-motion: reduce` dừng autoplay, route-flow loop và chart motion,
+nhưng giữ route/static ring/state. Không có motion truyền thông tin duy nhất.
+Loading, empty và error giữ vùng riêng, dùng status/alert hợp lý và không bịa phần
+trăm tiến độ. `/benchmark` vẫn read-only, giữ `SỐ TẠM` trước chart và không kêu gọi
+người dùng chạy benchmark.
+
+Evidence bắt buộc của phase là browser Chromium ở 1366×768, 1024×768, 390×844 và
+320 px hoặc 200% zoom equivalent; cần kiểm mouse/keyboard/focus, reduced motion,
+theme, map controls/timeline, loading/error/empty, console/network và luồng route
+hai điểm lẫn ATSP trước khi UI được freeze.
+
+### 12.6. Bằng chứng kiểm chứng UI Clarity — 2026-08-07
+
+Các claim runtime trong §12 đã được kiểm chứng lại trên worktree hiện hành, không
+dựa vào số benchmark hay artifact sinh mới:
+
+- **1366×768:** A* chạy thật từ Chợ Bến Thành đến Dinh Độc Lập trên G_demo, hiển thị
+  kết quả, đơn vị, đảm bảo, bảng g/h/f và timeline; Held–Karp với ba điểm giao và
+  `include_trace` hiển thị kết quả ATSP, so sánh trước/sau và diễn biến tối ưu. Hai
+  API `POST /api/route` và `POST /api/multiroute` đều trả 200 trong session clean.
+- **1024×768:** controls là rail cố định; result bắt đầu đóng, có trigger chữ
+  `Kết quả`, mở thành overlay `min(400px, 44vw)`, focus vào heading và đóng trả về
+  trigger. Map không có horizontal page scroll khi result đóng hoặc mở.
+- **390×844 và 320×568:** app bar mở controls/results dưới dạng sheet một cột;
+  Escape đóng sheet và trả focus đúng trigger, không có horizontal page scroll.
+  Viewport 683×384 được kiểm như tương đương CSS viewport khi zoom 200%; đây là
+  kiểm reflow tương đương, không phải claim đã đổi browser zoom thật.
+- **Keyboard và motion:** đã kiểm Tab/Shift+Tab, Enter/Space, Radix Select,
+  Arrow cho tabs/slider, Escape cho tooltip/select/sheet, row g/h/f và focus return.
+  Với `prefers-reduced-motion: reduce` sau reload, player `Phát` bị khóa và route
+  giữ tĩnh. Không tuyên bố full WCAG conformance.
+- **States:** empty ban đầu, loading, lỗi graph có Retry, benchmark ready/error và
+  offline đều đã được mở bằng UI thật. `/benchmark` reflow tại 390 px, giữ banner
+  `SỐ TẠM` và bảng thay thế dữ liệu biểu đồ.
+- **Console/network và data snapshot:** sau clean restart + hard refresh, Chromium
+  báo 0 console errors; graph/traffic trả 200. `GET /api/graph?level=demo&view=full`
+  xác nhận 51 node, 298 cạnh, 60 một chiều.
+- **Tương phản:** `scripts/check_contrast.py` đã được cập nhật để đọc tất cả bảy
+  `makePalette(...)` hiện hành và chạy PASS: graphic cần kiểm tra ≥ 3:1, text cần
+  kiểm tra ≥ 4.5:1 trên panel và Carto basemap thật. Backdrop node/cạnh không thăm
+  vẫn là ngoại lệ thị giác đã ghi rõ ở §10.
+
+Sau các kiểm chứng trên, ảnh README tại `artifacts/readme/dark-route-result.png`
+và `artifacts/readme/light-atsp-result.png` được chụp lại ở 1366×768, inspect ở độ
+phân giải gốc và chỉ cập nhật sau clean restart, hard refresh, API graph 51/298,
+route/ATSP 200 và console 0 errors.
+
+Bổ sung ngày 2026-08-08, hai ảnh này được chụp lại sau khi contract
+`Thử nghiệm` và marker Đi/Đến ở §12.3–§12.4 ổn định; session runtime clean xác
+nhận graph/traffic/route/multiroute 200, console 0 errors và không tràn ngang.

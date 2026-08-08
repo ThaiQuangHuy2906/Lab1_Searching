@@ -9,15 +9,21 @@
 > lúc đó chưa có `data/raw/`, nên kết luận `UNKNOWN/UNVERIFIED` về raw
 > provenance là đúng theo bằng chứng sẵn có tại thời điểm kiểm.
 >
-> **Mốc tái kiểm hiện hành:** 2026-08-07 (Asia/Saigon), HEAD
+> **Mốc tái kiểm provenance:** 2026-08-07 (Asia/Saigon), HEAD
 > `5693ae754926cfbcc5b3a05c7544127d9308cc90`. Tài liệu này được thêm ở
 > `3f6df7c` lúc 17:15; commit `faf9866` lúc 17:40 sau đó bỏ rule ignore
 > `data/raw/` và track raw GraphML, OSMnx cache cùng bốn raw TomTom snapshot.
+>
+> **Mốc xác nhận worktree hiện tại:** 2026-08-08 (Asia/Saigon), base HEAD
+> `98a82b2`. Lệnh `.venv\Scripts\python.exe scripts\validate_data.py` đã trả
+> `ALL DATA VALID`; lượt UI/tài liệu này không chạy crawl, build graph/profile,
+> benchmark, hiệu chuẩn gamma hoặc generator.
 >
 > **Verdict hiện hành:** **Correct after fixes** trong phạm vi current
 > repository/workspace. Đây là tài liệu tham chiếu canonical cho implementation,
 > committed data và local provenance artifacts được liệt kê bên dưới; nó không
 > phải chứng nhận độc lập cho độ xác thực ngoài đời của OSM/TomTom/manual risks.
+> UI/documentation refresh 2026-08-08 không đổi graph, profile, cost hoặc heuristic.
 >
 > **Trạng thái:** tài liệu tham chiếu hiện hành sau khi đối soát lại, đồng thời
 > giữ nguyên ngữ cảnh của audit gốc. Các kết luận raw-vắng trong Phụ lục A là
@@ -96,7 +102,7 @@ Evidence:
 - `git ls-files data/raw` và fresh read-only raw/profile reconciliation tại
   HEAD nêu trên.
 
-### 0.3. Fresh verification record — 2026-08-07
+### 0.3. Fresh verification record — 2026-08-08
 
 Các command sau được chạy lại trên đúng current worktree; đây là structural và
 behavioral evidence cục bộ, không phải external-source attestation:
@@ -105,7 +111,7 @@ behavioral evidence cục bộ, không phải external-source attestation:
 |---|---|
 | `.venv\Scripts\python.exe -m pytest backend\tests\ -v` | PASS — 176 passed, 1 warning |
 | `.venv\Scripts\python.exe scripts\validate_data.py` | PASS — `ALL DATA VALID`; cả hai graph strongly connected, profile 4×100% |
-| `npm test` trong `frontend/` | PASS — 35/35 |
+| `npm test` trong `frontend/` | PASS — 40/40 |
 | `npx tsc --noEmit` trong `frontend/` | PASS — exit 0 |
 | `npm run build` trong `frontend/` sau khi dừng dev services | PASS — Next.js production build, 6/6 static pages |
 

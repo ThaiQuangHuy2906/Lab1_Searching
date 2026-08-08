@@ -16,10 +16,11 @@ bằng chứng cho hành vi sản phẩm.
 |---|---|
 | ![Kết quả A* và timeline route trace trên giao diện Đen](artifacts/readme/dark-route-result.png) | ![Kết quả Held-Karp và timeline optimization trace trên giao diện Trắng](artifacts/readme/light-atsp-result.png) |
 
-Hai ảnh trên được chụp lại từ current worktree ngày 2026-08-07 ở 1366×768 sau
-clean restart. Chúng minh hoạ đúng GraphView hiện hành, sandbox trọng số, bộ chọn
-bảy giao diện và hai timeline tách biệt cho route/ATSP; đây không phải ảnh thay
-thế cho toàn bộ screenshot bắt buộc trong report/video.
+Hai ảnh trên được chụp lại từ current worktree ngày 2026-08-08 ở 1366×768 sau
+clean restart. Chúng minh hoạ đúng GraphView hiện hành, marker Đi/Đến, sandbox
+trọng số, bốn tab kết quả, số liệu km/phút, bộ chọn bảy giao diện và hai timeline
+tách biệt cho route/ATSP; đây không phải ảnh thay thế cho toàn bộ screenshot bắt
+buộc trong report/video.
 
 ### Tính năng nổi bật
 
@@ -35,14 +36,18 @@ thế cho toàn bộ screenshot bắt buộc trong report/video.
 - Luồng sáng nhấn tuyến, focus/keyboard đầy đủ và fallback `prefers-reduced-motion`.
 - Giải thích tiếng Việt cho tuyến hai điểm và ATSP; so sánh hai thuật toán có
   chỉ báo phần tuyến trùng/khác; đối chiếu ATSP trước/sau tối ưu.
+- Drawer kết quả có bốn tab `Số liệu`, `Giải thích`, `So sánh`, `Thử nghiệm`;
+  editor kịch bản chỉ nằm ở tab `Thử nghiệm` với `Chọn nhanh`/`Chỉnh chi tiết`.
+- Tên thuật toán dùng nhãn ngắn; số liệu hành trình hiển thị km/phút. Ở desktop,
+  objective và quãng đường nằm cạnh nhau; thời gian xử lý thuật toán vẫn dùng ms.
 - Benchmark viewer chỉ đọc với cảnh báo nguồn dữ liệu rõ ràng.
 
-> **Trạng thái ngày 2026-08-07 — M1–M5 đã triển khai, chưa được nộp:**
+> **Trạng thái ngày 2026-08-08 — M1–M5 đã triển khai, chưa được nộp:**
 > Lượt data refresh cuối đã tích hợp đủ raw TomTom 07:30, 12:00, 17:30 và 22:00
 > dưới dạng bốn snapshot đại diện lấy trên hai ngày thứ Hai; profile hiện là
 > `tomtom+synthetic`. Raw GraphML, bốn TomTom JSON và OSMnx cache hiện được Git
 > track dưới `data/raw/`. Fresh core gate đạt `176 passed` backend,
-> `ALL DATA VALID`, `35/35` frontend test và TypeScript check; `G_demo` hiện có
+> `ALL DATA VALID`, `40/40` frontend test và TypeScript check; `G_demo` hiện có
 > 51 node / 298 cạnh.
 > `results/` vẫn là số tạm từ lượt 2026-07-26 và không được dùng làm kết quả
 > chính thức. Không rerun data; benchmark/hiệu chuẩn γ/generator vẫn chờ một
@@ -52,15 +57,15 @@ thế cho toàn bộ screenshot bắt buộc trong report/video.
 
 | Hạng mục | Trạng thái hiện tại | Bằng chứng |
 |---|---|---|
-| Backend | **Đạt** | `176 passed, 1 warning` trên current worktree ngày 2026-08-07 |
+| Backend | **Đạt** | `176 passed, 1 warning` trên current worktree ngày 2026-08-08 |
 | Data contract | **Đạt** | `ALL DATA VALID`; profile `tomtom+synthetic`; raw GraphML và TomTom 4/4 hiện diện, được Git track |
-| Frontend automated | **Đạt** | `npm test`: 35/35 pass |
+| Frontend automated | **Đạt** | `npm test`: 40/40 pass |
 | TypeScript | **Đạt** | `npx tsc --noEmit` exit 0 |
 | Frontend production build | **Đạt** | `npm run build` sau khi dừng dev services: compile thành công, 6/6 static pages |
 | G_demo | **Hiện hành** | 51 node, 298 cạnh có hướng, 60 cạnh một chiều |
 | G_real | **Hiện hành** | 2.118 node, 4.699 cạnh có hướng, 1.433 cạnh một chiều |
 | Benchmark | **Chưa hiện hành** | `results/` cũ hơn graph; xem [`results/README.md`](results/README.md) |
-| UI/runtime | **Đạt representative browser QA ở 1366×768** | Fresh check xác nhận A*/route trace, Held–Karp/optimization trace, giao diện Đen/Trắng, API 200 và không có console error; vẫn phải lặp full pre-flight ở máy/độ phân giải dùng để demo |
+| UI/runtime | **Đạt browser QA ở 1366×768, 1024×768 và 390×844** | Clean restart xác nhận A*/route trace, Held–Karp/optimization trace, responsive shell, keyboard/focus, reduced motion, giao diện Đen/Trắng, API 200 và không có console error; vẫn phải lặp full pre-flight ở máy/độ phân giải dùng để demo |
 | Backend sau clean restart | **Đạt tại lượt audit; phải lặp trước demo** | `/api/graph?level=demo&view=full` trả G_demo 51/298 từ snapshot trên đĩa |
 | Trước khi nộp | **Còn việc tay** | 8 URL nguồn risk thật, 40 marker cần điền trên 30 dòng nội dung (không tính dòng chú giải), ảnh/sơ đồ cho report ngoài hai ảnh README, report PDF, slide, video/link và ZIP |
 
@@ -286,8 +291,9 @@ scripts/           pipeline data, validator, generator và QA
 | [`docs/SCHEMA.md`](docs/SCHEMA.md) | contract graph, trace, API và cost |
 | [`data/DATA.md`](data/DATA.md) | nguồn, pipeline, giả định và snapshot |
 | [`docs/DESIGN.md`](docs/DESIGN.md) | contract thiết kế UI |
+| [`UI_PLAN.md`](UI_PLAN.md) | checklist triển khai và bằng chứng hoàn tất phase UI Clarity |
 | [`docs/CODEX-BASELINE.md`](docs/CODEX-BASELINE.md) | baseline kỹ thuật ngày 2026-07-27; giữ làm lịch sử |
-| [`docs/CODEX-CODEBASE-MAP.md`](docs/CODEX-CODEBASE-MAP.md) | bản đồ kiến trúc và current-state đã cập nhật qua FINAL-01 |
+| [`docs/CODEX-CODEBASE-MAP.md`](docs/CODEX-CODEBASE-MAP.md) | bản đồ kiến trúc và current-state đã cập nhật qua UI Clarity 2026-08-08 |
 | [`docs/TIENDO.md`](docs/TIENDO.md) · [`docs/KIEMTOAN.md`](docs/KIEMTOAN.md) · [`docs/AUDIT-CLAUDE-PRE-SUBMISSION.md`](docs/AUDIT-CLAUDE-PRE-SUBMISSION.md) | nhật ký/audit lịch sử, không phải bằng chứng current |
 | [`docs/GIAI-THICH-THUAT-TOAN.md`](docs/GIAI-THICH-THUAT-TOAN.md) | tài liệu sinh tự động; hiện vẫn là số tạm |
 | [`docs/ROLE-C-ADVANCED-ATSP-GIAI-THICH-DE-HIEU.md`](docs/ROLE-C-ADVANCED-ATSP-GIAI-THICH-DE-HIEU.md) | tài liệu giảng dễ hiểu về thuật toán nâng cao và ATSP |

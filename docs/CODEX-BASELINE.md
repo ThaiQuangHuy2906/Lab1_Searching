@@ -4,7 +4,7 @@ Baseline date: 2026-07-27 (Asia/Saigon).
 
 > This is a historical baseline, not current-state documentation. The absolute
 > repository path and dirty-worktree inventory below describe the audit machine
-> on 2026-07-27. For the 2026-08-07 state, use `README.md`, `data/DATA.md`,
+> on 2026-07-27. For the 2026-08-08 state, use `README.md`, `data/DATA.md`,
 > `docs/SCHEMA.md`, current code/data, and fresh commands.
 
 This file began as a read-only onboarding except for the three permitted

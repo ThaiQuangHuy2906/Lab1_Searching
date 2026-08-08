@@ -2,14 +2,16 @@
 
 ## Trạng thái hiện hành
 
-Mốc kiểm mới nhất: **2026-08-07**, HEAD
-`5693ae754926cfbcc5b3a05c7544127d9308cc90`; current worktree mang các thay đổi
-documentation/ảnh README của lượt audit, không có source implementation hoặc
-graph/profile data change.
+Mốc kiểm mới nhất: **2026-08-08**, base HEAD `98a82b2`; current worktree đã hoàn
+tất UI Clarity Phase trong `frontend/`, đồng bộ documentation và chụp lại hai
+ảnh README. Backend/API/schema/graph/profile/data/results không thay đổi.
 
 - 10 thuật toán hai điểm: `bfs`, `dfs`, `iddfs`, `ucs`, `dijkstra`, `astar`,
   `greedy`, `bidijkstra`, `idastar`, `beam`.
 - 3 ATSP: `held_karp`, `nn_2opt`, `sa`.
+- `frontend/` là frontend duy nhất. Shell responsive dùng bốn tab `Số liệu`,
+  `Giải thích`, `So sánh`, `Thử nghiệm`; số liệu hành trình hiển thị km/phút,
+  còn API/store giữ raw mét/giây theo contract.
 - G_demo: **51 node / 298 cạnh có hướng / 60 one-way**.
 - G_real: **2.118 node / 4.699 cạnh có hướng / 1.433 one-way**.
 - Profile hiện tại là `tomtom+synthetic`; raw TomTom đủ 07:30, 12:00, 17:30 và
@@ -18,9 +20,9 @@ graph/profile data change.
 - `data/raw/graph_raw.graphml`, bốn raw TomTom JSON và OSMnx cache hiện đều được
   Git track; đây không còn là artifact local-only/Git-ignore.
 - `results/` là benchmark tạm ngày 2026-07-26, cũ hơn graph ngày 2026-07-27.
-- Gate mới nhất: **176 backend pytest pass**, **35 frontend test pass**,
+- Gate mới nhất: **176 backend pytest pass**, **40 frontend test pass**,
   `ALL DATA VALID`, `npx tsc --noEmit` và production `npm run build` pass ngày
-  2026-08-07.
+  2026-08-08.
 - Các regression hiện hành đã đạt; benchmark/gamma/generator cuối và
   các deliverable thủ công vẫn được hoãn có chủ đích.
 

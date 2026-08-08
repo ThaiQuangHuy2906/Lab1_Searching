@@ -4,13 +4,13 @@
 > các thành viên A–E có thể dùng làm context khi đọc, thảo luận hoặc viết prompt
 > cho các lượt làm việc tiếp theo.
 >
-> **Ghi chú audit 2026-08-07:** đây là kế hoạch/biên bản triển khai lịch sử.
+> **Ghi chú audit 2026-08-08:** đây là kế hoạch/biên bản triển khai lịch sử.
 > Mô tả bốn GraphView cố định ở phần thân phản ánh quyết định M1–M5 khi đó; code
 > hiện hành đã mở rộng thành `full` hoặc `teach_3`…`teach_50`, preset version 2.
 > Fresh evidence hiện tại: backend `176 passed` (1 dependency warning), validator
-> `ALL DATA VALID`, frontend `35/35`, TypeScript pass; runtime API và browser QA
-> 1366×768 đã kiểm tra các luồng GraphView, route/trace, ATSP, sandbox, theme,
-> offline và fingerprint ở checkpoint 2026-08-05. `docs/SCHEMA.md`, `README.md`,
+> `ALL DATA VALID`, frontend `40/40`, TypeScript/build pass; browser QA
+> 1366×768, 1024×768 và 390×844 đã kiểm tra GraphView, route/trace, ATSP,
+> sandbox, bốn tab kết quả, theme, responsive/focus và reduced motion. `docs/SCHEMA.md`, `README.md`,
 > code và fresh gates là nguồn trạng thái hiện hành; các bảng “Hiện trạng”, “Có một phần” và
 > “Chưa có” bên dưới ghi lại baseline 2026-08-04, không phải mô tả current code.
 >

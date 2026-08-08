@@ -80,14 +80,17 @@
 - (13:30) **Đổi khung giờ — test case 2**: cùng OD lúc 22:00 → TUYẾN ĐỔI (nhắc exp4:
   83,5% cặp đổi tuyến). Đọc to phần Giải thích: đoạn ùn tắc nào bị né, tuyến ngắn hơn
   vì sao bị loại.
-- (15:00) **Đổi tiêu chí — test case 3**: cùng OD "Ngắn nhất" vs "Cân bằng" — chỉ số
-  km và số giây đổi chỗ nhau trong panel Số liệu.
+- (15:00) **Đổi tiêu chí — test case 3**: cùng OD "Ngắn nhất" vs "Cân bằng" — objective
+  đổi giữa quãng đường và chi phí cân bằng; UI luôn trình bày km/phút, không đọc raw mét/giây.
 - (15:45) **So sánh 2 thuật toán**: A* (vàng liền) vs BFS (lam đứt) cùng OD — bảng
   đối chiếu expand/chi phí; 1 câu kết luận.
-- (16:45) **G_real**: đổi đồ thị, click chọn 2 điểm trên bản đồ 2 118 nút, chạy
+- (16:20) **Thử nghiệm một đoạn đường**: mở tab `Thử nghiệm`, dùng `Chọn nhanh`,
+  chọn một cạnh trên map rồi cho thấy bảng `Thông số/Gốc/Đang thử`; khôi phục đoạn
+  để chứng minh thay đổi chỉ có hiệu lực trong phiên/request hiện tại.
+- (17:00) **G_real**: đổi đồ thị, click chọn 2 điểm trên bản đồ 2 118 nút, chạy
   Dijkstra hai chiều → nói "2 118 nút, vài mili-giây" và ĐỌC ĐÚNG số runtime đang
   hiện trên màn hình (exp3: mean ~2,7 ms — đừng đọc số đuôi phân bố).
-- (17:30) **Multiroute 9 điểm** [người D]: thêm 9 điểm giao (chế độ chọn trên bản đồ
+- (17:45) **Multiroute 9 điểm** [người D]: thêm 9 điểm giao (chế độ chọn trên bản đồ
   GIỮ NGUYÊN sau mỗi click — bấm liên tục 9 nút giao, banner đếm n/15; app tự BỎ điểm
   Đến kèm toast khi thêm điểm đầu tiên — đó là hành vi đúng, cứ nói "tour chỉ cần điểm
   Đi + các điểm giao") → Held-Karp → thứ tự đánh số trên bản đồ + card "Tiết kiệm

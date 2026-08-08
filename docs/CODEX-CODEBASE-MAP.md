@@ -11,19 +11,19 @@ The current-state sections were refreshed again on 2026-08-04 from the dirty,
 validated worktree at HEAD `9a790dee005ffc13016094749b92c0375d16929b`; these
 uncommitted changes are user work, not a release commit.
 
-**Current audit refresh — 2026-08-07:** current-state claims in this map were
-rechecked at HEAD `5693ae754926cfbcc5b3a05c7544127d9308cc90`. The active and only
+**Current audit refresh — 2026-08-08:** current-state claims in this map were
+rechecked on base HEAD `98a82b2` plus the UI Clarity worktree. The active and only
 tracked application frontend is `frontend/`; `frontend1/` was deleted in
 commit `faf9866` and is not a current implementation. Fresh gates are 176
-backend tests, 35 frontend tests, `ALL DATA VALID`, and a passing TypeScript
-check. A clean `npm run build` also completed all 6 static pages. A
-representative browser run at 1366×768 verified A* route trace,
-Held–Karp optimization trace, the Black/White themes, successful route and
-multiroute API calls, and zero console errors. Dated onboarding/FINAL-01
-sections below remain historical evidence; this run is not a replacement for
-the complete projector/accessibility matrix before recording.
+backend tests, 40 frontend tests, `ALL DATA VALID`, and a passing TypeScript
+check. A clean `npm run build` also completed all 6 static pages. Browser QA at
+1366×768, 1024×768 and 390×844 covered route/ATSP, four result tabs, scenario
+editing, keyboard/focus, reduced motion and responsive reflow; the clean final
+session returned route/multiroute 200 with zero console errors. Dated
+onboarding/FINAL-01 sections below remain historical evidence; the exact
+projector/browser used for recording still needs its own pre-flight.
 
-### Current frontend and release delta — through 2026-08-04
+### Current frontend and release delta — through 2026-08-08
 
 - `d44b96a`: refreshed the shared pathfinding shell and dark/light control-room
   surface system.
@@ -38,11 +38,12 @@ the complete projector/accessibility matrix before recording.
 - FINAL-01 verdict: **DEMO-READY WITH WARNINGS**, **SUBMISSION BLOCKED** and
   **FINAL-DATA NOT ALLOWED**. Backend/API/schema/data/results were unchanged by
   the four UI commits.
-- Subsequent work through the current HEAD adds finite-epsilon/API/benchmark
+- Subsequent work through the current worktree adds finite-epsilon/API/benchmark
   regressions, dynamic GraphView/scenario sandbox, ATSP optimization trace,
-  seven themes and frontend interaction repairs. Automated gates pass; the
-  representative current browser flow is verified as recorded above, while a
-  full viewport/keyboard/offline/accessibility matrix remains pre-flight work.
+  seven themes and the completed UI Clarity phase. The right panel now has
+  `Số liệu/Giải thích/So sánh/Thử nghiệm`, scenario editing has one authority,
+  route outcomes use km/minutes on screen, and start/goal markers plus result
+  hierarchy were browser-verified as recorded above.
 
 ## 1. Project purpose and rubric
 
@@ -82,9 +83,10 @@ caches:
 ├── CLAUDE.md                         legacy handoff and commands
 ├── PROMPT-MASTER.md                  historical construction specification
 ├── README.md                         user run guide
+├── UI_PLAN.md                        implemented UI Clarity checklist/evidence
 ├── backend/
 │   ├── app/                          API, models, stores, search, TSP, benchmark
-│   ├── tests/                        seven pytest modules
+│   ├── tests/                        eleven pytest modules
 │   ├── conftest.py
 │   └── requirements.txt
 ├── data/
@@ -104,7 +106,7 @@ caches:
 │   ├── GIAI-THICH-THUAT-TOAN.md      generated teaching document
 │   ├── TIENDO.md                     historical phase log
 │   ├── KIEMTOAN.md                   historical audit/fix ledger
-│   └── AUDIT-CLAUDE-PRE-SUBMISSION.md untracked input audit
+│   └── AUDIT-CLAUDE-PRE-SUBMISSION.md historical input audit
 ├── frontend/
 │   ├── app/                          root map and benchmark pages
 │   ├── components/                   controls, map, timeline, drawer, UI
@@ -505,7 +507,7 @@ Five explicit `SỐ TẠM` locations:
 5. `docs/GIAI-THICH-THUAT-TOAN.md`
 
 `BaoCao-Khung.md` contains 40 actionable fill-marker occurrences on 30 content
-lines after excluding its marker-legend line, eight requested GUI screenshots,
+lines after excluding its marker-legend line, nine requested GUI screenshots,
 and five Google Maps comparison captures. The audit's older "31 placeholders"
 count is stale.
 
@@ -527,14 +529,21 @@ flowchart LR
     Timeline --> Map
 ```
 
-`app/page.tsx` owns a desktop three-column/full-screen shell and dynamically
-loads `MapView` client-side. `useApp` is the single global state/action store.
+`app/page.tsx` owns the route workspace inside a responsive shell: three regions
+at desktop, one control rail plus result overlay at tablet widths, and map-first
+controls/results sheets below 960 px. It dynamically loads `MapView` client-side.
+`useApp` is the single global state/action store.
 `lib/types.ts` mirrors backend response shapes. `lib/api.ts` normalizes the
-backend error envelope.
+backend error envelope. `lib/metric-presentation.ts` keeps raw API metres/seconds
+separate from visible km/minutes; `lib/ui-copy.ts` centralizes mode copy;
+`lib/atsp-event-copy.ts` maps raw optimizer events to Vietnamese presentation.
+`components/applied-scenario-details.tsx` presents scenario provenance without
+duplicating the editor, while `lib/use-mobile-dialog-focus.ts` owns sheet focus
+entry/return.
 
 The separate `/benchmark` page loads cached experiment results and renders
 Recharts. `frontend/package.json` defines the repository test runner as
-`npm test`; the current suite contains 35 deterministic Node tests. TypeScript
+`npm test`; the current suite contains 40 deterministic Node tests. TypeScript
 checking and browser/runtime QA remain separate gates.
 
 ## 18. Zustand state and invalidation
@@ -554,7 +563,7 @@ checking and browser/runtime QA remain separate gates.
 | traceOnReal | false | `set` | no | hides animation trace, keeps route |
 | trace/compare/multi | null | async actions | no | stale-response guards compare request snapshot |
 | timeline | step 0, paused, 1x | `setStep`, `togglePlay` | no | reset on journey/result changes |
-| drawer | open, metrics tab | `set` | no | layout only |
+| drawer | open, metrics tab | `set` | no | four tabs: metrics/explain/compare/scenario; layout only |
 
 Journey invalidation compares semantic start/goal/stops values. Re-selecting
 the same endpoint or passing an equal ordered stops array preserves results;
@@ -627,9 +636,10 @@ The map route retained root body overflow ownership.
 ## 20. Test architecture
 
 Current collection produces **176 pytest items**. All 176 passed on the
-2026-08-07 worktree; frontend has a separate **35-test** Node suite
-and TypeScript check. The suite includes GraphView, ATSP trace, sandbox,
-fingerprint and regression coverage.
+2026-08-08 worktree; frontend has a separate **40-test** Node suite plus a
+passing TypeScript check and production build. The suites include GraphView,
+ATSP trace, sandbox, presentation-unit, copy, fingerprint and regression
+coverage.
 
 | Test file | Module/type | Main invariant/oracle | Dataset | Important gap |
 |---|---|---|---|---|
@@ -662,8 +672,8 @@ Completed semantic regressions:
 9. typed OpenAPI graph/error responses and experiment-6 JSON benchmark rows;
 10. Bidirectional Dijkstra initial frontier and trivial-route mode units;
 11. slot/traffic coherence, route–multiroute guards, effective-trace legend and
-    sign-aware ATSP savings, dynamic GraphView and theme behavior in the
-    frontend 35-test suite.
+    sign-aware ATSP savings, dynamic GraphView, theme behavior and presentation
+    copy/unit rules in the frontend 40-test suite.
 
 Priority semantic tests still missing:
 

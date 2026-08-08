@@ -1,12 +1,14 @@
 # DATA.md — Nguồn dữ liệu, luật xây dựng và giả định
 
-> **Trạng thái kiểm lại 2026-08-07:** `G_real` được build ngày 2026-07-27 từ
+> **Trạng thái kiểm lại 2026-08-08:** `G_real` được build ngày 2026-07-27 từ
 > GraphML OSMnx có `created_date=2026-07-26 18:47:01`; raw TomTom đã
 > đủ bốn slot 07:30, 12:00, 17:30 và 22:00. Chuỗi `03b real → 04 → 03b demo →
 > validate_data` đã hoàn tất; hai profile hiện là `tomtom+synthetic` và `G_demo`
 > đã rebuild theo profile cuối. Benchmark/hiệu chuẩn γ/generator vẫn chưa chạy
 > lại. `data/raw/graph_raw.graphml`, bốn TomTom JSON và OSMnx cache hiện diện
 > trong workspace và đều được Git track. Schema chi tiết: `docs/SCHEMA.md`.
+> UI Clarity Phase chỉ đổi frontend/documentation/ảnh README; không crawl,
+> rebuild hoặc sửa graph/profile/data.
 
 ## 1. Tổng quan pipeline (chạy offline một lần, demo không gọi mạng)
 

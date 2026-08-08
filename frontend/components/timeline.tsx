@@ -13,6 +13,7 @@ import {
 } from "./ui/select";
 import { activeTimelineLength } from "@/lib/atsp-trace-policy";
 import { useApp } from "@/lib/store";
+import { ATSP_METHOD_LABEL } from "./atsp/atsp-copy";
 
 const BASE_MS = 500;
 const SPEEDS = [0.5, 1, 2, 4, 8, 16];
@@ -126,9 +127,9 @@ export function Timeline() {
   if (n === 0) return null;
 
   return (
-    <div className="pastel-floating absolute bottom-3 left-1/2 z-10 flex h-[56px] w-[min(760px,calc(100%-2rem))] -translate-x-1/2 items-center gap-2 rounded-2xl border border-surface-strong/80 px-2.5 py-2 max-[900px]:overflow-x-auto">
-      <span className="hidden max-w-52 truncate text-[11px] font-medium text-ink-dim min-[700px]:inline" title={isOptimization ? "Quá trình tối ưu thứ tự ghé" : routeLabel}>
-        {isOptimization ? `ATSP · ${optimizationTrace?.method ?? "optimization"}` : routeLabel}
+    <div className="floating-chrome absolute bottom-3 left-1/2 z-10 flex min-h-[56px] w-[min(760px,calc(100%-2rem))] -translate-x-1/2 flex-wrap items-center gap-2 rounded-lg border border-surface-strong/80 px-2.5 py-2 max-[639px]:bottom-2 max-[639px]:w-[calc(100%-1rem)] max-[639px]:gap-1 max-[639px]:px-2">
+      <span className="hidden max-w-52 truncate text-xs font-medium text-ink-dim min-[700px]:inline" title={isOptimization ? "Quá trình tối ưu thứ tự ghé" : routeLabel}>
+        {isOptimization ? `Tối ưu thứ tự ghé · ${optimizationTrace ? ATSP_METHOD_LABEL[optimizationTrace.method] : ""}` : routeLabel}
       </span>
       <div className="flex items-center gap-1">
         <Button
@@ -158,7 +159,7 @@ export function Timeline() {
         </Button>
       </div>
       <Slider
-        className="min-w-24 flex-1"
+        className="timeline-slider min-w-24 flex-1 max-[359px]:order-3 max-[359px]:basis-full"
         min={0}
         max={n - 1}
         step={1}
@@ -169,14 +170,13 @@ export function Timeline() {
       <span className="min-w-[76px] whitespace-nowrap text-right font-mono text-xs text-ink-dim">
         {isOptimization ? "Sự kiện" : "Bước"} <span className="font-bold text-ink">{Math.min(stepIdx, n - 1) + 1}</span>/{n}
       </span>
-      {optimizerEvent && (
-        <span className="hidden whitespace-nowrap font-mono text-[10px] text-ink-faint min-[700px]:inline">
-          Event #{optimizerEvent.ordinal} · {optimizationTrace?.recorded_events}/{optimizationTrace?.total_events}
-          {optimizationTrace?.trace_truncated ? " · đã lấy mẫu" : ""}
+      {optimizerEvent && optimizationTrace?.trace_truncated && (
+        <span className="hidden whitespace-nowrap text-xs text-ink-faint min-[700px]:inline">
+          Đã lấy mẫu {optimizationTrace.recorded_events}/{optimizationTrace.total_events} sự kiện
         </span>
       )}
       <Select value={String(speed)} onValueChange={(v) => set({ speed: Number(v) })}>
-        <SelectTrigger className="h-9 w-[72px] text-xs" aria-label="Tốc độ phát">
+        <SelectTrigger className="h-9 w-[72px] text-xs max-[639px]:w-9 max-[639px]:px-2" aria-label="Tốc độ phát">
           <SelectValue />
         </SelectTrigger>
         <SelectContent>

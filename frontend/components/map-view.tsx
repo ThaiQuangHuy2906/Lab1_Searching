@@ -52,12 +52,40 @@ const RESULT_ROUTE_PATH_LAYER_IDS = new Set([
 const RESULT_ROUTE_ARROW_LAYER_IDS = new Set([
   "route-arrows", "multi-arrows", "compare-arrows",
 ]);
-const RESULT_ROUTE_OVERLAY_ANCHOR_IDS = new Set(["current-ring", "labels", "chips"]);
+const RESULT_ROUTE_OVERLAY_ANCHOR_IDS = new Set(["journey-endpoints", "current-ring", "labels", "chips"]);
+
+type EdgeLayerDatum = {
+  kind: "edge";
+  id: string;
+  u: string;
+  v: string;
+  name: string;
+  source: [number, number];
+  target: [number, number];
+  level: number;
+  overridden: boolean;
+  selected: boolean;
+};
+
+function mapTooltipText(object: unknown): string | null {
+  if (!object || typeof object !== "object" || !("id" in object)) return null;
+  if ("kind" in object && object.kind === "edge") {
+    const edge = object as EdgeLayerDatum;
+    return `${edge.name}\nĐoạn ${edge.id} · ${edge.u} → ${edge.v}`;
+  }
+  const node = object as GraphNode;
+  return node.name ? `${node.name}\nNút ${node.id}` : `Nút ${node.id}`;
+}
 
 function getLayerId(layer: unknown): string | undefined {
   return typeof layer === "object" && layer !== null && "id" in layer
     ? (layer as { id?: string }).id
     : undefined;
+}
+
+function deEmphasizeBaseColor(color: RGBA, active: boolean): RGBA {
+  if (!active) return color;
+  return [color[0], color[1], color[2], Math.min(color[3], 88)];
 }
 
 export function MapView() {
@@ -204,6 +232,7 @@ export function MapView() {
     return trace?.found && anim.showPath ? toPath(trace.path) : [];
   }, [multi, showFinalMultiRoute, trace, anim.showPath, toPath]);
   const routeFlowActive = routeFlowPath.length > 1;
+  const hasResultRoute = routeFlowActive || Boolean(compare?.found && drawerTab === "compare");
 
   const nodeColor = React.useCallback(
     (n: GraphNode): RGBA => {
@@ -219,9 +248,9 @@ export function MapView() {
         return C.expanded;
       }
       if (anim.frontierSet.has(n.id)) return C.frontier;
-      return isDemo ? C.node : C.nodeReal;
+      return deEmphasizeBaseColor(isDemo ? C.node : C.nodeReal, hasResultRoute);
     },
-    [anim, C, heldKarpHighlightSet, isDemo, optimizationEvent],
+    [anim, C, hasResultRoute, heldKarpHighlightSet, isDemo, optimizationEvent],
   );
   // v8: G_demo labels are ALWAYS on (user request) — collision filter handles overlap
   const showLabels = isDemo;
@@ -233,8 +262,12 @@ export function MapView() {
     // zoom sát trở về đúng kích thước cũ.
     const realNodeR = zoomBucket < 13 ? 1.8 : zoomBucket < 14 ? 2.2 : 2.6;
     const realEdgeW = zoomBucket < 13 ? 0.75 : zoomBucket < 14 ? 0.95 : 1.15;
-    const edgeData = graphData.edges.map((e) => ({
+    const edgeData: EdgeLayerDatum[] = graphData.edges.map((e) => ({
+      kind: "edge",
       id: e.id,
+      u: e.u,
+      v: e.v,
+      name: e.name ?? e.highway,
       source: coord.get(e.u)!,
       target: coord.get(e.v)!,
       level: effectiveCongestion(e.id, traffic ?? {}, slot, edgeOverrides[e.id]),
@@ -247,15 +280,18 @@ export function MapView() {
         data: edgeData,
         getSourcePosition: (d: (typeof edgeData)[number]) => d.source,
         getTargetPosition: (d: (typeof edgeData)[number]) => d.target,
-        getColor: (d: (typeof edgeData)[number]) =>
-          d.selected ? C.frontier : d.overridden ? C.path
-            : trafficLayer ? CONGESTION[d.level] : isDemo ? C.edgeDim : C.edgeReal,
+        getColor: (d: (typeof edgeData)[number]) => {
+          if (d.selected) return C.frontier;
+          if (d.overridden) return C.path;
+          const base = trafficLayer ? CONGESTION[d.level] : isDemo ? C.edgeDim : C.edgeReal;
+          return deEmphasizeBaseColor(base, hasResultRoute);
+        },
         getWidth: trafficLayer
           ? (isDemo ? 2.4 : Math.max(1.1, realEdgeW))
           : (isDemo ? 1.35 : realEdgeW),
         widthUnits: "pixels",
         updateTriggers: {
-          getColor: [trafficLayer, traffic, slot, edgeOverrides, selectedEdgeId, theme],
+          getColor: [trafficLayer, traffic, slot, edgeOverrides, selectedEdgeId, theme, hasResultRoute],
         },
       }),
     ];
@@ -300,10 +336,15 @@ export function MapView() {
           getPath: (d: RoutePathDatum) => d.path,
           getColor: C.labelOutline, getWidth: casingWidth,
           widthUnits: "pixels", jointRounded: true, capRounded: true,
-          ...(hasOffset ? {
-            getOffset: offsetPixels / casingWidth,
-            extensions: [new PathStyleExtension({ offset: true })],
-          } : {}),
+           ...(hasOffset ? {
+             getOffset: offsetPixels / casingWidth,
+             // deck.gl's path-style module only initializes its uniform binding
+             // during the dash path. [0, 0] is documented as a solid stroke,
+             // so this keeps the casing solid while giving offset rendering a
+             // complete shader module setup.
+             getDashArray: [0, 0],
+             extensions: [new PathStyleExtension({ dash: true, offset: true })],
+           } : {}),
         }),
         new PathLayer({
           id, data,
@@ -437,6 +478,30 @@ export function MapView() {
         },
       }),
     );
+
+    const endpoints: { id: "start" | "goal"; pos: [number, number]; color: RGBA }[] = [];
+    if (start && coord.get(start)) endpoints.push({ id: "start", pos: coord.get(start)!, color: C.start });
+    if (goal && coord.get(goal) && !(multi?.found && showFinalMultiRoute))
+      endpoints.push({ id: "goal", pos: coord.get(goal)!, color: C.goal });
+    if (endpoints.length) {
+      out.push(
+        new ScatterplotLayer({
+          id: "journey-endpoints",
+          data: endpoints,
+          getPosition: (d: (typeof endpoints)[number]) => d.pos,
+          getFillColor: (d: (typeof endpoints)[number]) => d.color,
+          getLineColor: C.labelOutline,
+          getRadius: isDemo ? 7.8 : 6.5,
+          radiusUnits: "pixels",
+          stroked: true,
+          filled: true,
+          lineWidthUnits: "pixels",
+          getLineWidth: 2.25,
+          pickable: false,
+          updateTriggers: { getFillColor: [theme], getLineColor: [theme] },
+        }),
+      );
+    }
     if (pickTarget !== null && !edgeEditMode) {
       out.push(
         new ScatterplotLayer({
@@ -536,7 +601,7 @@ export function MapView() {
     return out;
   }, [graphData, coord, toPath, traffic, slot, edgeOverrides, edgeEditMode, selectedEdgeId,
       trafficLayer, congestedSet, trace, compare,
-      multi, optimizationEvent, heldKarpHighlightSet, showFinalMultiRoute, anim, nodeColor, isDemo, showLabels, start, goal, stops,
+      multi, optimizationEvent, heldKarpHighlightSet, showFinalMultiRoute, hasResultRoute, anim, nodeColor, isDemo, showLabels, start, goal, stops,
       pickTarget, drawerTab, graph, C, CONGESTION, theme, zoomBucket]);
 
   const routeFlowLayers = React.useMemo(() => {
@@ -736,9 +801,9 @@ export function MapView() {
   return (
     <div
       ref={containerRef}
-      role={offline ? "region" : undefined}
-      aria-label={offline ? "Bản đồ định tuyến giao thông — chế độ ngoại tuyến" : undefined}
-      className="relative h-full w-full overflow-hidden rounded-[21px] bg-surface-map"
+      role="region"
+      aria-label="Khung bản đồ, chú giải và diễn biến tìm kiếm"
+      className="relative h-full w-full overflow-hidden rounded-lg bg-surface-map max-[959px]:rounded-none"
     >
       <DeckGL
         _animate={routeFlowActive && !reducedMotion}
@@ -753,19 +818,20 @@ export function MapView() {
         getCursor={({ isDragging }) =>
           edgeEditMode || pickTarget ? "crosshair" : isDragging ? "grabbing" : "grab"
         }
-        getTooltip={({ object }) =>
-          object && "id" in (object as GraphNode)
+        getTooltip={({ object }) => {
+          const text = mapTooltipText(object);
+          return text
             ? {
-                text: (object as GraphNode).name ?? `nút ${(object as GraphNode).id}`,
+                text,
                 style: {
                   background: "rgb(var(--surface-raised))",
                   color: "rgb(var(--ink))",
                   border: "1px solid rgb(var(--surface-border))",
-                  borderRadius: "12px", fontSize: "12px", padding: "6px 10px",
+                  borderRadius: "8px", fontSize: "12px", padding: "6px 10px",
                 },
               }
-            : null
-        }
+            : null;
+        }}
       >
         {!offline && (
           <MapLibre
@@ -785,7 +851,7 @@ export function MapView() {
       </DeckGL>
       {graphLoading && (
         <div role="status" className="pointer-events-none absolute inset-0 z-30 flex items-center justify-center bg-surface-map/65">
-          <span className="pastel-floating flex h-11 items-center gap-2 rounded-2xl border border-surface-strong/80 px-3 text-sm font-medium">
+          <span className="floating-chrome flex h-11 items-center gap-2 rounded-lg border border-surface-strong/80 px-3 text-sm font-medium">
             <Loader2 className="size-4 animate-spin text-algo-frontier" />
             Đang tải đồ thị…
           </span>
@@ -797,7 +863,7 @@ export function MapView() {
         </div>
       )}
       {/* map controls (DESIGN 6, v6): zoom +/- and fly-home */}
-      <div className={`pastel-floating absolute right-3 z-10 flex flex-col gap-1 rounded-2xl border border-surface-strong/80 p-1 ${mapControlsBottomClass(timelineVisible)}`}>
+      <div className={`floating-chrome absolute right-3 z-10 flex flex-col gap-1 rounded-lg border border-surface-strong/80 p-1 max-[639px]:bottom-[8.5rem] ${mapControlsBottomClass(timelineVisible)}`}>
         <Button variant="ghost" size="iconSm" aria-label="Phóng to"
           onClick={() => setViewState((v) => v && ({ ...v, zoom: (v.zoom ?? 0) + 0.7, transitionDuration: 250 }))}>
           <Plus />
@@ -830,7 +896,7 @@ export function MapView() {
         </Button>
       </div>
       {edgeEditMode && (
-        <div className="pastel-floating absolute left-1/2 top-3 z-20 flex min-h-11 max-w-[min(680px,calc(100%-8rem))] -translate-x-1/2 items-center gap-2 rounded-2xl border border-algo-frontier/60 px-3 text-sm">
+        <div className="floating-chrome absolute left-1/2 top-16 z-20 flex min-h-11 max-w-[min(680px,calc(100%-8rem))] -translate-x-1/2 items-center gap-2 rounded-lg border border-algo-frontier/60 px-3 text-sm max-[959px]:max-w-[calc(100%-2rem)]">
           <span>Bấm một cạnh để chỉnh thử trong phiên hiện tại.</span>
           <button type="button"
             className="inline-flex h-9 items-center rounded-lg border border-surface-border bg-surface-control px-2.5 text-xs font-medium text-ink-dim transition-colors hover:border-surface-strong hover:text-ink"
@@ -840,7 +906,7 @@ export function MapView() {
         </div>
       )}
       {pickTarget && !edgeEditMode && (
-        <div className="pastel-floating absolute left-1/2 top-3 z-20 flex min-h-11 max-w-[min(680px,calc(100%-8rem))] -translate-x-1/2 items-center gap-2 rounded-2xl border border-surface-strong/80 px-3 text-sm">
+        <div className="floating-chrome absolute left-1/2 top-16 z-20 flex min-h-11 max-w-[min(680px,calc(100%-8rem))] -translate-x-1/2 items-center gap-2 rounded-lg border border-surface-strong/80 px-3 text-sm max-[959px]:max-w-[calc(100%-2rem)]">
           {pickTarget === "stop" ? (
             <span>
               Bấm các nút giao để thêm điểm giao{" "}

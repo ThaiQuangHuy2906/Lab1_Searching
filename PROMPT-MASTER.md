@@ -7,6 +7,12 @@
 > Các mốc dừng/commit theo phase bên dưới chỉ mô tả quy trình đã dùng khi xây
 > dự án, không tự động áp dụng cho yêu cầu mới.
 >
+> **Current UI delta 2026-08-08:** §6.5 bên dưới là yêu cầu lịch sử, không phải
+> inventory hiện hành. Frontend hiện có 10 thuật toán, drawer bốn tab
+> `Số liệu/Giải thích/So sánh/Thử nghiệm`, scenario editor request-scoped và
+> presentation km/phút; contract UI mới nhất nằm ở `docs/DESIGN.md` §12 và
+> bằng chứng triển khai nằm ở `UI_PLAN.md`.
+>
 > File đặt ở gốc repo, cùng với:
 > - `docs/Lab 1 - Searching.pdf` — đề bài gốc (nguồn chân lý #1 về **YÊU CẦU**)
 > - `docs/Lab1-ChotPhuongAn.md` — phương án nhóm đã chốt (nguồn chân lý #2 về **LỰA CHỌN**)

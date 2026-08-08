@@ -1,6 +1,6 @@
 # HDCRAWL — Nhật ký TomTom closeout và checklist artifact cuối
 
-> **Trạng thái kiểm lại 2026-08-07:** raw TomTom đã đủ 4/4 slot. Hai slot 07:30, 12:00
+> **Trạng thái kiểm lại 2026-08-08:** raw TomTom đã đủ 4/4 slot. Hai slot 07:30, 12:00
 > lấy ngày 2026-07-27; hai slot 17:30, 22:00 lấy ngày 2026-08-03. Đây là hai
 > ngày thứ Hai cách nhau bảy ngày, dùng làm bốn snapshot đại diện, **không phải**
 > time series cùng ngày. Chuỗi `03b real → 04 → 03b demo → validate_data` đã
@@ -12,6 +12,7 @@
 > **Không chạy lại §0–§2.** Các lệnh ở đó chỉ được giữ như nhật ký tái lập.
 > Benchmark, gamma calibration và teaching generator trong §3–§5 vẫn được hoãn
 > có chủ đích; chỉ chạy sau khi code ổn định và có ủy quyền riêng.
+> UI/documentation refresh không chạy lại bất kỳ bước crawl/build/benchmark nào.
 
 ---
 

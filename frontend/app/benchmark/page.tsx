@@ -271,15 +271,15 @@ export default function BenchmarkPage() {
     contentStyle: {
       background: palette.hex.panel,
       border: `1px solid ${grid}`,
-      borderRadius: 14,
+      borderRadius: 8,
       color: "rgb(var(--ink))",
     },
     labelStyle: { color: inkDim },
   };
 
   return (
-    <main className="pastel-app-bg h-screen overflow-y-auto text-ink">
-      <header className="pastel-header sticky top-0 z-20 border-b border-surface-border/80 shadow-sm">
+    <main className="app-shell-surface h-screen overflow-y-auto text-ink">
+      <header className="app-header sticky top-0 z-20 border-b border-surface-border/80 shadow-sm">
         <div className="mx-auto flex h-[60px] max-w-6xl items-center gap-3 px-4 sm:px-6">
           <Button asChild variant="ghost" size="sm">
             <Link href="/">
@@ -295,8 +295,8 @@ export default function BenchmarkPage() {
 
       <div className="mx-auto flex min-h-[calc(100%-60px)] max-w-6xl flex-col gap-4 px-4 py-5 sm:px-6 sm:py-6">
         <section aria-labelledby="benchmark-title" className="flex flex-col gap-1">
-          <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-ink-faint">Phân tích thực nghiệm</p>
-          <h1 id="benchmark-title" className="text-xl font-bold tracking-tight text-ink sm:text-2xl">
+          <p className="text-xs font-bold text-ink-faint">Phân tích thực nghiệm</p>
+          <h1 id="benchmark-title" className="text-xl font-bold tracking-tight text-ink">
             Benchmark — 7 thí nghiệm
           </h1>
           <p className="max-w-3xl text-sm leading-6 text-ink-dim">
@@ -371,8 +371,8 @@ export default function BenchmarkPage() {
               <CardHeader className="border-b border-surface-border">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <h2 id="expanded-chart-title" className="text-[15px] font-bold text-ink">Số node expand trung bình theo thuật toán</h2>
-                    <p className="mt-1 text-xs leading-5 text-ink-dim">Số node expand trung bình theo thuật toán · thang log</p>
+                    <h2 id="expanded-chart-title" className="text-sm font-bold text-ink">Số điểm đã duyệt trung bình theo thuật toán</h2>
+                    <p className="mt-1 text-xs leading-5 text-ink-dim">Số điểm đã duyệt (nodes expanded) trung bình · thang log</p>
                   </div>
                   <Badge className="shrink-0">Node</Badge>
                 </div>
@@ -381,7 +381,7 @@ export default function BenchmarkPage() {
                 {byAlgorithm.length ? (
                   <>
                     <p id="expanded-chart-desc" className="sr-only">
-                      Biểu đồ cột so sánh số node expand trung bình của các thuật toán trên trục log. Dữ liệu là artifact lịch sử đã lưu.
+                      Biểu đồ cột so sánh số điểm đã duyệt trung bình của các thuật toán trên trục log. Dữ liệu là artifact lịch sử đã lưu.
                     </p>
                     <div role="img" aria-labelledby="expanded-chart-title" aria-describedby="expanded-chart-desc" className="h-72 min-w-0">
                       <div aria-hidden="true" className="size-full">
@@ -393,9 +393,9 @@ export default function BenchmarkPage() {
                             <RTooltip
                               {...tooltipStyle}
                               cursor={{ fill: `${grid}55` }}
-                              formatter={(value: number | string): [string, string] => [fmtInt(Number(value)), "Node expand"]}
+                              formatter={(value: number | string): [string, string] => [fmtInt(Number(value)), "Số điểm đã duyệt"]}
                             />
-                            <Bar dataKey="expanded" name="Node expand" fill={pink} radius={[4, 4, 0, 0]} isAnimationActive={animateCharts} />
+                            <Bar dataKey="expanded" name="Số điểm đã duyệt" fill={pink} radius={[4, 4, 0, 0]} isAnimationActive={animateCharts} />
                           </BarChart>
                         </ResponsiveContainer>
                       </div>
@@ -407,8 +407,8 @@ export default function BenchmarkPage() {
               </CardContent>
               {byAlgorithm.length > 0 && (
                 <ChartDataTable
-                  label="Bảng số node expand trung bình theo thuật toán"
-                  columns={["Thuật toán", "Node expand trung bình"]}
+                  label="Bảng số điểm đã duyệt trung bình theo thuật toán"
+                  columns={["Thuật toán", "Số điểm đã duyệt trung bình"]}
                   rows={byAlgorithm.map((row) => [row.algorithm, fmtInt(row.expanded)])}
                 />
               )}
@@ -418,8 +418,8 @@ export default function BenchmarkPage() {
               <CardHeader className="border-b border-surface-border">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <h2 id="runtime-chart-title" className="text-[15px] font-bold text-ink">Thời gian chạy trung bình theo thuật toán</h2>
-                    <p className="mt-1 text-xs leading-5 text-ink-dim">Runtime trung bình theo thuật toán · thang log</p>
+                    <h2 id="runtime-chart-title" className="text-sm font-bold text-ink">Thời gian xử lý trung bình theo thuật toán</h2>
+                    <p className="mt-1 text-xs leading-5 text-ink-dim">Thời gian xử lý (runtime) trung bình · thang log</p>
                   </div>
                   <Badge className="shrink-0">ms</Badge>
                 </div>
@@ -428,7 +428,7 @@ export default function BenchmarkPage() {
                 {byAlgorithm.length ? (
                   <>
                     <p id="runtime-chart-desc" className="sr-only">
-                      Biểu đồ cột so sánh runtime trung bình tính bằng mili giây trên trục log. Dữ liệu là artifact lịch sử đã lưu.
+                      Biểu đồ cột so sánh thời gian xử lý trung bình tính bằng mili giây trên trục log. Dữ liệu là artifact lịch sử đã lưu.
                     </p>
                     <div role="img" aria-labelledby="runtime-chart-title" aria-describedby="runtime-chart-desc" className="h-72 min-w-0">
                       <div aria-hidden="true" className="size-full">
@@ -440,9 +440,9 @@ export default function BenchmarkPage() {
                             <RTooltip
                               {...tooltipStyle}
                               cursor={{ fill: `${grid}55` }}
-                              formatter={(value: number | string): [string, string] => [`${fmtVi(Number(value), 2)} ms`, "Runtime trung bình"]}
+                              formatter={(value: number | string): [string, string] => [`${fmtVi(Number(value), 2)} ms`, "Thời gian xử lý trung bình"]}
                             />
-                            <Bar dataKey="runtime" name="Runtime (ms)" fill={violet} radius={[4, 4, 0, 0]} isAnimationActive={animateCharts} />
+                            <Bar dataKey="runtime" name="Thời gian xử lý (ms)" fill={violet} radius={[4, 4, 0, 0]} isAnimationActive={animateCharts} />
                           </BarChart>
                         </ResponsiveContainer>
                       </div>
@@ -454,8 +454,8 @@ export default function BenchmarkPage() {
               </CardContent>
               {byAlgorithm.length > 0 && (
                 <ChartDataTable
-                  label="Bảng runtime trung bình theo thuật toán"
-                  columns={["Thuật toán", "Runtime trung bình (ms)"]}
+                  label="Bảng thời gian xử lý trung bình theo thuật toán"
+                  columns={["Thuật toán", "Thời gian xử lý trung bình (ms)"]}
                   rows={byAlgorithm.map((row) => [row.algorithm, fmtVi(row.runtime, 2)])}
                 />
               )}
@@ -465,7 +465,7 @@ export default function BenchmarkPage() {
               <CardHeader className="border-b border-surface-border">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <h2 id="gamma-chart-title" className="text-[15px] font-bold text-ink">Độ nhạy trọng số γ</h2>
+                    <h2 id="gamma-chart-title" className="text-sm font-bold text-ink">Độ nhạy trọng số γ</h2>
                     <p className="mt-1 text-xs leading-5 text-ink-dim">Thời gian và quãng đường trung bình của tuyến được chọn</p>
                   </div>
                   <div className="flex gap-2"><Badge>giây</Badge><Badge>km</Badge></div>

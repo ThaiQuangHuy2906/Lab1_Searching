@@ -1,8 +1,9 @@
 # CHỐT PHƯƠNG ÁN — Lab 1: Search Algorithms for Vietnamese Traffic
 
-> **Kiểm lại 2026-08-07:** đây là bản quyết định dự án hiện hành, đứng sau đề bài
+> **Kiểm lại 2026-08-08:** đây là bản quyết định dự án hiện hành, đứng sau đề bài
 > và trước đặc tả thi công lịch sử `PROMPT-MASTER.md`. ✅ = đã chốt; ⬜ = việc
 > con người hoặc dữ liệu cuối chưa hoàn tất.
+> UI Clarity Phase không đổi kịch bản, thuật toán, API, graph, cost hay dữ liệu đã chốt.
 
 ## 1. Kịch bản và phạm vi
 

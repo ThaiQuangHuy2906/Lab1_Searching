@@ -39,10 +39,10 @@ import type {
 } from "./types";
 
 export const ALGO_LABEL: Record<Algorithm, string> = {
-  bfs: "BFS — tìm theo bề rộng",
-  dfs: "DFS — tìm theo chiều sâu",
-  iddfs: "IDDFS — đào sâu dần",
-  ucs: "UCS — chi phí đồng nhất",
+  bfs: "BFS",
+  dfs: "DFS",
+  iddfs: "IDDFS",
+  ucs: "UCS",
   dijkstra: "Dijkstra",
   astar: "A*",
   greedy: "Greedy Best-First",
@@ -347,7 +347,10 @@ export const useApp = create<AppState>((set, get) => ({
   selectEdge: (edgeId) => {
     const state = get();
     if (!state.edgeEditMode || !state.graphData?.edges.some((edge) => edge.id === edgeId)) return;
-    set({ selectedEdgeId: edgeId, drawerOpen: true, drawerTab: "scenario" });
+    // Selecting an edge finishes the one-shot picking gesture. Keep the edge
+    // itself selected for editing, but remove the broad pick layer so a later
+    // map click cannot accidentally replace it.
+    set({ selectedEdgeId: edgeId, edgeEditMode: false, drawerOpen: true, drawerTab: "scenario" });
   },
 
   setEdgeOverride: (edgeId, override) => {
@@ -425,7 +428,7 @@ export const useApp = create<AppState>((set, get) => ({
         s.graphData?.nodes.find((node) => node.id === id)?.name ?? id;
       const merged = s.stops.length > 0
         ? mergeSequentialRouteTraces(
-          waypoints, traces, nameOf, ALGO_LABEL[s.algorithm].split(" — ")[0],
+          waypoints, traces, nameOf, ALGO_LABEL[s.algorithm],
         )
         : { trace: traces[0], run: null };
       const t = merged.trace;
@@ -500,7 +503,7 @@ export const useApp = create<AppState>((set, get) => ({
         ? mergeSequentialRouteTraces(
           waypoints, traces,
           (id) => s.graphData?.nodes.find((node) => node.id === id)?.name ?? id,
-          ALGO_LABEL[compareAlgo].split(" — ")[0],
+          ALGO_LABEL[compareAlgo],
         ).trace
         : traces[0];
       set({ compare: t, drawerTab: "compare" });

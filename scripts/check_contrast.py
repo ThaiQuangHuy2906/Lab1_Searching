@@ -1,7 +1,8 @@
-"""WCAG contrast audit for the frontend's semantic palettes (both themes).
+"""WCAG contrast audit for the frontend's semantic palettes (all themes).
 
 Reads the SOURCE OF TRUTH directly so nothing can drift:
-- palettes parsed from frontend/lib/colors.ts (DARK + LIGHT blocks);
+- palettes parsed from each makePalette(...) specification in
+  frontend/lib/colors.ts;
 - panel/ink colors parsed from the CSS variables in app/globals.css;
 - basemap background fetched LIVE from each theme's Carto style JSON
   (the actual `type: "background"` layer paint — not guessed).
@@ -39,6 +40,16 @@ TEXT_MIN = 4.5
 INFO_KEYS = ["frontier", "expanded", "current", "path", "bidiForward",
              "bidiBackward", "chipStart", "chipGoal", "stop", "start", "goal"]
 BACKDROP_KEYS = ["node", "edgeDim"]
+THEME_BY_CONST = {
+    "DEFAULT": "default",
+    "LIGHT": "light",
+    "DARK": "dark",
+    "PINK": "pink",
+    "LAVENDER": "lavender",
+    "SAGE": "sage",
+    "LEMON": "lemon",
+}
+THEMES = tuple(THEME_BY_CONST.values())
 
 
 def lum(rgb: tuple[int, int, int]) -> float:
@@ -76,30 +87,73 @@ def parse_css_color(value: str) -> tuple[int, int, int]:
 
 def parse_palettes() -> dict[str, dict]:
     src = COLORS_TS.read_text(encoding="utf-8")
-    blocks = {}
-    for name in ("DARK", "LIGHT"):
-        m = re.search(rf"const {name}: Palette = \{{(.*?)\n\}};", src, re.S)
+    congestion = {}
+    for mode in ("DARK", "LIGHT"):
+        m = re.search(rf"const {mode}_CONGESTION[^=]*= \{{(.*?)\n\}};", src, re.S)
         if not m:
-            raise SystemExit(f"cannot find {name} palette in colors.ts")
+            raise SystemExit(f"cannot find {mode}_CONGESTION in colors.ts")
         body = m.group(1)
-        rgba = {k: tuple(int(x) for x in re.split(r",\s*", v)[:3])
-                for k, v in re.findall(r"(\w+): \[([\d, ]+)\]", body)}
-        cong = {}
-        mc = re.search(r"congestion: \{(.*?)\}", body, re.S)
-        if mc:
-            for k, v in re.findall(r"(\d): \[([\d, ]+)\]", mc.group(1)):
-                cong[int(k)] = tuple(int(x) for x in re.split(r",\s*", v)[:3])
-        basemap = re.search(r'basemap: "([^"]+)"', body).group(1)
-        blocks[name.lower()] = {"deck": rgba, "congestion": cong, "basemap": basemap}
-    return blocks
+        congestion[mode.lower()] = {
+            int(key): tuple(int(x) for x in re.split(r",\s*", value)[:3])
+            for key, value in re.findall(r"(\d): \[([\d, ]+)\]", body)
+        }
+
+    def source_string(name: str) -> str:
+        m = re.search(rf'const {name} = "([^"]+)";', src)
+        if not m:
+            raise SystemExit(f"cannot find {name} URL in colors.ts")
+        return m.group(1)
+
+    carto_dark = source_string("CARTO_DARK")
+    carto_light = source_string("CARTO_LIGHT")
+    palettes = {}
+    for constant, theme in THEME_BY_CONST.items():
+        m = re.search(rf"const {constant} = makePalette\(\{{(.*?)\n\}}\);", src, re.S)
+        if not m:
+            raise SystemExit(f"cannot find {constant} makePalette specification in colors.ts")
+        body = m.group(1)
+        fields = {
+            key: tuple(int(x) for x in re.split(r",\s*", value))
+            for key, value in re.findall(r"(\w+): \[([\d, ]+)\]", body)
+        }
+        required = {
+            "node", "frontier", "expanded", "current", "path", "bidiBackward",
+            "edge", "start", "goal", "stop", "stopText",
+        }
+        if missing := required - fields.keys():
+            raise SystemExit(f"{constant} is missing palette fields: {sorted(missing)}")
+        is_dark = re.search(r"dark:\s*true", body) is not None
+        palettes[theme] = {
+            "deck": {
+                "node": fields["node"],
+                "frontier": fields["frontier"],
+                "expanded": fields["expanded"],
+                "current": fields["current"],
+                "path": fields["path"],
+                "bidiForward": fields["frontier"],
+                "bidiBackward": fields["bidiBackward"],
+                "edgeDim": fields["edge"],
+                "start": fields["start"],
+                "goal": fields["goal"],
+                "stop": fields["stop"],
+                "stopText": fields["stopText"],
+                "chipStart": (4, 120, 87),
+                "chipGoal": (190, 46, 93),
+                "chipText": (255, 255, 255),
+            },
+            "congestion": congestion["dark" if is_dark else "light"],
+            "basemap": carto_dark if is_dark else carto_light,
+        }
+    return palettes
 
 
 def parse_css_vars() -> dict[str, dict[str, tuple[int, int, int]]]:
     css = GLOBALS_CSS.read_text(encoding="utf-8")
     out = {}
-    for theme, sel in (("dark", r':root\[data-theme="dark"\] \{(.*?)\}'),
-                       ("light", r':root\[data-theme="light"\] \{(.*?)\}')):
-        m = re.search(sel, css, re.S)
+    for theme in THEMES:
+        m = re.search(rf':root\[data-theme="{theme}"\]\s*\{{(.*?)\}}', css, re.S)
+        if not m:
+            raise SystemExit(f"cannot find CSS variables for {theme} theme")
         body = m.group(1)
         out[theme] = {k: tuple(int(x) for x in v.split()[:3])
                       for k, v in re.findall(r"--([\w-]+):\s*([\d ]+);", body)}
@@ -120,12 +174,14 @@ def main() -> None:
     css = parse_css_vars()
     failures: list[str] = []
 
-    for theme in ("dark", "light"):
+    basemaps: dict[str, tuple[int, int, int]] = {}
+    for theme in THEMES:
         deck = palettes[theme]["deck"]
         cong = palettes[theme]["congestion"]
         panel = css[theme]["surface-panel"]
         ink, ink_dim = css[theme]["ink"], css[theme]["ink-dim"]
-        bmap = basemap_background(palettes[theme]["basemap"])
+        style_url = palettes[theme]["basemap"]
+        bmap = basemaps.setdefault(style_url, basemap_background(style_url))
 
         print(f"\n=== THEME {theme.upper()} — panel rgb{panel}, "
               f"basemap rgb{bmap} (đọc từ style JSON) ===")

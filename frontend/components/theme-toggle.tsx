@@ -38,13 +38,13 @@ export function ThemeToggle({ className }: { className?: string }) {
         aria-label="Chọn giao diện"
         title={`Giao diện: ${selected.label}`}
         className={cn(
-          "h-9 w-[10.5rem] gap-2 rounded-xl border-surface-border/80 bg-surface-control/80 px-2.5 text-xs shadow-none max-[900px]:w-11 max-[900px]:justify-center max-[900px]:px-2 max-[900px]:[&>svg]:hidden",
+          "h-9 w-[10.5rem] gap-2 rounded-lg border-surface-border/80 bg-surface-control/80 px-2.5 text-xs shadow-none max-[959px]:w-11 max-[959px]:justify-center max-[959px]:px-2 max-[959px]:[&>svg]:hidden",
           className,
         )}
       >
         <span className="flex min-w-0 items-center gap-2">
           <Palette className="size-4 shrink-0 text-algo-frontier" aria-hidden="true" />
-          <span className="truncate font-medium max-[900px]:sr-only">{selected.label}</span>
+          <span className="truncate font-medium max-[959px]:sr-only">{selected.label}</span>
         </span>
       </SelectTrigger>
       <SelectContent align="end" sideOffset={6} className="min-w-[17rem]">
@@ -54,7 +54,7 @@ export function ThemeToggle({ className }: { className?: string }) {
               <ThemeSwatches colors={option.swatches} />
               <span className="min-w-0">
                 <span className="block text-sm font-semibold text-ink">{option.label}</span>
-                <span className="block truncate text-[11px] font-normal text-ink-dim">
+                <span className="block truncate text-xs font-normal text-ink-dim">
                   {option.description}
                 </span>
               </span>

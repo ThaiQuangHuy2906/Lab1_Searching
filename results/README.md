@@ -9,6 +9,8 @@
 > `G_demo`; benchmark/hiệu chuẩn γ/generator cuối vẫn chưa được chạy. Các
 > artifact trong thư mục này chỉ được thay TRỌN MỘT LƯỢT sau khi code ổn định
 > và có ủy quyền riêng.
+> UI/documentation refresh 2026-08-08 không chạy benchmark và không sửa bất kỳ
+> CSV/PNG/GeoJSON kết quả nào trong thư mục này.
 >
 > **Tái sinh (chạy MỘT MÌNH, ~7 phút, không tiến trình song song):**
 > từ `backend/` chạy `..\.venv\Scripts\python.exe -m app.benchmark` (PowerShell)

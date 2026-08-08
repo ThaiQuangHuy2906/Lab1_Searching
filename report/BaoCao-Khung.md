@@ -33,7 +33,8 @@
 
 > ✍️ Phụ trách: **E**
 > 💡 Gợi ý: trung thực về mức hoàn thành; rubric 100 điểm bên dưới là thứ giảng viên
-> dò từng dòng — tự chấm trước sẽ ghi điểm thiện chí. Ghi chú hạn chế mobile ~"GUI 95%".
+> dò từng dòng — tự chấm trước sẽ ghi điểm thiện chí. Browser QA responsive hiện
+> đã đạt ở 1366×768, 1024×768 và 390×844; chỉ nêu các giới hạn còn thật sự tồn tại.
 
 **Bảng thành viên** *(điền MSSV thật — cột vai trò theo phương án §8)*:
 
@@ -54,7 +55,7 @@
 | Cài đúng 4 thuật toán bắt buộc | 20 | [ĐIỀN] | +đối chứng NetworkX 1200/1200 (exp1) |
 | Thuật toán bổ sung (≥2) | 10 | [ĐIỀN] | nhóm làm 6: Dijkstra, Greedy, BiDijkstra, IDA*, Beam, IDDFS |
 | Tối ưu đa điểm | 10 | [ĐIỀN] | Held-Karp + NN+2-opt + SA (3 phương pháp) |
-| GUI + visualize quá trình tìm kiếm | 10 | [ĐIỀN] | animation từng bước, bảng g/h/f, 7 theme; hạn chế: chưa xác minh responsive mobile đầy đủ |
+| GUI + visualize quá trình tìm kiếm | 10 | [ĐIỀN] | animation từng bước, bảng g/h/f, 7 theme; browser QA responsive ở 1366×768, 1024×768, 390×844, keyboard/focus và reduced motion đã đạt |
 | Giải thích tuyến + so sánh phương án | 10 | [ĐIỀN] | explanation tiếng Việt + ≥1 alternative |
 | Chất lượng báo cáo | 10 | [ĐIỀN] | |
 | Chất lượng video | 5 | [ĐIỀN] | |
@@ -414,9 +415,9 @@ data chỉ cần khi muốn build lại từ OSM)*.
 
 **Luồng sử dụng GUI:** [ĐIỀN theo trải nghiệm thật: chọn đồ thị/khung giờ/tiêu chí →
 thuật toán (+tham số) → Đi/Đến → Chạy → timeline ▶ + bảng g/h/f → tab Giải thích →
-So sánh → multiroute → trang Benchmark].
+So sánh → tab Thử nghiệm (Chọn nhanh/Chỉnh chi tiết) → multiroute → trang Benchmark].
 
-**Danh sách 8 screenshot cần chụp** *(chế độ Tối)*:
+**Danh sách 9 screenshot cần chụp** *(chế độ Tối)*:
 1. [SCREENSHOT: toàn cảnh trang chính G_demo + lớp ùn tắc 07:30]
 2. [SCREENSHOT: animation A* đang chạy — node trắng pulse + frontier cyan + bảng g/h/f]
 3. [SCREENSHOT: tuyến kết quả amber + panel Số liệu + badge "Đảm bảo tối ưu"]
@@ -424,7 +425,8 @@ So sánh → multiroute → trang Benchmark].
 5. [SCREENSHOT: Dijkstra hai chiều — 2 màu 2 phía]
 6. [SCREENSHOT: chế độ So sánh A* vs BFS — 2 tuyến chồng + bảng đối chiếu]
 7. [SCREENSHOT: multiroute 9 điểm — số thứ tự + tiết kiệm %]
-8. [SCREENSHOT: trang /benchmark với 3 biểu đồ]
+8. [SCREENSHOT: tab Thử nghiệm — bảng Thông số/Gốc/Đang thử và cạnh đang chọn]
+9. [SCREENSHOT: trang /benchmark với 3 biểu đồ]
 
 **Ví dụ input/output:** [ĐIỀN: 1 request POST /api/route mẫu + đoạn JSON trả về rút gọn
 (cắt trace), giải thích từng trường theo SCHEMA].
@@ -443,7 +445,8 @@ So sánh → multiroute → trang Benchmark].
   trục chính được gán, phần còn lại fallback; 4 khung giờ tĩnh, không real-time.
 - `narrow_alley` hiếm vì network drive loại hẻm (DATA.md §8) — cần network_type="all".
 - VRP nhiều shipper, GA/ACO: ngoài phạm vi, đã chừa kiến trúc.
-- GUI chưa responsive mobile (tự chấm GUI ~95%).
+- QA responsive browser đã đạt ở 1366×768, 1024×768 và 390×844; không suy diễn
+  kết quả này thành chứng nhận screen-reader hoặc GPU trên mọi thiết bị.
 - [ĐIỀN: khó khăn thực tế nhóm gặp — gợi ý kể chuyện THẬT: lỗi làm tròn phá admissible
   bị test bắt được (HEURISTIC-PROOF §6b); chữ Ð của OSM khác Đ tiếng Việt; npm build
   đè .next của dev server. Kể được bug mình tự bắt là điểm cộng trưởng thành kỹ thuật.]

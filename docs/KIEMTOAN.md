@@ -1,6 +1,6 @@
 # KIEMTOAN.md — Báo cáo Hội đồng phản biện độc lập
 
-> **Lưu ý audit 2026-08-07:** phần từ “TRẠNG THÁI FIX BATCH” trở xuống là
+> **Lưu ý audit 2026-08-08:** phần từ “TRẠNG THÁI FIX BATCH” trở xuống là
 > sổ kiểm toán/fix lịch sử tại các commit
 > ghi trong tài liệu. Không dùng các số test, line number hay kết luận cũ làm bằng
 > chứng cho worktree hiện tại. FINAL-01 và các mục cập nhật UI dưới đây cũng là
@@ -8,7 +8,7 @@
 > `docs/CODEX-CODEBASE-MAP.md` và
 > `docs/KE-HOACH-TRIEN-KHAI-NHIEM-VU-HOP-NHOM.md`; kết luận cuối vẫn phải dựa trên
 > code/data hiện hành và lệnh kiểm chứng fresh. Gate documentation-audit gần
-> nhất: 176 backend tests, 35 frontend tests, `ALL DATA VALID`, TypeScript pass;
+> nhất: 176 backend tests, 40 frontend tests, `ALL DATA VALID`, TypeScript/build pass;
 > raw GraphML/TomTom/cache hiện được Git track. Không sửa lại các entry lịch sử
 > phía dưới để mang số hiện tại.
 >

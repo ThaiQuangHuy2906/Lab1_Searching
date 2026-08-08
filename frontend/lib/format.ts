@@ -13,7 +13,12 @@ export function fmtVi(x: number, digits = 1): string {
 
 export const fmtSeconds = (s: number) => `${fmtVi(s, 1)} s`;
 export const fmtMinutes = (s: number) => `${fmtVi(s / 60, 1)} phút`;
-export const fmtKm = (m: number) => `${fmtVi(m / 1000, 2)} km`;
+/**
+ * Route distances are presented in kilometres throughout the UI. Very short
+ * values keep a third decimal so an IDA* epsilon such as 5 m is still shown
+ * truthfully as 0,005 km instead of being rounded to 0,01 km.
+ */
+export const fmtKm = (m: number) => `${fmtVi(m / 1000, Math.abs(m) > 0 && Math.abs(m) < 10 ? 3 : 2)} km`;
 export const fmtMs = (ms: number) => `${fmtVi(ms, 1)} ms`;
 export const fmtPct = (p: number) => `${fmtVi(p, 1)} %`;
 export const fmtInt = (n: number) => fmtVi(n, 0);

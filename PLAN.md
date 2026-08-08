@@ -9,7 +9,7 @@
 > request-scoped edge override, ATSP optimization trace và
 > `AppliedScenario`/fingerprint.
 >
-> **Ghi chú audit hiện hành — 2026-08-07:** đây là execution plan lịch sử của
+> **Ghi chú audit hiện hành — 2026-08-08:** đây là execution plan lịch sử của
 > M1–M5, không phải contract hiện hành. Quyết định bốn view cố định
 > `full/teach_7/teach_15/teach_25` trong thân plan đã được implementation sau đó
 > mở rộng thành `full` hoặc `teach_3`…`teach_50` với preset version 2. Current
@@ -19,11 +19,13 @@
 > (GraphView), 3 (ATSP optimization trace), 4 (edge-override sandbox) và 5
 > (integration/runtime/browser QA) đã hoàn tất. Gate audit 2026-08-07 đạt:
 > backend `176 passed` (1 dependency deprecation warning), validator
-> `ALL DATA VALID`, frontend `35/35`, TypeScript và production build pass.
+> `ALL DATA VALID`, frontend `40/40`, TypeScript và production build pass.
 > Checkpoint 2026-08-05 đã kiểm các luồng M1–M5; fresh browser QA đại diện ngày
 > 2026-08-07 xác nhận A*/route trace, Held–Karp/optimization trace, giao diện
 > Đen/Trắng, API thành công và không có console error. Full pre-flight vẫn phải
-> được lặp trên service sạch và đúng máy/độ phân giải quay.
+> được lặp trên service sạch và đúng máy/độ phân giải quay. UI Clarity Phase sau
+> M1–M5 cũng đã hoàn tất; contract hiện hành nằm ở `docs/DESIGN.md` §12 và
+> evidence triển khai nằm ở `UI_PLAN.md`.
 >
 > PLAN này đã hoàn tất đến Milestone 5. Không tự chạy benchmark, hiệu chuẩn γ,
 > teaching generator hoặc đóng gói submission nếu chưa có ủy quyền riêng.

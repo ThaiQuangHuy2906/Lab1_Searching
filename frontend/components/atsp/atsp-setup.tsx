@@ -58,9 +58,9 @@ export function AtspSetup() {
     <div className="flex flex-col gap-2.5">
       <div className="flex items-end justify-between gap-2">
         <div className="min-w-0">
-          <p className="text-xs font-medium text-ink-dim">Điểm giao hàng</p>
+          <p className="text-sm font-medium text-ink-dim">Điểm giao hàng</p>
           {s.stops.length > 0 && (
-            <p className="mt-0.5 text-[11px] text-ink-faint">Thứ tự đang nhập</p>
+            <p className="mt-0.5 text-xs text-ink-faint">Thứ tự đang nhập</p>
           )}
         </div>
         <Badge className="shrink-0 font-mono">{s.stops.length}/{MAX_STOPS}</Badge>
@@ -73,7 +73,7 @@ export function AtspSetup() {
           </span>
           <div className="min-w-0">
             <p className="text-xs font-semibold text-ink">Chưa có điểm giao</p>
-            <p className="mt-1 text-[11px] leading-[17px] text-ink-dim">
+            <p className="mt-1 text-xs leading-5 text-ink-dim">
               Chọn điểm Đi, thêm ít nhất một điểm giao, rồi chọn phương pháp để tối ưu thứ tự ghé.
             </p>
           </div>
@@ -88,14 +88,14 @@ export function AtspSetup() {
           >
             <div className="flex flex-wrap items-center justify-between gap-1.5">
               <Badge variant="warn">Chế độ nhiều điểm</Badge>
-              <span className="font-mono text-[11px] text-ink-dim">
+              <span className="font-mono text-xs text-ink-dim">
                 {s.stops.length} điểm giao
               </span>
             </div>
-            <p className="mt-1.5 truncate text-[11px] leading-4 text-ink-dim" title={startName}>
+            <p className="mt-1.5 truncate text-xs leading-5 text-ink-dim" title={startName}>
               Đi: <span className="font-medium text-ink">{startName}</span>
             </p>
-            <p className="mt-0.5 text-[11px] leading-4 text-ink-dim">
+            <p className="mt-0.5 text-xs leading-5 text-ink-dim">
               Nút Chạy thuật toán đi theo thứ tự này; ATSP dùng để tìm thứ tự ghé tốt hơn.
             </p>
           </div>
@@ -110,7 +110,7 @@ export function AtspSetup() {
                 >
                   <span
                     aria-hidden="true"
-                    className="flex size-5 shrink-0 items-center justify-center rounded-full bg-algo-path font-mono text-[10px] font-bold text-zinc-950"
+                    className="flex size-5 shrink-0 items-center justify-center rounded-full bg-algo-path font-mono text-[11px] font-bold text-zinc-950"
                   >
                     {index + 1}
                   </span>
@@ -172,7 +172,7 @@ export function AtspSetup() {
       )}
 
       {atLimit && (
-        <p className="text-[11px] leading-4 text-ink-dim">
+        <p className="text-xs leading-5 text-ink-dim">
           Đã đạt giới hạn {MAX_STOPS} điểm giao.
         </p>
       )}
@@ -180,10 +180,10 @@ export function AtspSetup() {
       {s.stops.length > 0 && (
         <div className="flex flex-col gap-2 rounded-lg border border-surface-border bg-surface-control/55 p-2.5">
           <div>
-            <p className="text-[11px] font-bold uppercase tracking-wider text-ink-dim">
+            <p className="text-xs font-bold text-ink-dim">
               Tối ưu thứ tự ghé (ATSP)
             </p>
-            <p className="mt-0.5 text-[11px] leading-4 text-ink-faint">
+            <p className="mt-0.5 text-xs leading-5 text-ink-faint">
               Tuỳ chọn riêng: đổi thứ tự Đi + danh sách điểm giao trước khi tìm đường.
             </p>
           </div>
@@ -203,7 +203,7 @@ export function AtspSetup() {
             <Badge variant={method.guarantee ? "ok" : "warn"} className="shrink-0">
               {method.guarantee ? "Tối ưu tuyệt đối" : "Nghiệm xấp xỉ"}
             </Badge>
-            <p className="min-w-0 text-[11px] leading-4 text-ink-dim">
+            <p className="min-w-0 text-xs leading-5 text-ink-dim">
               <span className="font-medium text-ink">{method.label}.</span>{" "}
               {method.description}
             </p>
@@ -220,14 +220,14 @@ export function AtspSetup() {
               onCheckedChange={(checked) => s.set({ includeOptimizationTrace: checked })}
             />
           </div>
-          <p className="-mt-1 text-[11px] leading-4 text-ink-faint">
+          <p className="-mt-1 text-xs leading-5 text-ink-faint">
             Chỉ áp dụng cho lần chạy tiếp theo; đây là diễn biến đổi thứ tự ghé, không phải đường xe chạy.
           </p>
           {tooManyForHeldKarp && (
             <p
               id={heldKarpWarningId}
               role="status"
-              className="rounded-lg border border-algo-path/35 bg-algo-path/10 px-2.5 py-2 text-[11px] leading-4 text-ink"
+              className="rounded-lg border border-algo-path/35 bg-algo-path/10 px-2.5 py-2 text-xs leading-5 text-ink"
             >
               Held-Karp nhận tối đa 14 điểm giao + 1 điểm Đi (15 điểm tổng). Hãy đổi sang NN + 2-opt/Or-opt hoặc Simulated Annealing; danh sách sẽ được giữ nguyên.
             </p>
@@ -249,7 +249,7 @@ export function AtspSetup() {
               id={runningStatusId}
               role="status"
               aria-live="polite"
-              className="text-center text-[11px] leading-4 text-ink-dim"
+              className="text-center text-xs leading-5 text-ink-dim"
             >
               Đang tính ma trận chi phí và thứ tự ghé…
             </p>

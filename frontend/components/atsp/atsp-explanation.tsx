@@ -1,10 +1,11 @@
 "use client";
 
-import { BadgeCheck, BookOpenText, Clock, Route as RouteIcon } from "lucide-react";
+import { BadgeCheck, BookOpenText, Clock, Route as RouteIcon, Sigma } from "lucide-react";
 import { Badge } from "../ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
-import { fmtKm, fmtMinutes, fmtPct, fmtSeconds } from "@/lib/format";
+import { fmtPct } from "@/lib/format";
 import { describeAtspSavings } from "@/lib/atsp-savings";
+import { formatOutcomeMetricValue, isDistanceOutcomeMetric, outcomeMetricsForMode, primaryOutcomeMetric, type OutcomeMetric } from "@/lib/metric-presentation";
 import type { MultirouteResponse } from "@/lib/types";
 import {
   ATSP_METHOD_EXPLANATION,
@@ -12,8 +13,9 @@ import {
   ATSP_MODE_LABEL,
 } from "./atsp-copy";
 
-const fmtDuration = (seconds: number) =>
-  seconds >= 90 ? fmtMinutes(seconds) : fmtSeconds(seconds);
+function outcomeFormatter(metric: OutcomeMetric) {
+  return (value: number) => formatOutcomeMetricValue(metric, value);
+}
 
 function ChangeRow({ icon: Icon, label, before, after, format, epsilon }: {
   icon: React.ComponentType<{ className?: string }>;
@@ -58,10 +60,20 @@ export function AtspExplanation({ multi }: { multi: MultirouteResponse }) {
   const before = multi.original_order_totals;
   const after = multi.totals;
   const savings = describeAtspSavings(multi.savings_pct);
+  const primary = primaryOutcomeMetric(multi.mode);
+  const secondary = outcomeMetricsForMode(multi.mode)[1];
+  const primaryFormatter = outcomeFormatter(primary);
+  const secondaryFormatter = secondary
+    ? outcomeFormatter(secondary)
+    : null;
+  const PrimaryIcon = multi.mode === "distance" ? RouteIcon : multi.mode === "time" ? Clock : Sigma;
+  const tradeOffCopy = multi.mode === "distance"
+    ? "Tiêu chí này ưu tiên độ dài, không khẳng định chi phí cân bằng thấp nhất."
+    : "Quãng đường không bắt buộc cùng giảm khi thứ tự được tối ưu theo tiêu chí này.";
 
   return (
     <div className="flex flex-col gap-3">
-      <p className="rounded-lg border border-surface-border bg-surface-control px-2.5 py-2 font-mono text-[11px] text-ink-dim">
+      <p className="rounded-lg border border-surface-border bg-surface-control px-2.5 py-2 text-xs text-ink-dim">
         {ATSP_METHOD_LABEL[multi.method]} · {ATSP_MODE_LABEL[multi.mode]} · {multi.time_slot} ·{" "}
         {multi.graph === "demo" ? "G_demo" : "G_real"}
       </p>
@@ -73,7 +85,6 @@ export function AtspExplanation({ multi }: { multi: MultirouteResponse }) {
             Kết quả này được tạo như thế nào?
           </CardTitle>
           <div className="flex flex-wrap items-center gap-1.5">
-            <Badge>{ATSP_METHOD_LABEL[multi.method]}</Badge>
             <Badge variant={multi.optimal_guarantee ? "ok" : "warn"} className="gap-1">
               {multi.optimal_guarantee && <BadgeCheck className="size-3.5" />}
               {multi.optimal_guarantee ? "Tối ưu tuyệt đối" : "Nghiệm xấp xỉ"}
@@ -85,9 +96,8 @@ export function AtspExplanation({ multi }: { multi: MultirouteResponse }) {
             {ATSP_METHOD_EXPLANATION[multi.method]}
           </p>
           <p className="mt-2 text-[13px] leading-6 text-ink-dim">
-            Hệ thống tối ưu <b className="text-ink">tổng chi phí {ATSP_MODE_LABEL[multi.mode].toLowerCase()}</b>,
-            nên thời gian và quãng đường không bắt buộc cùng giảm. Chi phí mỗi chiều có thể khác
-            nhau vì đây là đồ thị đường một chiều, bất đối xứng.
+            Hệ thống ưu tiên <b className="text-ink">{primary.label.toLowerCase()}</b>. {tradeOffCopy}
+            {" "}Chi phí mỗi chiều có thể khác nhau vì đây là đồ thị đường một chiều, bất đối xứng.
           </p>
         </CardContent>
       </Card>
@@ -95,7 +105,7 @@ export function AtspExplanation({ multi }: { multi: MultirouteResponse }) {
       <Card>
         <CardHeader className="gap-1">
           <CardTitle>Tác động của thứ tự mới</CardTitle>
-          <p className="text-[11px] leading-4 text-ink-dim">
+          <p className="text-xs leading-5 text-ink-dim">
             So trực tiếp với đúng thứ tự điểm giao người dùng đã nhập.
           </p>
         </CardHeader>
@@ -105,22 +115,25 @@ export function AtspExplanation({ multi }: { multi: MultirouteResponse }) {
             : savings.kind === "negative"
               ? "border-goal/35 bg-goal/10"
               : "border-surface-border bg-surface-control"}`}>
-            <p className="text-[11px] text-ink-dim">{savings.label}</p>
+            <p className="text-xs text-ink-dim">{savings.label}</p>
             <p className={`mt-0.5 font-mono text-lg font-bold ${savings.kind === "positive"
               ? "text-start"
               : savings.kind === "negative" ? "text-goal" : "text-ink"}`}>
               {savings.absolutePct === null ? "—" : fmtPct(savings.absolutePct)}
             </p>
           </div>
-          <ChangeRow icon={Clock} label="Thời gian đi" before={before.total_time_s}
-            after={after.total_time_s} format={fmtDuration} epsilon={0.5} />
-          <ChangeRow icon={RouteIcon} label="Quãng đường" before={before.total_distance_m}
-            after={after.total_distance_m} format={fmtKm} epsilon={10} />
+          <ChangeRow icon={PrimaryIcon} label={primary.label} before={before[primary.key]}
+            after={after[primary.key]} format={primaryFormatter}
+            epsilon={isDistanceOutcomeMetric(primary) ? 10 : 0.5} />
+          {secondary && secondaryFormatter && (
+            <ChangeRow icon={RouteIcon} label={secondary.label} before={before[secondary.key]}
+              after={after[secondary.key]} format={secondaryFormatter} epsilon={10} />
+          )}
         </CardContent>
       </Card>
 
       <div className="rounded-lg border border-surface-border bg-surface-panel p-3">
-        <p className="text-[11px] font-bold uppercase tracking-wider text-ink-dim">Cách đọc hành trình</p>
+        <p className="text-xs font-bold text-ink-dim">Cách đọc hành trình</p>
         <ul className="mt-1.5 flex list-disc flex-col gap-1 pl-4 text-xs leading-5 text-ink-dim">
           <li>Điểm đầu là <b className="text-ink">Đi</b>; các số tiếp theo là thứ tự giao tối ưu.</li>
           <li>Hành trình kết thúc ở điểm giao cuối, không tự quay lại điểm Đi.</li>

@@ -1,11 +1,11 @@
 # TIENDO.md — Bảng tiến độ theo phase
 
-> **Lưu ý audit 2026-08-07:** đây là nhật ký lịch sử; số test, số cạnh và
+> **Lưu ý audit 2026-08-08:** đây là nhật ký lịch sử; số test, số cạnh và
 > trạng thái ở từng dòng đúng theo thời điểm của phase đó, không phải mốc hiện tại.
 > Baseline 2026-07-27, UI-01–UI-04 và FINAL-01 đều là evidence lịch sử.
 > Current-state nằm trong `README.md`, `data/DATA.md`, `docs/SCHEMA.md` và phần
-> current-state của `docs/CODEX-CODEBASE-MAP.md`; audit fresh 2026-08-07 đạt
-> 176 backend/35 frontend tests, validator và TypeScript. Các con số hiện hành
+> current-state của `docs/CODEX-CODEBASE-MAP.md`; audit fresh 2026-08-08 đạt
+> 176 backend/40 frontend tests, validator, TypeScript và production build. Các con số hiện hành
 > vẫn phải được xác nhận lại bằng code/data và lệnh fresh ở lượt sử dụng.
 >
 > Cập nhật cuối mỗi phase (PROMPT-MASTER luật 1). Trạng thái: ⬜ chưa làm · 🔄 đang làm · ✅ xong.
@@ -31,10 +31,18 @@
 - Gửi mail giảng viên (`vntan.work@gmail.com`): xác nhận kịch bản shipper + việc dùng NetworkX làm baseline test (code đã cô lập NetworkX trong test theo luật 6 nên không chặn).
 - Điền tên thành viên A–E (bảng phân công + mục a báo cáo) + chốt người nộp bài.
 - Dán `source_url` thật vào `data/manual_risks.json`.
-- Chụp 8 screenshot + 5 ảnh Google Maps đối chứng; quay video; đóng gói `[GroupID].zip`.
+- Chụp 9 screenshot + 5 ảnh Google Maps đối chứng; quay video; đóng gói `[GroupID].zip`.
 
 ## Nhật ký quyết định
 
+- **2026-08-08 (UI Clarity Phase + polish sau freeze):** triển khai đầy đủ
+  `UI_PLAN.md` trong frontend active duy nhất `frontend/`. Shell responsive,
+  keyboard/focus/reduced-motion, bốn tab kết quả, scenario editor một authority,
+  marker Đi/Đến, bảng ba cột, loading/error/empty và contrast bảy theme đã được
+  QA. Follow-up rút gọn tên thuật toán, chuẩn hoá số liệu UI sang km/phút, đồng
+  nhất typography hành trình và đặt hai metric chính cạnh nhau trên desktop.
+  Gate đạt 176 backend test, 40 frontend test, validator, TypeScript và build;
+  không đổi backend/API/schema/data/results hay chạy benchmark/generator.
 - **2026-08-03 (UI-01–UI-04, route-flow và FINAL-01):** bốn commit nối tiếp đã
   hoàn thiện UI mà không đổi backend/API/schema/store contract: `d44b96a` làm mới
   shell tìm đường theo hướng Operational Control Room; `f670fa6` tách và làm rõ

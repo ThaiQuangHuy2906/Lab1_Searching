@@ -3,17 +3,17 @@
 import * as React from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { BarChart3, WifiOff } from "lucide-react";
+import { BarChart3, PanelLeftOpen, PanelRightOpen, WifiOff } from "lucide-react";
 import { ControlPanel } from "@/components/control-panel";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Drawer } from "@/components/drawer/drawer";
+import { Button } from "@/components/ui/button";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useApp } from "@/lib/store";
 
-// Map phải 'use client' + tắt SSR (PROMPT-MASTER 6.5)
 const MapView = dynamic(
-  () => import("@/components/map-view").then((m) => m.MapView),
+  () => import("@/components/map-view").then((module) => module.MapView),
   {
     ssr: false,
     loading: () => (
@@ -28,23 +28,47 @@ const MapView = dynamic(
   },
 );
 
+type MobilePanel = "controls" | "results" | null;
+
 export default function Home() {
-  const loadGraph = useApp((s) => s.loadGraph);
-  const offline = useApp((s) => s.offlineMode);
+  const loadGraph = useApp((state) => state.loadGraph);
+  const offline = useApp((state) => state.offlineMode);
+  const [mobilePanel, setMobilePanel] = React.useState<MobilePanel>(null);
+  const lastMobileTrigger = React.useRef<HTMLElement | null>(null);
+  const wasMobilePanelOpen = React.useRef(false);
+
   React.useEffect(() => {
     void loadGraph("demo");
   }, [loadGraph]);
 
+  React.useEffect(() => {
+    if (wasMobilePanelOpen.current && mobilePanel === null) {
+      const frame = window.requestAnimationFrame(() => lastMobileTrigger.current?.focus());
+      wasMobilePanelOpen.current = false;
+      return () => window.cancelAnimationFrame(frame);
+    }
+    wasMobilePanelOpen.current = mobilePanel !== null;
+  }, [mobilePanel]);
+
+  const openMobilePanel = (panel: Exclude<MobilePanel, null>) =>
+    (event: React.MouseEvent<HTMLButtonElement>) => {
+      lastMobileTrigger.current = event.currentTarget;
+      setMobilePanel(panel);
+    };
+
   return (
     <TooltipProvider delayDuration={250}>
-      <main className="pastel-app-bg flex h-screen gap-2 overflow-hidden p-2">
-        <ControlPanel />
-        <div className="pastel-map-frame relative min-w-0 flex-1 overflow-hidden rounded-[22px] border border-surface-border/80">
+      <main className="app-shell-surface relative flex h-screen min-w-0 gap-2 overflow-hidden p-2 max-[959px]:block max-[959px]:p-0">
+        <ControlPanel
+          mobileOpen={mobilePanel === "controls"}
+          onMobileClose={() => setMobilePanel(null)}
+        />
+        <div className="map-frame relative z-0 min-w-0 flex-1 overflow-hidden rounded-xl border border-surface-border/80 max-[959px]:h-[100dvh] max-[959px]:rounded-none max-[959px]:border-0">
           <MapView />
           <div
             aria-label="Công cụ ứng dụng"
             role="toolbar"
-            className="pastel-floating absolute right-3 top-3 z-20 flex h-11 items-center gap-1 rounded-2xl border border-surface-strong/80 p-1"
+            className="floating-chrome absolute right-3 top-3 z-20 flex h-11 items-center gap-1 rounded-lg border border-surface-strong/80 p-1 max-[959px]:hidden"
           >
             {offline && (
               <span
@@ -52,7 +76,7 @@ export default function Home() {
                 className="flex h-9 items-center gap-1.5 rounded-md border border-surface-border bg-surface-control px-2.5 text-xs font-medium text-ink"
               >
                 <WifiOff className="size-3.5 text-algo-frontier" />
-                <span className="max-[900px]:sr-only">Ngoại tuyến</span>
+                Ngoại tuyến
               </span>
             )}
             <Link
@@ -61,12 +85,37 @@ export default function Home() {
               className="flex h-9 items-center gap-1.5 rounded-md px-2.5 text-xs font-medium text-ink-dim transition-colors duration-150 hover:bg-surface-control hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-algo-frontier"
             >
               <BarChart3 className="size-3.5" />
-              <span className="max-[900px]:sr-only">Benchmark</span>
+              Benchmark
+            </Link>
+            <ThemeToggle />
+          </div>
+
+          <div
+            aria-label="Điều hướng trên màn hình nhỏ"
+            role="toolbar"
+            className="floating-chrome absolute left-3 right-3 top-3 z-30 hidden min-h-11 items-center gap-1 rounded-lg border border-surface-strong/80 p-1 max-[959px]:flex"
+          >
+            <Button variant="secondary" size="sm" className="flex-1" onClick={openMobilePanel("controls")}>
+              <PanelLeftOpen /> Thiết lập
+            </Button>
+            <Button variant="secondary" size="sm" className="flex-1" onClick={openMobilePanel("results")}>
+              <PanelRightOpen /> Kết quả
+            </Button>
+            {offline && <WifiOff aria-label="Đang ngoại tuyến" className="mx-1 size-4 shrink-0 text-algo-frontier" />}
+            <Link
+              href="/benchmark"
+              aria-label="Mở trang Benchmark"
+              className="inline-flex size-9 shrink-0 items-center justify-center rounded-md text-ink-dim transition-colors hover:bg-surface-control hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-algo-frontier"
+            >
+              <BarChart3 className="size-4" />
             </Link>
             <ThemeToggle />
           </div>
         </div>
-        <Drawer />
+        <Drawer
+          mobileOpen={mobilePanel === "results"}
+          onMobileClose={() => setMobilePanel(null)}
+        />
       </main>
     </TooltipProvider>
   );

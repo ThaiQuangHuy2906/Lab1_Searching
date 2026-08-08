@@ -9,6 +9,10 @@
 > Đây là tài liệu viết tay dành riêng cho Role C, không phải file số liệu được
 > sinh tự động. Không lấy các headline trong `results/` làm số chính thức vì
 > chúng đang cũ hơn graph hiện hành.
+>
+> **Kiểm lại 2026-08-08:** semantics bốn thuật toán nâng cao và ba ATSP không đổi.
+> Khi đối chiếu GUI mới, tên thuật toán dùng nhãn ngắn và metric hành trình nhìn
+> thấy dùng km/phút; raw contract vẫn là mét/giây theo `docs/SCHEMA.md`.
 
 ---
 

@@ -26,7 +26,10 @@ export function GhfTable() {
   const currentRef = React.useRef<HTMLTableRowElement>(null);
 
   React.useEffect(() => {
-    currentRef.current?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+    currentRef.current?.scrollIntoView({
+      block: "nearest",
+      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
+    });
   }, [anim.stepIdx]);
 
   if (!trace || anim.steps.length === 0) return null;
@@ -38,6 +41,7 @@ export function GhfTable() {
     && trace.algorithm !== "iddfs" && cur?.h !== null;
   const usesG = cur?.g !== null;
   const usesF = cur?.f !== null;
+  const hasCostColumns = usesG || usesH || usesF;
 
   const jump = (id: string) => {
     const at = anim.stepOfNode.get(id);
@@ -56,7 +60,7 @@ export function GhfTable() {
       <table className="w-full table-fixed text-xs">
         <thead className="sticky top-0 bg-surface-raised text-left text-ink-dim">
           <tr>
-            <th scope="col" className="px-2.5 py-1.5 font-medium">Node</th>
+            <th scope="col" className="px-2.5 py-1.5 font-medium">Điểm</th>
             {usesG && <th scope="col" className="w-16 px-1.5 py-1.5 text-right font-medium">g</th>}
             {usesH && <th scope="col" className="w-14 px-1.5 py-1.5 text-right font-medium">h</th>}
             {usesF && <th scope="col" className="w-16 px-1.5 py-1.5 text-right font-medium">f</th>}
@@ -68,7 +72,7 @@ export function GhfTable() {
               <td className="truncate px-2.5 py-1.5" title={nameOf(cur.expanded)}>
                 <span className="mr-1.5 inline-block size-2 rounded-full bg-algo-current align-middle" />
                 {nameOf(cur.expanded)}
-                <span className="ml-1 text-[10px] text-ink-dim">đang expand</span>
+                <span className="ml-1 text-xs text-ink-dim">đang duyệt</span>
               </td>
               {usesG && <td className="px-1.5 py-1.5 text-right font-mono">–</td>}
               {usesH && <td className="px-1.5 py-1.5 text-right font-mono">–</td>}
@@ -81,7 +85,7 @@ export function GhfTable() {
             <tr
               key={id}
               tabIndex={canJump ? 0 : -1}
-              aria-label={canJump ? `Nhảy tới bước expand ${nameOf(id)}` : undefined}
+              aria-label={canJump ? `Nhảy tới bước duyệt ${nameOf(id)}` : undefined}
               onClick={() => jump(id)}
               onKeyDown={(event) => {
                 if (!canJump || (event.key !== "Enter" && event.key !== " ")) return;
@@ -94,8 +98,8 @@ export function GhfTable() {
                   hint "bấm để nhảy" của tr (review v11) */}
               <td className="truncate px-2.5 py-1.5"
                 title={anim.stepOfNode.has(id)
-                  ? `${nameOf(id)} — bấm để nhảy tới bước node này được expand`
-                  : `${nameOf(id)} — node này chưa từng được expand`}>
+                  ? `${nameOf(id)} — bấm để nhảy tới bước điểm này được duyệt`
+                  : `${nameOf(id)} — điểm này chưa từng được duyệt`}>
                 <span className="mr-1.5 inline-block size-2 rounded-full bg-algo-frontier align-middle" />
                 {nameOf(id)}
               </td>
@@ -108,9 +112,11 @@ export function GhfTable() {
         </tbody>
       </table>
     </div>
-    <p className="font-mono text-[10px] text-ink-dim">
-      g: chi phí đã đi · h: ước lượng còn lại · f = g + h
-    </p>
+    {hasCostColumns && (
+      <p className="font-mono text-xs leading-5 text-ink-dim">
+        g: chi phí đã đi · h: ước lượng còn lại · f = g + h
+      </p>
+    )}
     </div>
   );
 }

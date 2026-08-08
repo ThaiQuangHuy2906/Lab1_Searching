@@ -1,5 +1,8 @@
 # MUST DO — Bổ sung nguồn cho 8 vùng rủi ro thủ công
 
+> **Kiểm lại 2026-08-08:** nhiệm vụ này vẫn còn mở; cả 8 `source_url` phải được
+> nhóm điền hoặc mô tả trung thực là giả định minh hoạ trước khi đóng Data ZIP.
+
 ## Tin nhắn gửi nhóm Messenger
 
 Nhóm mình còn **1 đầu việc về provenance dữ liệu** trước khi chốt Data ZIP và

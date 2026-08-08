@@ -1,12 +1,15 @@
 # MUST TODO — Công việc còn lại trước khi nộp Lab 01
 
-> Trạng thái ghi nhận: 2026-08-07, tại Git `HEAD`
-> `5693ae754926cfbcc5b3a05c7544127d9308cc90`.
+> Trạng thái hiện hành: 2026-08-08, trên base HEAD `98a82b2` cùng UI Clarity
+> worktree đã được verification.
 >
-> File này lưu backlog tổng trước khi nộp. Nhóm đang chuẩn bị thực hiện thêm
-> **một phase cải thiện UI**, vì vậy chưa chụp bộ ảnh cuối, chưa quay video cuối,
-> chưa chạy benchmark cuối và chưa gỡ banner `SỐ TẠM` cho tới khi UI/code được
-> freeze.
+> File này lưu backlog tổng trước khi nộp. **UI Clarity Phase đã freeze** và hai
+> ảnh README đã được cập nhật; bộ screenshot/report/slide/video nộp cuối vẫn chưa
+> hoàn tất. Benchmark cuối chưa chạy và mọi banner `SỐ TẠM` vẫn phải được giữ.
+>
+> Bằng chứng UI hiện hành được ghi tại §3.1 và `UI_PLAN.md`; checkpoint 35 test ở
+> §2 chỉ là trạng thái trước phase. Benchmark/gamma/generator, bộ ảnh nộp cuối,
+> video và các banner `SỐ TẠM` vẫn chưa được thực hiện/thay đổi.
 
 ## 1. Phân biệt hai file MUST DO
 
@@ -68,6 +71,35 @@ Kết thúc phase UI phải:
 - kiểm tra console/network request;
 - cập nhật README screenshot nếu giao diện cuối khác ảnh hiện tại;
 - freeze UI/code trước khi bắt đầu chuỗi benchmark và sản xuất deliverable cuối.
+
+### 3.1. Phase UI Clarity đã freeze — evidence 2026-08-08
+
+Các yêu cầu kết thúc phase ở trên đã được kiểm chứng trên current worktree,
+không dùng checkpoint trước phase làm bằng chứng thay thế:
+
+- `frontend/` là frontend duy nhất được sửa; không dùng hoặc khôi phục
+  `frontend1/`.
+- Full route, compare, sequential route, trace/timeline, ATSP (Held-Karp,
+  NN + local improvement, SA), scenario override/restore, G_real guardrail,
+  offline/error/loading/empty state và `/benchmark` đã được chạy qua UI thật.
+- Browser Chromium đã QA ở 1366×768, 1024×768, 390×844 (thêm 320×568): không
+  có horizontal page scroll; keyboard/focus/Escape/focus trap, seven themes,
+  reduced motion sau reload và console/network sạch ở clean session đã được
+  kiểm. `GET /api/graph?level=demo&view=full` trả 51 node, 298 cạnh có hướng,
+  60 cạnh một chiều; các request route/multiroute cuối cùng trả 200.
+- Verification mới: `npm test` 40/40, `npx tsc --noEmit`, production build,
+  backend pytest 176/176 (1 Starlette/httpx deprecation warning) và data
+  validator đều đạt. `scripts/check_contrast.py` đạt cho đủ bảy theme.
+- Hai ảnh README đã chụp lại sau clean restart/hard refresh, request thành công
+  và inspect ở độ phân giải gốc. Không chạy benchmark, gamma calibration,
+  generator hoặc pipeline data; không thay đổi API/backend/schema/data/results.
+- Bổ sung 2026-08-08: editor kịch bản được gom về tab `Thử nghiệm`, có
+  `Chọn nhanh`/`Chỉnh chi tiết`, bảng so sánh ba cột và marker Đi/Đến nổi
+  bật. Hai ảnh README được chụp lại sau clean restart với route/multiroute 200
+  và console 0 errors; production build được chạy sau khi dừng dev server.
+
+Các bước delivery còn lại của file này vẫn giữ nguyên. Phase UI freeze chỉ mở
+đường cho các bước đó khi nhóm có đủ người phụ trách và ủy quyền tương ứng.
 
 ## 4. Đồng bộ Git để nhóm có đầy đủ context
 

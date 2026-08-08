@@ -64,7 +64,7 @@
 
 **Slide 8 — Thuật toán bổ sung** *(rubric: additional 10đ)*
 - Nhóm làm 6 (đề cần ≥2): Dijkstra, Greedy, BiDijkstra, IDA* (ε=5 m ở distance,
-  5 s ở time/balanced; guarantee chỉ khi chưa chạm cap 1.000 vòng), Beam, IDDFS
+  5 s ở time/balanced; UI đổi tương ứng sang km/phút; guarantee chỉ khi chưa chạm cap 1.000 vòng), Beam, IDDFS
 - Greedy: expand ít nhất (62) nhưng gap 60,9% — "linh cảm" phản chủ
 - Beam k=50: nhanh nhưng 1,5% ca KHÔNG tìm thấy — incomplete bằng số
 > 🗣 60s: mỗi thuật toán một câu "đánh đổi cái gì lấy cái gì".
@@ -82,7 +82,7 @@
 > 🗣 45s: nhấn "hợp đồng dữ liệu chốt trước khi code" — cách 5 người làm song song không giẫm chân.
 
 **Slide 11 — Demo GUI** *(demo live hoặc video 60–90 s)*
-- Kịch bản: chọn Đi/Đến → A* → play timeline → tab Giải thích → multiroute
+- Kịch bản: chọn Đi/Đến → A* → play timeline → Giải thích/So sánh → Thử nghiệm một cạnh → multiroute
 - Dự phòng: chế độ Offline (mất wifi vẫn demo) + video quay sẵn
 > 🗣 chạy demo theo checklist mục 11 Video-KichBan.md.
 
@@ -99,7 +99,7 @@
 > 🗣 60s: đọc to 1 câu giải thích thật của app — cho giảng viên thấy máy "nói được tiếng người".
 
 **Slide 14 — Hạn chế & hướng phát triển**
-- Trung thực: heuristic lỏng (h/h*≈0,57), TomTom chỉ phủ mẫu và còn synthetic fallback, chưa turn-penalty, GUI chưa mobile
+- Trung thực: heuristic lỏng (h/h*≈0,57), TomTom chỉ phủ mẫu và còn synthetic fallback, chưa turn-penalty; GUI đã QA responsive ở 1366×768, 1024×768, 390×844 nhưng chưa là chứng nhận screen-reader/GPU đa thiết bị
 - Hướng phát triển: TomTom real-time, landmark ALT, VRP nhiều shipper
 - Cảm ơn + Q&A
 > 🗣 30s + để thời gian cho hỏi đáp.

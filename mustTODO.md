@@ -105,11 +105,11 @@ Các bước delivery còn lại của file này vẫn giữ nguyên. Phase UI f
 
 Trước hoặc ngay sau khi chốt phase UI:
 
-- [ ] Review toàn bộ `git diff` hiện tại.
-- [ ] Xác nhận các Markdown audit và hai ảnh README mới là đúng.
-- [ ] Track `mustdo.md` và `mustTODO.md` nếu nhóm muốn lưu chúng trong repo.
-- [ ] Không đưa `.env`, dependency, cache hay secret vào commit.
-- [ ] Commit và push sau khi người phụ trách xác nhận.
+- [x] Review toàn bộ `git diff` hiện tại.
+- [x] Xác nhận các Markdown audit và hai ảnh README mới là đúng.
+- [x] Track `mustdo.md` và `mustTODO.md` trong repo.
+- [x] Không đưa `.env`, dependency, cache hay secret vào commit.
+- [x] Commit UI Clarity `a198c56` và push thành công lên `origin/main`.
 - [ ] Thành viên khác pull và xác nhận nhìn thấy `data/raw/`, documentation mới
       và các file nhiệm vụ.
 

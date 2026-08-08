@@ -4,56 +4,55 @@
 > OSM/TomTom, traffic profiles, weights, cost, heuristic và dữ liệu mà từng
 > thuật toán Searching/ATSP thực sự sử dụng.
 >
-> **Mốc kiểm gốc:** 2026-08-06, commit
-> `2328d5f47ec2d40e283809941039189383ab489e`. Ở workspace của tác giả audit
-> lúc đó chưa có `data/raw/`, nên kết luận `UNKNOWN/UNVERIFIED` về raw
-> provenance là đúng theo bằng chứng sẵn có tại thời điểm kiểm.
+> **Audit checkpoint hiện hành:** 2026-08-08 (Asia/Saigon), HEAD
+> `91adfa9608fc5377ed5a786c33fd4850c9c94554`, commit
+> `feat: finalize nine-algorithm contract and provenance`. Trước khi cập nhật
+> tài liệu, `git status --short`, staged diff và unstaged diff đều rỗng.
 >
-> **Mốc tái kiểm provenance:** 2026-08-07 (Asia/Saigon), HEAD
-> `5693ae754926cfbcc5b3a05c7544127d9308cc90`. Tài liệu này được thêm ở
-> `3f6df7c` lúc 17:15; commit `faf9866` lúc 17:40 sau đó bỏ rule ignore
-> `data/raw/` và track raw GraphML, OSMnx cache cùng bốn raw TomTom snapshot.
+> **Fresh gates tại checkpoint:** backend `177 passed, 1 warning`; data validator
+> trả `ALL DATA VALID`, xác nhận hai graph strongly connected và đủ bốn profile
+> slot trên toàn bộ edge. Audit đã tái dựng read-only OSM → G_real, TomTom +
+> fallback → profile_real và corridor/profile_real → G_demo/profile_demo.
 >
-> **Mốc xác nhận worktree hiện tại:** 2026-08-08 (Asia/Saigon), base HEAD
-> `8a78a22`. Lệnh `.venv\Scripts\python.exe scripts\validate_data.py` đã trả
-> `ALL DATA VALID`; lượt UI/tài liệu này không chạy crawl, build graph/profile,
-> benchmark, hiệu chuẩn gamma hoặc generator.
+> **Verdict hiện hành:** tài liệu này là canonical source of truth cho phạm vi
+> data, graph modeling, weights và data usage của current 9-algorithm contract.
+> Nó mô tả đúng persisted artifacts và implementation tại checkpoint trên,
+> nhưng không phải chứng nhận độc lập về độ chính xác ngoài đời của
+> OSM/TomTom/POI/manual risks.
 >
-> **Verdict hiện hành:** **Correct after fixes** trong phạm vi current
-> repository/workspace. Đây là tài liệu tham chiếu canonical cho implementation,
-> committed data và local provenance artifacts được liệt kê bên dưới; nó không
-> phải chứng nhận độc lập cho độ xác thực ngoài đời của OSM/TomTom/manual risks.
-> UI/documentation refresh 2026-08-08 không đổi graph, profile, cost hoặc heuristic.
->
-> **Trạng thái:** tài liệu tham chiếu hiện hành sau khi đối soát lại, đồng thời
-> giữ nguyên ngữ cảnh của audit gốc. Các kết luận raw-vắng trong Phụ lục A là
-> lịch sử tại mốc gốc, không phải current state. Việc raw artifact hiện diện và
-> tái đối chiếu được không đồng nghĩa nguồn ngoài đời đã được gọi lại hoặc xác
-> thực độc lập trong lượt audit này.
+> **Ranh giới audit:** không crawl lại OSM/TomTom, không rebuild graph/profile,
+> không chạy benchmark, không hiệu chuẩn gamma và không chạy generator. Sự hiện
+> diện của provenance artifacts và khả năng tái dựng local không đồng nghĩa
+> external source đã được live re-query hoặc independently attested.
 
 ## 0. Cách đọc, phạm vi khẳng định và thứ tự bằng chứng
 
 Tài liệu này mô tả **implementation đang tồn tại**, không mô tả một thiết kế
 mong muốn trong tương lai. Thứ tự bằng chứng được dùng để lập tài liệu:
 
-1. Assignment PDF quyết định yêu cầu bài lab.
-2. Executable schema: `backend/app/models.py`.
-3. Runtime implementation: `backend/app/costs.py`, `graph_store.py`,
-   `search*.py`, `tsp.py`, `scenario.py`, `main.py`.
-4. Persisted data hiện hành: `data/graph_*.json`,
-   `data/traffic_profiles_*.json`, `gdemo_corridors.json`.
-5. Pipeline code: `scripts/01` đến `04` và `pipeline_common.py`.
-6. Fresh read-only checks trên worktree hiện hành.
-7. Markdown cũ chỉ là evidence bổ trợ; lịch sử không chứng minh trạng thái hiện tại.
+1. Assignment PDF quyết định phạm vi/yêu cầu chấm điểm của bài lab.
+2. Actual tracked raw/provenance artifacts và persisted runtime data:
+   `data/raw/`, `data/graph_*.json`, `data/traffic_profiles_*.json`,
+   `data/gdemo_corridors.json` và input manual/config tương ứng.
+3. Runtime/code hiện hành: `backend/app/models.py`, `costs.py`,
+   `graph_store.py`, `search*.py`, `tsp.py`, `scenario.py`, `main.py`.
+4. Pipeline/config/schema: `scripts/01` đến `04`, `pipeline_common.py`,
+   `scripts/validate_data.py` và `docs/SCHEMA.md`.
+5. Fresh read-only reconstruction, validation và tests tại checkpoint.
+6. Markdown khác chỉ là evidence bổ trợ; lịch sử không chứng minh current state.
+
+Nếu schema prose và executable model khác nhau, phải báo mismatch; không âm thầm
+chọn Markdown. Với claim về real data, Markdown không được dùng thay cho raw/data/code
+khi các artifact đó có thể kiểm trực tiếp.
 
 ### 0.1. Ranh giới Git, local workspace và evidence bị ignore
 
 - **Tracked Git repository:** toàn bộ source dùng để lập claim current trong tài
   liệu này đều được track: `backend/`, active `frontend/`, `scripts/`, `data/`
   (bao gồm sáu file dưới `data/raw/`), tests, schema và assignment/spec.
-- **Current local workspace:** HEAD nêu trên cộng thay đổi contract route 9 thuật
-  toán trong backend/frontend/tests và các cập nhật tài liệu chưa commit. Không
-  có graph/profile/result artifact nào được sửa để làm tài liệu trở nên đúng.
+- **Current local workspace trước lần sửa tài liệu này:** đúng HEAD nêu trên,
+  worktree sạch. Current executable route contract có chín thuật toán; không có
+  graph/profile/result artifact nào được sửa để lập tài liệu.
 - **Ignored local runtime:** `.env`, `.venv/`, `frontend/node_modules/`,
   `frontend/.next/`, cache, log, `audit_tmp/`, `tmp/` và `.playwright-cli/` chỉ là
   secret/dependency/build/tool state. Tài liệu này **không dùng nội dung của các
@@ -71,8 +70,9 @@ Các nhãn provenance trong tài liệu:
 
 | Nhãn | Ý nghĩa chính xác |
 |---|---|
-| `REAL RAW` | Artifact raw do pipeline ghi từ nguồn ngoài và hiện còn để đối chiếu; nhãn này không tự chứng minh nguồn ngoài tại thời điểm audit. |
-| `REAL-DERIVED` | Field được transform từ raw artifact và có thể tái đối chiếu bằng pipeline hiện hành. |
+| `VERIFIED REAL RAW` | Artifact gần raw source nhất còn được persist và đã kiểm trực tiếp trong repo. Nhãn này xác minh artifact/provenance nội bộ, không tự chứng minh current external truth. |
+| `VERIFIED REAL-DERIVED` | Field/artifact transform từ verified raw provenance và đã tái đối chiếu được bằng pipeline hiện hành. |
+| `BUILD-TIME-DERIVED` | Giá trị được tính trong crawl/build/normalization rồi persist vào JSON; không được tính lại cho mỗi request. |
 | `SEED/SIMULATED` | Giá trị do rule/random có seed sinh ra, không phải quan sát thực địa. |
 | `MANUAL` | Nhóm tự nhập tọa độ, loại, flag hoặc danh sách. |
 | `CONFIG` | Hằng số/quy ước mô hình do nhóm chọn. |
@@ -87,19 +87,20 @@ Các nhãn provenance trong tài liệu:
 | `G_real` | 2026-07-27 | 2.118 | 4.699 | 1.433 | 25–45 km/h |
 
 Hai profile có bốn slot `07:30`, `12:00`, `17:30`, `22:00` và đều ghi
-`meta.source = "tomtom+synthetic"`. Current Git/workspace có `data/raw/` với
-raw GraphML, OSMnx cache và đúng một TomTom snapshot cho mỗi slot; cả 160/160
-record TomTom có `currentSpeed` và `freeFlowSpeed` dương. Thành phần TomTom có
-thể tái đối chiếu cục bộ với profile, nhưng không được gọi là real-time hoặc
-external ground truth đã được audit độc lập; xem mục 2.6.
+`meta.source = "tomtom+synthetic"`. Current Git/workspace có OSM Overpass cache,
+OSMnx simplified/SCC GraphML và đúng một selected-field TomTom crawler snapshot
+cho mỗi slot; cả 160/160 record có `currentSpeed` và `freeFlowSpeed` dương.
+Thành phần TomTom có thể tái đối chiếu cục bộ với profile, nhưng không được gọi
+là real-time hoặc external ground truth đã được audit độc lập; xem mục 2.6.
 
 Evidence:
 
 - `data/graph_demo.json`, `data/graph_real.json`.
 - `data/traffic_profiles_demo.json`, `data/traffic_profiles_real.json`.
 - `backend/app/graph_store.py -> GraphStore.load()`.
-- `scripts/validate_data.py -> check_source_consistency()`.
-- `git ls-files data/raw` và fresh read-only raw/profile reconciliation tại
+- `scripts/validate_data.py`; xem giới hạn riêng của
+  `check_source_consistency()` tại §5.4.
+- `git ls-files data/raw` và fresh read-only raw/provenance/profile reconstruction tại
   HEAD nêu trên.
 
 ### 0.3. Fresh verification record — 2026-08-08
@@ -109,15 +110,12 @@ behavioral evidence cục bộ, không phải external-source attestation:
 
 | Command | Kết quả thực tế |
 |---|---|
-| `.venv\Scripts\python.exe -m pytest backend\tests\ -v` | PASS — 177 passed, 1 warning |
-| `.venv\Scripts\python.exe scripts\validate_data.py` | PASS — `ALL DATA VALID`; cả hai graph strongly connected, profile 4×100% |
-| `npm test` trong `frontend/` | PASS — 41/41 |
-| `npx tsc --noEmit` trong `frontend/` | PASS — exit 0 |
-| `npm run build` trong `frontend/` sau khi dừng dev services | PASS — Next.js production build, 6/6 static pages |
+| `.venv\Scripts\python.exe -B -m pytest backend\tests\ -v -p no:cacheprovider` | PASS — 177 passed, 1 warning |
+| `.venv\Scripts\python.exe -B scripts\validate_data.py` | PASS — `ALL DATA VALID`; cả hai graph strongly connected, profile 4×100% |
 
 Không crawl lại OSM/TomTom, không rebuild graph/profile, không rerun benchmark,
 không recalibrate γ và không regenerate teaching/benchmark Markdown trong lượt
-audit này.
+audit này. Frontend gates không được dùng làm evidence cho lần data/graph audit này.
 
 ---
 
@@ -260,10 +258,10 @@ Executable source: `backend/app/models.py -> Edge`.
 | `oneway` | bool | Reverse edge có thiếu không | Structural-derived | Mô tả direction; topology đã enforce |
 | `free_speed_kmh` | float > 0 | Tốc độ free-flow mô hình | Config theo road type/corridor average | Time, balanced, global `v_max` |
 | `free_travel_time_s` | float > 0 | Giá trị display làm tròn 0,1 s | Derived | Không dùng làm runtime weight |
-| `risk.flood` | 0/1 | Edge đi vào vùng ngập manual | Manual-zone-derived | Balanced penalty +60 s |
-| `risk.construction` | 0/1 | Edge đi vào vùng thi công manual | Manual-zone-derived | Balanced penalty +90 s |
-| `risk.narrow_alley` | 0/1 | Đường hẹp theo road class/corridor share | Rule-derived | Balanced penalty +30 s |
-| `risk.traffic_light` | 0/1 | Edge kết thúc ở node traffic signal | OSM-tag-derived, locally reconciled; external origin partially verified | Balanced penalty +25 s |
+| `risk.flood` | 0/1 | Edge đi vào vùng ngập manual | `MANUAL` geometry → `BUILD-TIME-DERIVED` | Balanced penalty +60 s (`CONFIG`) |
+| `risk.construction` | 0/1 | Edge đi vào vùng thi công manual | `MANUAL` geometry → `BUILD-TIME-DERIVED` | Balanced penalty +90 s (`CONFIG`) |
+| `risk.narrow_alley` | 0/1 | Đường hẹp theo road class/corridor share | `CONFIG` rule → `BUILD-TIME-DERIVED` | Balanced penalty +30 s (`CONFIG`) |
+| `risk.traffic_light` | 0/1 | Edge kết thúc ở node traffic signal | `VERIFIED REAL-DERIVED` OSM tag → `BUILD-TIME-DERIVED` | Balanced penalty +25 s (`CONFIG`) |
 
 Mọi field top-level của edge đều required. Các risk flag có default 0 trong
 Pydantic nhưng JSON hiện hành ghi đủ cả bốn.
@@ -417,22 +415,23 @@ penalty, không phải pure driving time; xem mục 3.4.
 Pipeline hiện có:
 
 ```text
-OSM bbox drive network
-→ OSMnx MultiDiGraph
-→ largest strongly connected component
-→ graph_raw.graphml
+OSM Overpass response cache                         VERIFIED REAL RAW
+→ OSMnx graph_from_bbox drive MultiDiGraph          VERIFIED REAL-DERIVED
+→ OSMnx simplification + largest directed SCC       BUILD-TIME-DERIVED
+→ graph_raw.graphml                                 derived intermediate
 → bỏ self-loop
 → gộp parallel edge cùng (u,v), giữ free_travel_time nhỏ nhất
 → stable NodeId/EdgeId
-→ graph_real.json
-→ GraphStore.adj/radj
+→ graph_real.json                                   BUILD-TIME-DERIVED
+→ GraphStore.adj/radj và resolved weights            RUNTIME-COMPUTED
 ```
 
 Chi tiết:
 
 - Bbox: `(106.680, 10.760, 106.720, 10.800)`.
 - `network_type="drive"`.
-- Raw OSMnx graph có thể là `MultiDiGraph` và có parallel edges.
+- OSMnx GraphML intermediate là `MultiDiGraph` và có parallel edges; file này
+  không phải raw Overpass payload nguyên bản.
 - Product graph không phải multigraph: chỉ còn tối đa một edge trên mỗi ordered
   pair `(u,v)`.
 - Nếu hai parallel edge có cùng `(u,v)`, pipeline giữ edge có stored
@@ -455,7 +454,7 @@ POI manual:
 
 ```text
 51 POI manual
-→ snap vào node G_real gần nhất
+→ snap vào node G_real gần nhất                      BUILD-TIME-DERIVED
 → nếu node đã dùng, thử node trống kế tiếp trong 120 m
 → chọn các cặp POI lân cận
 → shortest directed path trên G_real theo free-flow time
@@ -484,6 +483,12 @@ Build constraints:
 - Balanced ratio tối đa 1,5 ở từng slot.
 - Repair tối đa 20 vòng.
 
+Fresh corridor reconstruction xác nhận 298/298 demo edge có một non-empty
+`gdemo_corridors` path, đúng source/target và đúng aggregation rules. Mỗi
+corridor gồm 1–33 G_real edges (median 10); toàn bộ map dùng 1.266 unique real
+edge IDs. Recomputed length, equivalent speed, dominant name/highway, OR flags,
+`narrow >30%` và structural reverse-pair `oneway` đều khớp persisted G_demo.
+
 ## 1.11. G_demo và G_real khác nhau thế nào
 
 | Thuộc tính | G_demo | G_real |
@@ -504,6 +509,10 @@ GraphView executable hiện là `full` hoặc `teach_3` đến `teach_50`; 51 no
 biểu diễn bằng `full`. Teaching view là induced subgraph từ prefix
 `data/teaching_graph_presets.json` version 2 và được validate strong connectivity.
 Các mô tả cũ chỉ có `teach_7/15/25` là stale.
+
+Toàn bộ “9 search” trong tài liệu này là contract hiện hành: BFS, DFS, IDDFS,
+UCS, A*, Greedy Best-First, Bidirectional Dijkstra, IDA* và Beam Search.
+Standalone/legacy Dijkstra không phải thuật toán thứ mười của current API.
 
 ---
 
@@ -620,30 +629,55 @@ tọa độ trong graph là tọa độ G_real node đã snap, không nhất thi
 | n0050 | Nhà thờ Tân Định | landmark |
 | n0051 | Chợ Nancy | landmark |
 
+### 2.2.1. POI snapping QA hiện hành
+
+Fresh reconstruction từ `data/gdemo_pois.json`, `graph_real.json` và rule trong
+`scripts/04_build_gdemo.py` xác nhận cả 51 demo node đều là các node G_real khác
+nhau và tên/type được copy đúng. Khoảng Haversine từ tọa độ POI manual đầu vào
+đến node được snap có min **2,70 m**, median **46,14 m**, max **185,74 m**.
+
+Năm POI có snap distance lớn hơn 100 m:
+
+| POI | Snap distance audit |
+|---|---:|
+| Dinh Độc Lập | 185,74 m |
+| Công viên Tao Đàn | 154,2 m |
+| Cầu Ba Son | 139,9 m |
+| Cung Văn hoá Lao Động | 116,7 m |
+| Bảo tàng Hồ Chí Minh (Bến Nhà Rồng) | 105,8 m |
+
+`Nhà thờ Tân Định` là trường hợp duy nhất dùng candidate gần thứ hai, cách
+72,46 m, để tránh trùng node đã dùng; candidate đó vẫn nằm trong ngưỡng 120 m
+của build rule. Các số trên chỉ đo **input coordinate → navigation node**,
+không xác minh input coordinate/POI entrance đúng ngoài đời. Vì repo không có
+geocoder/source manifest, claim “tọa độ POI chính xác ±100 m” vẫn là
+`UNKNOWN/UNVERIFIED`, không phải kết quả QA đã chứng minh.
+
 ## 2.3. Nguồn và phân loại từng nhóm field
 
 | Field/data | Phân loại | Cách tạo/nguồn | Ghi chú về mức xác minh |
 |---|---|---|---|
-| OSM road topology ban đầu | `REAL RAW` artifact, external origin `PARTIALLY VERIFIED` | OSMnx `graph_from_bbox(..., network_type="drive")` | `data/raw/graph_raw.graphml` hiện được track và đối chiếu được; audit không gọi lại OSM |
-| `G_real` node/edge connectivity | `REAL-DERIVED`, locally verified | Lấy largest strongly connected component, simplify/deduplicate rồi đổi ID | Fresh in-memory transform từ raw khớp current `graph_real.json` |
-| Node `lat`, `lon` G_real | `REAL-DERIVED`, locally verified | Tọa độ OSM node được copy và làm tròn | Dùng cho heuristic/map |
-| Node `name`, `type` G_real | `CONFIG`/derived | `name=null`, `type=intersection` | Không phải POI observations |
+| OSM Overpass cache | `VERIFIED REAL RAW` | OSMnx-cached Overpass JSON response | Artifact raw gần nguồn nhất; có generator/base timestamp/ODbL notice; audit không live re-query OSM |
+| OSMnx simplified/SCC GraphML | `VERIFIED REAL-DERIVED` + `BUILD-TIME-DERIVED` | `graph_from_bbox(..., network_type="drive")` mặc định simplify, sau đó giữ largest directed SCC | `graph_raw.graphml` là derived intermediate dù tên file có chữ `raw` |
+| `G_real` node/edge connectivity | `VERIFIED REAL-DERIVED` + `BUILD-TIME-DERIVED` | Bỏ loop, deduplicate rồi đổi stable ID | Fresh in-memory transform từ GraphML + manual risk input khớp current `graph_real.json` |
+| Node `lat`, `lon` G_real | `VERIFIED REAL-DERIVED` + `BUILD-TIME-DERIVED` | Tọa độ OSM node được copy và làm tròn | Dùng cho heuristic/map |
+| Node `name`, `type` G_real | `CONFIG` + `BUILD-TIME-DERIVED` | `name=null`, `type=intersection` | Không phải POI observations |
 | 51 POI G_demo | `MANUAL` | `data/gdemo_pois.json` | Tên, loại và tọa độ do nhóm curate |
-| POI snap vào G_real | `RUNTIME-COMPUTED` ở build time | Nearest G_real node; có thể lấy candidate thứ hai trong 120 m để tránh trùng | Kết quả được persist trong demo graph/corridor artifact |
-| `length_m` G_real | `REAL-DERIVED`, locally verified | OSM/OSMnx edge length; parallel edge được chọn theo stored free time làm tròn nhỏ nhất | Mét; runtime dùng trực tiếp |
-| `length_m` G_demo | `REAL-DERIVED` từ graph artifact | Tổng `length_m` trên G_real corridor | Không phải Haversine thẳng giữa hai POI |
-| `highway`, `name` G_real | `REAL-DERIVED`, locally verified | OSM edge attributes được normalize | Multi-valued OSM tags được normalize bằng pipeline |
-| `highway`, `name` G_demo | `RUNTIME-COMPUTED` ở build time | Dominant value trên corridor | Đại diện corridor, không đảm bảo mô tả mọi segment |
-| `free_speed_kmh` G_real | `CONFIG` | Lookup theo road type | Không phải measured TomTom speed |
-| `free_speed_kmh` G_demo | `RUNTIME-COMPUTED` ở build time | `length / total free-flow time` của corridor | Có thể là số lẻ như 36,2 km/h |
-| `free_travel_time_s` | `REAL-DERIVED` + `CONFIG` | `length / configured speed`, persist làm tròn 0,1 s | Runtime không dùng số đã làm tròn; tính lại từ length/speed |
-| Raw TomTom sampled traffic | `REAL RAW` artifact, external origin `PARTIALLY VERIFIED` | Flow Segment API, tối đa 40 sample/slot | Bốn tracked snapshot, 40 valid record/slot; audit không gọi lại TomTom |
-| Persisted `congestion_level` | Mixed `REAL-DERIVED` + `SEED/SIMULATED`, locally verified | TomTom match trong 250 m hoặc seeded fallback | Reconciliation xác nhận 635 TomTom-assigned và 4.064 fallback edge/slot trên G_real |
+| POI snap vào G_real | `BUILD-TIME-DERIVED` | Nearest G_real node; có thể lấy candidate thứ hai trong 120 m để tránh trùng | Kết quả persist trong demo graph/corridor artifact; không phải runtime request |
+| `length_m` G_real | `VERIFIED REAL-DERIVED` + `BUILD-TIME-DERIVED` | OSM/OSMnx edge length; parallel edge được chọn theo stored free time làm tròn nhỏ nhất | Mét; runtime dùng trực tiếp |
+| `length_m` G_demo | `BUILD-TIME-DERIVED` từ verified real-derived lengths | Tổng `length_m` trên G_real corridor | Không phải Haversine thẳng giữa hai POI |
+| `highway`, `name` G_real | `VERIFIED REAL-DERIVED` + `BUILD-TIME-DERIVED` | OSM edge attributes được normalize | Multi-valued OSM tags được normalize bằng pipeline |
+| `highway`, `name` G_demo | `BUILD-TIME-DERIVED` | Dominant value trên corridor | Đại diện corridor, không đảm bảo mô tả mọi segment |
+| `free_speed_kmh` G_real | `CONFIG` + `BUILD-TIME-DERIVED` | Lookup theo road type rồi persist | Không phải measured TomTom speed |
+| `free_speed_kmh` G_demo | `BUILD-TIME-DERIVED` từ `CONFIG` | `length / total free-flow time` của corridor | Có thể là số lẻ như 36,2 km/h |
+| `free_travel_time_s` persisted | `BUILD-TIME-DERIVED` từ real-derived length + configured speed | `length / configured speed`, persist làm tròn 0,1 s | Runtime không dùng số đã làm tròn; tính lại từ length/speed |
+| TomTom selected-field crawler snapshots | `VERIFIED REAL-DERIVED`; external authenticity `UNKNOWN/UNVERIFIED` | Crawler chọn sáu field từ Flow Segment response, tối đa 40 sample/slot | Bốn tracked extract, 40 valid record/slot; không phải verbatim API payload và audit không gọi lại TomTom |
+| Persisted `congestion_level` | Mixed `VERIFIED REAL-DERIVED` + `SEED/SIMULATED` + `BUILD-TIME-DERIVED` | TomTom nearest match trong 250 m hoặc seeded fallback | Reconstruction xác nhận 635 TomTom-assigned và 4.064 fallback edge/slot trên G_real |
 | Flood/construction circles | `MANUAL` | 5 flood + 3 construction zones | 8/8 `source_url` đã review; chỉ hỗ trợ bối cảnh sự kiện lịch sử ở cấp tuyến/khu vực, không xác nhận circle hoặc trạng thái hiện tại |
-| `risk.flood`, `construction` | `MANUAL`-derived | Edge từ ngoài đi vào circle | Flag nhị phân; không phải xác suất/mức độ |
-| `risk.narrow_alley` G_real | `CONFIG`-derived | Road class thuộc nhóm hẹp của pipeline | Không được khảo sát chiều rộng thực |
-| `risk.narrow_alley` G_demo | `CONFIG`-derived | Trên 30% corridor edge bị đánh dấu hẹp | Rule tổng hợp |
-| `risk.traffic_light` | `REAL-DERIVED`, locally verified | Destination node có OSM `highway=traffic_signals` | Penalty áp khi đi vào node signal |
+| `risk.flood`, `construction` | `MANUAL` + `BUILD-TIME-DERIVED` | Edge từ ngoài đi vào manual circle | Flag nhị phân; không phải xác suất/mức độ |
+| `risk.narrow_alley` G_real | `CONFIG` + `BUILD-TIME-DERIVED` | Road class thuộc nhóm hẹp của pipeline | Không được khảo sát chiều rộng thực; raw width không được dùng |
+| `risk.narrow_alley` G_demo | `CONFIG` + `BUILD-TIME-DERIVED` | Trên 30% corridor length bị đánh dấu hẹp | Rule tổng hợp |
+| `risk.traffic_light` | `VERIFIED REAL-DERIVED` + `BUILD-TIME-DERIVED` | Destination node có OSM `highway=traffic_signals` | Penalty áp khi đi vào node signal |
 | Gamma/risk penalties/epsilon/beam width | `CONFIG` | Constants trong code | Không được fitted từ dataset thực |
 | Final edge weight theo request | `RUNTIME-COMPUTED` | `costs.py`, profile slot và scenario | Không persist trong graph JSON |
 
@@ -653,13 +687,14 @@ Pipeline được code hóa như sau:
 
 ```text
 BBOX trung tâm TP.HCM
+  → Overpass response trong OSMnx cache                 VERIFIED REAL RAW
   → scripts/01_download_osm.py
-  → OSMnx graph_from_bbox(network_type="drive")
-  → largest strongly connected component
-  → raw GraphML
+  → OSMnx graph_from_bbox(network_type="drive")         VERIFIED REAL-DERIVED
+  → OSMnx simplification + largest directed SCC         BUILD-TIME-DERIVED
+  → graph_raw.graphml                                   derived intermediate
   → scripts/02_build_graph.py
   → normalize + deduplicate + stable IDs + risk flags
-  → data/graph_real.json
+  → data/graph_real.json                                BUILD-TIME-DERIVED
 ```
 
 BBOX config là `[106.680, 10.760, 106.720, 10.800]` theo thứ tự
@@ -672,20 +707,53 @@ nếu tie). Self-loop bị bỏ. Sau đó OSM node IDs chỉ
 được dùng để sắp thứ tự ổn định rồi đổi thành ID nội bộ `nNNNN`; raw OSM ID
 không còn trong public JSON.
 
-Điểm cần diễn đạt thận trọng:
+### 2.4.1. Overpass cache: artifact raw gần nguồn nhất
+
+Tracked cache file
+`data/raw/osmnx_cache/8d7c2de8a277ad68a1fa7acd4259530e9fc41fa1.json`
+có các bằng chứng trực tiếp:
+
+- OSM API version `0.6`, generator `Overpass API 0.7.62.11 87bfad18`;
+- `timestamp_osm_base = 2026-07-26T11:45:05Z`;
+- copyright notice nêu dữ liệu từ `openstreetmap.org` theo ODbL;
+- 19.864 elements: 15.959 node và 3.905 way;
+- trong response có 536 node gắn `highway=traffic_signals` và 3.905 way có
+  road/highway tags trước các bước simplification/filter/SCC.
+
+Đây là `VERIFIED REAL RAW` trong phạm vi repository. Nó chứng minh persisted
+Overpass response và metadata local, nhưng audit không live re-query để chứng
+minh response vẫn phản ánh OSM hiện tại. ODbL notice đã có; phần còn thiếu là
+manifest riêng về exact request URL/parameters, tool environment, hashes và
+final-ZIP packaging.
+
+### 2.4.2. OSMnx GraphML và normalized G_real
+
+Điểm cần diễn đạt chính xác:
 
 - Current Git/workspace có `data/raw/graph_raw.graphml` (2.373.739 byte,
   SHA-256 `74dd692772d9f9537e1e2206e32033120547ae4c8ccefbdc967aaedcf805e64b`)
-  và OSMnx cache response liên quan.
-- Raw GraphML là `MultiDiGraph` 2.118 node/4.721 directed edge. Fresh
-  read-only reconstruction bỏ 2 self-loop và collapse 20 parallel duplicate,
-  cho đúng 4.699 edge; node/edge fields sau transform khớp current
-  `data/graph_real.json`.
+  và OSMnx cache response nêu trên. GraphML metadata ghi created
+  `2026-07-26 18:47:01`, OSMnx `2.1.1`, CRS EPSG:4326 và `simplified=True`.
+- GraphML là `VERIFIED REAL-DERIVED`/`BUILD-TIME-DERIVED` MultiDiGraph
+  2.118 node/4.721 directed edge, 4.700 unique ordered pairs, 21 parallel extras
+  và 2 self-loop. Sau khi bỏ 2 loop còn 20 parallel duplicates bị collapse;
+  15 candidate bị bỏ và 5 candidate thay edge đã giữ, cho đúng 4.699 edge.
+- GraphML giữ 77 traffic-signal node trong SCC. G_real gắn
+  `risk.traffic_light=1` cho 185 edge có destination là một signal node.
+- GraphML edge attribute inventory: `osmid`, `highway`, `oneway`, `reversed`,
+  `length` có ở 4.721/4.721 edge; `name` 4.077; `geometry` 2.836; `lanes` 2.240;
+  `maxspeed` 1.013; `width` 47; cùng một số `bridge`, `junction`, `access`,
+  `tunnel`. Product JSON không giữ các raw IDs/geometry/tags này; đặc biệt
+  `maxspeed`/`width` không được pipeline dùng để tính speed/narrow risk.
+- Fresh read-only reconstruction cho node/edge fields sau transform khớp chính
+  xác current `data/graph_real.json`. Current G_real có 4.064 non-null edge name
+  và 635 null name sau normalization/dedup.
 - Bằng chứng trên xác minh local lineage và implementation transformation;
-  audit này không gọi lại OSM để xác nhận snapshot bên ngoài, license hoặc tính
-  đầy đủ của endpoint tại thời điểm crawl.
+  audit này không gọi lại OSM để xác nhận snapshot bên ngoài hoặc tính đầy đủ
+  của endpoint tại thời điểm crawl.
 - Vì thế G_real là **processed OSM-derived directed graph artifact**, không
-  phải “raw OSM dataset”; raw GraphML là input provenance đi kèm riêng.
+  phải “raw OSM dataset”; GraphML cũng không được gọi là raw nguyên bản. Raw
+  artifact gần nguồn nhất là Overpass JSON cache.
 
 ## 2.5. Tốc độ free-flow theo road type
 
@@ -715,10 +783,18 @@ G_real hiện tại chỉ thực sự chứa 25–45 km/h; bảng 60 km/h vẫn 
    `length_m`, lấy tọa độ source node và de-duplicate theo grid lat/lon làm tròn
    3 chữ số; dừng ở tối đa 40 điểm.
 2. Gọi TomTom Flow Segment Data API theo bốn slot đại diện.
-3. Ghi các field raw: `lat`, `lon`, `currentSpeed`, `freeFlowSpeed`, `frc`,
-   `queried_at` vào file raw theo slot.
+3. Từ mỗi response, chỉ chọn và ghi sáu field `lat`, `lon`, `currentSpeed`,
+   `freeFlowSpeed`, `frc`, `queried_at` vào file theo slot.
 
 Crawler không được runtime gọi. API key chỉ phục vụ pipeline ngoại tuyến.
+Các file kết quả là **selected-field crawler snapshots/extracts**, không phải
+verbatim TomTom API response: chúng không giữ segment ID, response geometry,
+confidence, HTTP metadata hoặc toàn bộ payload. Tọa độ `lat/lon` persisted là
+query point lấy từ source node G_real, không phải response segment coordinate.
+
+`queried_at` được `03a` tạo **một lần trước vòng lặp request** rồi copy vào cả
+40 record của batch. Nó là batch-start timestamp không có timezone, không phải
+timestamp riêng cho từng HTTP request/response.
 
 ### Quy đổi TomTom thành congestion level
 
@@ -737,15 +813,17 @@ r = currentSpeed / freeFlowSpeed
 | `r < 0.40` | 5 |
 
 Một sample chỉ được gán cho edge thuộc `motorway|trunk|primary|secondary` hoặc
-các class `_link` tương ứng, và sample gần source node không quá 250 m. Code
-hiện tại **không match theo tên đường hoặc
-`frc`/road class**, dù một số Markdown cũ diễn đạt mạnh hơn. Đây là nearest
-spatial sampling thô, không phải map matching vào geometry đường.
+các class `_link` tương ứng, và sample gần **source node của edge** không quá
+250 m. Code hiện tại **không match theo tên đường, `frc`, detailed road class,
+bearing hoặc segment geometry**, dù một số Markdown cũ diễn đạt mạnh hơn. Đây
+là nearest source-node sampling thô, không phải geometry/segment map matching.
+`currentSpeed/freeFlowSpeed` chỉ dùng để tính ratio; `frc` được persist nhưng
+không được profile builder hay runtime dùng.
 
 03b đọc tất cả `flow_*.json` trong directory của slot và bỏ record thiếu/zero
 `currentSpeed` hoặc `freeFlowSpeed`. `meta.source` được gán
 `tomtom+synthetic` nếu có ít nhất một valid TomTom point ở **bất kỳ slot nào**;
-nó không chứng minh cả bốn slot đều có raw coverage. Đây là file-level label,
+nó không chứng minh cả bốn slot đều có persisted source records. Đây là file-level label,
 không phải per-edge/per-slot lineage.
 
 ### Seeded synthetic fallback
@@ -764,21 +842,21 @@ Edge không được TomTom phủ dùng `random.Random(42)` với rule:
 - `22:00 = randint(1,2)`.
 - Seed 42 cho tính tái lập; đây là simulation, không phải measurements.
 
-### Runtime và raw evidence thực sự có gì
+### Runtime và persisted crawler evidence thực sự có gì
 
 Runtime hiện đọc four-slot levels từ committed `traffic_profiles_*.json`.
 Không có HTTP/network trong demo routing. Metadata của cả hai profile nói
-`tomtom+synthetic`. Current Git/workspace có đúng một tracked raw snapshot cho
-mỗi slot:
+`tomtom+synthetic`. Current Git/workspace có đúng một tracked selected-field
+crawler snapshot cho mỗi slot; bốn file dùng cùng ordered set 40 query points:
 
-| Slot | Raw file | `queried_at` | Record hợp lệ |
+| Slot | Selected-field file | Batch-start `queried_at` | Record hợp lệ |
 |---|---|---|---:|
 | `07:30` | `flow_20260727T074003.json` | `20260727T074003` | 40/40 |
 | `12:00` | `flow_20260727T124957.json` | `20260727T124957` | 40/40 |
 | `17:30` | `flow_20260803T173001.json` | `20260803T173001` | 40/40 |
 | `22:00` | `flow_20260803T222752.json` | `20260803T222752` | 40/40 |
 
-Fresh read-only execution của logic 03b đối với raw/profile hiện hành khớp
+Fresh read-only execution của logic 03b đối với selected-field/profile hiện hành khớp
 toàn bộ level G_real: mỗi slot có 635 edge nhận nearest eligible TomTom sample
 và 4.064 edge dùng deterministic fallback. So với pure fallback seed 42,
 profile khác ở lần lượt 567/557/524/356 edge theo bốn slot; số này là số level
@@ -788,13 +866,16 @@ Kết luận report-safe:
 
 - Có thể nói traffic profile hiện hành là **persisted mixed-profile artifact**
   và runtime dùng nó.
-- Có thể nói bốn raw artifact hiện được track, có 160/160 record tốc độ hợp lệ
-  và locally reproduce phần TomTom/fallback của profile hiện hành.
+- Có thể nói bốn selected-field crawler artifacts hiện được track, có 160/160
+  record tốc độ hợp lệ và locally reproduce phần TomTom/fallback của profile.
+- Phần TomTom-mapped là `VERIFIED REAL-DERIVED` trong phạm vi persisted local
+  lineage; external authenticity của response nguyên bản vẫn là
+  `UNKNOWN/UNVERIFIED` vì không có verbatim payload/live re-query.
 - Không được suy từ đó rằng dữ liệu là real-time, toàn bộ edge dùng TomTom, hay
   TomTom/OSM external truth đã được audit độc lập; không có live re-query trong
   lượt kiểm này.
 - `meta.source="tomtom+synthetic"` vẫn là label cấp file, không phải lineage
-  per-edge/per-slot; bằng chứng mạnh hơn đến từ raw reconciliation ở trên.
+  per-edge/per-slot; bằng chứng mạnh hơn đến từ reconstruction ở trên.
 
 ## 2.7. Traffic profile G_demo
 
@@ -812,7 +893,8 @@ L_{demo} = round_{half\text{-}up}
 \]
 
 Kết quả clamp vào 1–5. Vì thế G_demo congestion là derived từ G_real profile,
-không phải raw sample riêng ở từng demo edge.
+không phải raw sample riêng ở từng demo edge. Fresh audit tái dựng khớp toàn bộ
+1.192 values = 298 edge × 4 slot; đây là `BUILD-TIME-DERIVED` data.
 
 ## 2.8. Risk data
 
@@ -837,21 +919,23 @@ Current counts:
 
 Toàn bộ manual zone input:
 
-| ID | Type | Tên manual | Lat | Lon | Radius | Source status |
-|---|---|---|---:|---:|---:|---|
-| r01 | flood | Nguyễn Hữu Cảnh (đoạn gần cầu Sài Gòn) | 10,7925 | 106,7190 | 400 m | reviewed; strong historical segment match |
-| r02 | flood | Đinh Tiên Hoàng (đoạn gần cầu Bông, Đa Kao) | 10,7955 | 106,6985 | 250 m | reviewed; source segment renamed Lê Văn Duyệt, main-edge endpoint ≈253 m from center |
-| r03 | flood | Cống Quỳnh (gần BV Từ Dũ) | 10,7680 | 106,6870 | 250 m | reviewed; street-level event, exact segment unknown |
-| r04 | flood | Calmette – Bến Chương Dương (phía Võ Văn Kiệt) | 10,7648 | 106,6975 | 250 m | reviewed; strong historical area match |
-| r05 | flood | Trần Hưng Đạo (khu vực Trần Đình Xu – Cống Quỳnh) | 10,7625 | 106,6890 | 300 m | reviewed; corrected from the spatially mismatched Nguyễn Cư Trinh label; source remains street/event-level only |
-| r06 | construction | Lê Thánh Tôn (đoạn trước chợ Bến Thành) | 10,7730 | 106,6990 | 150 m | reviewed; historical 2024–2025 improvement works |
-| r07 | construction | Hai Bà Trưng (đoạn Tân Định) | 10,7890 | 106,6905 | 200 m | reviewed; 2013 sinkhole/emergency barrier, not a sewer project |
-| r08 | construction | Võ Thị Sáu (Quận 3) | 10,7860 | 106,6890 | 200 m | reviewed; 2021 water-infrastructure work, not road resurfacing |
+| ID | Type; manual geometry | Source URL | Evidence assessment |
+|---|---|---|---|
+| r01 | flood; Nguyễn Hữu Cảnh, 10,7925/106,7190, 400 m | [Công báo TP.HCM — QĐ 6261/QĐ-UBND](https://congbao.hochiminhcity.gov.vn/cong-bao/van-ban/quyet-dinh/so/6261-qd-ubnd/ngay/30-11-2016/tai-ve/42090) | Official historical document; strong route/segment context, không xác nhận current circle/radius. |
+| r02 | flood; Đinh Tiên Hoàng gần Cầu Bông, 10,7955/106,6985, 250 m | [Nhân Dân — mưa, triều cường và ngập](https://nhandan.vn/mua-to-trieu-cuong-gay-ngap-ung-tai-tp-ho-chi-minh-post410945.html) | Historical route/event evidence; spatial model vẫn approximate và đoạn đường có đổi tên. |
+| r03 | flood; Cống Quỳnh gần BV Từ Dũ, 10,7680/106,6870, 250 m | [TTXVN/Báo Tin tức — mưa lớn 27/05/2024](https://baotintuc.vn/xa-hoi/tp-ho-chi-minh-ngap-nang-nhieu-tuyen-duong-sau-con-mua-nhu-trut-nuoc-20240527215404154.htm) | Có street-level event context; không xác nhận exact segment gần Từ Dũ/radius. |
+| r04 | flood; Calmette–Bến Chương Dương/Võ Văn Kiệt, 10,7648/106,6975, 250 m | [TTXVN/Báo Tin tức — triều cường 05/11/2025](https://baotintuc.vn/anh/tp-ho-chi-minh-trieu-cuong-dang-cao-nhieu-tuyen-duong-ngap-sau-20251105181405682.htm) | Strong historical area/event context; không phải current feed. |
+| r05 | flood; Trần Hưng Đạo, 10,7625/106,6890, 300 m | [Tiền Phong — ngập khu Bùi Viện](https://tienphong.vn/pho-tay-bui-vien-ngap-sau-mua-lon-o-tphcm-post1793541.tpo) | Historical multi-street context; không xác nhận exact subsegment/radius. |
+| r06 | construction; Lê Thánh Tôn trước chợ Bến Thành, 10,7730/106,6990, 150 m | [VnExpress — chỉnh trang trước chợ Bến Thành](https://vnexpress.net/tp-hcm-chinh-trang-quang-truong-truoc-cho-ben-thanh-tu-thang-10-4758459.html) | Historical 2024–2025 works/barrier context; có thời hạn, không phải active works feed. |
+| r07 | construction; Hai Bà Trưng/Tân Định, 10,7890/106,6905, 200 m | [Dân Trí — hố sụt tại 296 Hai Bà Trưng](https://dantri.com.vn/thoi-su/tphcm-ho-tu-than-bat-ngo-xuat-hien-giua-duong-1380068305.htm) | Historical obstruction/emergency repair; không chứng minh một construction project thông thường/current. |
+| r08 | construction; Võ Thị Sáu, 10,7860/106,6890, 200 m | [SAWACO — thi công tại Võ Thị Sáu–Pasteur](https://benthanh.sawaco.com.vn/tin-tuc/hoat-dong-san-xuat-kinh-doanh/thong-bao-ve-viec-gian-doan-cung-cap-nuoc-de-phuc-vu-cong-tac.-vi-tri-thi-cong-giao-lo-vo-thi-sau-pasteur-giao-lo-vo-van-tan-truong-dinh-va-198-tran-quoc-thao-thuoc-phuong-vo-thi-sau-va-phuong-9-quan-3..html) | Historical 2021 water-infrastructure works; không phải road resurfacing/current status. |
 
-Cả 8 record có URL trực tiếp; bảng nguồn, ngày đăng và giới hạn chi tiết nằm ở
-`data/DATA.md` §2.1. Chúng chỉ là external context cho giả định thủ công. Report
-không được gọi các risk flag này là verified/current incident-hazard data hoặc
-nói nguồn xác nhận chính xác tâm, bán kính, severity hay penalty.
+Cả 8/8 record có URL trực tiếp trong `data/manual_risks.json`; các URL cũng được
+chép trong `data/DATA.md` và `manual_risks_sources_review.md`. URL/page evidence
+hỗ trợ **historical area/route context**. Tọa độ tâm, `radius_m`, type mapping,
+validity hiện tại và penalty vẫn là `MANUAL`/`CONFIG`, không được nguồn xác nhận.
+Edge flags là `BUILD-TIME-DERIVED` từ manual geometry bằng entry rule trên;
+chúng không phải verified/current incident-hazard observations.
 
 ## 2.9. Distance, time, congestion, road type và risk không đồng nghĩa
 
@@ -867,7 +951,7 @@ nói nguồn xác nhận chính xác tâm, bán kính, severity hay penalty.
 
 ## 2.10. Phân bố traffic profile hiện hành
 
-Fresh read-only audit trên JSON, tái xác nhận ngày 2026-08-07:
+Fresh read-only audit trên JSON, tái xác nhận ngày 2026-08-08:
 
 | Graph/slot | Min–max | Mean | L1 | L2 | L3 | L4 | L5 | Coverage | Missing/extra ID |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
@@ -884,39 +968,43 @@ Fresh read-only audit trên JSON, tái xác nhận ngày 2026-08-07:
 edge set của graph tương ứng; cả tám mapping không thiếu và không thừa edge ID.
 
 G_real 22:00 có 55 edge level 3 dù pure fallback code chỉ sinh 1–2 ở slot
-đêm. Raw reconciliation xác nhận các level này thuộc mixed build hiện hành;
-external TomTom truth vẫn không được live re-query trong audit.
+đêm. Selected-field/profile reconstruction xác nhận các level này thuộc mixed
+build hiện hành; external TomTom truth vẫn không được live re-query trong audit.
 
 ## 2.11. Data lineage end-to-end
 
 ```text
 OSM endpoint
-  → [01_download_osm.py] raw GraphML                  REAL RAW artifact (tracked)
-  → [02_build_graph.py] graph_real.json               processed artifact
+  → OSMnx Overpass JSON cache                         VERIFIED REAL RAW
+  → [01_download_osm.py] simplified/SCC GraphML       VERIFIED REAL-DERIVED
+                                                       + BUILD-TIME-DERIVED
+  → [02_build_graph.py] graph_real.json               BUILD-TIME-DERIVED
+       ├─ OSM-derived lat/lon/length/highway/name     VERIFIED REAL-DERIVED
+       ├─ OSM signal tags                             VERIFIED REAL-DERIVED
        ├─ speed table                                 CONFIG
-       ├─ manual risk circles                         MANUAL
-       └─ OSM-derived road/signal attributes          locally reconciled
+       └─ manual circles → risk flags                 MANUAL → BUILD-TIME-DERIVED
 
 TomTom Flow API
-  → [03a_crawl_tomtom.py] 4 raw JSON snapshots        REAL RAW artifacts (tracked)
+  → [03a_crawl_tomtom.py] 4 selected-field extracts  VERIFIED REAL-DERIVED local artifact;
+                                                       external payload UNKNOWN/UNVERIFIED
   → [03b_build_profiles.py]
-       ├─ TomTom ratio-to-level                       REAL-DERIVED, locally reconciled
+       ├─ TomTom ratio-to-level                       VERIFIED REAL-DERIVED
        └─ deterministic fallback seed 42              SEED/SIMULATED
-  → traffic_profiles_real.json                        persisted runtime input
+  → traffic_profiles_real.json                        BUILD-TIME-DERIVED mixed input
 
 Manual POI catalog + G_real + profile_real
   → [04_build_gdemo.py]
-       ├─ nearest-node snapping / corridor search
-       ├─ aggregation / third-POI exclusion
-       └─ connectivity repair
-  → graph_demo.json + gdemo_corridors.json
+       ├─ nearest-node snapping / corridor search     BUILD-TIME-DERIVED
+       ├─ aggregation / third-POI exclusion           BUILD-TIME-DERIVED
+       └─ connectivity repair                         BUILD-TIME-DERIVED
+  → graph_demo.json + gdemo_corridors.json            BUILD-TIME-DERIVED
 
 graph_demo.json + gdemo_corridors.json + profile_real
   → [03b_build_profiles.py demo] corridor weighted mean
-  → traffic_profiles_demo.json
+  → traffic_profiles_demo.json                        BUILD-TIME-DERIVED
 
 committed graph/profile JSON
-  → [GraphStore.load] validate + precompute weights
+  → [GraphStore.load] validate + precompute weights   RUNTIME-COMPUTED
   → [search/search_advanced/tsp] route/ATSP result
   → [FastAPI] JSON response
   → [Next.js] visualization/explanation
@@ -989,7 +1077,7 @@ mọi edge lúc load store hoặc resolve request-scoped scenario.
 | narrow-alley penalty | 30 | s/flag | `CONFIG` | Phản ánh bất tiện/hạn chế đường hẹp | Chỉ `balanced` |
 | traffic-light penalty | 25 | s/flag | `CONFIG` | Delay fixed khi edge đi vào signal node | Chỉ `balanced` |
 | free speed table | 25–60 | km/h | `CONFIG` | Chuyển length thành free-flow time | `time`, `balanced`, heuristic `v_max` |
-| congestion level | 1–5 | ordinal | mixed persisted data | Time-of-day multiplier | `time`, `balanced` |
+| congestion level | 1–5 | ordinal | mixed `VERIFIED REAL-DERIVED`/`SEED/SIMULATED`, persisted `BUILD-TIME-DERIVED` | Time-of-day multiplier | `time`, `balanced` |
 | A*/Greedy/IDA*/Beam heuristic | Haversine hoặc Haversine/`v_max` | m hoặc s | `RUNTIME-COMPUTED` | Hướng dẫn search | Bốn informed algorithms |
 | IDA* epsilon default | 5 | m ở distance; s ở time/balanced | `CONFIG` | Minimum threshold increment/quality bound | `search_advanced.py`; request có thể override >0 finite |
 | IDA* max rounds | 1.000 | rounds | `CONFIG` safety | Ngăn loop threshold vô hạn | Internal param/default; không phải edge cost |
@@ -1010,8 +1098,9 @@ epsilon hoặc beam width được learned/fitted từ ground-truth. Chúng ph�
 trình bày là project configuration/modeling choices.
 
 `scripts/05_calibrate_gamma.py` là bước phân tích tùy chọn để ước lượng
-`gamma_hat` từ raw TomTom và so với `GAMMA_LOCKED=1.5`; nó không thay product
-constant lúc runtime. Raw hiện có nhưng `results/` vẫn stale; task audit này
+`gamma_hat` từ TomTom selected-field records và so với `GAMMA_LOCKED=1.5`; nó
+không thay product constant lúc runtime. Các selected-field snapshots hiện có
+nhưng `results/` vẫn stale; task audit này
 không rerun calibration/benchmark, nên không có current calibration result
 report-safe.
 
@@ -1278,7 +1367,7 @@ simulated_annealing(), solve_multiroute()`; `backend/tests/test_tsp.py`.
 
 ## 4.3. Simplification assumptions có mất thông tin
 
-- Raw OSM `MultiDiGraph` có thể có parallel edges; product JSON chỉ giữ một
+- OSMnx GraphML `MultiDiGraph` có parallel edges; product JSON chỉ giữ một
   edge cho mỗi ordered `(u,v)`, chọn edge có configured free-flow time thấp
   nhất. Lane/parallel-way alternatives không còn để thuật toán lựa chọn.
 - `oneway` được suy ra từ reverse-pair existence sau preprocessing, không phải
@@ -1293,18 +1382,21 @@ simulated_annealing(), solve_multiroute()`; `backend/tests/test_tsp.py`.
 
 ## 4.4. Snapshot assumption cần diễn đạt đặc biệt thận trọng
 
-Raw files xác nhận bốn TomTom sample được query lúc 07:40:03 và 12:49:57 ngày
-2026-07-27, 17:30:01 và 22:27:52 ngày 2026-08-03 — hai ngày thứ Hai cách nhau
-bảy ngày, không phải same-day time series. Vì thế:
+Tên file và `queried_at` ghi bốn **batch-start stamps** 07:40:03 và 12:49:57
+ngày 2026-07-27, 17:30:01 và 22:27:52 ngày 2026-08-03 — hai ngày thứ Hai cách
+nhau bảy ngày, không phải same-day time series. Script tạo stamp một lần trước
+loop, lặp nó cho cả batch và không ghi timezone. Vì thế:
 
-- timestamps và record payload là fresh-verifiable trong current workspace;
+- persisted batch stamps và selected fields là fresh-verifiable trong current
+  workspace; exact timestamp của từng request/response là `UNKNOWN/UNVERIFIED`;
 - bốn điểm thời gian vẫn chỉ là representative snapshots, không chứng minh
   daily/weekly generalization;
 - slot label là time bucket, không cam kết query đúng chính xác 07:30/12:00.
 
-Evidence hiện hành: bốn tracked file dưới `data/raw/tomtom/`, đối chiếu với
-`data/DATA.md`, `hdcrawl.md` và `scripts/validate_data.py`. Audit không live
-re-query TomTom.
+Evidence hiện hành: bốn tracked selected-field files dưới `data/raw/tomtom/`,
+đối chiếu trực tiếp với `scripts/03a_crawl_tomtom.py` và reconstruction logic
+03b. Markdown/validator không được dùng thay cho các kiểm tra này. Audit không
+live re-query TomTom.
 
 ---
 
@@ -1312,13 +1404,14 @@ re-query TomTom.
 
 ## 5.1. Dataset/provenance limitations
 
-1. **OSM external provenance chưa khép kín hoàn toàn:** raw GraphML và OSMnx
-   cache hiện có, locally reproduce được G_real, nhưng chưa có manifest riêng
-   ghi endpoint/source URL, license, tool environment và hash trong final ZIP;
-   audit không gọi lại OSM.
-2. **TomTom chỉ là bốn sampled snapshots:** raw files hiện có và locally
-   reproduce được 635/4.699 assignment mỗi slot, nhưng audit không gọi lại API
-   để independently xác thực external response; đây không phải real-time feed.
+1. **OSM external provenance chưa khép kín hoàn toàn:** Overpass cache có
+   generator/base timestamp/ODbL notice và GraphML locally reproduce được
+   G_real, nhưng chưa có manifest riêng ghi exact request URL/parameters, tool
+   environment, hashes và final-ZIP contents; audit không gọi lại OSM.
+2. **TomTom chỉ là bốn sampled extracts:** selected-field files locally reproduce
+   được 635/4.699 assignment mỗi slot nhưng không phải verbatim API responses;
+   audit không gọi lại API để independently xác thực external payload và đây
+   không phải real-time feed.
 3. **Mixed provenance không granular:** profile chỉ có một `meta.source` cho
    toàn file; không lưu per-edge/per-slot cờ `tomtom` vs `synthetic`, sample ID,
    distance-to-sample hoặc confidence.
@@ -1375,10 +1468,14 @@ re-query TomTom.
 
 ## 5.4. API/data-quality limitations
 
-- Pydantic kiểm shape/local invariants; validator kiểm SCC, coverage, physical
-  floor và demo ratios. Các kiểm tra này không chứng minh external provenance.
-- Source-honesty validator hiện pass vì đủ bốn raw snapshots hợp lệ và profile
-  mixed locally reconcile được. Gate này vẫn không chứng minh external truth.
+- Pydantic kiểm shape/local invariants; validator kiểm SCC, graph/profile edge-ID
+  coverage, physical floor và demo ratios. Các kiểm tra này không chứng minh
+  external provenance.
+- `check_source_consistency()` chỉ yêu cầu **có ít nhất một** `flow_*.json` khi
+  profile metadata khai TomTom. Nó không tự kiểm đủ 4/4 slot, 40 record/slot,
+  exact 635-edge coverage hoặc tái dựng levels. Các fact đó được xác nhận bằng
+  fresh independent read-only reconstruction trong audit, không phải bởi riêng
+  source-honesty validator.
 - Không có schema field cho raw-source hash, acquisition timestamp per profile
   record, OSM way/node ID, TomTom segment ID hoặc confidence.
 - Base backend không gọi network, nhưng basemap online của frontend là một concern
@@ -1386,8 +1483,9 @@ re-query TomTom.
 
 ## 5.5. Future work phù hợp với implementation hiện tại
 
-1. **Khép kín provenance package:** giữ raw OSM GraphML và đủ raw TomTom
-   snapshots hiện đã được Git track trong final Data ZIP; thêm manifest
+1. **Khép kín provenance package:** giữ OSM Overpass cache, derived GraphML và
+   đủ bốn TomTom selected-field snapshots hiện đã được Git track trong final
+   Data ZIP; thêm manifest
    SHA-256, source URL/API endpoint, query timestamp/timezone, bbox,
    tool/version, parameters và license note.
 2. **Per-edge lineage:** lưu `traffic_source`, sample/segment ID,
@@ -1443,12 +1541,13 @@ re-query TomTom.
 
 ## 6.2. Phải diễn đạt thận trọng
 
-- Nói G_real là **OSM-derived/processed theo pipeline code**; raw GraphML hiện
-  có và local transform khớp current graph. Kèm caveat audit không gọi lại OSM
-  để xác minh external snapshot.
+- Nói G_real là **OSM-derived/processed theo pipeline code**; Overpass cache là
+  provenance raw gần nguồn nhất, còn GraphML đã qua OSMnx simplification/SCC.
+  Local transform khớp current graph; audit không gọi lại OSM.
 - Nói current profile là **persisted `tomtom+synthetic` mixed artifact theo
-  metadata** và runtime dùng level đó; bốn raw snapshot hiện có và locally
-  reproduce phần assignment/fallback, nhưng không phải live external audit.
+  metadata** và runtime dùng level đó; bốn selected-field crawler snapshots
+  hiện có và locally reproduce assignment/fallback, nhưng không phải verbatim
+  response hoặc live external audit.
 - Nếu nhắc ngày crawl hai thứ Hai 2026-07-27/2026-08-03, phải gọi đó là
   recorded history và representative snapshots, không phải same-day series.
 - Gọi `free_speed_kmh`, gamma/risk penalty và synthetic traffic là modeling
@@ -1481,82 +1580,66 @@ re-query TomTom.
 > 2.118 node cho scale testing. Runtime tính ba loại chi phí từ length, tốc độ
 > free-flow cấu hình, congestion profile theo bốn slot và risk penalties; dữ
 > liệu traffic không phủ được dùng deterministic fallback seed 42. Artifact
-> hiện hành tự mô tả là `tomtom+synthetic`; current Git/workspace có raw OSM và
-> đủ bốn raw TomTom snapshot để tái đối chiếu local pipeline, nhưng lượt audit
+> hiện hành tự mô tả là `tomtom+synthetic`; current Git/workspace có OSM
+> Overpass cache, derived GraphML và đủ bốn TomTom selected-field snapshots để
+> tái đối chiếu local pipeline, nhưng lượt audit
 > không gọi lại nguồn ngoài nên không coi đó là real-time/external ground truth
 > đã xác thực độc lập. Mọi kết quả route/ATSP dùng committed directed JSON và
 > asymmetric shortest-path costs, không gọi mạng khi chạy demo.
 
 ---
 
-# Phụ lục A. Audit register lịch sử của Markdown cũ
+# Phụ lục A. Current documentation audit register
 
-Phần register bên dưới được giữ theo audit gốc tạo ở commit `3f6df7c`, khi
-workspace của tác giả chưa nhận raw artifacts và audit không sửa các Markdown
-khác. Vì vậy các câu “raw vắng”, validator fail và `UNVERIFIED` trong bảng là
-**historical findings đúng tại mốc đó**, không phải đánh giá current HEAD.
+Phụ lục này thay register raw-vắng/2-of-4/schema-mismatch của audit cũ bằng
+disposition tại HEAD `91adfa9608fc5377ed5a786c33fd4850c9c94554`. Nó chỉ giúp
+người viết report tránh lấy nhầm historical Markdown làm current evidence;
+actual raw/data/code vẫn có độ ưu tiên cao hơn bảng này.
 
-Current reconciliation tại HEAD `5693ae7`:
-
-- commit `faf9866` đã bỏ ignore `data/raw/` và track sáu raw/provenance files;
-- raw/profile reconciliation và source-honesty validator hiện pass;
-- các current-state Markdown đã được đồng bộ trong worktree audit hiện tại;
-- `results/` vẫn stale/`SỐ TẠM`; tám manual risk URL đã được review/tích hợp
-  nhưng chỉ có giá trị định tính lịch sử; external OSM/TomTom truth không được
-  live re-query.
-
-Trong bảng lịch sử, `Đúng có điều kiện` nghĩa là phần contract/toán còn hữu ích
-nhưng status/số liệu phải kiểm lại; `Lịch sử` nghĩa là file không được dùng làm
-current evidence.
-
-| Markdown | Đánh giá tại audit gốc 2026-08-06 | Chỗ lệch/cũ/thiếu được ghi nhận lúc đó |
+| Markdown | Vai trò current | Disposition report-safe tại checkpoint |
 |---|---|---|
-| `AGENTS.md` | Đúng phần lớn về invariants; có status không còn kiểm chứng | Counts/formulas/warnings đúng. Khẳng định raw TomTom 4/4 “exist” lệch workspace hiện tại; raw không có. |
-| `CLAUDE.md` | Legacy guidance, mixed | Counts đúng; raw 4/4, `ALL DATA VALID`, test/TypeScript status là lịch sử và không đúng fresh gate hiện tại. |
-| `PLAN.md` | Plan/implementation history | Fixed GraphView `full/7/15/25`, frontend 19 tests, `ALL DATA VALID`, raw 4/4 và 635 TomTom edges là stale/không fresh-verifiable. Runtime đã là `teach_3..teach_50`, preset v2. |
-| `PROMPT-MASTER.md` | Original spec + một số current notes | Cost constants/core pipeline đúng. “Gán cùng trục”, “kế thừa oneway/highway thật” là mô tả thiết kế mạnh hơn implementation: TomTom match chỉ source-node radius/main-class; demo edge là aggregated corridor và structural direction. |
-| `README.md` | Mixed overview/status | Counts/offline snapshot concept đúng. Fixed four GraphViews, raw 4/4, `148 passed`, `ALL DATA VALID` không phản ánh current implementation/workspace. |
-| `data/DATA.md` | Chi tiết pipeline gần code nhất nhưng provenance status stale | Speed/fallback/risk/corridor rules chủ yếu đúng. Raw 4/4, timestamps và exactly 635 TomTom-covered edges không xác minh được khi raw vắng; không thể gọi topology “OSM 2026-07-27” là fresh-verified. |
-| `docs/AUDIT-CLAUDE-PRE-SUBMISSION.md` | Rõ ràng là historical snapshot | 51/292, 82/111 tests và audit findings là thế hệ cũ; header đã cảnh báo không dùng làm current proof. |
-| `docs/CODEX-BASELINE.md` | Historical baseline | G_demo 51/292/56, traffic-light 131, raw 2 snapshots và validator results thuộc baseline trước refresh; không phải current data. |
-| `docs/CODEX-CODEBASE-MAP.md` | Code map hữu ích; status data một phần stale | Current graph/risk counts đúng. Raw 4/4, 635/4.699 và `ALL DATA VALID` không fresh-verifiable; theme/current gate claims cũng là snapshot cũ. |
-| `docs/DESIGN.md` | UI intent, không phải data source | GraphView chỉ `full/7/15/25` lệch dynamic `teach_3..teach_50`; preset/UI contract đã đổi. `19 test`, TypeScript pass và dark-default là status/intent cũ so với current code/session. |
-| `docs/GIAI-THICH-THUAT-TOAN.md` | Generated teaching artifact, numerical section stale | Tự ghi `SỐ TẠM`, profile synthetic/raw 2/4. Không dùng bảng số để mô tả current mixed profile hoặc current results; muốn đổi phải chạy generator theo dependency chain được duyệt. |
-| `docs/HEURISTIC-PROOF.md` | Đúng có điều kiện | Chứng minh phù hợp `costs.py` và current invariants. Phải giữ caveat length floor, non-negative cost và resolved `v_max`; không tự chứng minh external data provenance. |
-| `docs/KE-HOACH-TRIEN-KHAI-NHIEM-VU-HOP-NHOM.md` | Implementation plan/history | Raw 4/4, gates, fixed GraphView enum và direct OSM semantics cho `oneway` đã stale/overstated. Counts 51/298 và 2.118/4.699 còn đúng. |
-| `docs/KIEMTOAN.md` | Audit ledger nhiều thế hệ | Chứa 51/253, 51/292, raw 2/4 và nhiều mốc tests khác nhau; header đã nói phần lớn là lịch sử. Không dùng một dòng rời làm current fact. |
-| `docs/Lab1-ChotPhuongAn.md` | Settled choices, mixed status | Hybrid approach/cost/two-graph choices và current counts đúng. Raw TomTom 4/4 là recorded decision/status, không được current workspace chứng minh. |
-| `docs/ROLE-C-ADVANCED-ATSP-GIAI-THICH-DE-HIEU.md` | Conceptual algorithm guide, phần core phù hợp | Cost units, informed algorithms và ATSP concepts chủ yếu đúng; chính file cảnh báo results stale. Không phải evidence dataset/provenance hay benchmark. |
-| `docs/SCHEMA.md` | Intended contract §A–§D phần lớn khớp; có executable mismatch | Node/edge/profile/cost/trace core đúng. `GraphView` fixed four values và preset JSON version 1 lệch `models.py` regex `teach_3..teach_50`, `scenario.py`/config version 2 và frontend slider 3..51. Đây là contract mismatch phải sửa riêng sau, không được audit này âm thầm chọn Markdown. |
-| `docs/TIENDO.md` | History ledger | Cố ý giữ 50/138, 51/141, 51/253, 51/292 cùng các phase/test counts; không phải current behavior. |
-| `hdcrawl.md` | Operational closeout/history | Khẳng định raw 4/4, timestamps, 635 coverage và `ALL DATA VALID`; các raw artifacts không có trong current workspace nên những câu này hiện unverified. |
-| `report/BaoCao-Khung.md` | Report scaffold với `SỐ TẠM` | Current graph/risk counts và cost outline khá đúng. Raw 4/4/635 coverage và fixed GraphViews cần thay bằng wording mục 6; benchmark vẫn tạm. |
-| `report/Slide-Outline.md` | Slide scaffold với `SỐ TẠM` | Raw 4/4 và 635 TomTom edges unverified; benchmark/figures chưa current. |
-| `report/Video-KichBan.md` | Video scaffold với `SỐ TẠM` | Raw 4/4 unverified; còn câu coi `teach_7` là tương lai dù đã có và runtime đã hỗ trợ dynamic views. |
-| `report_algorithm.md` | ATSP explanation gần current code; verification footer stale | Matrix/objectives/solvers đúng. “176 passed”, `ALL DATA VALID` và TypeScript passed không đúng fresh current evidence: full backend gần nhất có 174 pass/2 source-honesty fail; raw vắng làm validator fail. |
-| `results/README.md` | Đúng và an toàn | Đã cảnh báo toàn bộ results là `SỐ TẠM`, cũ hơn graph/profile. Phần kể raw TomTom 4/4 vẫn chỉ là recorded history, nhưng file không cho phép dùng results làm current benchmark. |
+| `AGENTS.md` | Current repository guidance | Counts, 9-algorithm contract, raw tracking và pre-submission warnings phù hợp current state. |
+| `CLAUDE.md` | Legacy project guidance | Chỉ dùng làm background; current request và `AGENTS.md` thắng. Không dùng phase/commit ritual hoặc status cũ làm current proof. |
+| `PLAN.md`, `UI_PLAN.md` | Dated implementation checkpoints | Test/UI counts là checkpoint lịch sử; không phải data/provenance source. |
+| `PROMPT-MASTER.md` | Original build specification + current notes | Hữu ích cho intent/constants; không dùng wording “cùng trục/cùng tên” thay cho actual TomTom nearest-source-node matching. |
+| `README.md` | Current project overview | Counts/status chính phần lớn đúng; chi tiết canonical về raw-vs-derived và cost phải lấy từ tài liệu này/code/data. |
+| `data/DATA.md` | Pipeline description gần implementation | Phần đầu xác nhận 8/8 risk URL nhưng một đoạn cuối vẫn gọi tám URL là task chưa hoàn thành; chỉ final link/archive QA còn mở. |
+| `docs/AUDIT-CLAUDE-PRE-SUBMISSION.md`, `docs/CODEX-BASELINE.md` | Historical audit/baseline | Các thế hệ 51/292, 2-of-4 TomTom và test counts cũ không phải current evidence. |
+| `docs/CODEX-CODEBASE-MAP.md` | Current code map | Current counts/gates hữu ích; open-work section còn câu “Complete risk URLs” đã stale vì 8/8 URL hiện có. |
+| `docs/DESIGN.md` | UI intent | Không phải data/provenance evidence; browser intent nằm ngoài scope canonical này. |
+| `docs/GIAI-THICH-THUAT-TOAN.md` | Generated teaching artifact | Header/body vẫn cảnh báo `SỐ TẠM`, synthetic/2-of-4 profile và legacy Dijkstra. Không dùng numerical body cho current 9-algorithm/data claims; chỉ regenerate qua generator khi được phép. |
+| `docs/HEURISTIC-PROOF.md` | Conditional proof | Phù hợp current formulas nếu giữ length floor, resolved `v_max` và non-negative costs; không chứng minh external data truth. |
+| `docs/KE-HOACH-TRIEN-KHAI-NHIEM-VU-HOP-NHOM.md` | Historical plan | Body còn TODO cũ về risk URLs dù header đã supersede; không dùng body task status làm current fact. |
+| `docs/KIEMTOAN.md`, `docs/TIENDO.md` | Historical ledgers | Cố ý chứa nhiều graph/test generations; không trích một dòng rời làm current state. |
+| `docs/Lab1-ChotPhuongAn.md` | Settled choices | Hybrid/two-graph/cost choices phù hợp; data claims vẫn phải kiểm raw/data/code. |
+| `docs/ROLE-C-ADVANCED-ATSP-GIAI-THICH-DE-HIEU.md` | Conceptual algorithm guide | Core ATSP concepts phù hợp; không phải dataset/provenance/benchmark evidence. |
+| `docs/SCHEMA.md` | Intended public contract | Fresh audit không phát hiện current mismatch với executable node/edge/profile/request contract liên quan tài liệu này. |
+| `hdcrawl.md` | Operational crawl closeout/history | Four-slot/635 history hiện được selected-field/profile reconstruction hỗ trợ, nhưng exact matching/timestamp semantics phải dùng mục 2.6 thay cho prose cũ. |
+| `manual_risks_sources_review.md` | Manual source review | 8/8 link/evidence assessment phù hợp; chỉ chứng minh historical route/area context. |
+| `report/BaoCao-Khung.md`, `report/Slide-Outline.md`, `report/Video-KichBan.md` | Manual deliverable scaffolds | Data headers phần lớn current; mọi benchmark mang `SỐ TẠM` vẫn provisional. |
+| `report_algorithm.md` | Current algorithm explanation | Current 9-search/3-ATSP contract phù hợp; benchmark/result section vẫn phải giữ stale warning. |
+| `results/README.md` | Results status authority | Đúng khi cảnh báo toàn bộ current `results/` predates graph/profile refresh và không phải official current benchmark. |
 
-## A.1. Disposition hiện hành cho các mismatch của audit gốc
+## A.1. Disposition hiện hành cho các mismatch cũ
 
-Các mục gốc được xử lý như sau:
-
-1. **Raw provenance — resolved locally:** đủ GraphML/cache/bốn TomTom snapshot
-   hiện được Git track. External authenticity/live freshness vẫn chỉ
-   `PARTIALLY VERIFIED`; final Data ZIP chưa được đóng gói.
-2. **Coverage 635/4.699 — resolved locally:** fresh reconciliation xác nhận
-   đúng 635 TomTom-assigned và 4.064 fallback edge ở từng G_real slot.
-3. **`ALL DATA VALID` — resolved cho current artifacts:** validator hiện pass;
-   đây là structural/lineage gate cục bộ, không phải external truth proof.
-4. **GraphView — resolved trong current Markdown worktree:** executable hỗ trợ
-   mọi `teach_3..teach_50`, `full` ở 51 và preset version 2; các current-state
-   docs đã được đồng bộ, còn historical logs giữ nguyên mốc cũ.
-5. **One-way/provenance:** không nói `oneway` public là raw OSM tag; G_real suy
-   từ reverse-pair, G_demo suy từ abstract adjacency/corridor availability.
-6. **TomTom matching:** không nói match “cùng tên/cùng trục/cùng road class”;
-   code chỉ yêu cầu main-edge và nearest sample trong 250 m tính từ source node.
-7. **Benchmark/test status — chỉ giải quyết một phần:** fresh tests/validator/
-   TypeScript gate được báo theo command hiện hành, nhưng `results/` chưa được
-   rerun và phải tiếp tục mang banner `SỐ TẠM`.
+1. **Raw provenance:** resolved locally nhưng phân tầng lại đúng: Overpass cache
+   là `VERIFIED REAL RAW`; GraphML là simplified/SCC derived intermediate;
+   external live truth vẫn `UNKNOWN/UNVERIFIED`.
+2. **TomTom:** đủ 4/4 selected-field extracts, 40 records/slot; không gọi chúng
+   là verbatim raw API response. `queried_at` chỉ là batch-start stamp.
+3. **Coverage:** independent reconstruction xác nhận 635 TomTom-assigned và
+   4.064 fallback edge cho từng G_real slot; đây không phải kết luận riêng của
+   source-honesty validator.
+4. **Validator:** current gate pass, nhưng `check_source_consistency()` chỉ kiểm
+   có ít nhất một matching raw filename khi metadata khai TomTom.
+5. **Direction:** G_real/G_demo `oneway` đều là structural reverse-pair property,
+   không được đồng nhất với raw OSM tag hoặc biển báo ngoài thực địa.
+6. **Contract:** current API có đúng 9 Searching algorithms; standalone legacy
+   Dijkstra trong generated/historical content không thuộc current contract.
+7. **Schema/GraphView:** executable hỗ trợ `teach_3..teach_50` và `full`; fresh
+   audit không giữ lại claim schema mismatch cũ.
+8. **Calibration/results:** chưa resolved; gamma/penalties vẫn `CONFIG`, còn
+   `results/` vẫn stale/`SỐ TẠM` và không được báo là current benchmark.
 
 ---
 
@@ -1572,12 +1655,12 @@ Các mục gốc được xử lý như sau:
 | Greedy/Bidijkstra/IDA*/Beam usage/config | `backend/app/search_advanced.py` |
 | Scenario, dynamic GraphView, override semantics | `backend/app/scenario.py`, `data/teaching_graph_presets.json` |
 | REST default/dispatch | `backend/app/main.py` |
-| OSM download/SCC | `scripts/01_download_osm.py` |
+| OSM raw provenance, simplification và SCC | `data/raw/osmnx_cache/*.json`, `data/raw/graph_raw.graphml`, `scripts/01_download_osm.py` |
 | MultiDiGraph normalization/dedup/oneway/risk build | `scripts/02_build_graph.py` |
-| TomTom raw fields/sample strategy | `scripts/03a_crawl_tomtom.py` |
+| TomTom selected fields/sample strategy/batch stamp | `data/raw/tomtom/*/flow_*.json`, `scripts/03a_crawl_tomtom.py` |
 | Ratio mapping/spatial assignment/fallback | `scripts/03b_build_profiles.py`, `scripts/pipeline_common.py` |
 | POI list/snapping/corridor/repair/profile aggregation | `data/gdemo_pois.json`, `scripts/04_build_gdemo.py`, `scripts/pipeline_common.py`, `data/gdemo_corridors.json` |
-| SCC/profile coverage/length floor/demo invariants/source honesty | `scripts/validate_data.py` |
+| SCC/profile ID coverage/length floor/demo invariants; limited source-file existence gate | `scripts/validate_data.py` |
 | Searching properties vs baselines | `backend/tests/test_costs.py`, `test_search.py`, `test_search_advanced.py` |
 | ATSP matrix/objectives/solvers | `backend/app/tsp.py`, `backend/tests/test_tsp.py`, `test_optimization_trace.py` |
 | Map draws endpoint-to-endpoint lines, no stored geometry | `frontend/components/map-view.tsx`, graph JSON schema |
@@ -1592,3 +1675,20 @@ phải giải quyết mismatch trong `docs/SCHEMA.md` trước khi đổi code t
 của repository. Với generated teaching numbers, chỉ regenerate qua
 `scripts/gen_teaching_doc.py`. Với data/profile/benchmark, chỉ rebuild khi đã
 được phê duyệt toàn chuỗi; không trộn artifact của các mốc khác nhau.
+
+---
+
+# Scope Coverage Checklist
+
+| Scope | Coverage | Section |
+|---|---|---|
+| Problem Modeling | FULL | §1 |
+| Dataset Design | FULL | §2.1–§2.2, §2.7–§2.10 |
+| Data Sources & Provenance | FULL | §0, §2.3–§2.6, §2.11 |
+| Real/Seed/Manual/Config classification | FULL | §0.1, §2.3 |
+| OSM/TomTom workflow | FULL | §2.4, §2.6, §2.11 |
+| Graph construction workflow | FULL | §1.9–§1.11, §2.4, §2.7 |
+| Cost/Weight data dependencies | FULL | §3 |
+| Assumptions | FULL | §4 |
+| Dataset/Model Limitations | FULL | §5.1–§5.4 |
+| Data-oriented Future Work | FULL | §5.5 |

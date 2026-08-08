@@ -1,53 +1,64 @@
 # MUST TODO — Công việc còn lại trước khi nộp Lab 01
 
-> Trạng thái hiện hành: 2026-08-08, trên base HEAD `98a82b2` cùng UI Clarity
-> worktree đã được verification.
+> Trạng thái rà soát: 2026-08-08. Branch `main` đã đồng bộ UI Clarity và
+> documentation lên `origin/main`; người nhận checklist phải chạy
+> `git pull origin main` trước khi bắt đầu, không dùng một hash cũ trong tài liệu
+> làm release marker.
 >
 > File này lưu backlog tổng trước khi nộp. **UI Clarity Phase đã freeze** và hai
 > ảnh README đã được cập nhật; bộ screenshot/report/slide/video nộp cuối vẫn chưa
 > hoàn tất. Benchmark cuối chưa chạy và mọi banner `SỐ TẠM` vẫn phải được giữ.
 >
-> Bằng chứng UI hiện hành được ghi tại §3.1 và `UI_PLAN.md`; checkpoint 35 test ở
-> §2 chỉ là trạng thái trước phase. Benchmark/gamma/generator, bộ ảnh nộp cuối,
-> video và các banner `SỐ TẠM` vẫn chưa được thực hiện/thay đổi.
+> Bằng chứng UI hiện hành được ghi tại §2, §3.1 và `UI_PLAN.md`.
+> Benchmark/gamma/generator, bộ ảnh nộp cuối, video và các banner `SỐ TẠM` vẫn
+> chưa được thực hiện/thay đổi.
+
+> **Ưu tiên giao việc ngay:** (1) điền thông tin nhóm và chia 40 khối report;
+> (2) xử lý tám nguồn manual risk theo `mustdo.md`; (3) chuẩn bị prose không phụ
+> thuộc benchmark. Không ai tự chạy benchmark/gamma/generator trước khi ba điều
+> kiện freeze, provenance và ủy quyền ở §6 đều đạt.
 
 ## 1. Phân biệt hai file MUST DO
 
-- `mustdo.md`: nhiệm vụ riêng về 8 `source_url` của manual risk, đã giao cho
-  nhóm xử lý.
+- `mustdo.md`: phiếu giao việc riêng về 8 `source_url` của manual risk, sẵn sàng
+  gửi nhóm nhưng chưa hoàn thành.
 - `mustTODO.md`: backlog tổng từ sau phase UI cho tới lúc đóng gói bài nộp.
 
-Việc `source_url` đã được giao nhưng chưa được coi là hoàn thành cho tới khi:
+Việc `source_url` chỉ được coi là hoàn thành khi:
 
 - cả 8 record có nguồn phù hợp hoặc được mô tả trung thực là giả định minh họa;
 - URL đã được review và mở thử ở tab ẩn danh;
 - `data/manual_risks.json` đã được cập nhật;
 - data validator chạy đạt.
 
-## 2. Trạng thái kỹ thuật trước phase UI mới
+## 2. Trạng thái kỹ thuật hiện hành
 
-Tại lượt audit gần nhất, chưa phát hiện blocker bắt buộc nào trong core
-backend/frontend/data:
+Tại lượt verification sau UI Clarity, chưa phát hiện blocker bắt buộc nào trong
+core backend/frontend/data:
 
 - backend: `176 passed`, 1 warning;
 - data validator: `ALL DATA VALID`;
-- frontend tests: `35/35` passed;
+- frontend tests: `40/40` passed;
 - TypeScript: passed;
 - production build: passed;
-- representative browser QA: passed;
+- browser QA bằng UI thật: passed ở 1366×768, 1024×768, 390×844 và kiểm bổ sung
+  320×568;
+- keyboard/focus/Escape/focus trap, reduced motion, loading/error/empty/offline,
+  console và network: đã kiểm;
+- contrast checker: passed đủ bảy theme;
 - active frontend là `frontend/`;
 - current `G_demo`: 51 node, 298 directed edge, gồm 60 one-way edge;
 - current `G_real`: 2.118 node, 4.699 directed edge;
 - profile hiện tại là `tomtom+synthetic`, đủ bốn slot `07:30`, `12:00`,
   `17:30`, `22:00`.
 
-Các kết quả trên là checkpoint trước phase UI mới. Sau khi UI thay đổi, phải
-chạy lại những verification liên quan; không được mặc định checkpoint cũ chứng
-minh cho phiên bản UI mới.
+Đây là bằng chứng đã chạy cho phiên bản UI freeze ngày 2026-08-08, không phải
+lời hứa thay thế verification cuối sau benchmark và trước khi đóng gói.
 
-## 3. Trong phase cải thiện UI
+## 3. Phase cải thiện UI đã hoàn thành
 
-Được thực hiện UI/frontend theo phạm vi nhóm chốt. Trong phase này:
+UI/frontend đã được triển khai theo phạm vi nhóm chốt. Trong phase này nhóm đã
+giữ các ràng buộc sau:
 
 - không chạy benchmark cuối;
 - không chạy gamma calibration cuối;
@@ -60,7 +71,7 @@ minh cho phiên bản UI mới.
 - giữ API/schema/data contract hiện tại, trừ khi nhóm chủ động mở một thay đổi
   contract riêng và cập nhật đầy đủ consumer/tests/docs.
 
-Kết thúc phase UI phải:
+Các stop gate kết thúc phase đã được kiểm:
 
 - kiểm tra route hai điểm;
 - kiểm tra compare mode;
@@ -69,8 +80,12 @@ Kết thúc phase UI phải:
 - kiểm tra dark/light và các theme còn lại;
 - kiểm tra responsive ở 1366×768 hoặc đúng độ phân giải máy chiếu;
 - kiểm tra console/network request;
-- cập nhật README screenshot nếu giao diện cuối khác ảnh hiện tại;
+- cập nhật hai README screenshot sau khi giao diện ổn định;
 - freeze UI/code trước khi bắt đầu chuỗi benchmark và sản xuất deliverable cuối.
+
+Từ thời điểm này không mở thêm feature/polish UI nếu không có lỗi ảnh hưởng demo,
+rubric hoặc tính đúng. Ưu tiên chuyển sang provenance, report, benchmark cuối và
+deliverable.
 
 ### 3.1. Phase UI Clarity đã freeze — evidence 2026-08-08
 
@@ -103,13 +118,14 @@ Các bước delivery còn lại của file này vẫn giữ nguyên. Phase UI f
 
 ## 4. Đồng bộ Git để nhóm có đầy đủ context
 
-Trước hoặc ngay sau khi chốt phase UI:
+UI và documentation hiện hành đã được đồng bộ. Checklist cho nhóm:
 
 - [x] Review toàn bộ `git diff` hiện tại.
 - [x] Xác nhận các Markdown audit và hai ảnh README mới là đúng.
 - [x] Track `mustdo.md` và `mustTODO.md` trong repo.
 - [x] Không đưa `.env`, dependency, cache hay secret vào commit.
-- [x] Commit UI Clarity `a198c56` và push thành công lên `origin/main`.
+- [x] Commit UI Clarity và documentation liên quan, push thành công lên
+      `origin/main`.
 - [ ] Thành viên khác pull và xác nhận nhìn thấy `data/raw/`, documentation mới
       và các file nhiệm vụ.
 
@@ -204,7 +220,7 @@ nhưng không cần rebuild graph/profile.
 
 Chỉ chụp sau khi UI được freeze.
 
-### 7.1. Tám screenshot GUI
+### 7.1. Chín screenshot GUI
 
 - [ ] Toàn cảnh trang chính với `G_demo` và congestion 07:30.
 - [ ] Animation A* đang chạy: frontier, expanded và bảng `g/h/f`.
@@ -213,6 +229,7 @@ Chỉ chụp sau khi UI được freeze.
 - [ ] Bidirectional Dijkstra với hai phía tìm kiếm.
 - [ ] Compare mode, ví dụ A* và BFS.
 - [ ] Multiroute/ATSP với thứ tự điểm và tỷ lệ tiết kiệm.
+- [ ] Tab Thử nghiệm: cạnh đang chọn và bảng Thông số/Gốc/Đang thử.
 - [ ] Trang `/benchmark` với artifact cuối.
 
 ### 7.2. Đối chứng và figure
@@ -421,20 +438,24 @@ TP.HCM đã nằm trong danh sách kịch bản được cho phép. Vì vậy:
 - không coi email là thành phần nộp hoặc blocker bắt buộc, trừ khi giảng viên có
   thông báo bổ sung ngoài PDF.
 
-## 15. Thứ tự thực hiện sau phase UI
+## 15. Thứ tự thực hiện từ trạng thái hiện tại
 
-1. Freeze UI/code và cập nhật screenshot README nếu cần.
-2. Review, commit và push toàn bộ thay đổi được duyệt.
-3. Nhận và tích hợp kết quả `source_url` từ `mustdo.md`.
-4. Chạy full test + data validation.
-5. Chạy đúng một chuỗi benchmark → gamma calibration → teaching generator.
-6. Đồng bộ số liệu và gỡ đủ năm banner `SỐ TẠM`.
-7. Hoàn thành 40 khối report và mọi thông tin thành viên/đóng góp.
-8. Chụp bộ ảnh cuối và năm ảnh Google Maps.
-9. Dựng slide, quay/upload video và thử link ẩn danh.
-10. Xuất Report PDF, tạo SC/Video/Data artifact.
-11. Chạy full final QA.
-12. Đóng, giải nén thử và kiểm `[GroupID].zip` trước khi nộp.
+1. Mọi thành viên pull latest `origin/main`; trưởng nhóm điền tên, vai trò,
+   người đại diện nộp và chia 40 khối report.
+2. Giao, review và tích hợp tám `source_url` theo `mustdo.md`; chạy data
+   validation và inspect diff.
+3. Hoàn thành prose report không phụ thuộc benchmark trong lúc chờ nguồn.
+4. Khi provenance đóng và có ủy quyền ghi artifact, chạy full test + data
+   validation rồi chạy đúng một chuỗi benchmark → gamma calibration → teaching
+   generator.
+5. Inspect artifact, đồng bộ mọi con số và chỉ sau đó gỡ đủ năm banner
+   `SỐ TẠM`.
+6. Hoàn thành 40 khối report và mọi thông tin thành viên/đóng góp còn lại.
+7. Chụp chín screenshot UI cuối và năm ảnh Google Maps; đối chiếu với artifact
+   cuối.
+8. Dựng slide, quay/upload video và thử mọi link bằng tab ẩn danh.
+9. Xuất Report PDF, tạo SC/Video/Data artifact và chạy full final QA.
+10. Đóng, giải nén thử và kiểm `[GroupID].zip` trước khi nộp.
 
 ## Definition of Done
 

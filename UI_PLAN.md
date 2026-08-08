@@ -1296,7 +1296,7 @@ Chỉ chụp đè sau khi:
 7. text/cursor/toast không che nội dung;
 8. ảnh đã được mở inspect ở độ phân giải gốc.
 
-Ảnh README không thay thế tám screenshot GUI cuối trong `mustTODO.md`.
+Ảnh README không thay thế chín screenshot GUI cuối trong `mustTODO.md`.
 
 ### 19.3. Không làm trong bước screenshot
 

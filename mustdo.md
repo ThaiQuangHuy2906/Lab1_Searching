@@ -1,12 +1,27 @@
 # MUST DO — Bổ sung nguồn cho 8 vùng rủi ro thủ công
 
-> **Kiểm lại 2026-08-08:** nhiệm vụ này vẫn còn mở; cả 8 `source_url` phải được
-> nhóm điền hoặc mô tả trung thực là giả định minh hoạ trước khi đóng Data ZIP.
+> **Kiểm trực tiếp 2026-08-08:** nhiệm vụ này vẫn còn mở. Cả 8/8 giá trị
+> `source_url` trong `data/manual_risks.json` hiện vẫn bắt đầu bằng `TODO:`.
+> Chỉ đóng đầu việc khi từng record có nguồn phù hợp hoặc được mô tả trung thực
+> là giả định minh hoạ chưa được nguồn ngoài xác minh.
+
+## Làm ngay khi nhận file này
+
+1. Chạy `git pull origin main` để lấy checklist và code mới nhất.
+2. Trưởng nhóm điền tên người nhận cho tám dòng trong bảng phân công bên dưới.
+3. Người tìm nguồn **không cùng lúc sửa JSON**; gửi bằng chứng theo đúng mẫu cho
+   người tích hợp.
+4. Chỉ một người tích hợp tám kết quả đã review, chạy data validator rồi báo lại
+   commit/diff để cả nhóm kiểm tra.
+
+UI Clarity và ảnh README đã hoàn tất, đã được đẩy lên `origin/main`. Đây là đầu
+việc dữ liệu/provenance ưu tiên kế tiếp; không mở thêm feature UI và không chạy
+benchmark, gamma calibration hay generator trong nhiệm vụ này.
 
 ## Tin nhắn gửi nhóm Messenger
 
 Nhóm mình còn **1 đầu việc về provenance dữ liệu** trước khi chốt Data ZIP và
-báo cáo: bổ sung nguồn thật cho 8 trường `source_url` đang là `TODO` trong
+báo cáo: xử lý tám trường `source_url` đang mang placeholder `TODO: ...` trong
 `data/manual_risks.json`.
 
 `source_url` dùng để chứng minh nhóm dựa vào nguồn nào khi đặt vùng ngập hoặc
@@ -14,13 +29,14 @@ vùng thi công. Trường này **không tham gia thuật toán tìm đường v
 đổi cost**. Nếu chỉ điền URL thì không cần rebuild graph/profile. Tuy nhiên,
 không được gọi các vùng này là “dữ liệu thực tế đã xác minh” khi chưa có nguồn.
 
-### Phân công đề nghị
+### Phân công đề nghị — trưởng nhóm điền tên trước khi gửi
 
 - **Bạn phụ trách Data / Role A:** tìm nguồn cho 5 điểm ngập `r01`–`r05`.
 - **Bạn phụ trách Report / Role E:** tìm nguồn cho 3 điểm thi công `r06`–`r08`,
   sau đó review chéo cả 8 nguồn để dùng trong báo cáo và Data Description.
-- **Một người duy nhất phụ trách tích hợp:** cập nhật
-  `data/manual_risks.json` sau khi tất cả nguồn được duyệt, để tránh conflict.
+- **Một người duy nhất phụ trách tích hợp:** cập nhật đúng tám trường
+  `source_url` sau khi tất cả nguồn được duyệt, để tránh conflict; không sửa các
+  trường còn lại.
 
 Nếu vai trò A/E chưa gắn với tên thành viên, trưởng nhóm điền người nhận vào
 bảng dưới đây trước khi gửi.
@@ -93,8 +109,11 @@ Một nguồn đạt khi:
 - [ ] `data/DATA.md`, báo cáo và Data Description dùng wording thống nhất:
       nguồn ngoài chứng minh địa điểm/rủi ro đến mức nào, còn tọa độ và bán kính
       là giả định mô hình hóa của nhóm.
-- [ ] Chạy lại `python scripts/validate_data.py` bằng interpreter của project và
-      ghi nhận kết quả thật trước khi đóng gói Data ZIP.
+- [ ] Từ repo root, chạy đúng
+      `.venv\Scripts\python.exe scripts\validate_data.py` và ghi nhận kết quả
+      thật trước khi đóng gói Data ZIP.
+- [ ] Review diff xác nhận chỉ các URL/wording provenance đã được duyệt thay đổi;
+      không có graph/profile/results hoặc numerical artifact bị ghi lại.
 
 ## Ghi chú cho trưởng nhóm
 
@@ -103,3 +122,7 @@ Khuyến nghị không chia cho quá nhiều người: một người tìm nhóm
 tìm nhóm thi công/review, và một người tích hợp JSON là đủ. Nếu không tìm được
 nguồn tốt cho một record, nhóm nên giữ cách mô tả “manual illustrative
 assumption” thay vì tuyên bố đó là rủi ro thực tế đã được xác minh.
+
+Sau khi đầu việc này đóng, trưởng nhóm mới xin/chốt ủy quyền cho chuỗi ghi dữ
+liệu cuối: validation → benchmark exp1–exp7 → gamma calibration → teaching
+generator. Không thành viên nào tự chạy riêng một mắt xích của chuỗi đó.

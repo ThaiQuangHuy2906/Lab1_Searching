@@ -11,6 +11,10 @@
 > và có ủy quyền riêng.
 > UI/documentation refresh 2026-08-08 không chạy benchmark và không sửa bất kỳ
 > CSV/PNG/GeoJSON kết quả nào trong thư mục này.
+> Thay đổi contract cùng ngày đã loại lựa chọn route `dijkstra` độc lập. Vì chưa
+> được phép chạy lại benchmark, CSV/PNG cũ vẫn có dòng/series legacy này; API và
+> trang benchmark lọc nó khỏi giao diện. Lượt tái sinh cuối phải tạo exp1 theo
+> UCS/A* (800 ca) và exp3 theo 9 thuật toán (3.600 dòng).
 >
 > **Tái sinh (chạy MỘT MÌNH, ~7 phút, không tiến trình song song):**
 > từ `backend/` chạy `..\.venv\Scripts\python.exe -m app.benchmark` (PowerShell)
@@ -23,9 +27,9 @@
 
 | File | Thí nghiệm |
 |---|---|
-| exp1_correctness.csv | Đối chứng UCS/Dijkstra/A* vs NetworkX (1 200 ca) |
+| exp1_correctness.csv | Đối chứng UCS/A* vs NetworkX (800 ca sau lượt tái sinh cuối) |
 | exp2_admissibility.csv | Kiểm h ≤ h* trên mọi node reachable |
-| exp3_benchmark.csv | 10 thuật toán × 200 cặp × 2 khung giờ trên G_real |
+| exp3_benchmark.csv | 9 thuật toán × 200 cặp × 2 khung giờ trên G_real sau lượt tái sinh cuối |
 | exp4_congestion.csv (+exp4_examples/) | % cặp đổi tuyến 07:30 vs 22:00 |
 | exp5_gamma.csv | Độ nhạy γ ∈ [0; 3] |
 | exp6_pairs.json (+exp6_routes/) | 5 cặp đối chứng Google Maps |

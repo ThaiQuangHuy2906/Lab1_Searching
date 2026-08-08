@@ -28,7 +28,7 @@ import type { Algorithm, Trace } from "@/lib/types";
  * " — " left "Greedy Best-First"/"Dijkstra hai chiều" full-length and the Δ
  * column got clipped (review v11). */
 const SHORT: Record<Algorithm, string> = {
-  bfs: "BFS", dfs: "DFS", iddfs: "IDDFS", ucs: "UCS", dijkstra: "Dijkstra",
+  bfs: "BFS", dfs: "DFS", iddfs: "IDDFS", ucs: "UCS",
   astar: "A*", greedy: "Greedy", bidijkstra: "BiDijkstra", idastar: "IDA*",
   beam: "Beam",
 };

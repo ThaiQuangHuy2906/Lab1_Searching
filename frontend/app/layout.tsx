@@ -21,7 +21,7 @@ const jetbrains = JetBrains_Mono({
 export const metadata: Metadata = {
   title: "Định tuyến giao thông TP.HCM — Lab 1 AI",
   description:
-    "Ứng dụng hỗ trợ shipper: 10 thuật toán tìm đường + tối ưu thứ tự giao hàng trên bản đồ TP.HCM",
+    "Ứng dụng hỗ trợ shipper: 9 thuật toán tìm đường + tối ưu thứ tự giao hàng trên bản đồ TP.HCM",
 };
 
 // đặt data-theme TRƯỚC khi paint để không nháy theme (FOUC)

@@ -12,16 +12,22 @@ validated worktree at HEAD `9a790dee005ffc13016094749b92c0375d16929b`; these
 uncommitted changes are user work, not a release commit.
 
 **Current audit refresh — 2026-08-08:** current-state claims in this map were
-rechecked on base HEAD `98a82b2` plus the UI Clarity worktree. The active and only
+rechecked on base HEAD `8a78a22` plus the current worktree. The active and only
 tracked application frontend is `frontend/`; `frontend1/` was deleted in
-commit `faf9866` and is not a current implementation. Fresh gates are 176
-backend tests, 40 frontend tests, `ALL DATA VALID`, and a passing TypeScript
+commit `faf9866` and is not a current implementation. Fresh gates are 177
+backend tests, 41 frontend tests, `ALL DATA VALID`, and a passing TypeScript
 check. A clean `npm run build` also completed all 6 static pages. Browser QA at
-1366×768, 1024×768 and 390×844 covered route/ATSP, four result tabs, scenario
-editing, keyboard/focus, reduced motion and responsive reflow; the clean final
-session returned route/multiroute 200 with zero console errors. Dated
+1366×768, 1024×768 and 390×844 belongs to the preceding UI Clarity freeze and
+covered route/ATSP, four result tabs, scenario editing, keyboard/focus, reduced
+motion and responsive reflow; the nine-algorithm catalog change was rechecked by
+automated tests/build, not by a new manual browser session. Dated
 onboarding/FINAL-01 sections below remain historical evidence; the exact
 projector/browser used for recording still needs its own pre-flight.
+
+**Route-contract delta — 2026-08-08:** the group removed the standalone
+`dijkstra` choice because it duplicated UCS. The current product exposes nine
+route algorithms; Bidirectional Dijkstra remains. Historical audit and result
+references below may still describe the previous ten-algorithm artifacts.
 
 ### Current frontend and release delta — through 2026-08-08
 
@@ -38,17 +44,18 @@ projector/browser used for recording still needs its own pre-flight.
 - FINAL-01 verdict: **DEMO-READY WITH WARNINGS**, **SUBMISSION BLOCKED** and
   **FINAL-DATA NOT ALLOWED**. Backend/API/schema/data/results were unchanged by
   the four UI commits.
-- Subsequent work through the current worktree adds finite-epsilon/API/benchmark
+- Subsequent work through the UI Clarity worktree adds finite-epsilon/API/benchmark
   regressions, dynamic GraphView/scenario sandbox, ATSP optimization trace,
   seven themes and the completed UI Clarity phase. The right panel now has
   `Số liệu/Giải thích/So sánh/Thử nghiệm`, scenario editing has one authority,
   route outcomes use km/minutes on screen, and start/goal markers plus result
-  hierarchy were browser-verified as recorded above.
+  hierarchy were browser-verified as recorded above. The later nine-algorithm
+  catalog delta has automated coverage but no new manual browser run.
 
 ## 1. Project purpose and rubric
 
 The assignment is a Vietnamese urban-traffic search project. This repository
-chooses a multi-stop shipper in central HCMC, implements ten two-point searches,
+chooses a multi-stop shipper in central HCMC, implements nine two-point searches,
 three ATSP methods, a step-by-step web GUI, route explanations, and an offline
 data/benchmark/report pipeline.
 
@@ -163,10 +170,10 @@ Primary modules:
 | `models.py` | Pydantic v2 executable contracts | `GraphFile`, `TrafficProfiles`, `Trace`, `RouteRequest`, `MultirouteResponse` |
 | `costs.py` | edge weights and heuristics | `congestion_factor`, `edge_penalty_s`, `edge_weight`, `haversine_m` |
 | `graph_store.py` | validated load, adjacency, weights, path metrics | `GraphStore.load`, `weights`, `heuristic`, `path_metrics`, `reweighted` |
-| `search.py` | six core searches and common recorder/finalizer | `_Recorder`, `_finish`, `bfs`, `dfs`, `iddfs`, `_best_first` |
+| `search.py` | five core searches and common recorder/finalizer | `_Recorder`, `_finish`, `bfs`, `dfs`, `iddfs`, `_best_first` |
 | `search_advanced.py` | four advanced searches | `greedy`, `bidijkstra`, `idastar`, `beam` |
 | `tsp.py` | ATSP matrix and three solvers | `build_matrix`, `held_karp`, `nn_2opt`, `simulated_annealing`, `solve_multiroute` |
-| `explain.py` | Vietnamese route explanation/alternatives | `build_explanation` and internal Dijkstra alternative helper |
+| `explain.py` | Vietnamese route explanation/alternatives | `build_explanation` and internal UCS alternative helper |
 | `main.py` | FastAPI, dispatch, error envelope, cached result serving | `post_route`, `post_multiroute`, `post_benchmark`, exception handlers |
 | `benchmark.py` | seven offline experiments | `exp1` through `exp7`, `main` |
 
@@ -195,7 +202,7 @@ flowchart LR
 | GET | `/api/health` | query-free | `HealthResponse` | `health` | `platform.python_version` | `test_health` |
 | GET | `/api/graph` | `level` query | graph dict validated on load | `get_graph` | `graph_payload`, `GraphStore.load` | demo/real and bad level |
 | GET | `/api/traffic` | `slot`, `level` | `TrafficResponse` | `get_traffic` | cached store profiles | coverage/range and bad slot |
-| POST | `/api/route` | `RouteRequest` | `Trace` | `post_route` | `ALL_ALGORITHMS`, explanation | all ten, defaults, params, errors, explanation |
+| POST | `/api/route` | `RouteRequest` | `Trace` | `post_route` | `ALL_ALGORITHMS`, explanation | all nine, removed-Dijkstra rejection, defaults, params, errors, explanation |
 | POST | `/api/multiroute` | `MultirouteRequest` | `MultirouteResponse` | `post_multiroute` | `solve_multiroute` | NN+2opt, limits, duplicates, TSP unit tests |
 | POST | `/api/benchmark` | `BenchmarkRequest` | `BenchmarkResponse` | `post_benchmark` | reads whitelisted result files | all/single, 200-or-404 artifact behavior |
 
@@ -301,7 +308,7 @@ The consistency test covers every edge but only three goals per store; its
 name/proof prose should not be confused with an exhaustive all-goal run.
 Existing exp2 output is stale with the rest of `results/`.
 
-## 9. Ten search algorithms
+## 9. Nine search algorithms
 
 All functions use signature-compatible `**params`, validate endpoints, and
 return `Trace`.
@@ -312,10 +319,9 @@ return `Trace`.
 | DFS | `search.py::dfs` | LIFO stack | unweighted | pop/expand | none | stack empty | valid paths |
 | IDDFS | `search.py::iddfs` | depth-limited LIFO rounds | unweighted | pop/expand | shallowest within configured depth | default max depth 100 | BFS-depth samples, limit field |
 | UCS | `search.py::ucs` | min-g heap | mode weight | pop/expand | non-negative weights | heap empty | exhaustive demo combinations + real samples |
-| Dijkstra | `search.py::dijkstra` | min-g heap | mode weight | pop/expand | non-negative weights | heap empty | same oracle coverage |
 | A* | `search.py::astar` | `(f,h,tie)` heap | g + h | pop/expand | admissible/consistent h | heap empty | same cost oracle plus heuristic tests |
 | Greedy | `search_advanced.py::greedy` | min-h heap | h only | pop/expand | none | heap empty | path/suboptimal witness, h-only trace |
-| Bidijkstra | `search_advanced.py::bidijkstra` | two min-g heaps | forward/reverse g | selected-side pop | non-negative weights and stop rule | `top_f+top_b >= mu` | Dijkstra comparisons, side/key shape |
+| Bidijkstra | `search_advanced.py::bidijkstra` | two min-g heaps | forward/reverse g | selected-side pop | non-negative weights and stop rule | `top_f+top_b >= mu` | UCS comparisons, side/key shape |
 | IDA* | `search_advanced.py::idastar` | f-bounded DFS rounds | g + h, epsilon thresholds | in-bound pop | epsilon claim when found; proof when exhaustively unreachable | default 1,000 rounds; cap exit has no guarantee | sampled epsilon, cap, and unreachable tests |
 | Beam | `search_advanced.py::beam` | layer then best-k pruning | g + h | current-layer expansion | none; incomplete | retained layer empty/found | width 60/1/default plus controlled top-k trace |
 
@@ -362,7 +368,7 @@ invariant. Controlled tests now cover all five repaired items.
 
 ## 11. TSP and multiroute
 
-`build_matrix` runs a product Dijkstra from each selected point over directed
+`build_matrix` runs a product UCS from each selected point over directed
 weights and caches each leg path. The matrix is asymmetric.
 
 | Method | Function | Exact/heuristic | Limit | Randomness | Return to start | Guarantee |
@@ -381,7 +387,7 @@ limits. Unreachable multi-stop behavior lacks a dedicated test.
 
 `post_route` always calls `build_explanation`. It uses current route metrics,
 path congestion, a distance-optimal alternative, a Greedy alternative, and an
-internal product Dijkstra for optimal-gap wording.
+internal product UCS for optimal-gap wording.
 
 Intended outputs:
 
@@ -454,9 +460,13 @@ weighted means. `graph_raw.graphml`, all four TomTom JSON files and the OSMnx
 cache are present under `data/raw/` and Git-tracked in the current repository.
 Validator reports `ALL DATA VALID`.
 
-`manual_risks.json` has 8 records and 8 placeholder `source_url` strings, hence
-zero usable cited URLs. Its `meta.description_vi` now matches the current
-"edge entering the zone" rule and discloses the route-start-inside limitation.
+`manual_risks.json` has 8 records and 8 reviewed direct `source_url` values. Its
+`meta.description_vi` matches the current "edge entering the zone" rule,
+discloses the route-start-inside limitation, and classifies the URLs as
+historical route/area evidence rather than real-time incident data. `r02` has a
+borderline spatial match; `r07` is an emergency sinkhole work zone rather than a
+sewer project; `r08` is historical water-infrastructure work rather than road
+resurfacing. Full caveats are in `data/DATA.md` §2.1.
 
 The six demo-vs-real contraction invariants are:
 
@@ -471,9 +481,9 @@ wall-clock and therefore not byte-reproducible.
 
 | Exp | Purpose | Input/algorithms | Randomness | Output | Main consumers |
 |---|---|---|---|---|---|
-| 1 | correctness | `G_real`; UCS/Dijkstra/A* vs NetworkX at 2 slots | OD seed 42 | `exp1_correctness.csv` | correctness claims |
-| 2 | heuristic empirical check | 10 goals, reverse Dijkstra h* | seed 42 | CSV + scatter | proof/report |
-| 3 | ten-algorithm comparison | 200 pairs × 2 slots | shared pairs | CSV + 3 figures | report/benchmark page |
+| 1 | correctness | `G_real`; UCS/A* vs NetworkX at 2 slots | OD seed 42 | `exp1_correctness.csv` | correctness claims |
+| 2 | heuristic empirical check | 10 goals, reverse UCS h* | seed 42 | CSV + scatter | proof/report |
+| 3 | nine-algorithm comparison | 200 pairs × 2 slots | shared pairs | CSV + 3 figures | report/benchmark page |
 | 4 | congestion route change | A* 07:30 vs 22:00 | shared pairs | CSV + examples | headline/report/video |
 | 5 | gamma sensitivity | gamma 0..3 | shared pairs | CSV + curve | cost rationale |
 | 6 | qualitative routes | five G_demo POI pairs | fixed | JSON + PNG/GeoJSON | Google Maps captures |
@@ -484,8 +494,10 @@ refreshed on 2026-08-03.
 `results/README.md` explicitly marks them `SỐ TẠM`. Do not quote existing
 headline values as current.
 
-`results/README.md` now correctly states that exp1 compares UCS, Dijkstra and A*
-against NetworkX; exp3 is the ten-algorithm run.
+`results/README.md` records the new target shape: exp1 compares UCS/A* against
+NetworkX and exp3 runs nine algorithms. Its raw CSV/PNG remain the stale legacy
+ten-algorithm artifacts until the separately authorized final rerun; API/UI
+filter the removed `dijkstra` rows meanwhile.
 
 ## 16. Generated artifacts
 
@@ -506,8 +518,8 @@ Five explicit `SỐ TẠM` locations:
 4. `report/Video-KichBan.md`
 5. `docs/GIAI-THICH-THUAT-TOAN.md`
 
-`BaoCao-Khung.md` contains 40 actionable fill-marker occurrences on 30 content
-lines after excluding its marker-legend line, nine requested GUI screenshots,
+`BaoCao-Khung.md` contains 13 fill-marker occurrences in total and 11 actionable
+content markers after excluding two instructional mentions, nine requested GUI screenshots,
 and five Google Maps comparison captures. The audit's older "31 placeholders"
 count is stale.
 
@@ -635,8 +647,8 @@ The map route retained root body overflow ownership.
 
 ## 20. Test architecture
 
-Current collection produces **176 pytest items**. All 176 passed on the
-2026-08-08 worktree; frontend has a separate **40-test** Node suite plus a
+Current collection produces **177 pytest items**. All 177 passed on the
+2026-08-08 worktree; frontend has a separate **41-test** Node suite plus a
 passing TypeScript check and production build. The suites include GraphView,
 ATSP trace, sandbox, presentation-unit, copy, fingerprint and regression
 coverage.
@@ -646,7 +658,7 @@ coverage.
 | `test_schema.py` | model/contract | graph, trace, bidi, multiroute validators | mock | several cross-field semantic invariants |
 | `test_costs.py` | math | hand cost, lower bound, consistency | demo/real | all-goal proof wording |
 | `test_search.py` | core search | NetworkX weighted/hop oracles; IDDFS post-expand trace | demo + sampled real | cap semantics, repeated determinism |
-| `test_search_advanced.py` | advanced search | Dijkstra comparison, epsilon bounds, Bidijkstra ownership, IDA* trace/cap, Beam top-k trace | demo + sampled real + tiny controlled stores | broader termination/property coverage |
+| `test_search_advanced.py` | advanced search | UCS comparison, epsilon bounds, Bidijkstra ownership, IDA* trace/cap, Beam top-k trace | demo + sampled real + tiny controlled stores | broader termination/property coverage |
 | `test_tsp.py` | ATSP | brute force, asymmetry, determinism | demo | unreachable multistop and fuller API method coverage |
 | `test_api.py` | FastAPI | endpoint shapes/errors; three-mode units; internal-error secrecy/logging | current stores/results-dependent | broader injected internal failures |
 | `test_artifact_generation.py` | generator/benchmark semantics | exp5 cost mode and generated ATSP gap wording | synthetic fixtures | full generated artifact refresh intentionally not run |
@@ -673,7 +685,7 @@ Completed semantic regressions:
 10. Bidirectional Dijkstra initial frontier and trivial-route mode units;
 11. slot/traffic coherence, route–multiroute guards, effective-trace legend and
     sign-aware ATSP savings, dynamic GraphView, theme behavior and presentation
-    copy/unit rules in the frontend 40-test suite.
+    copy/unit rules plus the exact nine-algorithm catalog in the frontend 41-test suite.
 
 Priority semantic tests still missing:
 
@@ -716,7 +728,7 @@ validation commands.
 
 - PDF requirements outrank project plans.
 - Schema changes precede public contract implementation changes.
-- One trace contract serves all ten algorithms.
+- One trace contract serves all nine algorithms.
 - `distance` is metres; `time`/`balanced` are seconds.
 - Never mix units in cost, heuristic, epsilon, or explanation text.
 - NetworkX stays out of runtime search/TSP/API.
@@ -739,7 +751,7 @@ Statuses use the onboarding vocabulary requested by the handoff.
 | ID | Status | Current file/function | Root cause/evidence | Existing test | Missing verification/test |
 |---|---|---|---|---|---|
 | B-1 | `CONFIRMED` | current data vs `results/*` | graph/profile closeout dated 03/08; results dated 26/07 and explicitly marked `SỐ TẠM` | validator checks data, not benchmark provenance | coherent rerun after code stabilizes and separate authorization |
-| B-2 | `CONFIRMED` | `report/*`, repository root | no final report PDF, deck, video link, ZIP; 40 actionable fill markers excluding the legend; URLs/screenshots absent | none appropriate | manual artifact review/package check |
+| B-2 | `CONFIRMED` | `report/*`, repository root | no final report PDF, deck, video link, ZIP; 11 actionable fill markers out of 13 total occurrences after excluding two instructional mentions; final URL QA/screenshots absent | none appropriate | manual artifact review/package check |
 | B-3 | `RESOLVED` | `iddfs`, `idastar`, `bidijkstra` | snapshots moved post-generation; g restricted to active side(s) | red-before/green-after semantic tests | full 111-item suite passed |
 | B-4 | `RESOLVED` | `explain.py::build_explanation` | mode-derived `m`/`s` suffix | epsilon and gap tested in all 3 modes | full 111-item suite passed |
 | B-5 | `RESOLVED` | benchmark page scroll owner | reproduced before patch; `main` now independently scrolls 28 px | headless Chrome 1366×768 | recheck on actual projector before recording |
@@ -757,7 +769,7 @@ Statuses use the onboarding vocabulary requested by the handoff.
 | P-06 offline mode/Google font | `PARTIALLY_CONFIRMED` | offline not persisted; `next/font/google` present; online production build passes | disconnected build not run |
 | P-07 same-value invalidation / stale traffic | `RESOLVED` | semantic slot comparison precedes invalidation; real slot changes clear traffic and guard graph/slot/request identity | automated regression; latest browser interaction is unverified |
 | P-08 manual risk description | `RESOLVED` | metadata now states `u` outside/`v` inside and the start-inside limitation | JSON/prose inspection |
-| P-09 result README/run-book defects | `RESOLVED` | exp1 now names UCS/Dijkstra/A*; run-book lists all five banners | final coherent refresh still pending |
+| P-09 result README/run-book defects | `RESOLVED` | README names the UCS/A* and nine-algorithm targets and flags legacy Dijkstra rows; run-book lists all five banners | final coherent refresh still pending |
 | P-10 Pydantic `ValidationError` | `RESOLVED` | exact handler returns generic/logged 500; request errors remain 422 | endpoint response/log regression |
 | P-11 endpoint/stop conflict and route–multiroute overlap | `RESOLVED` | pickers reject duplicates; route action is blocked while stops exist; tour Goal/swap controls are disabled | automated policy regression; latest browser interaction is unverified |
 | P-12 README Git Bash paths | `RESOLVED` | PowerShell and Bash path conventions are now separated | execute on non-Windows only if that platform becomes supported |
@@ -783,8 +795,8 @@ Statuses use the onboarding vocabulary requested by the handoff.
 - Old graph counts such as 141/253/402 edges in history.
 - `TIENDO.md` phase rows; later entries are newer but still historical.
 - `KIEMTOAN.md` and the Claude audit are claim collections, not current truth.
-- Audit placeholder count 31 is stale; current count is 40 actionable
-  occurrences on 30 content lines, excluding the marker-legend line.
+- Earlier audit placeholder counts 31/25 are stale; current count is 13 total
+  occurrences and 11 actionable markers after excluding two instructional mentions.
 
 ## 25. Safe change workflow
 
@@ -810,21 +822,15 @@ are complete. Remaining safe order:
    all five banners/numbers.
 2. Restart services, verify live graph metadata, and redo browser QA at the
    actual capture/projector resolution before recording.
-3. Complete URLs, names/contributions, report PDF, slides, video, links, and
-   final ZIP.
+3. Complete risk URLs, remaining role/report assignments, report PDF, slides,
+   video, data package, links, and final ZIP.
 
 ## 27. Unresolved questions
 
 - Who supplies/verifies the eight real risk citations?
-- Who owns final group identity, contribution percentages, GroupID, and submitter?
+- Who owns the remaining roles/report sections, and who reconfirms Thái Quang
+  Huy as the final submitter?
 - Can/should the Google fonts be localized before an offline defense?
 - What exact timeout/cancellation contract should IDDFS and IDA* expose?
-- `/api/benchmark` now has explicit partial semantics: bulk returns available
-  artifacts, while an explicitly requested missing experiment returns 404.
-- FINAL-01 verified map/theme/contrast, offline, keyboard/focus, reduced motion
-  and three desktop viewport sizes in browser. A fresh 2026-08-07 representative
-  run additionally verified the current A* and Held–Karp trace flows plus
-  Black/White theme rendering at 1366×768 with no console errors. The production
-  build now passes; the full current keyboard/offline matrix, real screen
-  reader/formal WCAG run, mobile layout, projector hardware, and hardware-GPU
-  route-flow performance remain unverified.
+- Which browser, projector resolution and hardware will be used for the final
+  pre-flight and recording?

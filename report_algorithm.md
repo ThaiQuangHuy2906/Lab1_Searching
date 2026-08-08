@@ -35,7 +35,7 @@ và **Simulated Annealing** (stochastic metaheuristic). Bài toán thuộc lớp
 ## 1. Mục tiêu và phạm vi
 
 **Phạm vi tài liệu.** Tài liệu ban đầu bám theo implementation tại source snapshot
-`2328d5f`; audit 2026-08-08 trên base HEAD `98a82b2` cùng current worktree xác
+`2328d5f`; audit 2026-08-08 trên base HEAD `8a78a22` cùng current worktree xác
 nhận solver ATSP không đổi semantics. UI presentation đã được đồng bộ theo
 `docs/DESIGN.md` §12: bốn tab kết quả và đơn vị nhìn thấy là km/phút. Tài liệu
 không viết theo kiến thức thuật toán chung. Mọi claim về
@@ -49,7 +49,7 @@ trích số vào tài liệu chính.
 Sau khi đọc xong, người đọc sẽ:
 
 - Hiểu sự khác nhau giữa road graph, delivery points, leg, tour và cost matrix.
-- Hiểu Dijkstra tạo matrix còn ba ATSP solver chọn order.
+- Hiểu UCS tạo matrix còn ba ATSP solver chọn order.
 - Hiểu cost đang tối ưu thay đổi theo `mode`.
 - Phân biệt exact DP, greedy + local search và stochastic metaheuristic.
 - Chạy tay được ba thuật toán trên cùng một ví dụ.
@@ -172,17 +172,17 @@ Ba solver không chạy trực tiếp trên road graph. Hệ thống chia thành
 
 ```mermaid
 flowchart LR
-    A["start + stops<br/>k điểm được chọn"] --> B["k lần Dijkstra<br/>trên road graph có hướng"]
+    A["start + stops<br/>k điểm được chọn"] --> B["k lần UCS<br/>trên road graph có hướng"]
     B --> C["cost/path cho<br/>mọi ordered pair"]
     C --> D{"ATSP solver"}
     D --> E["order"]
     E --> F["cached paths<br/>→ legs, totals, savings"]
 ```
 
-**Giai đoạn 1 — Tạo cost matrix.** Dijkstra chạy một lần cho mỗi source được chọn,
+**Giai đoạn 1 — Tạo cost matrix.** UCS chạy một lần cho mỗi source được chọn,
 dùng `store.adj` (adjacency list có hướng), min-heap và trọng số precomputed. Mỗi lần
 chạy dừng sau khi settle mọi target. Kết quả: `cost[(a,b)]` và `path[(a,b)]` cho mọi
-ordered pair. Với adjacency list và binary heap, upper bound cho một lượt Dijkstra là
+ordered pair. Với adjacency list và binary heap, upper bound cho một lượt UCS là
 `O((M + N) log N)`.
 
 **Giai đoạn 2 — ATSP solver.** Held–Karp, NN + local improvement hoặc SA nhận cost
@@ -1140,7 +1140,7 @@ Một heuristic trùng Held–Karp trên một case không biến heuristic thà
 2. **Không bắt buộc exact:**
    - Cần deterministic method không dùng RNG: NN + local improvement.
    - Chấp nhận stochastic mechanism và fixed search workload: SA.
-3. Mọi lựa chọn vẫn chịu chi phí matrix construction (Dijkstra trên road graph).
+3. Mọi lựa chọn vẫn chịu chi phí matrix construction (UCS trên road graph).
 4. Nếu matrix incomplete, đổi solver không giúp.
 
 ### 13.2. Bảng quyết định
@@ -1197,7 +1197,7 @@ Nhiệt độ giảm dần chuyển từ khám phá rộng sang khai thác cục
 tái lập dưới seed cố định.
 
 Chỉ Held–Karp có global optimality guarantee trong các điều kiện đã nêu. Cả ba solver
-đều hoạt động trên directed cost matrix được tạo trước bằng Dijkstra trên road graph.
+đều hoạt động trên directed cost matrix được tạo trước bằng UCS trên road graph.
 
 ---
 
@@ -1259,16 +1259,16 @@ path; `I` là sweep count; `s = 5`, `L = 2000`.
 
 | Giai đoạn | Time | Space bổ sung |
 |---|---|---|
-| Tạo cost matrix | `O(k · (M + N) log N)` | `O(N+M)` mỗi Dijkstra; `O(k²+P)` stored |
+| Tạo cost matrix | `O(k · (M + N) log N)` | `O(N+M)` mỗi UCS; `O(k²+P)` stored |
 | Held–Karp solver | `O(k² · 2^k)` | `O(k · 2^k + k²)` |
 | NN (implementation) | `O(k² log k)` | `O(k)` |
 | Một local sweep | `O(k³)` | `O(k)` |
 | Toàn local search | `O(I · k³)` | `O(k)` |
 | SA | `O(s · (k² log k + L · k))` | `O(s · k)` |
 
-Matrix stage có thể chiếm phần lớn end-to-end cost vì Dijkstra chạy trên road graph
+Matrix stage có thể chiếm phần lớn end-to-end cost vì UCS chạy trên road graph
 lớn, còn solver chỉ làm việc trên `k ≤ 16`. Bound `O((M + N) log N)` cho mỗi lượt
-Dijkstra giả định adjacency list và binary heap.
+UCS giả định adjacency list và binary heap.
 
 ---
 
@@ -1276,7 +1276,7 @@ Dijkstra giả định adjacency list và binary heap.
 
 | Claim / chức năng | Implementation | Test | Frontend consumer |
 |---|---|---|---|
-| Matrix builder | [`build_matrix()`](backend/app/tsp.py), [`_dijkstra_to_targets()`](backend/app/tsp.py) | [`test_build_matrix_matches_networkx_for_every_mode_and_slot`](backend/tests/test_tsp.py) | — |
+| Matrix builder | [`build_matrix()`](backend/app/tsp.py), [`_ucs_to_targets()`](backend/app/tsp.py) | [`test_build_matrix_matches_networkx_for_every_mode_and_slot`](backend/tests/test_tsp.py) | — |
 | Tour cost | [`tour_cost()`](backend/app/tsp.py) | Được kiểm trực tiếp khi đối chiếu cost trong [`test_held_karp_matches_brute_force_on_seeded_asymmetric_matrices`](backend/tests/test_tsp.py) và [`test_sa_preserves_tour_and_reports_consistent_best_so_far`](backend/tests/test_tsp.py) | — |
 | Held–Karp | [`held_karp()`](backend/app/tsp.py) | [`test_held_karp_matches_brute_force`](backend/tests/test_tsp.py), [`test_held_karp_matches_brute_force_on_seeded_asymmetric_matrices`](backend/tests/test_tsp.py) | — |
 | NN + local optimum | [`nearest_neighbour()`](backend/app/tsp.py), [`two_opt_or_opt()`](backend/app/tsp.py) | [`test_nn_2opt_reaches_local_optimum_on_seeded_asymmetric_matrices`](backend/tests/test_tsp.py) | — |

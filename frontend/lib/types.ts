@@ -1,7 +1,7 @@
 // TypeScript mirror of docs/SCHEMA.md — keep field names IDENTICAL.
 
 export type Algorithm =
-  | "bfs" | "dfs" | "iddfs" | "ucs" | "dijkstra"
+  | "bfs" | "dfs" | "iddfs" | "ucs"
   | "astar" | "greedy" | "bidijkstra" | "idastar" | "beam";
 export type Mode = "distance" | "time" | "balanced";
 export type TimeSlot = "07:30" | "12:00" | "17:30" | "22:00";

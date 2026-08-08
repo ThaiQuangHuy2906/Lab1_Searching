@@ -1,5 +1,5 @@
 """Phase 3 DoD for search_advanced.py:
-- Bidirectional Dijkstra matches Dijkstra costs (1e-6);
+- Bidirectional Dijkstra matches UCS costs (1e-6);
 - IDA* stays within its epsilon bound (and is exact for tiny epsilon);
 - Greedy/Beam behave and report their non-guarantees correctly.
 """
@@ -11,7 +11,7 @@ import pytest
 
 from app.graph_store import MODES, GraphStore
 from app.models import GraphFile, TIME_SLOTS, Trace, TrafficProfiles
-from app.search import dijkstra
+from app.search import ucs
 from app.search_advanced import ADVANCED_ALGORITHMS, beam, bidijkstra, greedy, idastar
 
 TOL = 1e-6
@@ -97,19 +97,19 @@ def test_bidijkstra_initial_frontier_counts_both_endpoints():
     assert result.metrics.max_frontier == 2
 
 
-def test_bidijkstra_matches_dijkstra_demo(demo: GraphStore):
+def test_bidijkstra_matches_ucs_demo(demo: GraphStore):
     for i, (src, dst) in enumerate(sample_pairs(demo, 150, seed=42)):
         mode, slot = COMBOS[i % len(COMBOS)]
-        d = dijkstra(demo, src, dst, mode=mode, time_slot=slot, include_trace=False)
+        d = ucs(demo, src, dst, mode=mode, time_slot=slot, include_trace=False)
         b = bidijkstra(demo, src, dst, mode=mode, time_slot=slot, include_trace=False)
         assert b.found and b.metrics.optimal_guarantee
         assert b.metrics.total_cost == pytest.approx(d.metrics.total_cost, abs=TOL)
 
 
-def test_bidijkstra_matches_dijkstra_real(real: GraphStore):
+def test_bidijkstra_matches_ucs_real(real: GraphStore):
     for i, (src, dst) in enumerate(sample_pairs(real, 20, seed=7, min_m=1500)):
         mode, slot = COMBOS[i % len(COMBOS)]
-        d = dijkstra(real, src, dst, mode=mode, time_slot=slot, include_trace=False)
+        d = ucs(real, src, dst, mode=mode, time_slot=slot, include_trace=False)
         b = bidijkstra(real, src, dst, mode=mode, time_slot=slot, include_trace=False)
         assert b.metrics.total_cost == pytest.approx(d.metrics.total_cost, abs=TOL)
 
@@ -149,7 +149,7 @@ def test_bidijkstra_trace_g_comes_from_active_frontier_side(demo: GraphStore):
 def test_idastar_within_epsilon_demo(demo: GraphStore):
     for i, (src, dst) in enumerate(sample_pairs(demo, 30, seed=5)):
         mode, slot = COMBOS[i % len(COMBOS)]
-        d = dijkstra(demo, src, dst, mode=mode, time_slot=slot, include_trace=False)
+        d = ucs(demo, src, dst, mode=mode, time_slot=slot, include_trace=False)
         t = idastar(demo, src, dst, mode=mode, time_slot=slot, include_trace=False)
         assert t.found and t.metrics.epsilon_bound == 5.0
         assert t.metrics.total_cost <= d.metrics.total_cost + 5.0 + TOL
@@ -159,14 +159,14 @@ def test_idastar_within_epsilon_demo(demo: GraphStore):
 
 def test_idastar_exact_with_tiny_epsilon(demo: GraphStore):
     for src, dst in sample_pairs(demo, 5, seed=11):
-        d = dijkstra(demo, src, dst, include_trace=False)
+        d = ucs(demo, src, dst, include_trace=False)
         t = idastar(demo, src, dst, include_trace=False, epsilon=1e-4)
         assert t.metrics.total_cost == pytest.approx(d.metrics.total_cost, abs=1e-3)
 
 
 def test_idastar_small_real_pair(real: GraphStore):
     src, dst = sample_pairs(real, 1, seed=3, min_m=800)[0]
-    d = dijkstra(real, src, dst, include_trace=False)
+    d = ucs(real, src, dst, include_trace=False)
     t = idastar(real, src, dst, include_trace=False)
     assert t.found
     assert t.metrics.total_cost <= d.metrics.total_cost + 5.0 + TOL
@@ -190,7 +190,7 @@ def test_idastar_round_cap_does_not_claim_guarantee():
         ("n0001", "n0002", 1000.0),
         ("n0002", "n0003", 1000.0),
     ], node_count=3)
-    assert dijkstra(
+    assert ucs(
         store, "n0001", "n0003", mode="distance", include_trace=False
     ).found
 
@@ -219,7 +219,7 @@ def test_greedy_finds_paths_but_never_claims_optimality(demo: GraphStore):
     worse = 0
     for src, dst in sample_pairs(demo, 40, seed=9):
         g = greedy(demo, src, dst, include_trace=False)
-        d = dijkstra(demo, src, dst, include_trace=False)
+        d = ucs(demo, src, dst, include_trace=False)
         assert g.found and not g.metrics.optimal_guarantee
         assert g.metrics.total_cost >= d.metrics.total_cost - TOL
         if g.metrics.total_cost > d.metrics.total_cost + TOL:
@@ -239,7 +239,7 @@ def test_greedy_trace_is_h_only(demo: GraphStore):
 
 def test_beam_wide_enough_behaves_like_search(demo: GraphStore):
     for src, dst in sample_pairs(demo, 20, seed=13):
-        d = dijkstra(demo, src, dst, include_trace=False)
+        d = ucs(demo, src, dst, include_trace=False)
         t = beam(demo, src, dst, include_trace=False, beam_width=60)
         assert t.found and t.metrics.beam_width == 60
         assert not t.metrics.optimal_guarantee

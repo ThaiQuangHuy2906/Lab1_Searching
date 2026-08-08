@@ -13,6 +13,9 @@
 > Dữ liệu benchmark trong `results/` là artifact cũ và không thay đổi contract này.
 > UI Clarity Phase không đổi API/schema: backend/store tiếp tục dùng mét/giây;
 > frontend chỉ chuyển sang km/phút ở tầng presentation theo `docs/DESIGN.md` §12.
+> **Thay đổi được nhóm duyệt 2026-08-08:** loại lựa chọn route `dijkstra` độc lập
+> vì implementation một-cặp trùng với UCS. Contract còn 9 thuật toán route;
+> `bidijkstra` vẫn được giữ vì là tìm kiếm hai chiều trên graph có hướng.
 >
 > **Quy tắc vàng của nhóm:** không ai code trước khi 3 hợp đồng này được duyệt.
 > Sau khi duyệt, **mọi** thay đổi schema phải cập nhật file này và báo rõ trong tóm tắt phase (PROMPT-MASTER luật 2).
@@ -25,7 +28,7 @@
 
 | Enum | Giá trị hợp lệ |
 |---|---|
-| `algorithm` | `bfs` · `dfs` · `iddfs` · `ucs` · `dijkstra` · `astar` · `greedy` · `bidijkstra` · `idastar` · `beam` (10 giá trị — phương án đếm "9 thuật toán" do gộp DFS+IDDFS một dòng; ta cài và benchmark đủ 10) |
+| `algorithm` | `bfs` · `dfs` · `iddfs` · `ucs` · `astar` · `greedy` · `bidijkstra` · `idastar` · `beam` (9 giá trị) |
 | `mode` | `distance` · `time` · `balanced` (mặc định `balanced`) |
 | `time_slot` | `07:30` · `12:00` · `17:30` · `22:00` |
 | `graph` | `demo` · `real` |
@@ -129,7 +132,7 @@ trong heading chỉ contract logic dùng chung, không phải tên artifact trê
 
 ## §B. `trace` — cấu trúc trả về CHUNG của mọi thuật toán tìm đường
 
-**Quy tắc vàng (PROMPT-MASTER luật 3):** cả 10 thuật toán trả về đúng một cấu trúc này, không ngoại lệ. Hàm ký danh chuẩn (Phase 2):
+**Quy tắc vàng (PROMPT-MASTER luật 3):** cả 9 thuật toán trả về đúng một cấu trúc này, không ngoại lệ. Hàm ký danh chuẩn (Phase 2):
 
 ```
 run(graph_store, start, goal, mode, time_slot, include_trace, **params) -> Trace
@@ -139,7 +142,7 @@ run(graph_store, start, goal, mode, time_slot, include_trace, **params) -> Trace
 
 ```jsonc
 {
-  "algorithm": "astar",           // enum algorithm (10 giá trị)
+  "algorithm": "astar",           // enum algorithm (9 giá trị)
   "mode": "balanced",             // enum mode
   "time_slot": "07:30",           // enum time_slot
   "graph": "demo",                // enum graph
@@ -192,7 +195,7 @@ run(graph_store, start, goal, mode, time_slot, include_trace, **params) -> Trace
 |---|---|---|---|---|
 | bfs, dfs | – | – | – | |
 | iddfs | – | – | – | có thêm `depth_limit` mỗi bước |
-| ucs, dijkstra | ✓ | – | – | g = chi phí tích luỹ theo `weight(mode)` |
+| ucs | ✓ | – | – | g = chi phí tích luỹ theo `weight(mode)` |
 | bidijkstra | ✓ | – | – | bắt buộc `side` mỗi bước; frontier = hợp 2 phía; node ở cả 2 frontier → `g` = min 2 phía |
 | greedy | – | ✓ | – | g vẫn được tính nội bộ để ra metrics, nhưng không xuất trong trace |
 | astar, idastar | ✓ | ✓ | ✓ | f = g + h; A* tie-break theo h nhỏ hơn |
@@ -229,7 +232,7 @@ Do `explain.py` điền ở Phase 4. **Phase 2–3 trả đúng shape rỗng:** 
 |---|---|---|
 | bfs | `false` | chỉ tối ưu khi cạnh đồng trọng số — đồ thị này không đồng |
 | dfs, iddfs | `false` | không theo chi phí |
-| ucs, dijkstra, bidijkstra | `true` | chứng minh chuẩn với weight ≥ 0 |
+| ucs, bidijkstra | `true` | chứng minh chuẩn với weight ≥ 0 |
 | astar | `true` | heuristic admissible + consistent (docs/HEURISTIC-PROOF.md) |
 | idastar | `true` khi tìm được nghiệm trong biên ε hoặc đã duyệt cạn và chứng minh không tới được; `false` nếu dừng do chạm safety cap `max_rounds` | ε tính theo **đơn vị chi phí của mode đang chạy**: giây với time/balanced, mét với distance; cap không tạo ra chứng minh |
 | greedy, beam | `false` | greedy theo h / cắt frontier, không complete (beam) |
@@ -323,7 +326,7 @@ Response `200` (base fields bên dưới, cộng `applied_scenario`,
 }
 ```
 
-Ghi chú thi công (Phase 3): ma trận chi phí bất đối xứng, dựng bằng Dijkstra từ từng điểm theo `(mode, time_slot)`; path từng leg được cache để trả về. `sa` chạy 5 seed 0–4, trả nghiệm tốt nhất (best/mean/std đưa vào benchmark, không vào response này).
+Ghi chú thi công (Phase 3): ma trận chi phí bất đối xứng, dựng bằng tìm kiếm chi phí đồng nhất (UCS) từ từng điểm theo `(mode, time_slot)`; path từng leg được cache để trả về. `sa` chạy 5 seed 0–4, trả nghiệm tốt nhất (best/mean/std đưa vào benchmark, không vào response này).
 
 ### C.6 `POST /api/benchmark`
 
@@ -603,7 +606,7 @@ và đối chiếu echo của server, không tự sinh một hash khác.
 
 ### E.4. ATSP optimization trace tách biệt route Trace
 
-`Trace.trace` tiếp tục chỉ thuộc mười thuật toán route và dùng `TraceStep` duy nhất.
+`Trace.trace` tiếp tục chỉ thuộc chín thuật toán route và dùng `TraceStep` duy nhất.
 ATSP **không** nhét event DP/local search/SA vào field này. `POST /api/multiroute`
 nhận field additive `include_trace: bool = false`; khi true và bài toán reachable,
 response có `optimization_trace`, khi false field đó là `null`. `include_trace`

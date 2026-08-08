@@ -3,10 +3,13 @@
 > **Phạm vi thời gian:** báo cáo nguyên bản Claude gửi trước lượt onboarding Codex
 > ngày 2026-07-27. Toàn bộ số test, graph count, trạng thái B-* và kết luận bên
 > dưới chỉ phản ánh snapshot lịch sử, không phải trạng thái hiện hành. Audit
-> documentation/UI refresh ngày 2026-08-08 có 176 backend test, 40 frontend test,
+> documentation/route-contract refresh ngày 2026-08-08 có 177 backend test, 41 frontend test,
 > `ALL DATA VALID` và TypeScript pass; tra `README.md`, `data/DATA.md`,
 > `docs/SCHEMA.md` và phần current-state của `docs/CODEX-CODEBASE-MAP.md`, rồi
-> vẫn xác minh bằng lệnh fresh.
+> vẫn xác minh bằng lệnh fresh. Catalog hiện hành có 9 route; mọi dòng 10 thuật
+> toán/Dijkstra và “8 source_url placeholder” trong nguyên bản bên dưới chỉ là
+> bằng chứng lịch sử. Tám URL đã được review/tích hợp ngày 2026-08-08 với giới
+> hạn nguồn sự kiện lịch sử ở cấp tuyến/khu vực.
 > Nội dung gốc được giữ bên dưới để bảo toàn bằng chứng và mạch quyết định.
 
 ## Báo cáo nguyên bản

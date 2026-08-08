@@ -35,7 +35,6 @@ export const ALGORITHM_SUMMARY: Record<Algorithm, string> = {
   dfs: "Đi sâu trước; không tối ưu theo chi phí và có thể đi vòng.",
   iddfs: "Lặp giới hạn độ sâu; không tối ưu theo chi phí cạnh có trọng số.",
   ucs: "Mở điểm có tổng chi phí nhỏ nhất; đảm bảo tối ưu khi trọng số không âm.",
-  dijkstra: "Tìm đường chi phí nhỏ nhất; đảm bảo tối ưu khi trọng số không âm.",
   astar: "Dùng g + h với heuristic nhất quán; đảm bảo tối ưu theo hợp đồng dữ liệu.",
   greedy: "Ưu tiên heuristic gần đích; nhanh nhưng không đảm bảo tối ưu.",
   bidijkstra: "Tìm từ hai đầu; đảm bảo tối ưu khi trọng số không âm.",

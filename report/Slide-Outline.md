@@ -6,6 +6,8 @@
 > TomTom, phần data đã được làm mới theo `03b real → 04 → 03b demo → validate_data`;
 > benchmark, hiệu chuẩn γ và `scripts/gen_teaching_doc.py` vẫn chờ lượt cuối.
 > Chỉ thay số theo Phụ lục A của `docs/KIEMTOAN.md` sau lượt đó rồi mới nộp.
+> Contract route ngày 2026-08-08 đã loại `dijkstra` độc lập; outline hiện theo 9
+> thuật toán và vẫn giữ Bidirectional Dijkstra. Biểu đồ/CSV cũ còn series legacy.
 >
 > **Tiến độ:** raw TomTom đủ 4/4 snapshot đại diện trên hai ngày thứ Hai;
 > profile hiện là `tomtom+synthetic`, `G_demo` là 51/298; raw GraphML/TomTom/cache
@@ -20,9 +22,10 @@
 
 **Slide 1 — Tiêu đề**
 - Tên đề tài: *Tìm đường tối ưu cho shipper giao hàng đa điểm tại TP.HCM*
-- Nhóm [ĐIỀN] — 5 thành viên + vai trò một dòng
+- GroupID **2** — 24127078 Nguyễn Hữu Gia Minh · 24127177 Thái Quang Huy ·
+  24127205 Nguyễn Văn Minh · 24127249 Mai Phương Thùy · 24127505 Trần Hoàng Phúc
 - Ảnh nền: screenshot bản đồ dark + lớp ùn tắc (cảnh đẹp nhất của app)
-> 🗣 45s: một câu vấn đề ("giờ cao điểm, tuyến ngắn nhất không phải tuyến nhanh nhất") + một câu sản phẩm ("web app 10 thuật toán tìm kiếm + 3 thuật toán TSP trên topology dẫn xuất từ snapshot OSM khu trung tâm").
+> 🗣 45s: một câu vấn đề ("giờ cao điểm, tuyến ngắn nhất không phải tuyến nhanh nhất") + một câu sản phẩm ("web app 9 thuật toán tìm kiếm + 3 thuật toán TSP trên topology dẫn xuất từ snapshot OSM khu trung tâm").
 
 **Slide 2 — Bối cảnh & bài toán** *(rubric: VN context 10đ)*
 - Shipper TP.HCM: ùn tắc theo giờ, 1 433/4 699 cạnh MỘT CHIỀU, ngập + lô cốt
@@ -47,7 +50,7 @@
 **Slide 5 — Thuật toán vô hướng: BFS/DFS/IDDFS + UCS** *(rubric: 4 bắt buộc 20đ)*
 - Bảng chạy tay BFS trên đồ thị 7 node thật (GIAI-THICH-THUAT-TOAN §1)
 - BẪY ngay bài chính BT→BX: BFS chọn tuyến ít cạnh ĐẮT (446 s) thay vì tuyến tối ưu (341 s) — +31%
-- UCS: lan theo CHI PHÍ → tối ưu (khớp NetworkX 1200/1200 — exp1)
+- UCS: lan theo CHI PHÍ → tối ưu (đối chứng UCS/A* với NetworkX; điền số exp1 sau lượt tái sinh cuối)
 > 🗣 60s: đứng ở phản ví dụ — "ít cạnh nhất ≠ rẻ nhất" là lý do cần thuật toán có trọng số.
 
 **Slide 6 — A\* và heuristic** *(rubric: 20đ + heuristic design)*
@@ -63,8 +66,8 @@
 > 🗣 45s: demo tại chỗ nếu được phép, không thì chiếu 2 hình này.
 
 **Slide 8 — Thuật toán bổ sung** *(rubric: additional 10đ)*
-- Nhóm làm 6 (đề cần ≥2): Dijkstra, Greedy, BiDijkstra, IDA* (ε=5 m ở distance,
-  5 s ở time/balanced; UI đổi tương ứng sang km/phút; guarantee chỉ khi chưa chạm cap 1.000 vòng), Beam, IDDFS
+- Nhóm làm 5 (đề cần ≥2): IDDFS, Greedy, BiDijkstra, IDA* (ε=5 m ở distance,
+  5 s ở time/balanced; UI đổi tương ứng sang km/phút; guarantee chỉ khi chưa chạm cap 1.000 vòng), Beam
 - Greedy: expand ít nhất (62) nhưng gap 60,9% — "linh cảm" phản chủ
 - Beam k=50: nhanh nhưng 1,5% ca KHÔNG tìm thấy — incomplete bằng số
 > 🗣 60s: mỗi thuật toán một câu "đánh đổi cái gì lấy cái gì".
@@ -77,7 +80,7 @@
 
 **Slide 10 — Kiến trúc hệ thống**
 - Pipeline offline → data JSON → FastAPI (6 endpoint, hợp đồng `trace` duy nhất) → Next.js
-- Mọi thuật toán trả CÙNG cấu trúc trace → 1 animation engine dùng cho cả 10
+- Mọi thuật toán trả CÙNG cấu trúc trace → 1 animation engine dùng cho cả 9
 - Thuật toán tự cài thuần Python + heapq; NetworkX CHỈ làm baseline test
 > 🗣 45s: nhấn "hợp đồng dữ liệu chốt trước khi code" — cách 5 người làm song song không giẫm chân.
 
@@ -87,9 +90,9 @@
 > 🗣 chạy demo theo checklist mục 11 Video-KichBan.md.
 
 **Slide 12 — Benchmark** *(rubric: comparison trong 20đ + report 10đ)*
-- 10 thuật toán × 200 cặp × 2 khung giờ trên G_real (biểu đồ expand + runtime, thang log)
-- A* tiết kiệm 37% expand so Dijkstra; nhóm tối ưu gap = 0 (đúng lý thuyết)
-- Đúng đắn: 1 200/1 200 khớp NetworkX sai số ≤ 1e-6
+- 9 thuật toán × 200 cặp × 2 khung giờ trên G_real (biểu đồ expand + runtime, thang log)
+- A* và BiDijkstra so với UCS; đọc tỷ lệ tiết kiệm từ exp3 sau lượt tái sinh cuối
+- Đúng đắn: UCS/A* khớp NetworkX sai số ≤ 1e-6; điền số từ exp1 mới (mục tiêu 800 ca)
 > 🗣 60s: đọc biểu đồ log — "cột cao nhất là cái giá của tiết kiệm bộ nhớ (IDA*/IDDFS)".
 
 **Slide 13 — Ùn tắc đổi tuyến + giải thích lộ trình** *(rubric: explanation 10đ)*

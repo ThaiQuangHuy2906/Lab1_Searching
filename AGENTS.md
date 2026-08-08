@@ -14,7 +14,7 @@ asks for it.
 - FastAPI backend and Next.js 15/TypeScript frontend.
 - Two directed graph snapshots: `G_demo` for teaching/visualization and
   `G_real` for scale/benchmark work.
-- Ten two-point search algorithms: BFS, DFS, IDDFS, UCS, Dijkstra, A*, Greedy,
+- Nine two-point search algorithms: BFS, DFS, IDDFS, UCS, A*, Greedy,
   Bidirectional Dijkstra, IDA*, and Beam Search.
 - Three ATSP methods: Held-Karp, Nearest Neighbor + asymmetric-safe 2-opt/Or-opt,
   and Simulated Annealing.
@@ -61,7 +61,7 @@ results over schema prose, generated docs, and historical logs.
 
 - Change the intended contract in `docs/SCHEMA.md` before changing a public
   graph/trace/API contract, unless the user explicitly freezes the schema.
-- All ten route algorithms use one `Trace` contract.
+- All nine route algorithms use one `Trace` contract.
 - `distance` cost is metres; `time` and `balanced` costs are seconds.
 - `total_time_s` is always the balanced path weight, even in another mode.
 - Never print a seconds suffix for a distance-mode cost or epsilon.
@@ -71,7 +71,7 @@ results over schema prose, generated docs, and historical logs.
 - Keep random behavior seeded: default seed 42; SA seeds 0 through 4.
 - The 5,000-step trace cap must not truncate full-run metrics or search work.
 - A*/IDA* guarantees depend on the documented admissible/consistent heuristic;
-  UCS/Dijkstra/Bidijkstra depend on non-negative weights.
+  UCS/Bidijkstra depend on non-negative weights.
 - Traversal order and heap tie-breaks must remain stable and reproducible.
 - Treat directed roads and the multiroute cost matrix as asymmetric.
 - Do not rebuild `data/`, rerun benchmark results, or replace benchmark numbers
@@ -185,9 +185,11 @@ npm run dev
   2026-08-03. Do not rerun profiles/graphs or start the benchmark/gamma
   calibration/generator chain unless the user explicitly authorizes that next
   write-producing stage.
-- Eight manual risk `source_url` values are still TODO placeholders.
-- Report, slide, video, screenshots, group identity, and submission ZIP remain
-  manual deliverables.
+- All eight manual risk `source_url` values were independently reviewed and
+  integrated on 2026-08-08. They support historical route/area context only;
+  they do not verify current incidents, exact centers/radii, or penalties.
+- Report, slide, video, screenshots, remaining role assignments, and submission
+  ZIP remain manual deliverables.
 - Before every demo or capture, stop old services, restart backend/frontend,
   hard-refresh the browser, and verify `/api/graph?level=demo` reports the
   current on-disk graph (currently 51 nodes, 298 directed edges, including 60

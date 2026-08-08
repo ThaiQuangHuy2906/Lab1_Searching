@@ -58,7 +58,7 @@ def test_teaching_claim_reports_positive_gap_from_optimal_ratio(
     (results / "exp3_benchmark.csv").write_text(
         "algorithm,nodes_expanded\n"
         "astar,80\n"
-        "dijkstra,100\n",
+        "ucs,100\n",
         encoding="utf-8",
     )
     (results / "exp7_tsp.csv").write_text(

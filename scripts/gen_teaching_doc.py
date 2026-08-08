@@ -66,10 +66,10 @@ def load_benchmark_numbers() -> dict[str, str]:
         vals = [float(r["nodes_expanded"]) for r in rows if r["algorithm"] == algo]
         return sum(vals) / len(vals)
 
-    astar, dijkstra = mean_expanded("astar"), mean_expanded("dijkstra")
+    astar, ucs = mean_expanded("astar"), mean_expanded("ucs")
     n["astar_expand"] = _vi_thousands(round(astar))
-    n["dijkstra_expand"] = _vi_thousands(round(dijkstra))
-    n["astar_saving_pct"] = f"{100 * (1 - astar / dijkstra):.0f}"
+    n["ucs_expand"] = _vi_thousands(round(ucs))
+    n["astar_saving_pct"] = f"{100 * (1 - astar / ucs):.0f}"
 
     with (ROOT / "results" / "exp7_tsp.csv").open(encoding="utf-8",
                                                   newline="") as fh:
@@ -234,7 +234,7 @@ def main() -> None:
 Điểm thú vị của cặp này: có đường trực tiếp BX→BT nhưng đó là đường **MỘT CHIỀU** —
 chiều đi BT→BX không được phép, shipper phải vòng; và trên các tuyến vòng đó,
 tuyến ÍT CẠNH NHẤT lại dính đoạn kẹt nặng — cả BFS lẫn Greedy đều sập bẫy,
-chỉ nhóm thuật toán xét chi phí (UCS/Dijkstra/A*…) đi đúng.
+chỉ nhóm thuật toán xét chi phí (UCS/A*…) đi đúng.
 
 Trọng số cạnh = `t_free × f_cong + penalty` (SCHEMA §D, γ=1,5):
 
@@ -325,20 +325,7 @@ g(đích) đã tối ưu). Complete ✔ · Tối ưu ✔ (mọi w > 0).
 
 ---
 
-## 5. Dijkstra
-
-**Ý tưởng:** cùng bộ máy với UCS (hàng đợi ưu tiên theo g, chứng minh tối ưu như nhau) —
-khác GÓC NHÌN: Dijkstra gốc tính đường ngắn nhất từ nguồn đi **mọi nơi**, ở đây cài
-bản early-exit dừng ngay khi pop đích nên hành vi trên một cặp OD trùng với UCS.
-Trong báo cáo mục g sẽ bàn quan hệ này. Complete ✔ · Tối ưu ✔.
-
-{trace_table(d['dijkstra'], lab)}
-
-{result_line(d['dijkstra'], lab)}
-
----
-
-## 6. A*
+## 5. A*
 
 **Ý tưởng:** như UCS nhưng xếp hàng theo **f = g + h**, với h là "linh cảm có căn cứ"
 (thời gian bay thẳng ở tốc độ tối đa — không bao giờ đoán QUÁ). h admissible +
@@ -352,13 +339,13 @@ Tie-break: f bằng nhau → h nhỏ hơn trước. Complete ✔ · Tối ưu �
 khi hai node cùng f, A* chọn node có h nhỏ hơn (luật tie-break của nhóm); (2) đồ thị
 7 node quá bé để thấy A* tiết kiệm expand ({d['astar'].metrics.nodes_expanded} so với
 {d['ucs'].metrics.nodes_expanded} của UCS) — trên G_real 200 cặp, A* expand trung bình
-**{N['astar_expand']}** so với **{N['dijkstra_expand']}** của Dijkstra/UCS, tức tiết kiệm
+**{N['astar_expand']}** so với **{N['ucs_expand']}** của UCS, tức tiết kiệm
 ~{N['astar_saving_pct']}% nhờ heuristic định hướng (số đọc tự động từ
 results/exp3_benchmark.csv mỗi lần tái sinh tài liệu này).
 
 ---
 
-## 7. Greedy Best-First
+## 6. Greedy Best-First
 
 **Ý tưởng:** chỉ nhìn **h** — cứ node nào "cảm giác gần đích" là lao tới, quên sạch
 chi phí đã đi. Nhanh, ít expand, nhưng dễ bị đường một chiều/kẹt xe lừa.
@@ -374,13 +361,13 @@ A* cũng dùng h nhưng CÓ g nên không bị.
 
 ---
 
-## 8. Dijkstra hai chiều
+## 7. Dijkstra hai chiều
 
-**Ý tưởng:** chạy ĐỒNG THỜI hai Dijkstra — xuôi từ BT và ngược từ {lab[goal]} (trên đồ thị đảo
+**Ý tưởng:** chạy ĐỒNG THỜI hai tìm kiếm theo chi phí g — xuôi từ BT và ngược từ {lab[goal]} (trên đồ thị đảo
 chiều cạnh, vì đường một chiều!). Mỗi bước expand phía có chi phí đỉnh nhỏ hơn (cột
 "Phía"). Khi hai vùng chạm nhau và `top_xuôi + top_ngược ≥ μ` (μ = chi phí gặp tốt
-nhất đã thấy) thì dừng — tối ưu như Dijkstra. Hai phía có thể xét ít node hơn trên
-instance thuận lợi, nhưng worst-case không tốt hơn Dijkstra vô điều kiện. Node nằm
+nhất đã thấy) thì dừng — tối ưu như UCS. Hai phía có thể xét ít node hơn trên
+instance thuận lợi, nhưng worst-case không tốt hơn UCS vô điều kiện. Node nằm
 trong cả 2 frontier hiển thị g nhỏ hơn. Complete ✔ · Tối ưu ✔.
 
 {trace_table(d['bidijkstra'], lab, with_side=True)}
@@ -389,7 +376,7 @@ trong cả 2 frontier hiển thị g nhỏ hơn. Complete ✔ · Tối ưu ✔.
 
 ---
 
-## 9. IDA*
+## 8. IDA*
 
 **Ý tưởng:** phiên bản tiết kiệm bộ nhớ của A*: duyệt sâu nhưng CẮT mọi nhánh có
 f = g + h vượt ngưỡng; hết vòng thì nới ngưỡng lên `max(f nhỏ nhất bị cắt, ngưỡng + ε)`.
@@ -405,7 +392,7 @@ là `O(V + Q)`, không phải bound đệ quy textbook `O(bd)`.
 
 ---
 
-## 10. Beam Search
+## 9. Beam Search
 
 **Ý tưởng:** đi theo LỚP như BFS nhưng mỗi lớp chỉ GIỮ k ứng viên tốt nhất theo f —
 tiết kiệm cực nhiều bộ nhớ, đổi lại có thể cắt nhầm nhánh chứa lời giải.
@@ -431,10 +418,10 @@ Beam KHÔNG đơn điệu theo k — tăng k không hứa hẹn kết quả tố
 
 ---
 
-## 11. TSP đa điểm — ví dụ 4 điểm chạy tay
+## 10. TSP đa điểm — ví dụ 4 điểm chạy tay
 
 Shipper xuất phát từ **BT**, giao tại **HN, MT, SC** (không quay về). Ma trận chi phí
-**bất đối xứng** (đường một chiều!) — mỗi ô là Dijkstra giữa 2 điểm lúc {SLOT}:
+**bất đối xứng** (đường một chiều!) — mỗi ô là UCS giữa 2 điểm lúc {SLOT}:
 
 | từ \\ đến | {" | ".join(lab[p] for p in pts)} |
 |---|---|---|---|---|
@@ -471,7 +458,6 @@ mỗi vòng gọi `sorted(left)` trước khi chọn min. Mỗi pass 2-opt/Or-op
 | DFS | ✔ (visited, hữu hạn) | ✘ | trả đường đầu tiên chạm đích |
 | IDDFS | Có điều kiện | ✘ | chỉ complete nếu độ sâu lời giải ≤ cap 100 |
 | UCS | ✔ | ✔ | expand theo g, w > 0 |
-| Dijkstra | ✔ | ✔ | như UCS |
 | A* | ✔ | ✔ | h admissible + consistent (proof) |
 | Greedy | ✔ (visited) | ✘ | bỏ qua g |
 | Hai chiều | ✔ | ✔ | luật dừng top_f + top_b ≥ μ |

@@ -27,7 +27,7 @@ gồm ngập, lô cốt, hẻm nhỏ và đèn tín hiệu.
 | Congestion | ✅ 4 mốc 07:30, 12:00, 17:30, 22:00; mức 1–5 |
 | TomTom | ✅ Raw đủ 4/4 slot đại diện; 07:30/12:00 thu 2026-07-27 và 17:30/22:00 thu 2026-08-03 (hai ngày thứ Hai, không phải chuỗi đo cùng ngày) |
 | Profile hiện hành | ✅ `traffic_profiles_demo.json` và `traffic_profiles_real.json`, cả hai là `source="tomtom+synthetic"` |
-| Risk | ⬜ 8 mục trong `manual_risks.json`; 8 `source_url` còn TODO |
+| Risk | ✅ 8 mục trong `manual_risks.json`; 8/8 `source_url` đã review và tích hợp, chỉ hỗ trợ bối cảnh lịch sử ở cấp tuyến/khu vực |
 | Free-flow | ✅ Nhóm đặt theo `highway`, không tuyên bố là tốc độ giới hạn pháp lý |
 
 Raw GraphML, bốn TomTom JSON và OSMnx cache hiện được Git track dưới
@@ -75,15 +75,15 @@ penalty = 60×ngập + 90×lô_cốt + 30×hẻm + 25×đèn_tín_hiệu
 | 2 | DFS | Bắt buộc | không tối ưu |
 | 3 | IDDFS | Bổ sung | nông nhất trong depth cap; không tối ưu weighted cost |
 | 4 | UCS | Bắt buộc | tối ưu với trọng số không âm |
-| 5 | Dijkstra | Bổ sung | tối ưu với trọng số không âm |
-| 6 | A* | Bắt buộc | tối ưu với heuristic đã chứng minh |
-| 7 | Greedy Best-First | Bổ sung | không tối ưu |
-| 8 | Bidirectional Dijkstra | Bổ sung | tối ưu; xử lý graph có hướng bằng reverse adjacency |
-| 9 | IDA* | Bổ sung | trong `C* + ε` khi tìm được trước cap |
-| 10 | Beam Search | Bổ sung | không complete, không tối ưu |
+| 5 | A* | Bắt buộc | tối ưu với heuristic đã chứng minh |
+| 6 | Greedy Best-First | Bổ sung | không tối ưu |
+| 7 | Bidirectional Dijkstra | Bổ sung | tối ưu; xử lý graph có hướng bằng reverse adjacency |
+| 8 | IDA* | Bổ sung | trong `C* + ε` khi tìm được trước cap |
+| 9 | Beam Search | Bổ sung | không complete, không tối ưu |
 
-Đề yêu cầu ít nhất 2 thuật toán bổ sung; dự án có 6 thuật toán bổ sung nếu đếm
-IDDFS tách riêng.
+Đề yêu cầu ít nhất 2 thuật toán bổ sung; dự án có 5 thuật toán bổ sung nếu đếm
+IDDFS tách riêng. Ngày 2026-08-08, nhóm loại lựa chọn Dijkstra một chiều độc lập
+vì trùng cơ chế với UCS; Bidirectional Dijkstra vẫn là thuật toán riêng.
 
 ### Tối ưu đa điểm (ATSP)
 
@@ -113,7 +113,7 @@ Ma trận chi phí là bất đối xứng vì graph có đường một chiều
 | Contract | Nguồn chuẩn | Consumer |
 |---|---|---|
 | Graph + traffic profile | `docs/SCHEMA.md` §A | pipeline, GraphStore, frontend |
-| Một kiểu `Trace` cho 10 thuật toán | `docs/SCHEMA.md` §B | search, API, timeline/map/drawer |
+| Một kiểu `Trace` cho 9 thuật toán | `docs/SCHEMA.md` §B | search, API, timeline/map/drawer |
 | REST API + error envelope | `docs/SCHEMA.md` §C | FastAPI, frontend |
 | Cost + heuristic | `docs/SCHEMA.md` §D | GraphStore, search, explanation |
 
@@ -124,9 +124,9 @@ lý theo contract, không tự chọn im lặng.
 
 | # | Thí nghiệm | Artifact |
 |---:|---|---|
-| 1 | UCS/Dijkstra/A* vs NetworkX trên 1.200 ca | `exp1_correctness.csv` |
+| 1 | UCS/A* vs NetworkX trên 800 ca | `exp1_correctness.csv` |
 | 2 | kiểm tra thực nghiệm heuristic `h ≤ h*` | `exp2_admissibility.csv` + figure |
-| 3 | 10 thuật toán × 200 cặp × 2 khung giờ | `exp3_benchmark.csv` + 3 figure |
+| 3 | 9 thuật toán × 200 cặp × 2 khung giờ | `exp3_benchmark.csv` + 3 figure |
 | 4 | A* 07:30 vs 22:00, tỷ lệ đổi tuyến | `exp4_congestion.csv` + examples |
 | 5 | độ nhạy γ từ 0 đến 3 | `exp5_gamma.csv` + curve |
 | 6 | 5 cặp đối chứng Google Maps định tính | `exp6_pairs.json` + routes |
@@ -136,31 +136,37 @@ lý theo contract, không tự chọn im lặng.
 > Không chép headline từ đó vào bản nộp. Chạy lại đúng một lượt sau quyết định
 > dữ liệu cuối.
 
-## 8. Phân công cần điền
+## 8. Thông tin nhóm và phân công đã xác nhận
 
-| Vai trò | Người | Phạm vi chính | Mục report |
+- **GroupID:** 2 (không dùng tên nhóm).
+- **Repository:** <https://github.com/ThaiQuangHuy2906/Lab1_Searching>
+- **Người đại diện nộp chính thức:** Thái Quang Huy.
+- **Tỷ lệ đóng góp do nhóm khai báo:** 100% cho từng thành viên.
+
+| MSSV | Họ tên | Phạm vi đã xác nhận | Vai trò tổng quát |
 |---|---|---|---|
-| A — Data Engineer | ⬜ | `scripts/`, `data/` | c, d |
-| B — Core Search | ⬜ | `search.py`, trace | e, f |
-| C — Advanced + ATSP | ⬜ | `search_advanced.py`, `tsp.py` | e, h |
-| D — Frontend | ⬜ | `frontend/` | i |
-| E — API + Eval + Report | ⬜ | API, explanation, benchmark, deliverables | a, b, g, j |
+| 24127078 | Nguyễn Hữu Gia Minh | Chưa chốt | Chưa chốt |
+| 24127177 | Thái Quang Huy | 3 thuật toán ATSP | Chưa chốt |
+| 24127205 | Nguyễn Văn Minh | 9 thuật toán tìm đường hai điểm | Chưa chốt |
+| 24127249 | Mai Phương Thùy | Chưa chốt | Chưa chốt |
+| 24127505 | Trần Hoàng Phúc | Chưa chốt | Chưa chốt |
 
-⬜ Điền họ tên, MSSV, tỷ lệ đóng góp và chốt người đại diện nộp bài.
+Phân công vai trò thực tế và người phụ trách các mục report còn lại sẽ được
+chốt sau; không suy diễn phân công ATSP thành quyền sở hữu toàn bộ vai trò C cũ.
 
 ## 9. Bộ nộp
 
 ```text
-[GroupID].zip
-├── [GroupID - SC].txt
-├── [GroupID - Report].pdf
-├── [GroupID - Slide].pptx hoặc [GroupID - Slide].pdf
-├── [GroupID - Video].txt
-└── [GroupID - Data].zip hoặc [GroupID - Data].txt
+2.zip
+├── 2 - SC.txt
+├── 2 - Report.pdf
+├── 2 - Slide.pptx hoặc 2 - Slide.pdf
+├── 2 - Video.txt
+└── 2 - Data.zip hoặc 2 - Data.txt
 ```
 
-Link source/video phải mở được ở tab ẩn danh. Repository hiện mới có khung
-Markdown, chưa có đầy đủ artifact cuối.
+Link source/video phải mở được ở tab ẩn danh. `2 - SC.txt` đã có URL do nhóm cung
+cấp; report, slide, video link và data package cuối vẫn chưa tồn tại.
 
 ## 10. Ngoài phạm vi
 
@@ -181,8 +187,9 @@ vi QA trước bảo vệ, dù không mở rộng thành một thiết kế mobi
 2. ✅ Chốt profile `tomtom+synthetic`; chuỗi data `03b real → 04 → 03b demo →
    validate_data` đã hoàn tất. Benchmark/hiệu chuẩn γ/generator vẫn chờ lượt
    cuối riêng.
-3. ⬜ Thay 8 `source_url` TODO bằng nguồn thật; metadata risk đã được sửa theo
-   luật cạnh đi vào vùng.
+3. ✅ Đã review và tích hợp 8 `source_url`; metadata risk dùng wording nguồn
+   lịch sử, không xác nhận real-time/tọa độ/bán kính/penalty. Vẫn mở lại link
+   bằng tab ẩn danh trên máy nộp bài trong final QA.
 4. ⬜ Đồng bộ 5 banner/số liệu sau benchmark + generator cuối.
 5. ⬜ Điền danh tính/nội dung, chụp ảnh, tạo report/slide/video/data description.
 6. ⬜ Restart service, QA browser/máy chiếu, kiểm link ẩn danh và đóng ZIP.

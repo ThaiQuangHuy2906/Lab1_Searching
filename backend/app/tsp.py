@@ -1,7 +1,7 @@
 """Multi-stop route optimization — asymmetric TSP (ATSP) on the road graph.
 
 The cost matrix is ASYMMETRIC (one-way streets): c(a,b) != c(b,a) in
-general, built with one hand-rolled Dijkstra per point (plain heapq —
+general, built with one hand-rolled UCS run per point (plain heapq —
 PROMPT-MASTER rule 6), caching each leg's node path for the response.
 
 Methods (PROMPT-MASTER 6.3):
@@ -55,8 +55,8 @@ class UnreachableStopError(Exception):
 # ------------------------------------------------------------ cost matrix
 
 
-def _dijkstra_to_targets(store: GraphStore, source: str, targets: set[str],
-                         mode: Mode, slot: TimeSlot) -> dict[str, list[str]]:
+def _ucs_to_targets(store: GraphStore, source: str, targets: set[str],
+                    mode: Mode, slot: TimeSlot) -> dict[str, list[str]]:
     """Shortest paths source -> each target; returns node-path per target."""
     w = store.weights(mode, slot)
     dist = {source: 0.0}
@@ -101,7 +101,7 @@ def build_matrix(store: GraphStore, points: list[str], mode: Mode,
     path: dict[tuple[str, str], list[str]] = {}
     targets = set(points)
     for src in points:
-        for dst, p in _dijkstra_to_targets(store, src, targets, mode, slot).items():
+        for dst, p in _ucs_to_targets(store, src, targets, mode, slot).items():
             c, _dist, _time = store.path_metrics(p, mode, slot)
             cost[(src, dst)] = c
             path[(src, dst)] = p

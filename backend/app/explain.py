@@ -22,7 +22,7 @@ from .models import (
 ALGO_VI = {
     "bfs": "BFS (tìm theo bề rộng)", "dfs": "DFS (tìm theo chiều sâu)",
     "iddfs": "IDDFS (đào sâu dần)", "ucs": "UCS (chi phí đồng nhất)",
-    "dijkstra": "Dijkstra", "astar": "A*", "greedy": "Greedy Best-First",
+    "astar": "A*", "greedy": "Greedy Best-First",
     "bidijkstra": "Dijkstra hai chiều", "idastar": "IDA*", "beam": "Beam Search",
 }
 MODE_VI = {
@@ -114,9 +114,9 @@ def _risk_counts(store: GraphStore, path: list[str]) -> dict[str, int]:
     return c
 
 
-def _dijkstra_path(store: GraphStore, start: str, goal: str, mode: Mode,
-                   slot: TimeSlot, banned_edge: str | None = None) -> list[str] | None:
-    """Plain internal Dijkstra used only to derive comparison routes."""
+def _ucs_path(store: GraphStore, start: str, goal: str, mode: Mode,
+              slot: TimeSlot, banned_edge: str | None = None) -> list[str] | None:
+    """Plain internal UCS used only to derive comparison routes."""
     w = store.weights(mode, slot)
     dist = {start: 0.0}
     parent: dict[str, str] = {}
@@ -226,7 +226,7 @@ def build_explanation(store: GraphStore, trace: Trace) -> Explanation:
     for label, alt_mode, banned in specs:
         if len(alternatives) >= 2:
             break
-        alt_path = _dijkstra_path(store, start, goal, alt_mode, slot, banned)
+        alt_path = _ucs_path(store, start, goal, alt_mode, slot, banned)
         if not alt_path or alt_path == trace.path or \
                 any(a.path == alt_path for a in alternatives):
             continue
@@ -299,7 +299,7 @@ def build_explanation(store: GraphStore, trace: Trace) -> Explanation:
             parts.append(f"{ALGO_VI[trace.algorithm]} bảo đảm đây là tuyến tối ưu "
                          "theo tiêu chí đã chọn.")
     else:
-        opt_path = _dijkstra_path(store, start, goal, mode, slot)
+        opt_path = _ucs_path(store, start, goal, mode, slot)
         if opt_path:
             opt_cost, _d, _t = store.path_metrics(opt_path, mode, slot)
             gap = main_cost - opt_cost

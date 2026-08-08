@@ -1,4 +1,4 @@
-# ROLE C — 4 thuật toán tìm đường nâng cao + 3 thuật toán ATSP
+# Tài liệu tự học — 4 thuật toán tìm đường nâng cao + 3 thuật toán ATSP
 
 > Tài liệu tự học cực dễ hiểu, nhưng vẫn bám đúng code và contract hiện hành.
 >
@@ -6,7 +6,7 @@
 > kể lại bằng lời của mình, chạy tay một ví dụ nhỏ, giải thích ưu/nhược điểm,
 > đọc trace trên giao diện và trả lời câu hỏi khi bảo vệ.
 >
-> Đây là tài liệu viết tay dành riêng cho Role C, không phải file số liệu được
+> Đây là tài liệu viết tay theo phạm vi Role C lịch sử, không phải file số liệu được
 > sinh tự động. Không lấy các headline trong `results/` làm số chính thức vì
 > chúng đang cũ hơn graph hiện hành.
 >
@@ -239,7 +239,8 @@ chọn node chỉ dựa vào `h`.
 
 > Một bạn đi từ start, một bạn đi từ goal; hai bạn cùng tìm và gặp nhau ở giữa.
 
-Dijkstra thường đi từ một đầu. Bidirectional Dijkstra chạy hai cuộc tìm kiếm:
+UCS một chiều đi từ start. Bidirectional Dijkstra chạy hai cuộc tìm kiếm theo
+khóa `g`:
 
 - phía **forward** đi từ start trên cạnh thật;
 - phía **backward** đi từ goal trên đồ thị đảo cạnh.
@@ -335,8 +336,8 @@ không nhỏ hơn đường tốt nhất `mu`, tìm tiếp cũng không thể th
 ### 4.6 Giả mã bằng lời
 
 ```text
-Tạo một Dijkstra từ start.
-Tạo một Dijkstra từ goal trên graph đảo cạnh.
+Tạo một tìm kiếm min-g từ start.
+Tạo một tìm kiếm min-g từ goal trên graph đảo cạnh.
 mu = vô cùng.
 
 Lặp:
@@ -357,8 +358,8 @@ với nửa đường điểm gặp → goal.
 - Tối ưu khi trọng số không âm và dùng đúng luật dừng.
 - Trên đồ thị có hướng, bắt buộc tìm phía sau bằng reverse adjacency.
 - Trong trường hợp tốt, hai phía chỉ phải lan một phần nhỏ hơn không gian.
-- Trường hợp xấu vẫn có thể tốn gần như Dijkstra một chiều.
-- Code và việc ghép path phức tạp hơn Dijkstra thường.
+- Trường hợp xấu vẫn có thể tốn gần như UCS một chiều.
+- Code và việc ghép path phức tạp hơn UCS một chiều.
 
 ### 4.8 Trace của Bidirectional Dijkstra
 
@@ -373,7 +374,7 @@ từ hai đầu.
 
 ### 4.9 Câu trả lời bảo vệ
 
-> Bidirectional Dijkstra chạy Dijkstra từ start và từ goal. Vì graph có hướng,
+> Bidirectional Dijkstra chạy tìm kiếm min-g từ start và từ goal. Vì graph có hướng,
 > phía goal phải chạy trên reverse adjacency. Thuật toán giữ đường nối tốt nhất
 > `mu` và dừng khi `top_f + top_b ≥ mu`, nên vẫn bảo đảm tối ưu với trọng số
 > không âm.
@@ -669,7 +670,7 @@ Các thuật toán ATSP không trực tiếp đi từng cạnh đường phố. 
 Các điểm K, A, B, C
         |
         v
-Chạy Dijkstra cho từng cặp có thứ tự
+Chạy UCS cho từng cặp có thứ tự
         |
         v
 Ma trận cost(K,A), cost(A,K), ...
@@ -1275,7 +1276,7 @@ start + stops
 Kiểm tra node, trùng điểm và giới hạn số lượng
     |
     v
-build_matrix bằng Dijkstra cho từng cặp có thứ tự
+build_matrix bằng UCS cho từng cặp có thứ tự
     |
     v
 held_karp hoặc nn_2opt hoặc sa
@@ -1321,7 +1322,7 @@ savings_pct = (13 - 7) / 13 × 100
 
 Chúng kiểm tra các ý chính:
 
-- Bidirectional Dijkstra khớp Dijkstra.
+- Bidirectional Dijkstra khớp UCS.
 - IDA* không vượt nghiệm tối ưu quá epsilon.
 - Greedy không nhận vơ bảo đảm tối ưu.
 - Beam hẹp có thể thất bại nhưng response vẫn hợp lệ.
@@ -1349,7 +1350,7 @@ Lệnh chạy riêng phần Role C từ repository root:
 
 ### 13.2 Bidirectional Dijkstra — khoảng 20 giây
 
-> Thuật toán chạy Dijkstra từ hai phía. Chiều goal dùng reverse adjacency vì
+> Thuật toán chạy tìm kiếm min-g từ hai phía. Chiều goal dùng reverse adjacency vì
 > đường có hướng. Khi đã có đường nối tốt nhất `mu`, nó dừng lúc tổng hai khóa
 > frontier nhỏ nhất không còn dưới `mu`; nhờ đó vẫn tối ưu.
 
@@ -1368,7 +1369,7 @@ Lệnh chạy riêng phần Role C từ repository root:
 ### 13.5 ATSP — khoảng 20 giây
 
 > Đây là ATSP vì ma trận chi phí bất đối xứng do đường một chiều:
-> `cost(A,B)` có thể khác `cost(B,A)`. Project dựng ma trận bằng Dijkstra cho
+> `cost(A,B)` có thể khác `cost(B,A)`. Project dựng ma trận bằng UCS cho
 > từng cặp có thứ tự rồi mới tối ưu thứ tự giao.
 
 ### 13.6 Held–Karp — khoảng 20 giây
@@ -1602,12 +1603,12 @@ frontend và regression của tính năng đó thực sự được triển khai
 ### 18.1. Hai loại trace, hai câu chuyện khác nhau
 
 - `Trace.trace` là các bước expand của **một route search**: frontier, g/h/f,
-  Bidirectional side… Nó tiếp tục là contract duy nhất của mười thuật toán tìm đường.
+  Bidirectional side… Nó tiếp tục là contract duy nhất của chín thuật toán tìm đường.
 - `OptimizationTrace` là quá trình **chọn thứ tự ghé**: DP update của Held–Karp,
   NN decision, local improvement, hay SA seed/iteration. Nó không phải frontier
   trên graph đường phố và không được trộn vào `Trace.trace`.
 - Đường nét đứt của order/subset trong player chỉ là ý tưởng tối ưu; chặng xe chạy
-  thật vẫn là `legs` được Dijkstra cache. Câu nói an toàn khi bảo vệ:
+  thật vẫn là `legs` được UCS cache. Câu nói an toàn khi bảo vệ:
   “Trace này cho thấy thuật toán đổi thứ tự giao, còn các leg cuối mới là đường đi
   trên mạng đường.”
 
@@ -1630,7 +1631,7 @@ nói thuật toán đã chạy ít iteration hơn. Nếu bị sampling, ordinal 
 - SA có thể thoát local optimum nhờ nhận bước xấu lúc nóng, nhưng vẫn không có
   bảo đảm global. Hiện thực chạy 5 seed × 2 000 iteration, nên mô tả cost ở mức
   `O(S·I·n)` là trung thực.
-- Bidirectional Dijkstra không được quảng cáo tốt hơn Dijkstra vô điều kiện:
+- Bidirectional Dijkstra không được quảng cáo tốt hơn UCS vô điều kiện:
   worst-case cùng bậc, lợi ích thực tế phụ thuộc cấu trúc graph/điểm gặp.
 - IDA* không dùng bound textbook recursive `O(bd)` cho implementation này. Nó
   giữ `best_g`, `parent`, `h_of` và explicit stack pending, nên mô tả phù hợp là

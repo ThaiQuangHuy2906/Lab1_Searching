@@ -8,10 +8,14 @@
 > dự án, không tự động áp dụng cho yêu cầu mới.
 >
 > **Current UI delta 2026-08-08:** §6.5 bên dưới là yêu cầu lịch sử, không phải
-> inventory hiện hành. Frontend hiện có 10 thuật toán, drawer bốn tab
+> inventory hiện hành. Frontend hiện có 9 thuật toán, drawer bốn tab
 > `Số liệu/Giải thích/So sánh/Thử nghiệm`, scenario editor request-scoped và
 > presentation km/phút; contract UI mới nhất nằm ở `docs/DESIGN.md` §12 và
 > bằng chứng triển khai nằm ở `UI_PLAN.md`.
+>
+> **Current route-contract delta 2026-08-08:** lựa chọn `dijkstra` độc lập trong
+> đặc tả lịch sử bên dưới đã bị loại vì trùng UCS; `bidijkstra` vẫn được giữ.
+> `docs/SCHEMA.md`, code và test hiện hành mới là nguồn chuẩn cho enum 9 thuật toán.
 >
 > File đặt ở gốc repo, cùng với:
 > - `docs/Lab 1 - Searching.pdf` — đề bài gốc (nguồn chân lý #1 về **YÊU CẦU**)
@@ -339,4 +343,4 @@ Mục tiêu: 10 mục **a–j đúng đề**, khi hoàn thiện đạt 35–50 t
 
 - Kết mỗi phase: tóm tắt ≤10 dòng (làm gì, test ra sao, số liệu chính, quyết định đã tự đưa, việc chờ tôi) rồi DỪNG.
 - Lệnh tôi sẽ dùng: `tiếp tục` (phase kế) · `làm liên tục Phase X→Y, chỉ dừng khi gặp quyết định lớn` · `sửa schema: …` (→ cập nhật SCHEMA.md + refactor) · `chạy lại benchmark` · `trạng thái?` (→ đọc TIENDO.md trả lời).
-- Quyết định đã chốt sau phase: bbox giữ `(106.680, 10.760, 106.720, 10.800)`; Python 3.14; `return_to_start=false`; NetworkX bị cô lập khỏi product runtime. Việc nhóm còn phải chốt bằng con người: danh tính/phân công/người nộp, xác nhận giảng viên nếu cần, nguồn risk thật và bộ artifact nộp cuối.
+- Quyết định đã chốt sau phase: bbox giữ `(106.680, 10.760, 106.720, 10.800)`; Python 3.14; `return_to_start=false`; NetworkX bị cô lập khỏi product runtime; người đại diện nộp chính thức là Thái Quang Huy. Việc nhóm còn phải chốt bằng con người: vai trò/phân công còn lại, xác nhận giảng viên nếu cần và bộ artifact nộp cuối.

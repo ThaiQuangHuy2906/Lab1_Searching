@@ -14,6 +14,8 @@
 > `full/teach_7/teach_15/teach_25` trong thân plan đã được implementation sau đó
 > mở rộng thành `full` hoặc `teach_3`…`teach_50` với preset version 2. Current
 > contract xem `docs/SCHEMA.md`; current behavior xem code/data và gate fresh.
+> Các mốc “10 thuật toán/13 phương pháp” trong thân plan cũng thuộc lịch sử trước
+> khi nhóm loại Dijkstra một chiều; catalog hiện hành là 9 route + 3 ATSP.
 >
 > **Checkpoint triển khai — 2026-08-05:** Milestone 1 (specification), 2
 > (GraphView), 3 (ATSP optimization trace), 4 (edge-override sandbox) và 5
@@ -97,7 +99,7 @@ Không làm trong lượt triển khai này:
 | G_demo traffic | kế thừa bằng corridor weighted mean |
 | Data chain | `03b real → 04 → 03b demo → validate_data` đã hoàn tất |
 | Results | synthetic 2026-07-26, vẫn là `SỐ TẠM` |
-| Manual risk | metadata luật cạnh đi vào vùng đã đúng; tám `source_url` vẫn TODO |
+| Manual risk | metadata luật cạnh đi vào vùng đã đúng; 8/8 `source_url` đã review/tích hợp ngày 2026-08-08 với caveat lịch sử/không gian/ngữ nghĩa |
 
 Raw GraphML, bốn TomTom JSON và OSMnx cache hiện được Git track dưới
 `data/raw/`; vẫn phải đưa chúng vào Data ZIP cuối để giữ provenance.
@@ -662,7 +664,8 @@ Hoàn thiện mục c/d/e/g/h:
 | uncovered congestion | synthetic deterministic fallback |
 
 Nêu rõ TomTom 4 snapshot trên hai ngày thứ Hai, không real-time, không same-day
-series, không phủ toàn graph; tám manual risk URL vẫn TODO.
+series, không phủ toàn graph; tám manual-risk URL chỉ hỗ trợ sự kiện lịch sử ở
+cấp tuyến/khu vực và không xác nhận circle/penalty/tình trạng hiện tại.
 
 #### Cost
 

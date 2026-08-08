@@ -10,6 +10,10 @@
 > **Frontend hiện hành:** chỉ `frontend/`. Không dùng, khôi phục hoặc tạo lại
 > `frontend1/`.
 >
+> **Route-catalog delta 2026-08-08:** các câu “10 thuật toán” trong thân plan mô
+> tả catalog tại lúc thực hiện UI Clarity. Sản phẩm hiện còn 9 thuật toán route;
+> Dijkstra một chiều đã bị loại, Bidirectional Dijkstra vẫn được giữ.
+>
 > **Định hướng đã chọn:** **UI Clarity Phase** — làm giao diện rõ chữ, rõ nghĩa,
 > rõ thứ tự thao tác và rõ tuyến; không rebrand sản phẩm, không mở thêm feature
 > backend và không thay data/benchmark.

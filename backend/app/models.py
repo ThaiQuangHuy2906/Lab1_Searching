@@ -18,7 +18,7 @@ from pydantic_core import PydanticCustomError
 # ---------------------------------------------------------------------------
 
 Algorithm = Literal[
-    "bfs", "dfs", "iddfs", "ucs", "dijkstra",
+    "bfs", "dfs", "iddfs", "ucs",
     "astar", "greedy", "bidijkstra", "idastar", "beam",
 ]
 Mode = Literal["distance", "time", "balanced"]
@@ -49,7 +49,6 @@ TRACE_FIELD_SPEC: dict[str, tuple[bool, bool, bool]] = {
     "dfs": (False, False, False),
     "iddfs": (False, False, False),
     "ucs": (True, False, False),
-    "dijkstra": (True, False, False),
     "bidijkstra": (True, False, False),
     "greedy": (False, True, False),
     "astar": (True, True, True),
@@ -210,7 +209,7 @@ class TrafficProfiles(StrictModel):
 
 
 # ---------------------------------------------------------------------------
-# §B — trace (single return contract for all 10 algorithms)
+# §B — trace (single return contract for all 9 algorithms)
 # ---------------------------------------------------------------------------
 
 

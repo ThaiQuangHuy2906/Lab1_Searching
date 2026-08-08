@@ -98,6 +98,14 @@ def test_graph_bad_level_gives_422_envelope():
 
 def test_openapi_uses_runtime_success_and_error_contracts():
     schema = client.get("/openapi.json").json()
+    algorithm_enum = (
+        schema["components"]["schemas"]["RouteRequest"]
+        ["properties"]["algorithm"]["enum"]
+    )
+    assert algorithm_enum == [
+        "bfs", "dfs", "iddfs", "ucs", "astar", "greedy",
+        "bidijkstra", "idastar", "beam",
+    ]
     graph_responses = schema["paths"]["/api/graph"]["get"]["responses"]
     assert graph_responses["200"]["content"]["application/json"]["schema"] == {
         "$ref": "#/components/schemas/GraphResponse"
@@ -163,8 +171,8 @@ def test_route_astar_demo_full_contract():
     assert "tối ưu" in ex.summary_vi  # optimality statement present
 
 
-def test_route_all_ten_algorithms():
-    for algo in ("bfs", "dfs", "iddfs", "ucs", "dijkstra", "astar",
+def test_route_all_nine_algorithms():
+    for algo in ("bfs", "dfs", "iddfs", "ucs", "astar",
                  "greedy", "bidijkstra", "idastar", "beam"):
         r = client.post("/api/route", json=route_body(algorithm=algo))
         assert r.status_code == 200, algo
@@ -269,6 +277,12 @@ def test_route_unknown_node_404():
 
 def test_route_bad_algorithm_422():
     r = client.post("/api/route", json=route_body(algorithm="bellman"))
+    assert r.status_code == 422
+    assert r.json()["error"]["code"] == "VALIDATION_ERROR"
+
+
+def test_route_removed_dijkstra_422():
+    r = client.post("/api/route", json=route_body(algorithm="dijkstra"))
     assert r.status_code == 422
     assert r.json()["error"]["code"] == "VALIDATION_ERROR"
 
@@ -389,8 +403,15 @@ def test_benchmark_endpoint():
         assert r.status_code == 200
         exps = r.json()["experiments"]
         assert {e["experiment_id"] for e in exps} >= {1, 2, 3, 4, 5, 7}
+        exp1 = next(e for e in exps if e["experiment_id"] == 1)
+        assert len(exp1["rows"]) == 800
+        assert {row["algorithm"] for row in exp1["rows"]} == {"ucs", "astar"}
         exp3 = next(e for e in exps if e["experiment_id"] == 3)
-        assert len(exp3["rows"]) == 4000
+        assert len(exp3["rows"]) == 3600
+        assert {row["algorithm"] for row in exp3["rows"]} == {
+            "bfs", "dfs", "iddfs", "ucs", "astar", "greedy",
+            "bidijkstra", "idastar", "beam",
+        }
         assert {"algorithm", "nodes_expanded", "runtime_ms"} <= set(exp3["rows"][0])
     else:
         assert r.status_code == 404

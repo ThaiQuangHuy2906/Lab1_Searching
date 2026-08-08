@@ -2,14 +2,27 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
+  ALGORITHM_GROUPS,
+  ALGORITHM_ORDER,
   chooseCompareAlgorithm,
   routeGuaranteeLabel,
 } from "../lib/algorithm-policy.ts";
 import { createLatestRequestGuard } from "../lib/latest-request.ts";
 
+test("route catalog exposes exactly the nine current algorithms", () => {
+  assert.deepEqual(ALGORITHM_ORDER, [
+    "bfs", "dfs", "iddfs", "ucs", "astar",
+    "greedy", "bidijkstra", "idastar", "beam",
+  ]);
+  assert.deepEqual(
+    [...ALGORITHM_GROUPS.flatMap((group) => group.algos)].sort(),
+    [...ALGORITHM_ORDER].sort(),
+  );
+});
+
 test("compare algorithm is normalized away from the main algorithm", () => {
-  assert.equal(chooseCompareAlgorithm("dijkstra", "dijkstra"), "bfs");
-  assert.equal(chooseCompareAlgorithm("astar", "dijkstra"), "dijkstra");
+  assert.equal(chooseCompareAlgorithm("ucs", "ucs"), "bfs");
+  assert.equal(chooseCompareAlgorithm("astar", "ucs"), "ucs");
 });
 
 test("IDA* guarantee copy exposes its epsilon bound", () => {

@@ -5,8 +5,11 @@
 > Baseline 2026-07-27, UI-01–UI-04 và FINAL-01 đều là evidence lịch sử.
 > Current-state nằm trong `README.md`, `data/DATA.md`, `docs/SCHEMA.md` và phần
 > current-state của `docs/CODEX-CODEBASE-MAP.md`; audit fresh 2026-08-08 đạt
-> 176 backend/40 frontend tests, validator, TypeScript và production build. Các con số hiện hành
-> vẫn phải được xác nhận lại bằng code/data và lệnh fresh ở lượt sử dụng.
+> 177 backend/41 frontend tests, validator, TypeScript và production build. Catalog
+> hiện hành có 9 route; các dòng 10 thuật toán/Dijkstra bên dưới là lịch sử phase. Các con số hiện hành
+> vẫn phải được xác nhận lại bằng code/data và lệnh fresh ở lượt sử dụng. Tám
+> manual-risk URL đã được review/tích hợp ngày 2026-08-08; mọi dòng TODO lịch sử
+> bên dưới không còn là current state.
 >
 > Cập nhật cuối mỗi phase (PROMPT-MASTER luật 1). Trạng thái: ⬜ chưa làm · 🔄 đang làm · ✅ xong.
 
@@ -29,9 +32,9 @@
 
 **Còn lại — việc của nhóm trước khi nộp:**
 - Gửi mail giảng viên (`vntan.work@gmail.com`): xác nhận kịch bản shipper + việc dùng NetworkX làm baseline test (code đã cô lập NetworkX trong test theo luật 6 nên không chặn).
-- Điền tên thành viên A–E (bảng phân công + mục a báo cáo) + chốt người nộp bài.
-- Dán `source_url` thật vào `data/manual_risks.json`.
-- Chụp 9 screenshot + 5 ảnh Google Maps đối chứng; quay video; đóng gói `[GroupID].zip`.
+- Chốt các vai trò còn lại; người đại diện nộp chính thức đã chốt là Thái Quang Huy.
+- Mở lại 8 URL nguồn bằng tab ẩn danh trong final link QA.
+- Chụp 9 screenshot + 5 ảnh Google Maps đối chứng; quay video; đóng gói `2.zip`.
 
 ## Nhật ký quyết định
 

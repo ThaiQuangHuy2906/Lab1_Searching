@@ -31,6 +31,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ALGORITHM_ORDER } from "@/lib/algorithm-policy";
 import { api, BackendError } from "@/lib/api";
 import { fmtInt, fmtVi } from "@/lib/format";
 import type { ExperimentResult } from "@/lib/types";
@@ -239,11 +240,13 @@ export default function BenchmarkPage() {
 
   const byAlgorithm = React.useMemo<AlgorithmDatum[]>(() => {
     if (!exp3) return [];
-    const algorithms = [
-      ...new Set(exp3.rows.map((row) => String(row.algorithm ?? "").trim()).filter(Boolean)),
-    ];
+    const algorithms = ALGORITHM_ORDER.filter((algorithm) =>
+      exp3.rows.some((row) => String(row.algorithm ?? "").trim() === algorithm),
+    );
     return algorithms.map((algorithm) => {
-      const rows = exp3.rows.filter((row) => row.algorithm === algorithm);
+      const rows = exp3.rows.filter(
+        (row) => String(row.algorithm ?? "").trim() === algorithm,
+      );
       return {
         algorithm,
         // Trục log không nhận 0; giữ ngưỡng hiển thị đã có của trang cũ.

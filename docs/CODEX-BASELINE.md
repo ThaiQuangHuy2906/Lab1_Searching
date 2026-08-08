@@ -5,7 +5,10 @@ Baseline date: 2026-07-27 (Asia/Saigon).
 > This is a historical baseline, not current-state documentation. The absolute
 > repository path and dirty-worktree inventory below describe the audit machine
 > on 2026-07-27. For the 2026-08-08 state, use `README.md`, `data/DATA.md`,
-> `docs/SCHEMA.md`, current code/data, and fresh commands.
+> `docs/SCHEMA.md`, current code/data, and fresh commands. In particular, every
+> “8 source placeholders / 0 URL” statement below was superseded on 2026-08-08:
+> all 8 manual-risk URLs are now reviewed and integrated with historical-context
+> caveats.
 
 This file began as a read-only onboarding except for the three permitted
 context files. Subsequent user-authorized repair batches on the same date fixed

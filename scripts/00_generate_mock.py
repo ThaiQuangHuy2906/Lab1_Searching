@@ -11,7 +11,7 @@ MOCK-ONLY notes:
 - 8 real District-1 landmarks, 16 directed edges with real street names,
   but one-way directions are SIMPLIFIED — not a ground-truth street map.
   The real G_demo (Phase 1) takes `oneway` from OSM.
-- The tiny A*/Dijkstra below exist ONLY to make mock numbers
+- The tiny A*/UCS helpers below exist ONLY to make mock numbers
   self-consistent. The product implementations live in backend/app/
   (Phase 2) — do not import from here.
 - Everything is deterministic (seed 42, fixed `created` date, fixed
@@ -162,8 +162,8 @@ def make_adj(graph: dict, prof: dict, slot: str) -> dict[str, list[tuple[str, fl
     return adj
 
 
-def mock_dijkstra(adj: dict, start: str, goal: str,
-                  banned_edge: str | None = None) -> tuple[list[str], float, float, float]:
+def mock_ucs(adj: dict, start: str, goal: str,
+             banned_edge: str | None = None) -> tuple[list[str], float, float, float]:
     """Returns (path, cost, distance_m, time_s); cost==time_s (balanced)."""
     g = {start: 0.0}
     parent: dict[str, tuple[str, dict]] = {}
@@ -254,7 +254,7 @@ def build_trace(graph: dict, prof: dict) -> dict:
     ]
 
     # Alternative that provably differs: ban the chosen route's first edge.
-    alt_path, alt_cost, alt_dist, alt_time = mock_dijkstra(
+    alt_path, alt_cost, alt_dist, alt_time = mock_ucs(
         adj, start, goal, banned_edge=path_edges[0]["id"])
     names = {n["id"]: n["name"] for n in graph["nodes"]}
     via = lookup[(alt_path[0], alt_path[1])]["name"]
@@ -389,7 +389,7 @@ def build_multiroute(graph: dict, prof: dict) -> dict:
     stops = ["n0005", "n0007", "n0002"]
     adj = make_adj(graph, prof, slot)
     pts = [start] + stops
-    legs_cache = {(a, b): mock_dijkstra(adj, a, b) for a in pts for b in pts if a != b}
+    legs_cache = {(a, b): mock_ucs(adj, a, b) for a in pts for b in pts if a != b}
     cost = {k: v[1] for k, v in legs_cache.items()}
 
     def tour_cost(order: list[str]) -> float:

@@ -362,7 +362,7 @@ export function ControlPanel({ mobileOpen = false, onMobileClose }: ControlPanel
 
         <Section
           title="Thuật toán"
-          tip="UCS, Dijkstra, A* và Dijkstra hai chiều đảm bảo tối ưu; IDA* dùng biên ε; các thuật toán còn lại là đánh đổi."
+          tip="UCS, A* và Dijkstra hai chiều đảm bảo tối ưu; IDA* dùng biên ε; các thuật toán còn lại là đánh đổi."
         >
           <Select value={state.algorithm} disabled={busy} onValueChange={(value) => state.set({ algorithm: value as Algorithm })}>
             <SelectTrigger aria-label="Thuật toán"><SelectValue /></SelectTrigger>

@@ -1,4 +1,4 @@
-"""Six core search algorithms — BFS, DFS, IDDFS, UCS, Dijkstra, A*.
+"""Five core search algorithms — BFS, DFS, IDDFS, UCS, A*.
 
 Hand-implemented with plain Python dict/list/heapq only (PROMPT-MASTER
 rule 6 — NetworkX is allowed solely as a test/benchmark baseline).
@@ -36,7 +36,7 @@ EMPTY_EXPLANATION = Explanation(summary_vi="", congested_segments=[], alternativ
 
 OPTIMAL_GUARANTEE = {  # SCHEMA §B.5 — theoretical, on THIS weighted graph
     "bfs": False, "dfs": False, "iddfs": False,
-    "ucs": True, "dijkstra": True, "astar": True,
+    "ucs": True, "astar": True,
 }
 
 
@@ -276,13 +276,13 @@ def iddfs(store: GraphStore, start: str, goal: str, mode: Mode = "balanced",
                    max_frontier, t0, rec, False)
 
 
-# ----------------------------------------------------- UCS / Dijkstra / A*
+# -------------------------------------------------------------- UCS / A*
 
 
 def _best_first(algorithm: str, store: GraphStore, start: str, goal: str,
                 mode: Mode, time_slot: TimeSlot, include_trace: bool,
                 use_h: bool) -> Trace:
-    """Shared engine for UCS/Dijkstra (h = 0) and A* (h = heuristic §D).
+    """Shared engine for UCS (h = 0) and A* (h = heuristic §D).
 
     heapq with lazy deletion: stale entries are skipped on pop. Priority
     is (f, h, tie counter) — A* tie-breaks equal f on smaller h
@@ -361,21 +361,6 @@ def ucs(store: GraphStore, start: str, goal: str, mode: Mode = "balanced",
                        include_trace, use_h=False)
 
 
-def dijkstra(store: GraphStore, start: str, goal: str, mode: Mode = "balanced",
-             time_slot: TimeSlot = "07:30", include_trace: bool = True,
-             **params) -> Trace:
-    """Dijkstra's algorithm with early exit at the goal.
-
-    Mechanically identical to UCS here (the report discusses the
-    UCS <-> Dijkstra relationship: single-pair AI search vs one-to-all
-    graph algorithm cut short at the goal). Kept as a separate top-level
-    algorithm because the assignment asks for both.
-    """
-    _check_endpoints(store, start, goal)
-    return _best_first("dijkstra", store, start, goal, mode, time_slot,
-                       include_trace, use_h=False)
-
-
 def astar(store: GraphStore, start: str, goal: str, mode: Mode = "balanced",
           time_slot: TimeSlot = "07:30", include_trace: bool = True,
           **params) -> Trace:
@@ -388,5 +373,5 @@ def astar(store: GraphStore, start: str, goal: str, mode: Mode = "balanced",
 
 ALGORITHMS = {
     "bfs": bfs, "dfs": dfs, "iddfs": iddfs,
-    "ucs": ucs, "dijkstra": dijkstra, "astar": astar,
+    "ucs": ucs, "astar": astar,
 }

@@ -9,6 +9,9 @@
 > benchmark → gamma → generator refresh; note này chỉ phân loại trạng thái output.
 > UI hiện trình bày km/phút, nhưng thay đổi presentation đó không làm body generated
 > cũ trở thành evidence hiện hành.
+> Catalog route hiện hành chỉ còn 9 thuật toán: lựa chọn Dijkstra một chiều độc
+> lập đã bị loại vì trùng UCS. Chương/bảng Dijkstra trong body này là output legacy
+> và không được dùng để quay video; lượt generator cuối sẽ loại nó theo source mới.
 
 > **Cách dùng:** đây là kịch bản để MỖI THÀNH VIÊN tự giảng lại thuật toán trong video
 > (yêu cầu đề 4.10a — ví dụ TỰ THIẾT KẾ, cấm chép tutorial). Ví dụ dưới đây chạy trên

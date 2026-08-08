@@ -28,7 +28,7 @@ import matplotlib.pyplot as plt  # noqa: E402
 import networkx as nx  # noqa: E402  (baseline only)
 
 from .graph_store import GraphStore  # noqa: E402
-from .search import ALGORITHMS, astar, bfs, dijkstra  # noqa: E402
+from .search import ALGORITHMS, astar, bfs, ucs  # noqa: E402
 from .search_advanced import ADVANCED_ALGORITHMS  # noqa: E402
 from .tsp import build_matrix, held_karp, nn_2opt, simulated_annealing, tour_cost  # noqa: E402
 
@@ -92,13 +92,13 @@ def nx_digraph(store: GraphStore, mode: str, slot: str) -> "nx.DiGraph":
 
 
 def exp1(store: GraphStore, pairs: list[tuple[str, str]]) -> str:
-    """Correctness: UCS/Dijkstra/A* vs NetworkX, balanced x 2 slots."""
+    """Correctness: UCS/A* vs NetworkX, balanced x 2 slots."""
     rows, passed, total = [], 0, 0
     for slot in SLOTS_MAIN:
         g = nx_digraph(store, "balanced", slot)
         for i, (src, dst) in enumerate(pairs):
-            truth, _ = nx.bidirectional_dijkstra(g, src, dst, weight="w")
-            for name in ("ucs", "dijkstra", "astar"):
+            truth = nx.shortest_path_length(g, src, dst, weight="w")
+            for name in ("ucs", "astar"):
                 t = ALL_ALGOS[name](store, src, dst, mode="balanced",
                                     time_slot=slot, include_trace=False)
                 ok = t.found and abs(t.metrics.total_cost - truth) <= 1e-6
@@ -115,14 +115,14 @@ def exp1(store: GraphStore, pairs: list[tuple[str, str]]) -> str:
 
 
 def exp2(store: GraphStore) -> str:
-    """Admissibility: reverse Dijkstra h* vs heuristic h, scatter + assert."""
+    """Admissibility: reverse UCS h* vs heuristic h, scatter + assert."""
     rng = random.Random(SEED)
     goals = rng.sample([n.id for n in store.graph.nodes], 10)
     w = store.weights("balanced", "07:30")
 
     import heapq
 
-    def reverse_dijkstra(goal: str) -> dict[str, float]:
+    def reverse_ucs(goal: str) -> dict[str, float]:
         dist = {goal: 0.0}
         heap = [(0.0, 0, goal)]
         done: set[str] = set()
@@ -143,7 +143,7 @@ def exp2(store: GraphStore) -> str:
     hs, hstars = [], []
     rows, violations = [], 0
     for goal in goals:
-        h_star = reverse_dijkstra(goal)
+        h_star = reverse_ucs(goal)
         worst_ratio = 0.0
         for node, hs_val in h_star.items():
             if node == goal or hs_val <= 0:
@@ -180,15 +180,15 @@ def exp2(store: GraphStore) -> str:
 
 
 def exp3(store: GraphStore, pairs: list[tuple[str, str]]) -> str:
-    """All 10 algorithms x 200 pairs x 2 slots: cost, gap, expanded, runtime."""
-    order = ["bfs", "dfs", "iddfs", "ucs", "dijkstra", "astar",
+    """All 9 algorithms x 200 pairs x 2 slots: cost, gap, expanded, runtime."""
+    order = ["bfs", "dfs", "iddfs", "ucs", "astar",
              "greedy", "bidijkstra", "idastar", "beam"]
     rows = []
     opt_cache: dict[tuple[str, str, str], float] = {}
     for slot in SLOTS_MAIN:
         for i, (src, dst) in enumerate(pairs):
-            opt = dijkstra(store, src, dst, mode="balanced", time_slot=slot,
-                           include_trace=False).metrics.total_cost
+            opt = ucs(store, src, dst, mode="balanced", time_slot=slot,
+                      include_trace=False).metrics.total_cost
             opt_cache[(src, dst, slot)] = opt
             for name in order:
                 t = ALL_ALGOS[name](store, src, dst, mode="balanced",
@@ -253,8 +253,8 @@ def exp3(store: GraphStore, pairs: list[tuple[str, str]]) -> str:
     fig.savefig(FIGS / "exp3_gap.png", dpi=150)
     plt.close(fig)
 
-    worst = max((agg(a, 5), a) for a in order if a not in ("ucs", "dijkstra", "astar"))
-    return (f"exp3: 10 thuật toán × {len(pairs)} cặp × 2 khung giờ; "
+    worst = max((agg(a, 5), a) for a in order if a not in ("ucs", "astar"))
+    return (f"exp3: 9 thuật toán × {len(pairs)} cặp × 2 khung giờ; "
             f"gap lớn nhất: {worst[1]} ≈ {worst[0]:.1f}%")
 
 

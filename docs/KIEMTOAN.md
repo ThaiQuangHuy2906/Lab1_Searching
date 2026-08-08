@@ -8,9 +8,12 @@
 > `docs/CODEX-CODEBASE-MAP.md` và
 > `docs/KE-HOACH-TRIEN-KHAI-NHIEM-VU-HOP-NHOM.md`; kết luận cuối vẫn phải dựa trên
 > code/data hiện hành và lệnh kiểm chứng fresh. Gate documentation-audit gần
-> nhất: 176 backend tests, 40 frontend tests, `ALL DATA VALID`, TypeScript/build pass;
-> raw GraphML/TomTom/cache hiện được Git track. Không sửa lại các entry lịch sử
-> phía dưới để mang số hiện tại.
+> nhất: 177 backend tests, 41 frontend tests, `ALL DATA VALID`, TypeScript/build pass;
+> catalog hiện hành có 9 route; các entry 10 thuật toán/Dijkstra bên dưới là lịch sử;
+> raw GraphML/TomTom/cache hiện được Git track; 8/8 manual-risk URL đã được
+> review/tích hợp ngày 2026-08-08 với caveat nguồn lịch sử. Mọi dòng “8 TODO”
+> bên dưới là evidence tại thời điểm audit và không được dùng làm current state.
+> Không sửa lại các entry lịch sử phía dưới để mang số hiện tại.
 >
 > **Ngày kiểm:** 2026-07-27 · **Commit kiểm:** `9598141` (git sạch, đồng bộ origin/main)
 > **Phương pháp:** Lượt 0 (mốc chân lý) chạy trước; 6 lượt kiểm toán độc lập chạy **song song**

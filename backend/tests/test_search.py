@@ -1,7 +1,7 @@
-"""Correctness of the six core algorithms (Phase 2 DoD).
+"""Correctness of the five core algorithms (Phase 2 DoD).
 
 NetworkX is used HERE ONLY as the reference baseline (PROMPT-MASTER
-rule 6): UCS/Dijkstra/A* must match nx Dijkstra costs to 1e-6 on ALL
+rule 6): UCS/A* must match NetworkX weighted-shortest-path costs to 1e-6 on ALL
 G_demo pairs and on 50 sampled G_real pairs, across 3 modes x 4 slots.
 """
 
@@ -13,11 +13,11 @@ import pytest
 
 from app.graph_store import MODES, GraphStore
 from app.models import TIME_SLOTS, GraphFile, TrafficProfiles, Trace
-from app.search import ALGORITHMS, astar, bfs, dfs, dijkstra, iddfs, ucs
+from app.search import ALGORITHMS, astar, bfs, dfs, iddfs, ucs
 
 TOL = 1e-6
 COMBOS = list(itertools.product(MODES, TIME_SLOTS))  # 12 (mode, slot) pairs
-OPTIMAL_ALGOS = (ucs, dijkstra, astar)
+OPTIMAL_ALGOS = (ucs, astar)
 
 
 @pytest.fixture(scope="module")
@@ -42,7 +42,7 @@ def nx_digraph(store: GraphStore, mode: str, slot: str) -> "nx.DiGraph":
 
 
 def test_optimal_algos_match_networkx_on_all_demo_pairs(demo: GraphStore):
-    """DoD: UCS/Dijkstra/A* == nx cost (1e-6) on ALL demo pairs x 12 combos."""
+    """DoD: UCS/A* == nx cost (1e-6) on ALL demo pairs x 12 combos."""
     nodes = [n.id for n in demo.graph.nodes]
     checked = 0
     for mode, slot in COMBOS:
@@ -61,8 +61,8 @@ def test_optimal_algos_match_networkx_on_all_demo_pairs(demo: GraphStore):
                         f"{t.metrics.total_cost} != {truth[dst]}"
                     )
                     checked += 1
-    # 51 nodes -> 2550 ordered pairs x 12 combos x 3 algorithms
-    assert checked == 2550 * 12 * 3
+    # 51 nodes -> 2550 ordered pairs x 12 combos x 2 algorithms
+    assert checked == 2550 * 12 * 2
 
 
 def test_optimal_algos_match_networkx_on_real_samples(real: GraphStore):
@@ -181,7 +181,7 @@ def test_traces_validate_and_are_coherent(demo: GraphStore):
             seen.update(st.frontier)
         for node in t.path:
             assert node in seen, f"{name}: path node {node} never seen in trace"
-        if name in ("bfs", "ucs", "dijkstra", "astar"):
+        if name in ("bfs", "ucs", "astar"):
             expanded = [st.expanded for st in t.trace]
             assert len(expanded) == len(set(expanded)), f"{name} re-expanded a node"
 

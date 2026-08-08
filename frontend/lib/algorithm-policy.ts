@@ -1,8 +1,8 @@
 import type { Algorithm } from "./types";
 
 export const ALGORITHM_ORDER: readonly Algorithm[] = [
-  "bfs", "dfs", "iddfs", "ucs", "dijkstra",
-  "astar", "greedy", "bidijkstra", "idastar", "beam",
+  "bfs", "dfs", "iddfs", "ucs", "astar",
+  "greedy", "bidijkstra", "idastar", "beam",
 ];
 
 export const ALGORITHM_GROUPS: ReadonlyArray<{
@@ -13,7 +13,7 @@ export const ALGORITHM_GROUPS: ReadonlyArray<{
   {
     label: "Đảm bảo tối ưu",
     cls: "text-start",
-    algos: ["ucs", "dijkstra", "astar", "bidijkstra"],
+    algos: ["ucs", "astar", "bidijkstra"],
   },
   {
     label: "Bảo đảm trong biên ε",

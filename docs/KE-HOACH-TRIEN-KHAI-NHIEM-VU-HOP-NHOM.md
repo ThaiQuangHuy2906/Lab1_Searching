@@ -7,12 +7,17 @@
 > **Ghi chú audit 2026-08-08:** đây là kế hoạch/biên bản triển khai lịch sử.
 > Mô tả bốn GraphView cố định ở phần thân phản ánh quyết định M1–M5 khi đó; code
 > hiện hành đã mở rộng thành `full` hoặc `teach_3`…`teach_50`, preset version 2.
-> Fresh evidence hiện tại: backend `176 passed` (1 dependency warning), validator
-> `ALL DATA VALID`, frontend `40/40`, TypeScript/build pass; browser QA
-> 1366×768, 1024×768 và 390×844 đã kiểm tra GraphView, route/trace, ATSP,
-> sandbox, bốn tab kết quả, theme, responsive/focus và reduced motion. `docs/SCHEMA.md`, `README.md`,
+> Fresh automated evidence hiện tại: backend `177 passed` (1 dependency warning),
+> validator `ALL DATA VALID`, frontend `41/41`, TypeScript/build pass. Browser QA
+> 1366×768, 1024×768 và 390×844 thuộc lượt UI Clarity ngay trước thay đổi catalog
+> và đã kiểm tra GraphView, route/trace, ATSP, sandbox, bốn tab kết quả, theme,
+> responsive/focus và reduced motion. Catalog hiện hành có 9 route + 3 ATSP; mọi
+> mốc 10 route/13 phương pháp trong thân file là baseline lịch sử. `docs/SCHEMA.md`, `README.md`,
 > code và fresh gates là nguồn trạng thái hiện hành; các bảng “Hiện trạng”, “Có một phần” và
 > “Chưa có” bên dưới ghi lại baseline 2026-08-04, không phải mô tả current code.
+> Tương tự, các dòng “8 `source_url` TODO” trong thân file đã được supersede ngày
+> 2026-08-08: 8/8 URL hiện đã review/tích hợp, còn caveat lịch sử/không gian/ngữ
+> nghĩa được ghi tại `data/DATA.md` §2.1.
 >
 > **Ngày audit:** 2026-08-04.
 

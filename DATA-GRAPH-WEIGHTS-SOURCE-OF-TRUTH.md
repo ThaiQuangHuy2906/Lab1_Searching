@@ -15,7 +15,7 @@
 > `data/raw/` và track raw GraphML, OSMnx cache cùng bốn raw TomTom snapshot.
 >
 > **Mốc xác nhận worktree hiện tại:** 2026-08-08 (Asia/Saigon), base HEAD
-> `98a82b2`. Lệnh `.venv\Scripts\python.exe scripts\validate_data.py` đã trả
+> `8a78a22`. Lệnh `.venv\Scripts\python.exe scripts\validate_data.py` đã trả
 > `ALL DATA VALID`; lượt UI/tài liệu này không chạy crawl, build graph/profile,
 > benchmark, hiệu chuẩn gamma hoặc generator.
 >
@@ -51,9 +51,9 @@ mong muốn trong tương lai. Thứ tự bằng chứng được dùng để l�
 - **Tracked Git repository:** toàn bộ source dùng để lập claim current trong tài
   liệu này đều được track: `backend/`, active `frontend/`, `scripts/`, `data/`
   (bao gồm sáu file dưới `data/raw/`), tests, schema và assignment/spec.
-- **Current local workspace:** HEAD nêu trên cộng các thay đổi documentation/ảnh
-  README chưa commit của lượt audit này. Không có source implementation hoặc
-  graph/profile JSON nào được sửa để làm tài liệu trở nên đúng.
+- **Current local workspace:** HEAD nêu trên cộng thay đổi contract route 9 thuật
+  toán trong backend/frontend/tests và các cập nhật tài liệu chưa commit. Không
+  có graph/profile/result artifact nào được sửa để làm tài liệu trở nên đúng.
 - **Ignored local runtime:** `.env`, `.venv/`, `frontend/node_modules/`,
   `frontend/.next/`, cache, log, `audit_tmp/`, `tmp/` và `.playwright-cli/` chỉ là
   secret/dependency/build/tool state. Tài liệu này **không dùng nội dung của các
@@ -109,9 +109,9 @@ behavioral evidence cục bộ, không phải external-source attestation:
 
 | Command | Kết quả thực tế |
 |---|---|
-| `.venv\Scripts\python.exe -m pytest backend\tests\ -v` | PASS — 176 passed, 1 warning |
+| `.venv\Scripts\python.exe -m pytest backend\tests\ -v` | PASS — 177 passed, 1 warning |
 | `.venv\Scripts\python.exe scripts\validate_data.py` | PASS — `ALL DATA VALID`; cả hai graph strongly connected, profile 4×100% |
-| `npm test` trong `frontend/` | PASS — 40/40 |
+| `npm test` trong `frontend/` | PASS — 41/41 |
 | `npx tsc --noEmit` trong `frontend/` | PASS — exit 0 |
 | `npm run build` trong `frontend/` sau khi dừng dev services | PASS — Next.js production build, 6/6 static pages |
 
@@ -128,7 +128,7 @@ audit này.
 Project giải hai bài toán trên cùng graph đường có hướng:
 
 1. **Tìm đường hai điểm:** từ một node bắt đầu `start` tới node đích `goal`
-   bằng một trong mười thuật toán Searching.
+   bằng một trong chín thuật toán Searching.
 2. **Giao hàng nhiều điểm:** cố định điểm xuất phát, tối ưu thứ tự thăm các
    `stops` trên cost matrix có hướng bằng Held–Karp, NN + 2-opt/Or-opt hoặc
    Simulated Annealing.
@@ -497,7 +497,7 @@ Build constraints:
 | Geometry | Chỉ endpoint, không corridor polyline | Chỉ endpoint, không OSM polyline |
 | Traffic | Weighted mean từ real corridor | TomTom-derived nếu match, còn lại fallback |
 | GraphView | `full` hoặc `teach_3`…`teach_50` | Chỉ `full` |
-| Algorithms | Cả 10 search + 3 ATSP | Cả 10 search + 3 ATSP |
+| Algorithms | Cả 9 search + 3 ATSP | Cả 9 search + 3 ATSP |
 | Benchmark | Exp 6–7 | Exp 1–5 |
 
 GraphView executable hiện là `full` hoặc `teach_3` đến `teach_50`; 51 node được
@@ -639,7 +639,7 @@ tọa độ trong graph là tọa độ G_real node đã snap, không nhất thi
 | `free_travel_time_s` | `REAL-DERIVED` + `CONFIG` | `length / configured speed`, persist làm tròn 0,1 s | Runtime không dùng số đã làm tròn; tính lại từ length/speed |
 | Raw TomTom sampled traffic | `REAL RAW` artifact, external origin `PARTIALLY VERIFIED` | Flow Segment API, tối đa 40 sample/slot | Bốn tracked snapshot, 40 valid record/slot; audit không gọi lại TomTom |
 | Persisted `congestion_level` | Mixed `REAL-DERIVED` + `SEED/SIMULATED`, locally verified | TomTom match trong 250 m hoặc seeded fallback | Reconciliation xác nhận 635 TomTom-assigned và 4.064 fallback edge/slot trên G_real |
-| Flood/construction circles | `MANUAL` | 5 flood + 3 construction zones | Cả 8 `source_url` còn `TODO`; không verified từ nguồn thực |
+| Flood/construction circles | `MANUAL` | 5 flood + 3 construction zones | 8/8 `source_url` đã review; chỉ hỗ trợ bối cảnh sự kiện lịch sử ở cấp tuyến/khu vực, không xác nhận circle hoặc trạng thái hiện tại |
 | `risk.flood`, `construction` | `MANUAL`-derived | Edge từ ngoài đi vào circle | Flag nhị phân; không phải xác suất/mức độ |
 | `risk.narrow_alley` G_real | `CONFIG`-derived | Road class thuộc nhóm hẹp của pipeline | Không được khảo sát chiều rộng thực |
 | `risk.narrow_alley` G_demo | `CONFIG`-derived | Trên 30% corridor edge bị đánh dấu hẹp | Rule tổng hợp |
@@ -839,17 +839,19 @@ Toàn bộ manual zone input:
 
 | ID | Type | Tên manual | Lat | Lon | Radius | Source status |
 |---|---|---|---:|---:|---:|---|
-| r01 | flood | Nguyễn Hữu Cảnh (đoạn gần cầu Sài Gòn) | 10,7925 | 106,7190 | 400 m | `TODO` |
-| r02 | flood | Đinh Tiên Hoàng (đoạn gần cầu Bông, Đa Kao) | 10,7955 | 106,6985 | 250 m | `TODO` |
-| r03 | flood | Cống Quỳnh (gần BV Từ Dũ) | 10,7680 | 106,6870 | 250 m | `TODO` |
-| r04 | flood | Calmette – Bến Chương Dương (phía Võ Văn Kiệt) | 10,7648 | 106,6975 | 250 m | `TODO` |
-| r05 | flood | Trần Hưng Đạo (đoạn Nguyễn Cư Trinh) | 10,7625 | 106,6890 | 300 m | `TODO` |
-| r06 | construction | Lê Thánh Tôn (đoạn trước chợ Bến Thành) | 10,7730 | 106,6990 | 150 m | `TODO` |
-| r07 | construction | Hai Bà Trưng (đoạn Tân Định) | 10,7890 | 106,6905 | 200 m | `TODO` |
-| r08 | construction | Võ Thị Sáu (Quận 3) | 10,7860 | 106,6890 | 200 m | `TODO` |
+| r01 | flood | Nguyễn Hữu Cảnh (đoạn gần cầu Sài Gòn) | 10,7925 | 106,7190 | 400 m | reviewed; strong historical segment match |
+| r02 | flood | Đinh Tiên Hoàng (đoạn gần cầu Bông, Đa Kao) | 10,7955 | 106,6985 | 250 m | reviewed; source segment renamed Lê Văn Duyệt, main-edge endpoint ≈253 m from center |
+| r03 | flood | Cống Quỳnh (gần BV Từ Dũ) | 10,7680 | 106,6870 | 250 m | reviewed; street-level event, exact segment unknown |
+| r04 | flood | Calmette – Bến Chương Dương (phía Võ Văn Kiệt) | 10,7648 | 106,6975 | 250 m | reviewed; strong historical area match |
+| r05 | flood | Trần Hưng Đạo (khu vực Trần Đình Xu – Cống Quỳnh) | 10,7625 | 106,6890 | 300 m | reviewed; corrected from the spatially mismatched Nguyễn Cư Trinh label; source remains street/event-level only |
+| r06 | construction | Lê Thánh Tôn (đoạn trước chợ Bến Thành) | 10,7730 | 106,6990 | 150 m | reviewed; historical 2024–2025 improvement works |
+| r07 | construction | Hai Bà Trưng (đoạn Tân Định) | 10,7890 | 106,6905 | 200 m | reviewed; 2013 sinkhole/emergency barrier, not a sewer project |
+| r08 | construction | Võ Thị Sáu (Quận 3) | 10,7860 | 106,6890 | 200 m | reviewed; 2021 water-infrastructure work, not road resurfacing |
 
-Cả 8 manual zone đều còn `source_url: TODO`. Report không được gọi các risk
-flag này là verified incident/hazard data.
+Cả 8 record có URL trực tiếp; bảng nguồn, ngày đăng và giới hạn chi tiết nằm ở
+`data/DATA.md` §2.1. Chúng chỉ là external context cho giả định thủ công. Report
+không được gọi các risk flag này là verified/current incident-hazard data hoặc
+nói nguồn xác nhận chính xác tâm, bán kính, severity hay penalty.
 
 ## 2.9. Distance, time, congestion, road type và risk không đồng nghĩa
 
@@ -1131,7 +1133,6 @@ Evidence: `backend/app/costs.py`, `graph_store.py`,
 | DFS | LIFO, depth-first | **Không** | `adj`, stable order | Toàn bộ weights và heuristic | Không |
 | IDDFS | Depth-limited DFS, depth 0..100 default | **Không** | `adj`, depth | Toàn bộ weights và heuristic | Không; safety depth có thể dừng trước nghiệm sâu hơn |
 | UCS | Min accumulated `g` | Selected `distance`/`time`/`balanced` weight | Non-negative edge cost, stable heap tie | Node coordinates/heuristic | Exact optimal selected cost |
-| Dijkstra | Cùng implementation `_best_first` như UCS | Selected weight | Non-negative edge cost | Node coordinates/heuristic | Exact optimal selected cost |
 | A* | Min `f=g+h` | Selected weight trong `g` | Node lat/lon, resolved `v_max` trong `h` | Names/types/road geometry | Exact nếu heuristic invariants giữ |
 | Greedy Best-First | Min `h` **chỉ** | **Không dùng để xếp frontier** | Node lat/lon, resolved `v_max`; mode quyết định unit h | length/congestion/risk khi chọn path | Không |
 | Bidirectional Dijkstra | Min forward/backward `g`; stop `top_f+top_b>=mu` | Selected weight | `adj` từ start, `radj` từ goal | Heuristic/coordinates | Exact với non-negative weights |
@@ -1148,14 +1149,14 @@ Nuance bắt buộc:
   stable ranking về cơ bản cũng không đổi.
 - Mọi thuật toán chỉ đi directed adjacency. Bidirectional search phải dùng
   reverse adjacency cho nửa backward; nó không giả graph vô hướng.
-- Tất cả mười thuật toán trả cùng `Trace` schema. Trace cap 5.000 chỉ ngừng ghi
+- Tất cả chín thuật toán trả cùng `Trace` schema. Trace cap 5.000 chỉ ngừng ghi
   steps; full search, `nodes_expanded`, result và cost tiếp tục được tính.
 
 ## 3.8. Non-negative weights và reproducibility
 
 Schema yêu cầu length/speed dương, congestion 1–5 và risk flags 0/1; gamma và
 penalties không âm. Vì vậy cả ba mode có strictly positive edge weights. Đây là
-điều kiện cho UCS/Dijkstra/Bidirectional Dijkstra và Dijkstra dùng xây matrix.
+điều kiện cho UCS/Bidirectional Dijkstra và UCS dùng xây matrix.
 
 `GraphStore.adj` theo thứ tự edge ID; heap chứa insertion counter làm tie-break.
 BFS/DFS cũng bảo toàn neighbor order. SA có fixed seeds 0–4. Vì vậy kết quả được
@@ -1169,7 +1170,7 @@ Cho ordered point set:
 P=[start, stop_1,\ldots,stop_k]
 \]
 
-`backend/app/tsp.py -> build_matrix()` chạy hand-written Dijkstra một lần từ
+`backend/app/tsp.py -> build_matrix()` chạy hand-written UCS một lần từ
 mỗi source point tới mọi target point, trên **cùng directed adjacency và
 selected mode/slot/scenario weights**. Với mọi ordered pair `a != b`:
 
@@ -1215,7 +1216,7 @@ Response `totals.total_cost` chính là objective của order được trả; t�
 `savings_pct` so order tối ưu/heuristic với original input order theo
 `total_cost`, không phải mặc định theo distance.
 
-Evidence: `backend/app/tsp.py -> _dijkstra_to_targets(), build_matrix(),
+Evidence: `backend/app/tsp.py -> _ucs_to_targets(), build_matrix(),
 tour_cost(), held_karp(), nearest_neighbour(), two_opt_or_opt(),
 simulated_annealing(), solve_multiroute()`; `backend/tests/test_tsp.py`.
 
@@ -1326,8 +1327,10 @@ re-query TomTom.
 5. **Bốn snapshots không phải time series:** lịch sử còn cho biết hai slot đầu
    và hai slot sau lấy ở hai ngày khác nhau. Không đo variability theo ngày,
    thời tiết, sự kiện hoặc mùa.
-6. **Manual risk chưa có provenance:** tám `source_url` là `TODO`, không có
-   validity interval, severity hoặc authoritative verification.
+6. **Manual risk chỉ có provenance định tính:** tám `source_url` đã được review,
+   nhưng chỉ ghi nhận sự kiện lịch sử ở cấp tuyến/khu vực; schema vẫn không có
+   validity interval, severity, confidence hay authoritative verification cho
+   circle/penalty. `r02`, `r03`, `r05`, `r07` còn giới hạn không gian/ngữ nghĩa.
 7. **POI manual:** tọa độ/loại không có geocoder/source manifest trong schema;
    snapped node có thể lệch entrance thực tế.
 
@@ -1401,8 +1404,10 @@ re-query TomTom.
    turn restrictions, turn penalties, access rules, closures và signal timing.
 7. **Calibrate cost:** dùng observed travel times/incidents để estimate free
    speed, gamma và penalties; báo error/confidence thay vì gọi balanced cost ETA.
-8. **Risk provenance:** thay manual `TODO` bằng nguồn authoritative có ngày hiệu
-   lực; model polygon/severity/time dependence và phân biệt observation/assumption.
+8. **Risk provenance:** nâng từ một URL lịch sử/record thành source manifest có
+   ngày sự kiện, validity interval và confidence; dùng nguồn active/authoritative
+   khi có, model polygon/severity/time dependence và phân biệt observation với
+   assumption.
 9. **POI QA:** geocode/source entrance coordinates, lưu snap distance và manual
    review evidence; hỗ trợ delivery entrance thay vì POI centroid.
 10. **Routing scope:** mở rộng bbox/coverage; thêm nhiều shipper, capacity,
@@ -1428,7 +1433,7 @@ re-query TomTom.
 - Công thức/đơn vị chính xác là mục 3.1; gamma 1,5 và penalties
   60/90/30/25 giây là config trong `backend/app/costs.py`.
 - BFS/DFS/IDDFS bỏ qua weights khi chọn path; Greedy dùng heuristic-only; bảng
-  mục 3.7 là mapping implementation của cả mười thuật toán.
+  mục 3.7 là mapping implementation của cả chín thuật toán.
 - Cost matrix multi-stop chứa shortest selected-cost cho mọi ordered pair; ba
   ATSP methods tối ưu cùng asymmetric objective ở mục 3.10.
 - Backend routing không crawl network; nó đọc JSON snapshot. Scenario override
@@ -1448,7 +1453,8 @@ re-query TomTom.
   recorded history và representative snapshots, không phải same-day series.
 - Gọi `free_speed_kmh`, gamma/risk penalty và synthetic traffic là modeling
   assumptions/config, không phải ground-truth measurements.
-- Gọi risk flags manual/rule-derived; tám source URLs chưa hoàn thiện.
+- Gọi risk flags manual/rule-derived; tám URL chỉ hỗ trợ bối cảnh lịch sử ở cấp
+  tuyến/khu vực, không xác nhận circle hoặc tình trạng hiện tại.
 - Nói heuristic admissible/consistent **dưới các invariants được code/validator
   enforce**, không nói đúng cho graph tùy ý.
 
@@ -1495,8 +1501,9 @@ Current reconciliation tại HEAD `5693ae7`:
 - commit `faf9866` đã bỏ ignore `data/raw/` và track sáu raw/provenance files;
 - raw/profile reconciliation và source-honesty validator hiện pass;
 - các current-state Markdown đã được đồng bộ trong worktree audit hiện tại;
-- `results/` vẫn stale/`SỐ TẠM`, tám manual risk URL vẫn `TODO`, và external
-  OSM/TomTom truth không được live re-query.
+- `results/` vẫn stale/`SỐ TẠM`; tám manual risk URL đã được review/tích hợp
+  nhưng chỉ có giá trị định tính lịch sử; external OSM/TomTom truth không được
+  live re-query.
 
 Trong bảng lịch sử, `Đúng có điều kiện` nghĩa là phần contract/toán còn hữu ích
 nhưng status/số liệu phải kiểm lại; `Lịch sử` nghĩa là file không được dùng làm
@@ -1561,7 +1568,7 @@ Các mục gốc được xử lý như sau:
 | Current counts/attributes/POI/profile levels | `data/graph_demo.json`, `graph_real.json`, `traffic_profiles_demo.json`, `traffic_profiles_real.json` |
 | Runtime load/adjacency/reverse adjacency/weights/metrics/heuristic | `backend/app/graph_store.py` |
 | Cost formulas/constants/Haversine | `backend/app/costs.py` |
-| BFS/DFS/IDDFS/UCS/Dijkstra/A* usage | `backend/app/search.py` |
+| BFS/DFS/IDDFS/UCS/A* usage | `backend/app/search.py` |
 | Greedy/Bidijkstra/IDA*/Beam usage/config | `backend/app/search_advanced.py` |
 | Scenario, dynamic GraphView, override semantics | `backend/app/scenario.py`, `data/teaching_graph_presets.json` |
 | REST default/dispatch | `backend/app/main.py` |
@@ -1574,7 +1581,7 @@ Các mục gốc được xử lý như sau:
 | Searching properties vs baselines | `backend/tests/test_costs.py`, `test_search.py`, `test_search_advanced.py` |
 | ATSP matrix/objectives/solvers | `backend/app/tsp.py`, `backend/tests/test_tsp.py`, `test_optimization_trace.py` |
 | Map draws endpoint-to-endpoint lines, no stored geometry | `frontend/components/map-view.tsx`, graph JSON schema |
-| Manual risk records/provenance placeholders | `data/manual_risks.json`, `scripts/pipeline_common.py` |
+| Manual risk records/provenance and caveats | `data/manual_risks.json`, `data/DATA.md` §2.1, `manual_risks_sources_review.md`, `scripts/pipeline_common.py` |
 | Stale benchmark warning | `results/README.md` and dates in `results/` versus graph/profile metadata |
 
 ## B.1. Canonical maintenance rule

@@ -7,8 +7,8 @@
 > đã rebuild theo profile cuối. Benchmark/hiệu chuẩn γ/generator vẫn chưa chạy
 > lại. `data/raw/graph_raw.graphml`, bốn TomTom JSON và OSMnx cache hiện diện
 > trong workspace và đều được Git track. Schema chi tiết: `docs/SCHEMA.md`.
-> UI Clarity Phase chỉ đổi frontend/documentation/ảnh README; không crawl,
-> rebuild hoặc sửa graph/profile/data.
+> Lượt provenance 2026-08-08 chỉ cập nhật `source_url`, mô tả và ghi chú của
+> `manual_risks.json`; không crawl, rebuild hoặc sửa graph/profile/risk flags.
 
 ## 1. Tổng quan pipeline (chạy offline một lần, demo không gọi mạng)
 
@@ -31,8 +31,8 @@ Thứ tự chạy đầy đủ: `01 → 02 → 03b real → 04 → 03b demo → 
 |---|---|---|
 | OpenStreetMap qua **OSMnx 2.1.1** (API v2) | Cấu trúc mạng đường: node, cạnh, length, highway type, tên đường | Query bằng **bbox tuple** `(106.680, 10.760, 106.720, 10.800)` — không dùng tên quận (bỏ cấp quận từ 01/7/2025). `network_type="drive"`, lấy **thành phần liên thông mạnh lớn nhất** |
 | **TomTom Traffic Flow API** (tuỳ chọn) | Payload `currentSpeed`/`freeFlowSpeed` tại 40 điểm mẫu trên trục chính, 4 khung giờ | Raw local đủ bốn slot 07:30/12:00/17:30/22:00 và đã qua kiểm tra cấu trúc/derivation; audit hiện tại không gọi lại TomTom nên không xem đây là ground truth độc lập hay dữ liệu real-time |
-| Cổng giao thông TP.HCM `giaothong.hochiminhcity.gov.vn` | Nguồn dự kiến để đối chiếu định tính và dẫn nguồn cho `manual_risks` | Chưa có URL nào được điền: cả 8 `source_url` vẫn TODO, vì vậy current risk data chưa được nguồn này xác minh |
-| `data/manual_risks.json` (nhóm tự định nghĩa) | Điểm ngập (5) + lô cốt (3) khu trung tâm | Vị trí đặt theo các tuyến nổi tiếng (Nguyễn Hữu Cảnh, Đinh Tiên Hoàng đoạn cầu Bông, Cống Quỳnh, Calmette, Trần Hưng Đạo…). `meta.description_vi` đã mô tả đúng luật cạnh đi vào vùng và giới hạn route bắt đầu trong vùng. **Cả 8 `source_url` vẫn là placeholder và phải được bổ sung nguồn thật trước khi nộp.** |
+| Công báo TP.HCM, báo chí và thông báo SAWACO | Đối chiếu định tính cho 8 `manual_risks` | 8/8 `source_url` là link trực tiếp đã kiểm nội dung ngày 2026-08-08; các nguồn chỉ ghi nhận sự kiện lịch sử tại tuyến/khu vực, không phải feed real-time và không xác nhận tọa độ/bán kính/penalty |
+| `data/manual_risks.json` (nhóm tự định nghĩa) | Điểm ngập (5) + vùng cản trở thi công (3) khu trung tâm | Tâm, `radius_m`, loại flag và penalty là tham số mô hình hóa của nhóm. `meta.description_vi` mô tả đúng luật cạnh đi vào vùng và giới hạn route bắt đầu trong vùng; `r02`, `r03`, `r05`, `r07`, `r08` có giới hạn không gian/ngữ nghĩa nêu ở §2.1 |
 | `data/gdemo_pois.json` (nhóm tự chọn) | 51 POI mang tên địa danh hiện hữu cho G_demo | Toạ độ gần đúng ±100 m, được snap vào node lưới đường gần nhất. Nhóm đã ghi nhận lượt review thủ công ngày 2026-07-26; đây vẫn là dữ liệu POI do nhóm quản lý, không phải feed địa danh bên ngoài. |
 
 Bốn snapshot TomTom được query thực tế lúc `07:40:03` và `12:49:57` ngày
@@ -44,6 +44,25 @@ Bốn raw JSON, `graph_raw.graphml` và OSMnx cache hiện đều nằm dưới 
 và được Git track. Chúng đồng thời phải có trong Data ZIP cuối để giữ bằng chứng
 provenance và khả năng dựng lại profile; không được mô tả chúng là local-only
 hoặc Git-ignore ở snapshot repository hiện tại.
+
+### 2.1. Provenance của 8 vùng rủi ro thủ công
+
+| ID | Nguồn và ngày | Nguồn ngoài thực sự chứng minh | Giới hạn phải công bố |
+|---|---|---|---|
+| `r01` | [Quyết định 6261/QĐ-UBND — Công báo TP.HCM](https://congbao.hochiminhcity.gov.vn/cong-bao/van-ban/quyet-dinh/so/6261-qd-ubnd/ngay/30-11-2016/tai-ve/42090), 30/11/2016 | Phụ lục 1 ghi Nguyễn Hữu Cảnh, từ Ngô Tất Tố về phía cầu Sài Gòn khoảng 500 m | Hồ sơ lịch sử 2016–2020; không xác nhận tâm 400 m hay tình trạng hiện tại |
+| `r02` | [Báo Nhân Dân](https://nhandan.vn/mua-to-trieu-cuong-gay-ngap-ung-tai-tp-ho-chi-minh-post410945.html), 19/08/2005 | Đoạn Đinh Tiên Hoàng từ Cầu Bông đến Phan Đăng Lưu từng ngập khi mưa trùng triều cường | Đoạn này đổi tên thành Lê Văn Duyệt năm 2020; tâm mô hình cách node gần nhất trên cạnh chính khoảng 253 m, sát ngoài `radius_m=250` |
+| `r03` | [Báo Tin tức/TTXVN](https://baotintuc.vn/xa-hoi/tp-ho-chi-minh-ngap-nang-nhieu-tuyen-duong-sau-con-mua-nhu-trut-nuoc-20240527215404154.htm), 27/05/2024 | Một đoạn Cống Quỳnh, Quận 1 bị ngập trong cơn mưa | Không xác định riêng đoạn trước Bệnh viện Từ Dũ hay bán kính 250 m |
+| `r04` | [Báo Tin tức và Dân tộc/TTXVN](https://baotintuc.vn/anh/tp-ho-chi-minh-trieu-cuong-dang-cao-nhieu-tuyen-duong-ngap-sau-20251105181405682.htm), 05/11/2025 | Võ Văn Kiệt gần cầu Calmette bị ngập khi nước kênh Tàu Hủ – Bến Nghé dâng | Một sự kiện lịch sử; không xác nhận vùng tròn 250 m |
+| `r05` | [Báo Tiền Phong, nguồn nội dung Znews](https://tienphong.vn/pho-tay-bui-vien-ngap-sau-mua-lon-o-tphcm-post1793541.tpo), 05/11/2025 | Trần Hưng Đạo, Nguyễn Cư Trinh và Cống Quỳnh cùng được ghi nhận ngập trong một trận mưa | Nguồn không xác định đoạn cụ thể. Nhãn cũ “đoạn Nguyễn Cư Trinh” đã sửa thành “Trần Đình Xu – Cống Quỳnh” vì hai nút giao này cách tâm khoảng 118 m/213 m, còn nút giao Nguyễn Cư Trinh cách khoảng 465 m |
+| `r06` | [VnExpress](https://vnexpress.net/tp-hcm-chinh-trang-quang-truong-truoc-cho-ben-thanh-tu-thang-10-4758459.html), 15/06/2024 | Kế hoạch rào chắn, cải tạo đường/vỉa hè Lê Thánh Tôn và khu vực chợ Bến Thành | Công trình 2024–2025, không phải trạng thái hiện tại và không xác nhận bán kính 150 m |
+| `r07` | [Báo Dân trí](https://dantri.com.vn/thoi-su/tphcm-ho-tu-than-bat-ngo-xuat-hien-giua-duong-1380068305.htm), 19/09/2013 | Hố sụt trước số 296 Hai Bà Trưng dẫn đến khắc phục khẩn cấp, rào chắn và ùn tắc | Chỉ hỗ trợ mô hình *vùng cản trở giao thông*; không chứng minh một dự án thi công cống hay tình trạng hiện tại |
+| `r08` | [Cấp nước Bến Thành/SAWACO](https://benthanh.sawaco.com.vn/tin-tuc/hoat-dong-san-xuat-kinh-doanh/thong-bao-ve-viec-gian-doan-cung-cap-nuoc-de-phuc-vu-cong-tac.-vi-tri-thi-cong-giao-lo-vo-thi-sau-pasteur-giao-lo-vo-van-tan-truong-dinh-va-198-tran-quoc-thao-thuoc-phuong-vo-thi-sau-va-phuong-9-quan-3..html), 04/06/2021 | Thi công hạ tầng cấp nước tại giao lộ Võ Thị Sáu – Pasteur trong các đêm 07–09/06/2021 | Không phải dự án nâng cấp mặt đường, không còn hiệu lực và không xác nhận bán kính 200 m |
+
+Chi tiết phép đối chiếu, số cạnh bị tác động và mức độ khớp nằm trong
+[`manual_risks_sources_review.md`](../manual_risks_sources_review.md). Tám URL
+trên chứng minh **bối cảnh lịch sử ở cấp tuyến/khu vực**, không biến các circle
+thủ công thành dữ liệu incident đã quan trắc. Không dùng các flag này để tuyên
+bố tình trạng giao thông hiện tại.
 
 ## 3. Tốc độ free-flow theo loại đường (nhóm tự đặt — KHÔNG phải tốc độ pháp lý)
 

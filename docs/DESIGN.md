@@ -1,11 +1,13 @@
 # DESIGN.md — Hợp đồng thiết kế giao diện (Phase 5)
 
 > **Trạng thái kiểm lại 2026-08-08:** đây là nguồn chuẩn về ý đồ, token và hành vi UI.
-> M1–M5 và UI Clarity Phase đã có implementation; `npm test` (40 test), `npx tsc --noEmit` và
+> M1–M5 và UI Clarity Phase đã có implementation; `npm test` (41 test), `npx tsc --noEmit` và
 > production `npm run build` (6/6 static pages) đạt.
-> Fresh browser QA ở 1366×768, 1024×768 và 390×844 đã xác nhận route/ATSP,
-> responsive shell, keyboard/focus, reduced motion, bảy theme, API thành công và
-> không có console error. Đây không phải chứng nhận screen-reader hay GPU đa thiết
+> Fresh browser QA ở 1366×768, 1024×768 và 390×844 thuộc lượt UI freeze ngay trước
+> thay đổi catalog; catalog 9 thuật toán mới đã qua regression/build nhưng chưa có
+> phiên browser thủ công mới. Lượt UI đó đã xác nhận route/ATSP, responsive shell,
+> keyboard/focus, reduced motion, bảy theme, API thành công và không có console
+> error. Đây không phải chứng nhận screen-reader hay GPU đa thiết
 > bị; vẫn phải pre-flight trên đúng trình duyệt/độ phân giải dùng để quay hoặc bảo vệ.
 >
 > **Luật:** mọi màu/font/hiệu ứng trên UI phải tra được về token trong file này và
@@ -141,7 +143,7 @@ không nhận pointer để không chặn thao tác map.
 
 **Panel trái — thứ tự nhóm cố định:**
 1. **Bối cảnh:** Đồ thị (G_demo/G_real) · Khung giờ (4 mốc) · Chế độ (3 mode)
-2. **Thuật toán:** select 10 thuật toán + tham số phụ hiện theo ngữ cảnh
+2. **Thuật toán:** select 9 thuật toán + tham số phụ hiện theo ngữ cảnh
    (beam_width khi beam; epsilon khi idastar)
 3. **Hành trình:** Đi · Đến (dropdown tên với G_demo, click bản đồ với G_real)
    · danh sách Stops (multiroute) + nút "Tối ưu thứ tự"
@@ -585,7 +587,7 @@ không tự tạo fingerprint hoặc diễn giải khác contract `docs/SCHEMA.m
 ### 12.1a. Quy ước hiển thị rút gọn — 2026-08-08
 
 - Menu/chip/copy tên thuật toán dùng nhãn ngắn: `BFS`, `DFS`, `IDDFS`, `UCS`,
-  `Dijkstra`, `A*`, `Greedy Best-First`, `Dijkstra hai chiều`, `IDA*`, `Beam
+  `A*`, `Greedy Best-First`, `Dijkstra hai chiều`, `IDA*`, `Beam
   Search`. Không lặp các diễn giải “tìm theo bề rộng”, “tìm theo chiều sâu”,
   “đào sâu dần” hoặc “chi phí đồng nhất” trong nhãn tên; phần giải thích chỉ
   xuất hiện khi người dùng chủ động mở tab **Giải thích**.

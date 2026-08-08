@@ -260,6 +260,11 @@ def post_benchmark(req: BenchmarkRequest) -> BenchmarkResponse:
         if csv_path.suffix == ".csv":
             with csv_path.open(encoding="utf-8", newline="") as fh:
                 rows = list(csv.DictReader(fh))
+            # The committed benchmark artifacts are intentionally stale until
+            # the final authorized rerun. Keep the current API/UI contract free
+            # of algorithms removed after that historical run.
+            if exp_id in (1, 3):
+                rows = [row for row in rows if row.get("algorithm") in ALL_ALGORITHMS]
         elif csv_path.suffix == ".json":
             try:
                 payload = json.loads(csv_path.read_text(encoding="utf-8"))

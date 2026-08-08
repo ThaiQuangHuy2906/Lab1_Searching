@@ -79,7 +79,7 @@ const SelectContent = React.forwardRef<
       position={position}
       // scrolling lives on the Radix VIEWPORT (Content stays overflow-hidden):
       // the old overflow-y-auto on Content clipped long lists with no visible
-      // affordance — the 10-algorithm menu ended silently at DFS. The chevron
+      // affordance — the long algorithm menu ended silently at DFS. The chevron
       // scroll buttons below appear automatically whenever the list overflows.
       className={cn(
         "floating-chrome relative z-50 max-h-[min(20rem,var(--radix-select-content-available-height))] min-w-[var(--radix-select-trigger-width)] overflow-hidden rounded-lg border border-surface-strong text-ink",

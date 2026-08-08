@@ -183,11 +183,11 @@ def test_bidijkstra_trace_valid(graph: GraphFile, profiles: TrafficProfiles, bid
     assert bidi_trace.metrics.max_frontier == max(len(s.frontier) for s in bidi_trace.trace)
 
 
-def test_bidijkstra_cost_matches_one_directional_dijkstra(
+def test_bidijkstra_cost_matches_one_directional_ucs(
     graph: GraphFile, profiles: TrafficProfiles, bidi_trace: Trace
 ):
     """The meeting rule must still yield the optimal cost: compare against a
-    plain Dijkstra run over the same weights, and against the path itself."""
+    plain UCS run over the same weights, and against the path itself."""
     import heapq
 
     cong = profiles.profiles[bidi_trace.time_slot]

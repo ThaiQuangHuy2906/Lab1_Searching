@@ -12,7 +12,8 @@
 > **Không chạy lại §0–§2.** Các lệnh ở đó chỉ được giữ như nhật ký tái lập.
 > Benchmark, gamma calibration và teaching generator trong §3–§5 vẫn được hoãn
 > có chủ đích; chỉ chạy sau khi code ổn định và có ủy quyền riêng.
-> UI/documentation refresh không chạy lại bất kỳ bước crawl/build/benchmark nào.
+> Tám manual-risk URL đã được review/tích hợp ngày 2026-08-08; lượt đó chỉ sửa
+> metadata/provenance và không chạy lại bất kỳ bước crawl/build/benchmark nào.
 
 ---
 
@@ -141,5 +142,5 @@ Nặng nhất và dễ sót:
 - [ ] Chỉ commit/push khi người dùng yêu cầu và sau khi toàn bộ artifact cuối đã
       được kiểm chứng.
 - [ ] Việc tay còn lại sau lượt số: xem checklist mục 7 của `docs/KIEMTOAN.md`
-      (điền [ĐIỀN], source_url manual_risks, screenshot, video, đóng gói zip,
+      (điền [ĐIỀN], mở lại link ở tab ẩn danh, screenshot, video, đóng gói zip,
       repo GitHub phải mở được khi chấm).

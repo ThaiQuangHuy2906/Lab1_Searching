@@ -1,7 +1,7 @@
 # Tìm đường cho shipper đa điểm tại TP.HCM
 
 Đồ án Lab 1 môn Cơ sở Trí tuệ nhân tạo: mô hình hoá giao thông đô thị bằng đồ
-thị có hướng, trực quan hoá 10 thuật toán tìm đường hai điểm và tối ưu thứ tự
+thị có hướng, trực quan hoá 9 thuật toán tìm đường hai điểm và tối ưu thứ tự
 giao hàng bằng 3 phương pháp ATSP. Backend dùng FastAPI; frontend dùng Next.js,
 MapLibre và deck.gl; dữ liệu chạy demo được lưu cục bộ nên thuật toán không cần
 gọi mạng.
@@ -10,21 +10,36 @@ Implementation frontend hiện hành và duy nhất trong tracked tree là
 `frontend/`. Thư mục draft cũ `frontend1/` đã bị xoá và không được dùng làm
 bằng chứng cho hành vi sản phẩm.
 
+## Nhóm thực hiện
+
+- **GroupID:** 2; không sử dụng tên nhóm.
+- **Repository:** <https://github.com/ThaiQuangHuy2906/Lab1_Searching>
+- **Người đại diện nộp chính thức:** Thái Quang Huy.
+
+| MSSV | Họ tên | Phạm vi đã xác nhận | Đóng góp khai báo |
+|---|---|---|---:|
+| 24127078 | Nguyễn Hữu Gia Minh | Chưa chốt | 100% |
+| 24127177 | Thái Quang Huy | 3 thuật toán ATSP | 100% |
+| 24127205 | Nguyễn Văn Minh | 9 thuật toán tìm đường hai điểm | 100% |
+| 24127249 | Mai Phương Thùy | Chưa chốt | 100% |
+| 24127505 | Trần Hoàng Phúc | Chưa chốt | 100% |
+
+Vai trò thực tế và các mục báo cáo còn lại sẽ được nhóm chốt sau.
+
 ## Xem nhanh
 
 | A* + route trace — giao diện Đen | Held–Karp + optimization trace — giao diện Trắng |
 |---|---|
 | ![Kết quả A* và timeline route trace trên giao diện Đen](artifacts/readme/dark-route-result.png) | ![Kết quả Held-Karp và timeline optimization trace trên giao diện Trắng](artifacts/readme/light-atsp-result.png) |
 
-Hai ảnh trên được chụp lại từ current worktree ngày 2026-08-08 ở 1366×768 sau
-clean restart. Chúng minh hoạ đúng GraphView hiện hành, marker Đi/Đến, sandbox
-trọng số, bốn tab kết quả, số liệu km/phút, bộ chọn bảy giao diện và hai timeline
-tách biệt cho route/ATSP; đây không phải ảnh thay thế cho toàn bộ screenshot bắt
-buộc trong report/video.
+Hai ảnh trên được chụp từ lượt UI freeze ngày 2026-08-08 ở 1366×768 sau clean
+restart. Thay đổi catalog 9 thuật toán sau đó không đổi hai cảnh đang minh hoạ;
+catalog mới đã qua test/build nhưng chưa chụp lại browser. Đây không phải ảnh
+thay thế cho toàn bộ screenshot bắt buộc trong report/video.
 
 ### Tính năng nổi bật
 
-- 10 thuật toán tìm đường dùng chung contract `Trace`, timeline và bảng g/h/f.
+- 9 thuật toán tìm đường dùng chung contract `Trace`, timeline và bảng g/h/f.
 - Ba phương pháp ATSP cho hành trình nhiều điểm trên đồ thị có hướng, bất đối xứng.
 - Bản đồ G_demo/G_real, lớp ùn tắc, offline mode và chọn điểm trực tiếp trên map.
 - GraphView backend thật cho G_demo: `full` hoặc `teach_3`…`teach_50`; UI nhận
@@ -46,8 +61,8 @@ buộc trong report/video.
 > Lượt data refresh cuối đã tích hợp đủ raw TomTom 07:30, 12:00, 17:30 và 22:00
 > dưới dạng bốn snapshot đại diện lấy trên hai ngày thứ Hai; profile hiện là
 > `tomtom+synthetic`. Raw GraphML, bốn TomTom JSON và OSMnx cache hiện được Git
-> track dưới `data/raw/`. Fresh core gate đạt `176 passed` backend,
-> `ALL DATA VALID`, `40/40` frontend test và TypeScript check; `G_demo` hiện có
+> track dưới `data/raw/`. Fresh core gate đạt `177 passed` backend,
+> `ALL DATA VALID`, `41/41` frontend test và TypeScript check; `G_demo` hiện có
 > 51 node / 298 cạnh.
 > `results/` vẫn là số tạm từ lượt 2026-07-26 và không được dùng làm kết quả
 > chính thức. Không rerun data; benchmark/hiệu chuẩn γ/generator vẫn chờ một
@@ -57,17 +72,17 @@ buộc trong report/video.
 
 | Hạng mục | Trạng thái hiện tại | Bằng chứng |
 |---|---|---|
-| Backend | **Đạt** | `176 passed, 1 warning` trên current worktree ngày 2026-08-08 |
+| Backend | **Đạt** | `177 passed, 1 warning` trên current worktree ngày 2026-08-08 |
 | Data contract | **Đạt** | `ALL DATA VALID`; profile `tomtom+synthetic`; raw GraphML và TomTom 4/4 hiện diện, được Git track |
-| Frontend automated | **Đạt** | `npm test`: 40/40 pass |
+| Frontend automated | **Đạt** | `npm test`: 41/41 pass |
 | TypeScript | **Đạt** | `npx tsc --noEmit` exit 0 |
 | Frontend production build | **Đạt** | `npm run build` sau khi dừng dev services: compile thành công, 6/6 static pages |
 | G_demo | **Hiện hành** | 51 node, 298 cạnh có hướng, 60 cạnh một chiều |
 | G_real | **Hiện hành** | 2.118 node, 4.699 cạnh có hướng, 1.433 cạnh một chiều |
 | Benchmark | **Chưa hiện hành** | `results/` cũ hơn graph; xem [`results/README.md`](results/README.md) |
-| UI/runtime | **Đạt browser QA ở 1366×768, 1024×768 và 390×844** | Clean restart xác nhận A*/route trace, Held–Karp/optimization trace, responsive shell, keyboard/focus, reduced motion, giao diện Đen/Trắng, API 200 và không có console error; vẫn phải lặp full pre-flight ở máy/độ phân giải dùng để demo |
+| UI/runtime | **Đạt browser QA ở lượt UI freeze** | Đã kiểm ở 1366×768, 1024×768 và 390×844 trước thay đổi catalog; catalog 9 thuật toán có regression/build nhưng chưa có phiên browser thủ công mới. Vẫn phải lặp full pre-flight ở máy/độ phân giải dùng để demo |
 | Backend sau clean restart | **Đạt tại lượt audit; phải lặp trước demo** | `/api/graph?level=demo&view=full` trả G_demo 51/298 từ snapshot trên đĩa |
-| Trước khi nộp | **Còn việc tay** | 8 URL nguồn risk thật, 40 marker cần điền trên 30 dòng nội dung (không tính dòng chú giải), ảnh/sơ đồ cho report ngoài hai ảnh README, report PDF, slide, video/link và ZIP |
+| Trước khi nộp | **Còn việc tay** | 8 URL nguồn risk đã tích hợp nhưng còn final link QA; 11 marker nội dung cần điền trong report (13 occurrence tổng, trừ hai lần nhắc marker trong hướng dẫn); ảnh/sơ đồ ngoài hai ảnh README, report PDF, slide, video/link và ZIP |
 
 Backend dùng cache theo vòng đời process. Trước khi demo hoặc chụp hình, phải
 restart cả hai service, hard-refresh trình duyệt và xác nhận
@@ -80,7 +95,7 @@ restart cả hai service, hard-refresh trình duyệt và xác nhận
 | Bối cảnh giao thông Việt Nam | Shipper giao nhiều điểm ở trung tâm TP.HCM; ùn tắc theo 4 khung giờ; ngập, lô cốt, hẻm và đèn tín hiệu |
 | Mô hình, dataset, cost | Hai graph có hướng G_demo/G_real; OSM; cost `distance`, `time`, `balanced`; contract trong [`docs/SCHEMA.md`](docs/SCHEMA.md) |
 | Thuật toán bắt buộc | BFS, DFS, UCS, A* |
-| Thuật toán bổ sung | IDDFS, Dijkstra, Greedy, Bidirectional Dijkstra, IDA*, Beam |
+| Thuật toán bổ sung | IDDFS, Greedy, Bidirectional Dijkstra, IDA*, Beam |
 | Đa điểm | Held–Karp, Nearest Neighbor + cải thiện bất đối xứng, Simulated Annealing |
 | GUI | Shell điều hành với bảy giao diện, chọn điểm trên map, animation trace và luồng sáng tuyến có reduced-motion, timeline, bảng g/h/f, ATSP, so sánh tuyến có độ trùng, giải thích tiếng Việt cho route/ATSP, trang benchmark có trạng thái dữ liệu tạm |
 | Báo cáo và video | Có khung a–j, outline 14 slide và kịch bản video; vẫn cần nhóm hoàn thiện artifact thật |
@@ -101,7 +116,7 @@ OSM + TomTom tùy chọn + manual risks
    graph/profile JSON đã commit trong data/
                  │
                  ▼
-      GraphStore + 10 search + 3 ATSP
+      GraphStore + 9 search + 3 ATSP
                  │
           ┌──────┴────────┐
           ▼               ▼
@@ -123,7 +138,6 @@ TomTom là pipeline ngoại tuyến. `/api/benchmark` chỉ đọc artifact cach
 | DFS | chiều sâu | Không bảo đảm tối ưu |
 | IDDFS | độ sâu tăng dần | Tìm nghiệm nông nhất trong depth cap; không tối ưu cost, chủ yếu dùng G_demo |
 | UCS | `g` | Tối ưu với trọng số không âm |
-| Dijkstra | `g` | Tối ưu với trọng số không âm |
 | A* | `g + h` | Tối ưu nhờ heuristic admissible + consistent |
 | Greedy | `h` | Không bảo đảm tối ưu |
 | Bidirectional Dijkstra | `g` từ hai phía | Tối ưu trên graph có hướng với backward search đúng chiều đảo |
@@ -213,7 +227,7 @@ dấu `\` sang Bash.
 | GET | `/api/health` | health và version |
 | GET | `/api/graph?level=demo\|real&view=full\|teach_*` | graph snapshot/view đã resolve |
 | GET | `/api/traffic?slot=07:30&level=demo&view=...` | congestion của graph/view/slot đã resolve |
-| POST | `/api/route` | một trong 10 thuật toán hai điểm; nhận `scenario` tùy chọn |
+| POST | `/api/route` | một trong 9 thuật toán hai điểm; nhận `scenario` tùy chọn |
 | POST | `/api/multiroute` | tối ưu thứ tự nhiều điểm; nhận `scenario` và `include_trace` tùy chọn |
 | POST | `/api/benchmark` | đọc kết quả benchmark cached |
 
@@ -296,23 +310,24 @@ scripts/           pipeline data, validator, generator và QA
 | [`docs/CODEX-CODEBASE-MAP.md`](docs/CODEX-CODEBASE-MAP.md) | bản đồ kiến trúc và current-state đã cập nhật qua UI Clarity 2026-08-08 |
 | [`docs/TIENDO.md`](docs/TIENDO.md) · [`docs/KIEMTOAN.md`](docs/KIEMTOAN.md) · [`docs/AUDIT-CLAUDE-PRE-SUBMISSION.md`](docs/AUDIT-CLAUDE-PRE-SUBMISSION.md) | nhật ký/audit lịch sử, không phải bằng chứng current |
 | [`docs/GIAI-THICH-THUAT-TOAN.md`](docs/GIAI-THICH-THUAT-TOAN.md) | tài liệu sinh tự động; hiện vẫn là số tạm |
-| [`docs/ROLE-C-ADVANCED-ATSP-GIAI-THICH-DE-HIEU.md`](docs/ROLE-C-ADVANCED-ATSP-GIAI-THICH-DE-HIEU.md) | tài liệu giảng dễ hiểu về thuật toán nâng cao và ATSP |
+| [`docs/ROLE-C-ADVANCED-ATSP-GIAI-THICH-DE-HIEU.md`](docs/ROLE-C-ADVANCED-ATSP-GIAI-THICH-DE-HIEU.md) | tài liệu lịch sử tên Role C; hiện dùng để học thuật toán nâng cao và ATSP, không đại diện vai trò đã chốt |
 
 ## Checklist nộp bài
 
-Đề yêu cầu một `[GroupID].zip` gồm:
+Với GroupID 2, gói nộp `2.zip` gồm:
 
-- `[GroupID - SC].txt` — link source mở được;
-- `[GroupID - Report].pdf` — báo cáo kỹ thuật hoàn chỉnh;
-- `[GroupID - Slide].pptx` hoặc `[GroupID - Slide].pdf`;
-- `[GroupID - Video].txt` — link video mở được ở tab ẩn danh;
-- `[GroupID - Data].zip` hoặc `[GroupID - Data].txt`.
+- `2 - SC.txt` — đã tạo; còn phải thử link source ở tab ẩn danh;
+- `2 - Report.pdf` — báo cáo kỹ thuật hoàn chỉnh;
+- `2 - Slide.pptx` hoặc `2 - Slide.pdf`;
+- `2 - Video.txt` — link video mở được ở tab ẩn danh;
+- `2 - Data.zip` hoặc `2 - Data.txt`.
 
-Trước khi đóng gói còn phải thay 8 `source_url` placeholder bằng nguồn thật,
-điền danh tính và đóng góp, xử lý toàn bộ marker, chụp screenshot/Google Maps,
-tạo report/slide/video
-thật, chạy benchmark/generator cuối được duyệt, rồi mới gỡ 5 banner `SỐ TẠM` và
-kiểm tra link ẩn danh.
+Tám `source_url` của manual risk đã được đối chiếu và tích hợp ngày 2026-08-08;
+đây là nguồn sự kiện lịch sử ở cấp tuyến/khu vực, không phải dữ liệu real-time và
+không xác nhận tọa độ/bán kính/penalty. Trước khi đóng gói vẫn phải mở lại các
+link bằng tab ẩn danh trên máy nộp bài, tự chốt vai trò/phân công còn lại, xử lý
+toàn bộ marker, chụp screenshot/Google Maps, tạo report/slide/video thật, chạy
+benchmark/generator cuối được duyệt, rồi mới gỡ 5 banner `SỐ TẠM`.
 
 ## Troubleshooting
 

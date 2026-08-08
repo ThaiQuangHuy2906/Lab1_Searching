@@ -1,6 +1,6 @@
 {
   "meta": {
-    "description_vi": "Điểm ngập / lô cốt tiêu biểu khu trung tâm TP.HCM do nhóm định nghĩa (PROMPT-MASTER 6.1). Pipeline chỉ gắn flag tương ứng (flood/construction = 1) cho cạnh đi vào vùng: u ở ngoài radius_m và v ở trong radius_m. Vì vậy cạnh bắt đầu bên trong vùng không được đánh dấu bởi luật này; route xuất phát trong vùng có thể chưa nhận penalty cho đến khi đi ra rồi đi vào lại. ĐÂY LÀ DỮ LIỆU MINH HOẠ: vị trí đặt đúng các tuyến đường nổi tiếng về ngập/thi công, nhưng nhóm PHẢI dán link nguồn thật (cổng giao thông TP.HCM giaothong.hochiminhcity.gov.vn hoặc báo chí) vào source_url trước khi nộp.",
+    "description_vi": "Điểm ngập / vùng cản trở thi công tiêu biểu khu trung tâm TP.HCM do nhóm định nghĩa (PROMPT-MASTER 6.1). Pipeline chỉ gắn flag tương ứng (flood/construction = 1) cho cạnh đi vào vùng: u ở ngoài radius_m và v ở trong radius_m. Vì vậy cạnh bắt đầu bên trong vùng không được đánh dấu bởi luật này; route xuất phát trong vùng có thể chưa nhận penalty cho đến khi đi ra rồi đi vào lại. ĐÂY LÀ DỮ LIỆU MINH HOẠ: source_url là nguồn lịch sử cho thấy tuyến/khu vực tương ứng từng được ghi nhận có ngập, thi công hoặc rào chắn; nguồn không phải feed thời gian thực và không xác nhận chính xác lat/lon, radius_m hay penalty.",
     "created": "2026-07-26"
   },
   "risks": [
@@ -11,8 +11,8 @@
       "lat": 10.7925,
       "lon": 106.7190,
       "radius_m": 400,
-      "source_url": "TODO: dán link cổng giao thông / báo về điểm ngập Nguyễn Hữu Cảnh",
-      "note_vi": "Điểm ngập kinh niên nổi tiếng nhất TP.HCM khi mưa lớn / triều cường."
+      "source_url": "https://congbao.hochiminhcity.gov.vn/cong-bao/van-ban/quyet-dinh/so/6261-qd-ubnd/ngay/30-11-2016/tai-ve/42090",
+      "note_vi": "Nguồn Công báo năm 2016 ghi nhận đoạn ngập từ Ngô Tất Tố về phía cầu Sài Gòn; vị trí và bán kính là tham số mô hình hóa."
     },
     {
       "id": "r02",
@@ -21,8 +21,8 @@
       "lat": 10.7955,
       "lon": 106.6985,
       "radius_m": 250,
-      "source_url": "TODO: dán link nguồn",
-      "note_vi": "Ngập khi triều cường kênh Nhiêu Lộc - Thị Nghè."
+      "source_url": "https://nhandan.vn/mua-to-trieu-cuong-gay-ngap-ung-tai-tp-ho-chi-minh-post410945.html",
+      "note_vi": "Nguồn năm 2005 ghi nhận đoạn Cầu Bông – Phan Đăng Lưu (nay là Lê Văn Duyệt) ngập khi mưa trùng triều cường; tâm mô hình lệch khỏi đoạn nguồn xác nhận."
     },
     {
       "id": "r03",
@@ -31,8 +31,8 @@
       "lat": 10.7680,
       "lon": 106.6870,
       "radius_m": 250,
-      "source_url": "TODO: dán link nguồn",
-      "note_vi": "Ngập cục bộ khi mưa lớn."
+      "source_url": "https://baotintuc.vn/xa-hoi/tp-ho-chi-minh-ngap-nang-nhieu-tuyen-duong-sau-con-mua-nhu-trut-nuoc-20240527215404154.htm",
+      "note_vi": "Nguồn năm 2024 ghi nhận một đoạn Cống Quỳnh ngập trong mưa; không xác định riêng khu vực Bệnh viện Từ Dũ."
     },
     {
       "id": "r04",
@@ -41,18 +41,18 @@
       "lat": 10.7648,
       "lon": 106.6975,
       "radius_m": 250,
-      "source_url": "TODO: dán link nguồn",
-      "note_vi": "Vùng trũng ven kênh Bến Nghé, ngập khi triều cường."
+      "source_url": "https://baotintuc.vn/anh/tp-ho-chi-minh-trieu-cuong-dang-cao-nhieu-tuyen-duong-ngap-sau-20251105181405682.htm",
+      "note_vi": "Nguồn năm 2025 ghi nhận đường Võ Văn Kiệt gần cầu Calmette ngập do nước kênh Tàu Hủ – Bến Nghé dâng cao."
     },
     {
       "id": "r05",
       "type": "flood",
-      "name_vi": "Trần Hưng Đạo (đoạn Nguyễn Cư Trinh)",
+      "name_vi": "Trần Hưng Đạo (khu vực Trần Đình Xu – Cống Quỳnh)",
       "lat": 10.7625,
       "lon": 106.6890,
       "radius_m": 300,
-      "source_url": "TODO: dán link nguồn",
-      "note_vi": "Ngập mặt đường khi mưa kéo dài."
+      "source_url": "https://tienphong.vn/pho-tay-bui-vien-ngap-sau-mua-lon-o-tphcm-post1793541.tpo",
+      "note_vi": "Nguồn năm 2025 ghi nhận Trần Hưng Đạo, Nguyễn Cư Trinh và Cống Quỳnh cùng bị ngập; không xác định chính xác đoạn Trần Đình Xu – Cống Quỳnh."
     },
     {
       "id": "r06",
@@ -61,8 +61,8 @@
       "lat": 10.7730,
       "lon": 106.6990,
       "radius_m": 150,
-      "source_url": "TODO: dán link thông báo thi công",
-      "note_vi": "Minh hoạ lô cốt cải tạo vỉa hè khu trung tâm."
+      "source_url": "https://vnexpress.net/tp-hcm-chinh-trang-quang-truong-truoc-cho-ben-thanh-tu-thang-10-4758459.html",
+      "note_vi": "Nguồn năm 2024 mô tả rào chắn và cải tạo đường, vỉa hè quanh chợ Bến Thành; công trình có thời hạn, không phải trạng thái hiện tại."
     },
     {
       "id": "r07",
@@ -71,8 +71,8 @@
       "lat": 10.7890,
       "lon": 106.6905,
       "radius_m": 200,
-      "source_url": "TODO: dán link thông báo thi công",
-      "note_vi": "Minh hoạ rào chắn thi công cống thoát nước."
+      "source_url": "https://dantri.com.vn/thoi-su/tphcm-ho-tu-than-bat-ngo-xuat-hien-giua-duong-1380068305.htm",
+      "note_vi": "Minh hoạ vùng cản trở giao thông dựa trên sự cố hố sụt, rào chắn và khắc phục khẩn cấp năm 2013; không phải bằng chứng về dự án thi công cống hiện tại."
     },
     {
       "id": "r08",
@@ -81,8 +81,8 @@
       "lat": 10.7860,
       "lon": 106.6890,
       "radius_m": 200,
-      "source_url": "TODO: dán link thông báo thi công",
-      "note_vi": "Minh hoạ công trình nâng cấp mặt đường."
+      "source_url": "https://benthanh.sawaco.com.vn/tin-tuc/hoat-dong-san-xuat-kinh-doanh/thong-bao-ve-viec-gian-doan-cung-cap-nuoc-de-phuc-vu-cong-tac.-vi-tri-thi-cong-giao-lo-vo-thi-sau-pasteur-giao-lo-vo-van-tan-truong-dinh-va-198-tran-quoc-thao-thuoc-phuong-vo-thi-sau-va-phuong-9-quan-3..html",
+      "note_vi": "Minh hoạ vùng thi công hạ tầng cấp nước tại giao lộ Võ Thị Sáu – Pasteur theo thông báo tháng 6/2021; không phải công trình hiện tại."
     }
   ]
 }

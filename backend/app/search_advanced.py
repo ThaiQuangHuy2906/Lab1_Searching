@@ -103,7 +103,7 @@ def bidijkstra(store: GraphStore, start: str, goal: str, mode: Mode = "balanced"
     goal (so dist_b[n] = cost of n -> goal along ORIGINAL edges). The
     side with the smaller heap top expands next. Standard stop rule:
     finish when top_f + top_b >= mu, where mu is the best meeting cost
-    seen so far; the answer is provably optimal (matches Dijkstra).
+    seen so far; the answer is provably optimal (matches UCS).
     """
     _check_endpoints(store, start, goal)
     t0 = time.perf_counter()

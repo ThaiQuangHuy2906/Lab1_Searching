@@ -159,5 +159,5 @@ Bài học cho báo cáo: một heuristic đúng trên giấy vẫn có thể m�
 | Kiểm chứng | Ở đâu | Cách |
 |---|---|---|
 | Consistent trên **từng cạnh** | `backend/tests/test_costs.py` (chạy thường xuyên) | assert $h(u) \le w(u,v) + h(v)$ với **mọi** cạnh × 3 mode × 4 khung giờ, cả G_demo lẫn G_real |
-| Admissible trên mẫu lớn | Thí nghiệm 2 (Phase 6) | Dijkstra **ngược** từ goal lấy $h^*(n)$ thật cho mọi $n$; scatter $h$ vs $h^*$ (`results/figs/admissibility_scatter.png`) + assert $h \le h^*$ toàn mẫu |
-| A* = Dijkstra về chi phí | `backend/tests/test_search.py` | so khớp tổng chi phí (sai số $10^{-6}$) trên toàn bộ cặp G_demo + 50 cặp G_real |
+| Admissible trên mẫu lớn | Thí nghiệm 2 (Phase 6) | UCS **ngược** từ goal lấy $h^*(n)$ thật cho mọi $n$; scatter $h$ vs $h^*$ (`results/figs/admissibility_scatter.png`) + assert $h \le h^*$ toàn mẫu |
+| A* = UCS về chi phí | `backend/tests/test_search.py` | so khớp tổng chi phí (sai số $10^{-6}$) trên toàn bộ cặp G_demo + 50 cặp G_real |

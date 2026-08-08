@@ -2,12 +2,13 @@
 
 ## Trạng thái hiện hành
 
-Mốc kiểm mới nhất: **2026-08-08**, base HEAD `98a82b2`; current worktree đã hoàn
-tất UI Clarity Phase trong `frontend/`, đồng bộ documentation và chụp lại hai
-ảnh README. Backend/API/schema/graph/profile/data/results không thay đổi.
+Mốc kiểm mới nhất: **2026-08-08**, base HEAD `8a78a22`; current worktree đã loại
+lựa chọn route `dijkstra` độc lập khỏi schema/backend/API/frontend/test và đồng
+bộ tài liệu thủ công. Graph/profile/data/results không thay đổi.
 
-- 10 thuật toán hai điểm: `bfs`, `dfs`, `iddfs`, `ucs`, `dijkstra`, `astar`,
-  `greedy`, `bidijkstra`, `idastar`, `beam`.
+- 9 thuật toán hai điểm: `bfs`, `dfs`, `iddfs`, `ucs`, `astar`, `greedy`,
+  `bidijkstra`, `idastar`, `beam`. Lựa chọn `dijkstra` độc lập đã được nhóm loại
+  ngày 2026-08-08 vì trùng hành vi với UCS; `bidijkstra` vẫn được giữ.
 - 3 ATSP: `held_karp`, `nn_2opt`, `sa`.
 - `frontend/` là frontend duy nhất. Shell responsive dùng bốn tab `Số liệu`,
   `Giải thích`, `So sánh`, `Thử nghiệm`; số liệu hành trình hiển thị km/phút,
@@ -20,7 +21,7 @@ tất UI Clarity Phase trong `frontend/`, đồng bộ documentation và chụp 
 - `data/raw/graph_raw.graphml`, bốn raw TomTom JSON và OSMnx cache hiện đều được
   Git track; đây không còn là artifact local-only/Git-ignore.
 - `results/` là benchmark tạm ngày 2026-07-26, cũ hơn graph ngày 2026-07-27.
-- Gate mới nhất: **176 backend pytest pass**, **40 frontend test pass**,
+- Gate mới nhất: **177 backend pytest pass**, **41 frontend test pass**,
   `ALL DATA VALID`, `npx tsc --noEmit` và production `npm run build` pass ngày
   2026-08-08.
 - Các regression hiện hành đã đạt; benchmark/gamma/generator cuối và
@@ -46,14 +47,14 @@ cho worktree hiện tại; current code/data và lệnh kiểm chứng mới có
 
 ## Bất biến không được phá
 
-- Một kiểu `Trace` duy nhất cho cả 10 thuật toán.
+- Một kiểu `Trace` duy nhất cho cả 9 thuật toán.
 - `distance` dùng **mét**; `time` và `balanced` dùng **giây**.
 - `total_time_s` luôn là balanced path weight, kể cả khi mode đang là
   `distance` hoặc `time`.
 - IDA* mặc định ε = 5 **đơn vị cost của mode**: mét cho `distance`, giây cho
   hai mode còn lại.
 - Cap trace 5.000 bước chỉ cắt payload, không cắt search hay metrics.
-- UCS/Dijkstra/Bidijkstra cần trọng số không âm; A*/IDA* phụ thuộc heuristic
+- UCS/Bidijkstra cần trọng số không âm; A*/IDA* phụ thuộc heuristic
   admissible + consistent trong `docs/HEURISTIC-PROOF.md`.
 - Product search/TSP/API tự cài bằng Python/`heapq`; NetworkX chỉ dùng trong
   pipeline, test và benchmark đối chứng.
@@ -121,8 +122,10 @@ còn lại là deferred work, chỉ chạy trọn chuỗi sau khi được cho p
 - QA map, keyboard, theme, offline, responsive và accessibility bằng browser.
 - Không quảng bá con số trong `results/` là current.
 - Giữ đủ 5 banner `SỐ TẠM` cho tới khi refresh cuối hoàn tất.
-- Còn 8 `source_url` TODO và các artifact tay: danh tính/đóng góp, screenshot,
-  report PDF, slide, video/link, data description và `[GroupID].zip`.
+- GroupID đã chốt là 2; danh tính và tỷ lệ 100% mỗi người đã điền. Cả 8
+  `source_url` manual risk đã được review/tích hợp với giới hạn nguồn lịch sử;
+  còn các vai trò chưa chốt, kiểm link bằng tab ẩn danh trên máy nộp bài,
+  screenshot, `2 - Report.pdf`, slide, video/link, data description và `2.zip`.
 
 ## Môi trường
 

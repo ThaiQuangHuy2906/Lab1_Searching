@@ -1,9 +1,13 @@
 # DESIGN.md — Hợp đồng thiết kế giao diện (Phase 5)
 
-> **Trạng thái kiểm lại 2026-08-08:** đây là nguồn chuẩn về ý đồ, token và hành vi UI.
-> M1–M5 và UI Clarity Phase đã có implementation; `npm test` (41 test), `npx tsc --noEmit` và
-> production `npm run build` (6/6 static pages) đạt.
-> Fresh browser QA ở 1366×768, 1024×768 và 390×844 thuộc lượt UI freeze ngay trước
+> **Trạng thái kiểm lại 2026-08-09:** đây là nguồn chuẩn về ý đồ, token và hành vi UI.
+> Phase 0 của UI & Explanation v2 đã qua design/contract review; biên bản
+> gate nằm tại `docs/UI-V2-PHASE0-READINESS.md`. §13 vẫn là thiết kế
+> đích chưa triển khai runtime cho tới khi các Phase 1–8 qua gate.
+> M1–M5 và UI Clarity Phase đã có implementation. Automated evidence mới của
+> Phase 0 là `npm test` (42 test), `npx tsc --noEmit` và production
+> `npm run build` (6/6 static pages) đạt. Browser QA ở 1366×768, 1024×768,
+> 390×844 thuộc lượt UI freeze ngay trước
 > thay đổi catalog; catalog 9 thuật toán mới đã qua regression/build nhưng chưa có
 > phiên browser thủ công mới. Lượt UI đó đã xác nhận route/ATSP, responsive shell,
 > keyboard/focus, reduced motion, bảy theme, API thành công và không có console
@@ -308,7 +312,7 @@ Button/SelectTrigger/Switch/input. Switch: thumb TRẮNG cố định + viền
   "Đảm bảo tối ưu") đồng bộ 2 tab kia; mọi thời lượng hành trình đọc trực tiếp
   bằng phút, kể cả giá trị dưới 90 giây; card ùn tắc: badge đếm tổng đoạn + caption
   "gộp theo tên đường, lấy mức cao nhất" + chữ "mức x/5" tô đúng `congestionHex` của
-  mức; nhóm alternatives có kicker "Tuyến thay thế đã xét — và vì sao bị loại", mỗi
+  mức; nhóm alternatives có kicker "Tuyến tham chiếu được tính thêm sau khi chạy", mỗi
   card thêm **Δ so tuyến chính** (phút + km, `start` nhanh/ngắn hơn · `goal`
   chậm/dài hơn — cùng ngữ nghĩa màu với cột Δ tab So sánh).
 - So sánh (v11 — redesign sau góp ý UI): **câu kết luận** đứng trước bảng ("Tuyến của
@@ -418,6 +422,11 @@ Thanh nổi giữa-đáy bản đồ, nền `surface-raised`, viền `surface-bo
 - Lỗi: toast đỏ hiện `message_vi` từ API **kèm cách sửa** ("Không tìm thấy node —
   hãy chọn lại điểm từ danh sách."). Mất kết nối backend: "Không gọi được backend
   (localhost:8000) — hãy chạy uvicorn rồi thử lại."
+- Copy legacy của tab Giải thích phải trung thực ngay trước UI v2: route UCS
+  tính hậu kiểm được gọi là **tuyến tham chiếu**, không phải tuyến thuật
+  toán chính “đã xét/bị loại”. `total_time_s` chỉ được ghi là **chi
+  phí cân bằng**, không phải thời gian thuần/ETA. Khung giờ là hồ sơ đại
+  diện, không phải giao thông trực tiếp.
 
 ## 8. Sàn chất lượng
 
@@ -764,6 +773,9 @@ factor có provenance, tuyến tham chiếu hậu kiểm và hướng dẫn thu�
 tuyến hậu kiểm là tuyến thuật toán “đã xét/bị loại”; không dùng prose/regex làm
 nguồn số liệu; không kết luận unreachable nếu termination chỉ là cap/pruning.
 Ordered multi giữ explanation từng chặng; comparison mở đúng result được bấm.
+Thành công của Dijkstra hai chiều dùng termination reason
+`bidirectional_bound_met` khi `top_forward + top_backward >= μ`, không gọi
+sai là `goal_expanded`; chi tiết producer/validator nằm ở `SCHEMA.md` §F.2.
 
 Quy ước số liệu không thay đổi: `total_cost` theo mode; `total_time_s` luôn là
 **chi phí cân bằng**, không phải ETA; thời gian ước tính theo ùn tắc dùng

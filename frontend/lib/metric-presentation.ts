@@ -40,7 +40,7 @@ const OUTCOME_METRICS: Record<Mode, readonly OutcomeMetric[]> = {
     { key: "total_cost", label: "Quãng đường", unit: "mét" },
   ],
   time: [
-    { key: "total_cost", label: "Thời gian chạy", unit: "giây" },
+    { key: "total_cost", label: "Thời gian ước tính theo ùn tắc", unit: "giây" },
     { key: "total_distance_m", label: "Quãng đường", unit: "mét" },
   ],
   balanced: [

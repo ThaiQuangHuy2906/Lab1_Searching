@@ -6,8 +6,8 @@
 //   xuống tông ink-dim (backend text giữ nguyên từng chữ — chỉ tách câu);
 // - badge Đảm bảo tối ưu ngay hàng chips (đồng bộ tab Số liệu/So sánh);
 // - card ùn tắc: đếm tổng đoạn + "mức x/5" tô đúng màu thang congestion;
-// - card tuyến thay thế: thêm Δ so tuyến chính (xanh nhanh hơn / đỏ chậm
-//   hơn) — cùng ngữ nghĩa màu với cột Δ của tab So sánh.
+// - card tuyến tham chiếu hậu kiểm: thêm Δ chi phí cân bằng và
+//   quãng đường so tuyến chính với đúng semantics của hai field legacy.
 
 import { ArrowRight, Clock, MessageSquareText, Route as RouteIcon, Sigma } from "lucide-react";
 import { Badge } from "../ui/badge";
@@ -56,9 +56,9 @@ function AltDeltas({ altTime, altDist, trace }: {
   if (t0 === null || d0 === null) return null;
   return (
     <span className="whitespace-nowrap">
-      <span className="text-ink-dim">so tuyến chính: </span>
+      <span className="text-ink-dim">Δ cân bằng: </span>
       <Delta value={altTime - t0} fmt={fmtDur} eps={0.5} />
-      <span className="text-ink-dim"> · </span>
+      <span className="text-ink-dim"> · Δ quãng đường: </span>
       <Delta value={altDist - d0} fmt={fmtKm} eps={10} />
     </span>
   );
@@ -123,7 +123,11 @@ export function ExplainTab() {
       <Card>
         <CardHeader className="gap-2">
           <CardTitle>
-            {trace.found ? "Vì sao chọn tuyến này?" : "Vì sao không có tuyến?"}
+            {sequentialRoute
+              ? "Giải thích hành trình theo thứ tự đã chọn"
+              : trace.found
+                ? "Giải thích kết quả tuyến"
+                : "Giải thích kết quả chưa tìm thấy tuyến"}
           </CardTitle>
           {start && goal && (
             // wrap thay vì truncate: "Chùa Xá Lợi" từng hiện thành "Chùa X…"
@@ -223,7 +227,7 @@ export function ExplainTab() {
 
       {ex.alternatives.length > 0 && (
         <p className="px-0.5 text-xs font-bold text-ink-dim">
-          Tuyến thay thế đã xét — và vì sao bị loại
+          Tuyến tham chiếu được tính thêm sau khi chạy
         </p>
       )}
       {ex.alternatives.map((alt) => (

@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import test from "node:test";
 
 import { routeGuaranteeLabel } from "../lib/algorithm-policy.ts";
@@ -33,7 +34,7 @@ test("outcome metrics stay mode-aware and never duplicate balanced path weight",
   );
   assert.deepEqual(
     outcomeMetricsForMode("time").map(({ key, label }) => [key, label]),
-    [["total_cost", "Thời gian chạy"], ["total_distance_m", "Quãng đường"]],
+    [["total_cost", "Thời gian ước tính theo ùn tắc"], ["total_distance_m", "Quãng đường"]],
   );
   assert.deepEqual(
     outcomeMetricsForMode("distance").map(({ key, label }) => [key, label]),
@@ -60,6 +61,18 @@ test("route outcomes and backend narrative use only km and minutes on screen", (
     presentRouteNarrative("BFS (tìm theo bề rộng) có 254 s ≈ 4,2 phút; chậm hơn ~90 s, chi phí 0 giây và lệch 5 m."),
     "BFS có 4,2 phút; chậm hơn ~1,5 phút, chi phí 0 phút và lệch 0,005 km.",
   );
+});
+
+test("legacy Explain UI identifies post-run references without forbidden claims", () => {
+  const source = readFileSync(
+    new URL("../components/drawer/explain-tab.tsx", import.meta.url),
+    "utf8",
+  );
+  assert.match(source, /Tuyến tham chiếu được tính thêm sau khi chạy/);
+  assert.doesNotMatch(source, /Tuyến thay thế đã xét/);
+  assert.doesNotMatch(source, /vì sao bị loại/);
+  assert.match(source, /Δ cân bằng/);
+  assert.match(source, /Δ quãng đường/);
 });
 
 test("every optimization event has a Vietnamese presentation separate from raw fields", () => {

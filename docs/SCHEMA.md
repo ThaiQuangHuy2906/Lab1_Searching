@@ -1,6 +1,8 @@
 # SCHEMA.md — Các hợp đồng dữ liệu và API
 
-> **Trạng thái kiểm lại 2026-08-09:** §A–§D mô tả contract base đang chạy. §E khóa phần
+> **Trạng thái kiểm lại 2026-08-09:** Phase 0 của UI & Explanation v2 đã
+> hoàn tất contract-readiness review; biên bản gate nằm tại
+> `docs/UI-V2-PHASE0-READINESS.md`. §A–§D mô tả contract base đang chạy. §E khóa phần
 > mở rộng đã được người dùng duyệt: GraphView dạy học, scenario edge-override
 > request-scoped, `AppliedScenario`/fingerprint và ATSP optimization trace.
 > **Milestone 2 đã triển khai** GraphView, graph/traffic response echo và
@@ -235,6 +237,19 @@ Do `explain.py` điền ở Phase 4. **Phase 2–3 trả đúng shape rỗng:** 
   ]
 }
 ```
+
+`alternatives` và `why_not_vi` là tên field legacy. Các path trong danh sách
+này do hệ thống chạy UCS **sau** route chính để đối chiếu; chúng không
+nhất thiết là full route mà thuật toán chính đã xét hoặc loại. Producer/UI
+v1 phải dùng copy trung tính “tuyến tham chiếu được tính thêm sau khi
+chạy”. `Alternative.total_time_s` giữ đúng semantics §B.2 là balanced path
+weight, không phải thời gian thuần/ETA. Trước khi `ReferenceRoute.metrics`
+của §F.3 được triển khai, prose legacy chỉ được nói relation theo
+objective nếu backend tính relation từ `total_cost` của đúng `mode`.
+
+Mọi mức ùn tắc trong explanation là từ **hồ sơ khung giờ đại diện**
+theo `time_slot`, không phải dữ liệu giao thông trực tiếp. Copy không
+dùng “lúc 07:30” theo cách khiến người đọc hiểu đó là hiện trạng live.
 
 ### B.5 `optimal_guarantee` chuẩn theo thuật toán và termination
 
@@ -836,11 +851,16 @@ found=false hoặc start=goal:
 ```text
 termination
   reason:
-    start_equals_goal | goal_expanded | frontier_exhausted |
+    start_equals_goal | goal_expanded | bidirectional_bound_met | frontier_exhausted |
     depth_cap_reached | round_cap_reached |
     beam_exhausted_after_pruning
   reachability: route_found | proven_unreachable | inconclusive
   solution_quality: exact | epsilon_bounded | feasible_unproven | not_applicable
+  bidirectional_bound:
+    {top_forward: {node, g} | null,
+     top_backward: {node, g} | null,
+     mu: finite float >= 0,
+     meeting_node: node id} | null
 ```
 
 Mapping bắt buộc:
@@ -848,10 +868,25 @@ Mapping bắt buộc:
 - `start_equals_goal`: found, `route_found`, `not_applicable`; không đánh giá chất
   lượng một tuyến khi không có cạnh nào cần đi và giữ nguyên
   `optimal_guarantee` legacy theo algorithm policy hiện hành.
-- `goal_expanded`: found; UCS/A*/Bidijkstra là `exact` khi precondition §B.5 giữ;
+- `goal_expanded`: found; UCS/A* là `exact` khi precondition §B.5 giữ;
   IDA* là `epsilon_bounded`; BFS/DFS/IDDFS/Greedy/Beam là `feasible_unproven`.
+- `bidirectional_bound_met`: chỉ dùng cho Bidirectional Dijkstra found khi đã
+  có finite μ/meeting path và effective `top_forward + top_backward >= μ`;
+  quality là `exact` khi precondition non-negative weight §B.5 giữ. Không
+  gán `goal_expanded` cho thành công này vì Goal không nhất thiết bị phía
+  forward expand trước khi stop rule chứng minh tối ưu.
 - `frontier_exhausted`: not found, `proven_unreachable`, `not_applicable`.
 - ba reason cap/pruning: not found, `inconclusive`, `not_applicable`.
+
+`bidirectional_bound` bắt buộc non-null **iff** reason là
+`bidirectional_bound_met`; mọi reason khác bắt buộc null. Đây là state effective
+tại chính loop stop check sau khi bỏ stale heap entries, kể cả khi
+`include_trace=false`. `top_forward`/`top_backward` null nghĩa là effective
+frontier tương ứng rỗng và được thuật toán xem như key `+∞`; JSON không serialize
+Infinity. Mọi g và μ được serialize là raw finite algorithm value. Nhờ field root
+này, validator/UI không phải suy stop condition từ frontier display đã round.
+`meeting_node` phải nằm trên result path và μ equivalent
+`metrics.total_cost` theo tolerance §F.1.
 
 Nếu precondition guarantee không được attested trong result snapshot, hạ quality
 về `feasible_unproven`; frontend không suy quality chỉ từ tên algorithm.
@@ -880,8 +915,12 @@ v2 vẫn cho phép field vắng ở payload version 1:
 decision
   rule: fifo | lifo | depth_limited_lifo | lowest_g | lowest_h |
         lowest_f_then_h | bidirectional_min_key | f_bound_dfs | top_k_f
-  selected_scores: {g?, h?, f?, depth?}
-  runner_up: {node, g?, h?, f?} | null
+  selected_scores:
+    {g: finite float | null, h: finite float | null,
+     f: finite float | null, depth: int >= 0 | null} | null
+  runner_up:
+    {node, g: finite float | null, h: finite float | null,
+     f: finite float | null, depth: int >= 0 | null} | null
   frontier_size_before: int >= 0
   frontier_size_after: int >= 0
   neighbors_scanned: int >= 0
@@ -900,15 +939,18 @@ decision
 Scores, runner-up, frontier-before, top keys và `mu_before` là state effective
 ngay trước pop/expand, sau khi bỏ stale heap entries. Counters và frontier-after
 là state của action vừa ghi. `iteration` (IDDFS/IDA*) và `layer` (Beam) serialize
-**1-based**; `ordinal` ATSP ở §E.4 vẫn 0-based. Field không áp dụng được omit/null.
+**1-based**; `ordinal` ATSP ở §E.4 vẫn 0-based. Producer B2 serialize đủ keys của
+`decision`; field không áp dụng mang null. BFS/DFS được dùng
+`selected_scores=null`; score-driven algorithm có object với ít nhất một score
+non-null. Reader B1 vẫn cho phép thiếu toàn bộ `decision`.
 Snapshot chỉ được tạo khi recorder active và không được thêm RNG call.
 
 Riêng `bidijkstra`, mỗi recorded step thêm:
 
 ```text
 bidirectional_frontiers
-  forward: {nodes: sorted unique node ids, g: exact same-key map}
-  backward: {nodes: sorted unique node ids, g: exact same-key map}
+  forward: {nodes: sorted unique node ids, g: same-key trace-display map}
+  backward: {nodes: sorted unique node ids, g: same-key trace-display map}
   best_path_cost: finite float >= 0 | null
   meeting_node: node id | null
 ```
@@ -917,6 +959,12 @@ Forward `g` là Start→node; backward `g` là node→Goal trên graph gốc. No
 ở cả hai list và giữ hai giá trị. Legacy `frontier` bằng union; legacy `g` dùng
 giá trị phía duy nhất hoặc min khi overlap; `side` là phía vừa expand.
 `decision.mu_before` là μ trước expansion; `best_path_cost` là μ sau expansion.
+Key set của mỗi nested `g` phải bằng chính xác `nodes`; giá trị dùng
+cùng presentation-rounding policy với legacy trace `g`, không dùng giá trị
+đã round để ra quyết định search. Ngược lại, selected/runner-up/top-key
+scores, bound và μ trong `decision`/`termination.bidirectional_bound` serialize raw finite algorithm
+values; frontend tự format presentation. Nhờ vậy UI có thể giải thích tie/stop
+rule mà không lấy một giá trị làm tròn để thay cho state thật.
 Producer v2 bắt buộc payload này ở mọi recorded bidirectional step và cấm nó ở
 algorithm khác. Reader v1/v2 thiếu field chỉ được render union có nhãn fallback,
 không tái dựng hai phía.
@@ -930,17 +978,46 @@ nguồn chính:
 ```text
 evidence
   selection_rule: decision rule enum
-  objective: {mode, selected_value|null, exact_reference_value?,
-              optimality_gap?, optimality_gap_pct?}
+  objective:
+    {mode,
+     selected_value: finite float >= 0 | null,
+     exact_reference_value: finite float >= 0 | null,
+     optimality_gap: finite float >= 0 | null,
+     optimality_gap_pct: finite float >= 0 | null}
   cost_breakdown: PathCostBreakdown | null
-  factors: [{id, kind, edge_ids, level?, count, contribution_s?}]
+  factors: [ExplanationFactor]
   reference_routes: [ReferenceRoute]    # tối đa 2
 ```
 
 Found route có finite `selected_value` và non-null breakdown; trivial có value 0
-và breakdown toàn 0. Not-found có `selected_value=null`, exact/gap null,
+và breakdown toàn 0. Ba field exact/gap luôn hiện diện nhưng null khi không có
+exact same-snapshot/same-objective reference. Not-found có
+`selected_value=null`, exact/gap null,
 `cost_breakdown=null`, references rỗng; factors chỉ được mô tả typed
 cap/pruning/context thật. `selection_rule` phải khớp algorithm/decision enum.
+Không dùng missing key và null như hai trạng thái cạnh tranh trong payload B2.
+
+`ExplanationFactor`:
+
+```text
+id: stable non-localized id
+kind: objective_truth | optimality_gap | congestion | flood | construction |
+      narrow_alley | traffic_light | algorithm_limit | scenario_effect
+affects_objective: bool
+source: cost_breakdown | reference_comparison | trace | scenario
+edge_ids: unique directed edge ids
+node_ids: unique node ids
+contribution_raw: finite float | null
+contribution_unit: m | s | null
+timeline_step: int >= 1 | null
+```
+
+`contribution_raw` và `contribution_unit` cùng null hoặc cùng non-null. Raw value
+có thể signed. `affects_objective=false` bắt buộc cả hai null; context seconds
+được đọc từ `cost_breakdown`, không giả là contribution của distance objective.
+Khi non-null, unit theo active objective: `m` cho distance, `s` cho
+time/balanced. Traffic level/count và contiguous road group là view-model derive
+từ edge/profile/path facts, không phải một response factor shape thứ hai.
 
 `ReferenceRoute`:
 
@@ -986,6 +1063,7 @@ original_order: [start, ...stops]             # không lặp start cuối
 original_order_legs: [Leg]
 totals_breakdown: PathCostBreakdown
 original_order_breakdown: PathCostBreakdown
+matrix_evidence: AtspMatrixEvidence
 computation_metrics:
   matrix_search_runs: int >= 0
   matrix_nodes_expanded: int >= 0
@@ -993,13 +1071,37 @@ computation_metrics:
   optimizer_runtime_ms: finite float >= 0
   total_runtime_ms: finite float >= 0
 failure: MultirouteFailure | null
-method_stats: AtspMethodStats
+method_stats: AtspMethodStats | null
 ```
 
 Mỗi optimized/baseline `Leg` thêm `cost_breakdown: PathCostBreakdown`. Totals và
 hai aggregate breakdown bằng tổng đúng các leg tương ứng trong tolerance.
 `original_order_legs` có closing leg khi return=true. Với tối đa 15 stops: open
 có tối đa 15 legs, closed có tối đa **16** legs.
+
+`AtspMatrixEvidence` luôn non-null khi facade đã bắt đầu xử lý, kể cả
+`matrix_incomplete`:
+
+```text
+point_count: int >= 2
+directed_pair_count: int >= 2                 # k * (k - 1)
+reachable_directed_pair_count: int >= 0
+asymmetric_unordered_pair_count: int >= 0
+asymmetry_example:
+  {from_node, to_node,
+   forward_cost: finite float >= 0,
+   reverse_cost: finite float >= 0,
+   absolute_delta: finite float > 0} | null
+```
+
+`reachable_directed_pair_count <= directed_pair_count`; response reachable phải
+bằng nhau. `asymmetric_unordered_pair_count <= k*(k-1)/2`. Unordered pair chỉ
+được xét asymmetric khi cả hai directed costs đã
+có và khác ngoài tolerance §F.1. Example chọn pair có absolute delta lớn nhất,
+tie bằng `(from_node, to_node)` tăng dần; `from_node < to_node` theo node ID để
+khóa orientation, `forward_cost=cost[from_node,to_node]`, và
+`absolute_delta=abs(forward_cost-reverse_cost)`. Nếu không có pair đủ điều kiện,
+example null. Mọi cost dùng active mode raw unit, không lấy số display đã round.
 
 `matrix_search_runs` là số lượt multi-target UCS thực sự bắt đầu;
 `matrix_nodes_expanded` cộng pop/settle hợp lệ của các lượt đó.
@@ -1012,15 +1114,18 @@ phân như route runtime. Nếu chỉ kiểm serialized values, cho sai số acc
 Trace recorder/assembly có thể làm runtime khác; vì vậy trace-on/off regression bỏ
 qua runtime nhưng phải so mọi field deterministic khác.
 
-`AtspMethodStats` là discriminated union và luôn đo **full run**, không derive từ
-sampled events:
+`AtspMethodStats` là discriminated union và, khi reachable/optimizer đã chạy,
+luôn đo **full run**, không derive từ sampled events. Field này bắt buộc
+non-null cho response reachable v2 và bắt buộc null cho `matrix_incomplete`.
+Reachable bắt buộc `failure=null`; `method_stats.kind` phải map lần lượt
+`held_karp→held_karp`, `nn_2opt→nn_local_search`, `sa→simulated_annealing`:
 
 ```text
-held_karp
+kind: held_karp
   dp_states_solved
   transitions_evaluated
 
-nn_local_search
+kind: nn_local_search
   nn_initial_cost
   nn_candidates_evaluated
   two_opt_candidates_evaluated
@@ -1030,7 +1135,7 @@ nn_local_search
   final_cost
   improvement_after_nn
 
-simulated_annealing
+kind: simulated_annealing
   seed_count
   best_seed
   best_cost
@@ -1047,6 +1152,11 @@ simulated_annealing
 ```
 
 Định nghĩa count:
+
+- Mọi field tên `*_count`, `*_evaluated`, `*_moves`, `*_states_solved`,
+  `transitions_evaluated` và `iterations` là integer >= 0. Mọi cost/mean/stddev
+  hữu hạn và >= 0. `seed_count=len(seeds)>=1`; `best_seed` thuộc `seeds`;
+  mỗi `best_order` là permutation bắt đầu bằng Start và không lặp Start cuối.
 
 - Held–Karp `dp_states_solved` là số entry `(mask, endpoint)` materialized sau DP,
   gồm base `(1,start)`. `transitions_evaluated` tăng cho mỗi phép tính candidate
@@ -1088,6 +1198,7 @@ original_order_breakdown=null
 savings_pct=null
 failure={kind: matrix_incomplete, from_node, to_node}
 method_stats=null
+matrix_evidence=<partial counters/asymmetry đã thu được>
 computation_metrics=<counters/timing đã thu được>
 ```
 

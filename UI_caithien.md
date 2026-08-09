@@ -1,6 +1,6 @@
 # Kế hoạch triển khai cải thiện UI tìm đường và đa điểm
 
-> Trạng thái: **Phương án/contract đích đã được người dùng duyệt; chưa triển khai vào runtime**
+> Trạng thái: **Phase 0 đã hoàn tất và đủ điều kiện bắt đầu Phase 1; contract/UI v2 vẫn chưa triển khai vào runtime**
 >
 > Ngày khảo sát: **2026-08-09**
 >
@@ -86,6 +86,16 @@ Nếu checklist phụ mâu thuẫn bảng này, mục normative thắng và chec
 | 10 | Một phase/test/acceptance/DoD normative; phần 30 chỉ bổ sung | §0.2; §19–§25; §30.32–§30.38 |
 
 Mười dòng này là index đóng review, không lặp lại semantics chi tiết.
+
+### 0.4. Trạng thái phase hiện hành
+
+- **Phase 0: hoàn tất.** Contract/readiness verdict, writer-reader inventory,
+  compatibility matrix, fixture golden và bằng chứng gate được ghi tại
+  `docs/UI-V2-PHASE0-READINESS.md`.
+- **Phase 1–8: chưa triển khai.** Mọi payload/type/component v2 trong tài liệu
+  vẫn là đích đã duyệt, không phải claim runtime.
+- Truthfulness hotfix của Phase 0 chỉ sửa copy/provenance/nhãn hiện hành;
+  nó không phát `contract_version=2` và không thay route/cost/trace result.
 
 ---
 
@@ -617,8 +627,8 @@ interface BidirectionalFrontierSide {
 interface BidirectionalFrontiers {
   forward: BidirectionalFrontierSide;
   backward: BidirectionalFrontierSide;
-  bestPathCost: number | null;
-  meetingNode: string | null;
+  best_path_cost: number | null;
+  meeting_node: string | null;
 }
 
 interface TraceStep {
@@ -628,16 +638,14 @@ interface TraceStep {
   side?: "forward" | "backward" | null;
 
   // Field mới, tên JSON snake_case.
-  bidirectional_frontiers?: {
-    forward: { nodes: string[]; g: Record<string, number> };
-    backward: { nodes: string[]; g: Record<string, number> };
-    best_path_cost: number | null;
-    meeting_node: string | null;
-  } | null;
+  bidirectional_frontiers?: BidirectionalFrontiers | null;
 }
 ~~~
 
-Tên field cuối cùng phải được ghi một lần trong schema và mirror đúng ở Python/TypeScript. Không tạo đồng thời hai biến thể `bidirectional` và `bidirectional_frontiers`.
+Tên field cuối cùng phải được ghi một lần trong schema và mirror đúng ở
+Python/TypeScript. API types giữ nguyên snake_case; chỉ state/view-model nội bộ
+mới được map có chủ ý sang camelCase. Không tạo đồng thời hai biến thể
+`bidirectional` và `bidirectional_frontiers`.
 
 ### 7.2. Invariant backend
 
@@ -666,6 +674,9 @@ Với mỗi recorded step của `bidijkstra`:
 18. Nested frontier/`best_path_cost` là snapshot **sau** expansion; decision
     `top_forward`, `top_backward`, selected score và `mu_before` là state effective
     **trước** expansion, sau khi loại stale heap entry.
+19. Nested `g` dùng cùng trace-display rounding với legacy `g`; selected score,
+    runner-up, top keys, bound và μ dùng raw finite algorithm values. UI format
+    các giá trị raw, không dùng số đã round để giải thích tie/stop rule.
 
 ### 7.3. UI hai bảng
 
@@ -809,6 +820,19 @@ Giữ toàn bộ field cũ và thêm:
     "risk_penalty_total_s": 0,
     "balanced_cost_s": 0
   },
+  "matrix_evidence": {
+    "point_count": 3,
+    "directed_pair_count": 6,
+    "reachable_directed_pair_count": 6,
+    "asymmetric_unordered_pair_count": 2,
+    "asymmetry_example": {
+      "from_node": "A",
+      "to_node": "B",
+      "forward_cost": 120.0,
+      "reverse_cost": 150.0,
+      "absolute_delta": 30.0
+    }
+  },
   "computation_metrics": {
     "matrix_search_runs": 3,
     "matrix_nodes_expanded": 0,
@@ -843,6 +867,10 @@ Giữ toàn bộ field cũ và thêm:
 - `totals_breakdown` và `original_order_breakdown` là tổng field-by-field của đúng
   các legs tương ứng, cùng open/closed topology. Các identity và tolerance lấy duy
   nhất từ `docs/SCHEMA.md` §F.1.
+- `matrix_evidence` luôn có khi facade đã bắt đầu: tổng directed pairs, số pair
+  đã dựng được, số unordered pair asymmetric và một ví dụ deterministic theo
+  đúng active-mode raw cost. Shape/selection rule lấy duy nhất từ
+  `docs/SCHEMA.md` §F.4.
 - `metrics.total_time_s` luôn bằng `cost_breakdown.balanced_cost_s`; time-mode ETA
   dùng `metrics.total_cost`/`congestion_adjusted_time_s`, không dùng field legacy.
 - `matrix_search_runs`: số lần multi-target UCS; với implementation hiện tại bằng số điểm `k`.
@@ -868,6 +896,7 @@ Khóa contract rõ trong `docs/SCHEMA.md`:
 - `original_order_legs=[]` vì chưa có đủ đường nối.
 - `original_order_totals=null`.
 - `original_order_breakdown=null`.
+- `matrix_evidence` vẫn có số đã thu thập tới directed pair lỗi.
 - `computation_metrics` vẫn có số đã thu thập tới lúc phát hiện unreachable, nếu implementation đo được; nếu schema chọn nullable thì phải nhất quán và UI có nhãn “không có dữ liệu”, không hiển thị 0 giả.
 
 Khuyến nghị tốt nhất: luôn trả `computation_metrics` khi facade đã bắt đầu xử lý.
@@ -1276,7 +1305,7 @@ Không dựa riêng vào AbortController vì backend synchronous có thể vẫn
 | Compare chỉ chọn 1 ID | Không chạy; “Chọn ít nhất 2” |
 | Chọn vượt max | Disable lựa chọn tiếp theo; không tự bỏ cái cũ |
 | Held–Karp k>15 | Invalid rõ lý do; không tự đổi method |
-| `found=false` | Card “Không tìm thấy đường”, không gọi là network error |
+| `found=false` | V2 dùng typed termination: proven unreachable khác inconclusive do cap/pruning; legacy chỉ nói “lần chạy này chưa tìm thấy”, không gọi là network error hoặc tự chứng minh vô đường |
 | Một item HTTP error | Giữ item thành công; card lỗi có Retry |
 | Backend offline/toàn bộ lỗi | Alert bền vững cấp workspace và Retry |
 | Input đổi khi running | Abort/discard; không để result cũ xuất hiện |
@@ -1729,6 +1758,10 @@ Không vừa thay interaction chính vừa đưa vào N-map grid trong một pat
 ## 19. Lộ trình triển khai theo phase và gate
 
 ### Phase 0 — Preflight và khóa thiết kế
+
+Trạng thái: **HOÀN TẤT 2026-08-09**. Bằng chứng và readiness verdict:
+`docs/UI-V2-PHASE0-READINESS.md`. Trạng thái này chỉ mở gate cho Phase 1,
+không tuyên bố runtime v2 đã có.
 
 Việc làm:
 
@@ -2761,15 +2794,30 @@ type ReachabilityConclusion =
 type TerminationReason =
   | "start_equals_goal"
   | "goal_expanded"
+  | "bidirectional_bound_met"
   | "frontier_exhausted"
   | "depth_cap_reached"
   | "round_cap_reached"
   | "beam_exhausted_after_pruning";
+
+interface BidirectionalBoundEvidence {
+  top_forward: { node: string; g: number } | null;
+  top_backward: { node: string; g: number } | null;
+  mu: number;
+  meeting_node: string;
+}
+
+interface RouteTermination {
+  reason: TerminationReason;
+  reachability: ReachabilityConclusion;
+  solution_quality: SolutionQuality;
+  bidirectional_bound: BidirectionalBoundEvidence | null;
+}
 ~~~
 
 `ExplanationOutcome` là frontend view-model derive từ root `found` và
-`termination.reason`; payload v2 không serialize một outcome cạnh tranh. Ba field
-`reason/reachability/solution_quality` dùng đúng root `Trace.termination` ở
+`termination.reason`; payload v2 không serialize một outcome cạnh tranh. Các field
+`reason/reachability/solution_quality/bidirectional_bound` dùng đúng root `Trace.termination` ở
 `docs/SCHEMA.md` §F.2.
 
 Mapping:
@@ -2777,7 +2825,8 @@ Mapping:
 | Trường hợp | Solution quality | Reachability | Headline |
 |---|---|---|---|
 | Start=Goal | not_applicable | route_found | “Không cần tìm đường vì Đi trùng Đến”; không dùng quality để đổi `optimal_guarantee` legacy |
-| UCS/A*/Bidi found | exact | route_found | “Có bảo đảm tối ưu trong cấu hình này” |
+| UCS/A* found (`goal_expanded`) | exact | route_found | “Có bảo đảm tối ưu trong cấu hình này” |
+| Bidi found (`bidirectional_bound_met`) | exact | route_found | “Hai phía đã đạt điều kiện dừng theo μ; tuyến có bảo đảm tối ưu” |
 | IDA* found | epsilon_bounded | route_found | “Sai số cộng không quá ε trong cấu hình này” |
 | BFS/DFS/IDDFS/Greedy/Beam found | feasible_unproven | route_found | “Tìm được tuyến; không có bảo đảm weighted optimum” |
 | Complete exploration exhausted | not_applicable | proven_unreachable | “Không có đường có hướng trong cấu hình này” |
@@ -2807,6 +2856,15 @@ Quy tắc producer bắt buộc để mapping không overclaim:
   pruning là `frontier_exhausted` và có thể chứng minh reachability.
 - IDA* chỉ dùng `round_cap_reached` khi hết `max_rounds` nhưng probe còn trả next
   finite f-threshold; exhaustive/no next threshold dùng `frontier_exhausted`.
+- Bidirectional Dijkstra found chỉ dùng `bidirectional_bound_met` khi finite
+  μ/meeting path đã có và effective `top_forward + top_backward >= μ`.
+  Không dùng `goal_expanded`, vì phía forward không cần expand Goal trước
+  khi stop rule hai chiều chứng minh tối ưu.
+- `termination.bidirectional_bound` bắt buộc non-null đúng khi reason là
+  `bidirectional_bound_met`, kể cả `include_trace=false`. Top null nghĩa là
+  effective frontier tương ứng rỗng và được thuật toán xem như key `+∞`; JSON
+  không serialize Infinity. Các g/μ là raw finite values tại chính stop check;
+  meeting node nằm trên result path và μ equivalent `metrics.total_cost`.
 - Test bắt buộc có IDDFS unreachable nông hơn cap, goal sâu hơn cap và graph có
   cycle; Beam có `pool<=k` unreachable và `pool>k` cắt nhánh chứa Goal. Không suy
   termination từ `trace.length`, vì trace có thể tắt hoặc bị cap.
@@ -2890,7 +2948,8 @@ Thêm:
   "termination": {
     "reason": "goal_expanded",
     "reachability": "route_found",
-    "solution_quality": "exact"
+    "solution_quality": "exact",
+    "bidirectional_bound": null
   },
   "explanation": {
     "summary_vi": "legacy fallback/export",
@@ -2931,6 +2990,11 @@ không gắn version 2 rồi dùng null/[] để che field bắt buộc bị thi
 derive từ root `found` + `termination`, không duy trì một verdict enum thứ hai.
 Found có finite objective/non-null breakdown; trivial dùng 0/zero breakdown;
 not-found dùng objective/breakdown null và reference rỗng theo `SCHEMA.md` §F.3.
+Object `objective` luôn có đủ năm key
+`mode/selected_value/exact_reference_value/optimality_gap/optimality_gap_pct`.
+Ba field exact/gap là `null` khi không có exact same-snapshot reference;
+not-found còn có `selected_value=null`. Không dùng missing key và `null` như hai
+trạng thái cạnh tranh trong payload B2.
 
 ### 30.11. Decision factors và congestion grouping
 
@@ -2954,9 +3018,17 @@ interface ExplanationFactor {
   edge_ids: string[];
   node_ids: string[];
   contribution_raw: number | null;
+  contribution_unit: "m" | "s" | null;
   timeline_step: number | null;
 }
 ~~~
+
+`contribution_raw` và `contribution_unit` cùng null hoặc cùng non-null. Giá trị
+raw có thể signed. Factor `affects_objective=false` bắt buộc cả hai null; số giây
+bối cảnh lấy từ breakdown, không giả là contribution của distance objective.
+Khi non-null, unit là `m` cho distance và `s` cho time/balanced. Level/count của
+nhóm đường là view-model derive từ directed edges/profile, không phải một shape
+factor cạnh tranh trong API.
 
 Frontend map `kind` + facts thành title/detail; không cần backend nhúng prose cho từng factor.
 
@@ -3057,7 +3129,9 @@ Invariant:
 - Nếu route/reference giống nhau, có thể nói “lần chạy này trùng reference exact”; không gọi non-guaranteed algorithm thành exact.
 - Edge-counterfactual chỉ nói “đường nếu tránh cạnh X”, không “bị thuật toán loại”.
 
-Legacy `Alternative` nên được mở rộng ít nhất với `id`, `total_cost`, `origin` và relation trong rollout; UI v2 dùng `reference_routes`.
+Legacy `Alternative` giữ shape hiện hành cho F1 và được sinh từ cùng facts trong
+rollout. Không thêm field cạnh tranh tên `origin`; provenance typed duy nhất là
+`ReferenceRoute.provenance`. UI v2 dùng `reference_routes`.
 
 ### 30.13. Map ↔ explanation
 
@@ -3151,7 +3225,8 @@ cho phép thiếu:
       "node": "n0008",
       "g": 125.0,
       "h": 42.0,
-      "f": 167.0
+      "f": 167.0,
+      "depth": null
     },
     "frontier_size_before": 8,
     "frontier_size_after": 7,
@@ -3199,7 +3274,10 @@ Semantics:
 - Với Bidijkstra, `top_forward`, `top_backward` và `mu_before` là effective state
   trước expand; `bidirectional_frontiers.best_path_cost` là μ sau expand. Tách hai
   thời điểm để không giải thích stop rule bằng dữ liệu tương lai.
-- Omit fields không áp dụng; không serialize null hàng loạt nếu model config hỗ trợ.
+- Producer B2 serialize đủ keys của `decision`; field không áp dụng mang `null`.
+  `selected_scores=null` hợp lệ cho BFS/DFS; score object của algorithm có score
+  và object `runner_up` chứa đủ `g/h/f/depth` với subfield không áp dụng là
+  `null`. Reader B1 vẫn cho phép thiếu toàn bộ `decision`.
 - Tạo snapshot chỉ khi recorder active.
 - Không đổi path, tie-break, work, metrics hoặc trace cap.
 - Legacy response thiếu decision vẫn parse.
@@ -3360,6 +3438,8 @@ interface AtspMatrixEvidence {
 
 - Cost dùng active mode và đúng raw unit.
 - `asymmetry_example` chọn deterministic trong các unordered pair có hai hướng chênh quá tolerance; ưu tiên absolute delta lớn nhất rồi tie-break node ID.
+- Khóa orientation bằng `from_node < to_node`; `forward_cost` là cost
+  `from_node→to_node`, không tự đảo chiều để delta dương.
 - Nếu không có pair khác biệt trong tolerance, để null và nói snapshot này không cung cấp ví dụ số; không tuyên bố matrix luôn symmetric.
 - Khi matrix incomplete, `reachable_directed_pair_count` có thể nhỏ hơn tổng và `failure` ở mục 30.19 là kết luận chính; không đưa optimizer narrative.
 
@@ -3725,7 +3805,7 @@ Comparison:
 
 | File | Thay đổi |
 |---|---|
-| `docs/SCHEMA.md` | Explanation v2, verdict/termination, breakdown, factors, references, TraceStep decision, ATSP failure/method stats |
+| `docs/SCHEMA.md` | Explanation v2, verdict/termination, breakdown, factors, references, TraceStep decision, ATSP matrix/failure/method stats |
 | `backend/app/models.py` | Strict additive models và cross-field validators |
 | `backend/app/costs.py` | Giữ công thức nguồn; không duplicate |
 | `backend/app/graph_store.py` | Helper aggregate path breakdown |

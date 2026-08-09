@@ -1,8 +1,9 @@
 """Vietnamese route explanations (assignment requirement 4.8, spec 6.4).
 
 Builds `explanation` for a finished Trace: a natural-language summary
-with REAL numbers, the congested segments on the route, and at least
-one genuinely different alternative route with a reason it lost.
+with REAL numbers, the congested segments on the route, and up to two
+post-run reference routes described without pretending that the main
+algorithm considered and rejected those complete routes.
 
 Template-with-logic, not canned strings: sentences appear only when
 their condition holds (congestion present, alternative shorter by
@@ -13,6 +14,7 @@ decimal commas.
 from __future__ import annotations
 
 import heapq
+import math
 
 from .graph_store import GraphStore
 from .models import (
@@ -27,7 +29,7 @@ ALGO_VI = {
 }
 MODE_VI = {
     "balanced": "tổng chi phí cân bằng (thời gian + phạt rủi ro) thấp nhất",
-    "time": "thời gian di chuyển ước tính thấp nhất",
+    "time": "thời gian ước tính theo hồ sơ ùn tắc thấp nhất",
     "distance": "quãng đường ngắn nhất",
 }
 #: what a NON-optimal algorithm actually optimizes — the opening sentence
@@ -41,6 +43,8 @@ ALGO_CRITERION_VI = {
 }
 CONGESTION_THRESHOLD = 4
 MAX_NAMED_STOPS = 6
+COMPARISON_ABS_TOLERANCE = 1e-6
+COMPARISON_REL_TOLERANCE = 1e-9
 
 
 def vi_num(x: float, nd: int = 1) -> str:
@@ -55,10 +59,50 @@ def _cost_unit(mode: Mode) -> str:
 
 
 def _fmt_route_totals(cost: float, time_s: float, dist_m: float, mode: Mode) -> str:
-    core = f"{time_s:.0f} s ≈ {vi_num(time_s / 60)} phút; {vi_num(dist_m / 1000, 2)} km"
+    distance = f"{vi_num(dist_m / 1000, 2)} km"
     if mode == "distance":
-        return core
-    return f"{cost:.0f} s — {core}" if abs(cost - time_s) > 0.5 else core
+        return f"{distance}; chi phí cân bằng {time_s:.0f} s quy đổi"
+    if mode == "time":
+        objective = f"thời gian ước tính theo hồ sơ ùn tắc {cost:.0f} s"
+        if abs(cost - time_s) > 0.5:
+            return f"{objective}; chi phí cân bằng {time_s:.0f} s quy đổi; {distance}"
+        return f"{objective}; {distance}"
+    return f"chi phí cân bằng {cost:.0f} s quy đổi; {distance}"
+
+
+def _objective_label(mode: Mode) -> str:
+    return {
+        "distance": "quãng đường",
+        "time": "thời gian ước tính theo hồ sơ ùn tắc",
+        "balanced": "chi phí cân bằng",
+    }[mode]
+
+
+def _fmt_distance_delta(delta_m: float) -> str:
+    amount = abs(delta_m)
+    if amount < 1:
+        return "dưới một mét"
+    if amount < 1000:
+        return f"{vi_num(amount, 1)} m"
+    return f"{vi_num(amount / 1000, 2)} km"
+
+
+def _fmt_objective_delta(delta: float, mode: Mode) -> str:
+    if mode == "distance":
+        return _fmt_distance_delta(delta)
+    return f"{vi_num(abs(delta), 1)} s"
+
+
+def _relation(left: float, right: float) -> int:
+    """Compare raw costs with the UI v2 contract tolerance (SCHEMA §F.1)."""
+    if math.isclose(
+        left,
+        right,
+        rel_tol=COMPARISON_REL_TOLERANCE,
+        abs_tol=COMPARISON_ABS_TOLERANCE,
+    ):
+        return 0
+    return -1 if left < right else 1
 
 
 def _path_label(store: GraphStore, path: list[str]) -> str:
@@ -146,15 +190,17 @@ def _ucs_path(store: GraphStore, start: str, goal: str, mode: Mode,
     return None
 
 
-def _why_not(store: GraphStore, alt_path: list[str], slot: TimeSlot,
-             main_time: float, main_dist: float,
-             alt_time: float, alt_dist: float, main_optimal: bool = True) -> str:
+def _why_not(store: GraphStore, alt_path: list[str], slot: TimeSlot, mode: Mode,
+             main_cost: float, main_balanced: float, main_dist: float,
+             alt_cost: float, alt_balanced: float, alt_dist: float,
+             main_optimal: bool = True) -> str:
     reasons: list[str] = []
     congested = _congested_on_path(store, alt_path, slot)
     if congested:
         worst = max(congested, key=lambda cseg: cseg.level)
         reasons.append(
-            f"dính {_edge_label(store, worst.edge)} ùn tắc mức {worst.level}/5 lúc {slot}")
+            f"có {_edge_label(store, worst.edge)} ùn tắc mức {worst.level}/5 "
+            f"theo hồ sơ khung giờ đại diện {slot}")
     risks = _risk_counts(store, alt_path)
     if risks["flood"]:
         reasons.append(f"đi qua {risks['flood']} đoạn có nguy cơ ngập")
@@ -164,19 +210,37 @@ def _why_not(store: GraphStore, alt_path: list[str], slot: TimeSlot,
         reasons.append(f"chờ {risks['traffic_light']} đèn tín hiệu")
 
     dd = alt_dist - main_dist
-    dt = alt_time - main_time
-    head = (f"Ngắn hơn {vi_num(abs(dd) / 1000, 2)} km" if dd < -10 else
-            f"Dài hơn {vi_num(dd / 1000, 2)} km" if dd > 10 else
+    db = alt_balanced - main_balanced
+    objective_delta = alt_cost - main_cost
+    distance_relation = _relation(alt_dist, main_dist)
+    balanced_relation = _relation(alt_balanced, main_balanced)
+    objective_relation = _relation(alt_cost, main_cost)
+    head = (f"Ngắn hơn {_fmt_distance_delta(dd)}" if distance_relation < 0 else
+            f"Dài hơn {_fmt_distance_delta(dd)}" if distance_relation > 0 else
             "Quãng đường tương đương")
-    tail = (f"nhưng chậm hơn ~{dt:.0f} s" if dt > 0.5 else
-            f"và nhanh hơn ~{abs(dt):.0f} s theo thời gian thuần" if dt < -0.5 else
-            "và thời gian tương đương")
-    why = f"{head} {tail}"
+    balanced_tail = (
+        f"chi phí cân bằng cao hơn ~{vi_num(db, 1)} s quy đổi" if balanced_relation > 0 else
+        f"chi phí cân bằng thấp hơn ~{vi_num(abs(db), 1)} s quy đổi" if balanced_relation < 0 else
+        "chi phí cân bằng tương đương"
+    )
+    why = ("Tuyến tham chiếu được hệ thống tính thêm sau khi chạy. "
+           f"{head}; {balanced_tail}.")
     if reasons:
-        why += " do " + ", ".join(reasons)
-    if dt < -0.5 and not main_optimal:
-        return why + " — thuật toán đang chạy không tối ưu theo chi phí nên bỏ lỡ tuyến này."
-    return why + ", nên không được chọn theo tiêu chí hiện tại."
+        why += " Các yếu tố ghi nhận trên tuyến tham chiếu: " + ", ".join(reasons) + "."
+    why += " "
+    objective = _objective_label(mode)
+    if objective_relation > 0:
+        why += (f"Theo tiêu chí hiện tại, {objective} của tuyến tham chiếu "
+                f"cao hơn ~{_fmt_objective_delta(objective_delta, mode)} so với tuyến chính.")
+    elif objective_relation < 0:
+        why += (f"Theo tiêu chí hiện tại, {objective} của tuyến tham chiếu "
+                f"thấp hơn ~{_fmt_objective_delta(objective_delta, mode)} so với tuyến chính.")
+        if not main_optimal:
+            why += (" Kết quả chính không có bảo đảm tối ưu và kém hơn "
+                    "tuyến tham chiếu trong đối chiếu hậu kiểm này.")
+    else:
+        why += f"Hai tuyến tương đương theo tiêu chí hiện tại ({objective})."
+    return why
 
 
 def build_explanation(store: GraphStore, trace: Trace) -> Explanation:
@@ -184,9 +248,10 @@ def build_explanation(store: GraphStore, trace: Trace) -> Explanation:
     start_goal = (trace.path[0], trace.path[-1]) if trace.path else None
     if not trace.found or start_goal is None:
         return Explanation(
-            summary_vi=("Không tìm thấy tuyến đường với thuật toán "
-                        f"{ALGO_VI[trace.algorithm]} ở cấu hình hiện tại "
-                        "(thuật toán không complete hoặc điểm đến không tới được)."),
+            summary_vi=("Lần chạy này chưa tìm thấy tuyến với thuật toán "
+                        f"{ALGO_VI[trace.algorithm]}. Payload hiện hành chưa phân biệt "
+                        "đã duyệt cạn và chứng minh vô đường với dừng sớm do "
+                        "giới hạn/pruning; vì vậy không tự kết luận điểm đến không tới được."),
             congested_segments=[], alternatives=[])
     start, goal = start_goal
     mode, slot = trace.mode, trace.time_slot
@@ -203,7 +268,7 @@ def build_explanation(store: GraphStore, trace: Trace) -> Explanation:
             congested_segments=[], alternatives=[])
     main_cost = trace.metrics.total_cost
     main_dist = trace.metrics.total_distance_m
-    main_time = trace.metrics.total_time_s
+    main_balanced = trace.metrics.total_time_s
 
     congested = _congested_on_path(store, trace.path, slot)
     risks = _risk_counts(store, trace.path)
@@ -232,36 +297,49 @@ def build_explanation(store: GraphStore, trace: Trace) -> Explanation:
             continue
         if alt_mode == "distance" and banned is None:
             distance_alt_differs = True
-        _c, alt_dist, alt_time = store.path_metrics(alt_path, mode, slot)
-        why = _why_not(store, alt_path, slot, main_time, main_dist, alt_time,
-                       alt_dist, main_optimal=trace.metrics.optimal_guarantee)
+        alt_cost, alt_dist, alt_balanced = store.path_metrics(alt_path, mode, slot)
+        why = _why_not(
+            store, alt_path, slot, mode,
+            main_cost, main_balanced, main_dist,
+            alt_cost, alt_balanced, alt_dist,
+            main_optimal=trace.metrics.optimal_guarantee,
+        )
         alternatives.append(Alternative(
             label=label, path=alt_path, total_distance_m=alt_dist,
-            total_time_s=alt_time, why_not_vi=why))
-        if alt_dist < main_dist - 10 and alt_time > main_time + 0.5:
+            total_time_s=alt_balanced, why_not_vi=why))
+        if alt_dist < main_dist - 10 and alt_cost > main_cost + 0.5:
             names = _street_names(store, alt_path,
                                   {c.edge for c in _congested_on_path(store, alt_path, slot)})
             cause = f" (dính {', '.join(names)})" if names else ""
             shorter_alt_note = (
-                f"Tuyến ngắn hơn {vi_num((main_dist - alt_dist) / 1000, 2)} km về quãng "
-                f"đường bị loại vì chậm hơn ~{alt_time - main_time:.0f} s{cause}.")
-        elif alt_dist < main_dist - 10 and alt_time < main_time - 0.5 and \
+                f"Tuyến tham chiếu hậu kiểm ngắn hơn "
+                f"{vi_num((main_dist - alt_dist) / 1000, 2)} km nhưng "
+                f"{_objective_label(mode)} cao hơn "
+                f"~{_fmt_objective_delta(alt_cost - main_cost, mode)}{cause}.")
+        elif alt_cost < main_cost - 0.5 and \
                 not trace.metrics.optimal_guarantee:
             dominated_note = (
-                f"Đáng chú ý: phương án \"{label}\" vừa ngắn hơn "
-                f"{vi_num((main_dist - alt_dist) / 1000, 2)} km vừa nhanh hơn "
-                f"~{main_time - alt_time:.0f} s — hệ quả của việc "
-                f"{ALGO_VI[trace.algorithm]} không tối ưu theo chi phí.")
+                f"Đối chiếu hậu kiểm cho thấy tuyến tham chiếu \"{label}\" có "
+                f"{_objective_label(mode)} thấp hơn "
+                f"~{_fmt_objective_delta(main_cost - alt_cost, mode)}. "
+                f"{ALGO_VI[trace.algorithm]} không có bảo đảm tối ưu cho lần chạy này.")
 
     # ---- summary assembly -------------------------------------------------
-    totals_str = _fmt_route_totals(main_cost, main_time, main_dist, mode)
-    if trace.metrics.optimal_guarantee:
+    totals_str = _fmt_route_totals(main_cost, main_balanced, main_dist, mode)
+    profile_context = (f"theo hồ sơ khung giờ đại diện {slot}, "
+                       "không phải dữ liệu giao thông trực tiếp")
+    if trace.metrics.optimal_guarantee and trace.algorithm != "idastar":
         opening = (f"Tuyến {_path_label(store, trace.path)} được chọn vì {MODE_VI[mode]} "
-                   f"({totals_str}) theo thuật toán {ALGO_VI[trace.algorithm]} lúc {slot}.")
+                   f"({totals_str}) theo thuật toán {ALGO_VI[trace.algorithm]}, "
+                   f"{profile_context}.")
+    elif trace.metrics.optimal_guarantee and trace.algorithm == "idastar":
+        opening = (f"Tuyến {_path_label(store, trace.path)} là kết quả của IDA* "
+                   f"với bảo đảm sai số cộng trong biên ε; tổng {totals_str}, "
+                   f"{profile_context}.")
     else:
         opening = (f"Tuyến {_path_label(store, trace.path)} là kết quả của "
                    f"{ALGO_VI[trace.algorithm]} — tuyến {ALGO_CRITERION_VI[trace.algorithm]} — "
-                   f"với tổng {totals_str}, xét lúc {slot}.")
+                   f"với tổng {totals_str}, {profile_context}.")
     parts: list[str] = [opening]
     if congested:
         top = sorted(congested, key=lambda cseg: -cseg.level)[:3]
@@ -272,7 +350,8 @@ def build_explanation(store: GraphStore, trace: Trace) -> Explanation:
                 seen_labels.append(label)
         parts.append("Trên tuyến vẫn còn đoạn ùn tắc: " + ", ".join(seen_labels) + ".")
     else:
-        parts.append(f"Tuyến tránh được mọi đoạn ùn tắc nặng (mức ≥ {CONGESTION_THRESHOLD}/5) lúc {slot}.")
+        parts.append(f"Tuyến tránh được mọi đoạn ùn tắc nặng (mức ≥ {CONGESTION_THRESHOLD}/5) "
+                     f"trong hồ sơ khung giờ đại diện {slot}.")
     risk_bits = []
     if risks["flood"]:
         risk_bits.append(f"{risks['flood']} đoạn nguy cơ ngập")

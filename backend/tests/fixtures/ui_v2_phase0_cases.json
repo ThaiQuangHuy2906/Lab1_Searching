@@ -1,0 +1,63 @@
+{
+  "fixture_version": 1,
+  "bidirectional_overlap": {
+    "nodes": ["n0001", "n0002", "n0003", "n0004", "n0005"],
+    "edges": [
+      {"u": "n0001", "v": "n0002", "cost": 1.0},
+      {"u": "n0001", "v": "n0003", "cost": 2.0},
+      {"u": "n0002", "v": "n0005", "cost": 5.0},
+      {"u": "n0004", "v": "n0005", "cost": 2.0}
+    ],
+    "start": "n0001",
+    "goal": "n0005",
+    "overlap_node": "n0002",
+    "forward_only_node": "n0003",
+    "backward_only_node": "n0004",
+    "expected_overlap_forward_g": 1.0,
+    "expected_overlap_backward_g": 5.0,
+    "expected_legacy_overlap_g": 1.0,
+    "expected_legacy_frontier": ["n0002", "n0003", "n0004"],
+    "expected_path": ["n0001", "n0002", "n0005"],
+    "expected_total_cost": 6.0,
+    "expected_stop": {
+      "top_forward": {"node": "n0005", "g": 6.0},
+      "top_backward": {"node": "n0004", "g": 2.0},
+      "mu": 6.0,
+      "meeting_node": "n0002"
+    }
+  },
+  "closed_tour": {
+    "points": ["n0001", "n0002", "n0003", "n0004"],
+    "costs": {
+      "n0001->n0002": 2.0,
+      "n0001->n0003": 9.0,
+      "n0001->n0004": 10.0,
+      "n0002->n0001": 5.0,
+      "n0002->n0003": 3.0,
+      "n0002->n0004": 8.0,
+      "n0003->n0001": 1.0,
+      "n0003->n0002": 4.0,
+      "n0003->n0004": 2.0,
+      "n0004->n0001": 20.0,
+      "n0004->n0002": 5.0,
+      "n0004->n0003": 9.0
+    },
+    "expected": {
+      "held_karp": {
+        "open": {"order": ["n0001", "n0002", "n0003", "n0004"], "cost": 7.0},
+        "closed": {"order": ["n0001", "n0004", "n0002", "n0003"], "cost": 19.0}
+      },
+      "nn_2opt": {
+        "open": {"order": ["n0001", "n0002", "n0003", "n0004"], "cost": 7.0},
+        "closed": {"order": ["n0001", "n0004", "n0002", "n0003"], "cost": 19.0}
+      },
+      "sa": {
+        "open": {"order": ["n0001", "n0002", "n0003", "n0004"], "cost": 7.0},
+        "closed": {"order": ["n0001", "n0004", "n0002", "n0003"], "cost": 19.0},
+        "best_seed": 0,
+        "open_seed_costs": [7.0, 7.0, 7.0, 7.0, 7.0],
+        "closed_seed_costs": [19.0, 19.0, 19.0, 19.0, 19.0]
+      }
+    }
+  }
+}

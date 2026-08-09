@@ -57,12 +57,14 @@ thay thế cho toàn bộ screenshot bắt buộc trong report/video.
   objective và quãng đường nằm cạnh nhau; thời gian xử lý thuật toán vẫn dùng ms.
 - Benchmark viewer chỉ đọc với cảnh báo nguồn dữ liệu rõ ràng.
 
-> **Trạng thái ngày 2026-08-08 — M1–M5 đã triển khai, chưa được nộp:**
+> **Trạng thái ngày 2026-08-09 — M1–M5 đã triển khai, chưa được nộp:**
 > Lượt data refresh cuối đã tích hợp đủ raw TomTom 07:30, 12:00, 17:30 và 22:00
 > dưới dạng bốn snapshot đại diện lấy trên hai ngày thứ Hai; profile hiện là
 > `tomtom+synthetic`. Raw GraphML, bốn TomTom JSON và OSMnx cache hiện được Git
-> track dưới `data/raw/`. Fresh core gate đạt `177 passed` backend,
-> `ALL DATA VALID`, `41/41` frontend test và TypeScript check; `G_demo` hiện có
+> track dưới `data/raw/`. UI & Explanation v2 Phase 0 đã có readiness verdict
+> `READY` cho Phase 1 nhưng runtime v2 chưa triển khai. Fresh core gate đạt
+> `189 passed` backend, `ALL DATA VALID`, `42/42` frontend test, TypeScript và
+> production build; `G_demo` hiện có
 > 51 node / 298 cạnh.
 > `results/` vẫn là số tạm từ lượt 2026-07-26 và không được dùng làm kết quả
 > chính thức. Không rerun data; benchmark/hiệu chuẩn γ/generator vẫn chờ một
@@ -72,9 +74,9 @@ thay thế cho toàn bộ screenshot bắt buộc trong report/video.
 
 | Hạng mục | Trạng thái hiện tại | Bằng chứng |
 |---|---|---|
-| Backend | **Đạt** | `177 passed, 1 warning` trên current worktree ngày 2026-08-08 |
+| Backend | **Đạt** | `189 passed, 1 warning` trên current worktree ngày 2026-08-09 |
 | Data contract | **Đạt** | `ALL DATA VALID`; profile `tomtom+synthetic`; raw GraphML và TomTom 4/4 hiện diện, được Git track |
-| Frontend automated | **Đạt** | `npm test`: 41/41 pass |
+| Frontend automated | **Đạt** | `npm test`: 42/42 pass |
 | TypeScript | **Đạt** | `npx tsc --noEmit` exit 0 |
 | Frontend production build | **Đạt** | `npm run build` sau khi dừng dev services: compile thành công, 6/6 static pages |
 | G_demo | **Hiện hành** | 51 node, 298 cạnh có hướng, 60 cạnh một chiều |

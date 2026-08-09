@@ -7,9 +7,11 @@
 > **Ghi chú audit 2026-08-08:** đây là kế hoạch/biên bản triển khai lịch sử.
 > Mô tả bốn GraphView cố định ở phần thân phản ánh quyết định M1–M5 khi đó; code
 > hiện hành đã mở rộng thành `full` hoặc `teach_3`…`teach_50`, preset version 2.
-> Fresh automated evidence hiện tại: backend `177 passed` (1 dependency warning),
-> validator `ALL DATA VALID`, frontend `41/41`, TypeScript/build pass. Browser QA
-> 1366×768, 1024×768 và 390×844 thuộc lượt UI Clarity ngay trước thay đổi catalog
+> Fresh automated evidence của Phase 0 ngày 2026-08-09: backend `189 passed`
+> (1 dependency warning), validator `ALL DATA VALID`, frontend `42/42` và
+> TypeScript/production build pass. Browser QA của UI v2 chưa áp dụng vì runtime
+> v2 chưa được triển khai. Bằng chứng browser ở 1366×768, 1024×768 và 390×844 thuộc lượt
+> UI Clarity ngay trước thay đổi catalog
 > và đã kiểm tra GraphView, route/trace, ATSP, sandbox, bốn tab kết quả, theme,
 > responsive/focus và reduced motion. Catalog hiện hành có 9 route + 3 ATSP; mọi
 > mốc 10 route/13 phương pháp trong thân file là baseline lịch sử. `docs/SCHEMA.md`, `README.md`,
@@ -19,8 +21,10 @@
 > 2026-08-08: 8/8 URL hiện đã review/tích hợp, còn caveat lịch sử/không gian/ngữ
 > nghĩa được ghi tại `data/DATA.md` §2.1.
 >
-> **Bổ sung 2026-08-09:** phase **UI & Explanation v2** đã được duyệt ở cấp
-> kế hoạch/contract nhưng chưa triển khai runtime. Implementation brief duy nhất
+> **Bổ sung 2026-08-09:** phase **UI & Explanation v2** đã được duyệt;
+> Phase 0 đã hoàn tất với readiness verdict `READY` tại
+> `docs/UI-V2-PHASE0-READINESS.md`, còn Phase 1–8 chưa triển khai runtime.
+> Implementation brief duy nhất
 > là `UI_caithien.md`; contract migration additive là `docs/SCHEMA.md` §F và thiết
 > kế đích là `docs/DESIGN.md` §13. Không dùng các đề xuất UI lịch sử trong thân
 > file này để ghi đè Phase 0–8, numeric semantics, compatibility matrix hoặc

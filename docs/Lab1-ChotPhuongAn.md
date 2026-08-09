@@ -13,6 +13,9 @@
 > đổi graph, công thức cost, heuristic, tie-break, đường đi/kết quả thuật toán,
 > seed, dữ liệu hay benchmark. Việc triển khai phải backend-first, giữ reader cũ
 > hoạt động trong giai đoạn chuyển tiếp và qua các gate trong `UI_caithien.md`.
+> **Phase 0 đã hoàn tất ngày 2026-08-09** với readiness verdict `READY` cho việc
+> bắt đầu Phase 1; bằng chứng nằm tại `docs/UI-V2-PHASE0-READINESS.md`. Điều này
+> không có nghĩa contract/UI v2 đã được triển khai runtime.
 
 ## 1. Kịch bản và phạm vi
 

@@ -10,9 +10,11 @@ import re
 import pytest
 from fastapi.testclient import TestClient
 
+import app.explain as explain_module
 import app.main as main_module
+from app.graph_store import GraphStore
 from app.main import app
-from app.models import GraphResponse, MultirouteResponse, Trace
+from app.models import CongestedSegment, GraphResponse, MultirouteResponse, Trace
 
 client = TestClient(app, raise_server_exceptions=False)
 
@@ -473,8 +475,88 @@ def test_explanation_numbers_are_consistent(mode):
     km = t.metrics.total_distance_m / 1000
     km_str = f"{km:.2f}".replace(".", ",")
     assert km_str in t.explanation.summary_vi, "real km figure must appear"
+    assert "không phải dữ liệu giao thông trực tiếp" in t.explanation.summary_vi
+    assert "lúc 07:30" not in t.explanation.summary_vi
     for alt in t.explanation.alternatives:
         assert alt.why_not_vi and alt.total_time_s > 0
+        assert "Tuyến tham chiếu được hệ thống tính thêm sau khi chạy" in alt.why_not_vi
+        assert "thời gian thuần" not in alt.why_not_vi
+        assert "bị loại" not in alt.why_not_vi
+        assert "đã xét" not in alt.why_not_vi
+        assert " Các yếu tố ghi nhận trên tuyến tham chiếu:" in alt.why_not_vi \
+            or "ùn tắc mức" not in alt.why_not_vi
+        assert " quy đổi do " not in alt.why_not_vi
+
+
+@pytest.mark.parametrize("mode", ["balanced", "time", "distance"])
+def test_reference_route_copy_uses_active_objective_relation(mode):
+    response = client.post("/api/route", json=route_body(mode=mode))
+    trace = Trace.model_validate(response.json())
+    store = GraphStore.load("demo")
+    objective_label = {
+        "distance": "quãng đường",
+        "time": "thời gian ước tính theo hồ sơ ùn tắc",
+        "balanced": "chi phí cân bằng",
+    }[mode]
+
+    assert trace.explanation.alternatives
+    for alternative in trace.explanation.alternatives:
+        alternative_cost, _, balanced_cost = store.path_metrics(
+            alternative.path, mode, trace.time_slot,
+        )
+        assert alternative.total_time_s == pytest.approx(balanced_cost)
+        delta = alternative_cost - trace.metrics.total_cost
+        tolerance = max(
+            1e-6,
+            1e-9 * max(abs(alternative_cost), abs(trace.metrics.total_cost)),
+        )
+        relation = (
+            "cao hơn" if delta > tolerance else
+            "thấp hơn" if delta < -tolerance else
+            "tương đương"
+        )
+        assert objective_label in alternative.why_not_vi
+        assert relation in alternative.why_not_vi
+
+
+def test_reference_copy_keeps_causality_and_raw_relation_truthful(monkeypatch):
+    monkeypatch.setattr(
+        explain_module,
+        "_congested_on_path",
+        lambda *_args: [CongestedSegment(edge="e00001", name="Đường thử", level=5)],
+    )
+    monkeypatch.setattr(
+        explain_module,
+        "_risk_counts",
+        lambda *_args: {
+            "flood": 0,
+            "construction": 0,
+            "traffic_light": 0,
+            "narrow_alley": 0,
+        },
+    )
+    monkeypatch.setattr(explain_module, "_edge_label", lambda *_args: "Đường thử")
+
+    copy = explain_module._why_not(
+        object(), ["n0001", "n0002"], "07:30", "balanced",
+        main_cost=200.0, main_balanced=200.0, main_dist=200.0,
+        alt_cost=25.0, alt_balanced=25.0, alt_dist=100.0,
+        main_optimal=False,
+    )
+
+    assert "chi phí cân bằng thấp hơn ~175 s quy đổi" in copy
+    assert "Các yếu tố ghi nhận trên tuyến tham chiếu" in copy
+    assert "thấp hơn ~175 s quy đổi do" not in copy
+
+    near_copy = explain_module._why_not(
+        object(), ["n0001", "n0002"], "07:30", "balanced",
+        main_cost=200.0, main_balanced=200.0, main_dist=200.0,
+        alt_cost=199.75, alt_balanced=199.75, alt_dist=199.75,
+        main_optimal=False,
+    )
+    assert "Theo tiêu chí hiện tại, chi phí cân bằng của tuyến tham chiếu thấp hơn" \
+        in near_copy
+    assert "Hai tuyến tương đương theo tiêu chí hiện tại" not in near_copy
 
 
 @pytest.mark.parametrize(

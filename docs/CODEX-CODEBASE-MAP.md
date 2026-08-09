@@ -24,6 +24,12 @@ automated tests/build, not by a new manual browser session. Dated
 onboarding/FINAL-01 sections below remain historical evidence; the exact
 projector/browser used for recording still needs its own pre-flight.
 
+**UI & Explanation v2 Phase 0 refresh — 2026-08-09:** contract/readiness,
+truthfulness hotfix và golden fixtures đã qua gate trên base HEAD `bb21db1` cộng
+worktree Phase 0. Fresh gates là 189 backend tests, 42 frontend tests,
+`ALL DATA VALID`, TypeScript check và production build 6/6 static pages.
+Readiness verdict `READY` chỉ mở Phase 1; contract/UI v2 chưa chạy runtime.
+
 **Route-contract delta — 2026-08-08:** the group removed the standalone
 `dijkstra` choice because it duplicated UCS. The current product exposes nine
 route algorithms; Bidirectional Dijkstra remains. Historical audit and result
@@ -647,8 +653,8 @@ The map route retained root body overflow ownership.
 
 ## 20. Test architecture
 
-Current collection produces **177 pytest items**. All 177 passed on the
-2026-08-08 worktree; frontend has a separate **41-test** Node suite plus a
+Current collection produces **189 pytest items**. All 189 passed on the
+2026-08-09 Phase 0 worktree; frontend has a separate **42-test** Node suite plus a
 passing TypeScript check and production build. The suites include GraphView,
 ATSP trace, sandbox, presentation-unit, copy, fingerprint and regression
 coverage.
@@ -666,6 +672,7 @@ coverage.
 | `test_optimization_trace.py` | ATSP recorder | strict event union, caps/sampling, trace-on/off equality | demo + controlled cases | dedicated frontend render test |
 | `test_scenario.py` | GraphView/scenario | dynamic 3…50 views, SCC, preset/generator parity, fingerprint | current demo/real | browser parity after final generator run |
 | `test_scenario_overrides.py` | sandbox | validation, immutability, recomputation, fingerprint/API errors | current demo | long-running concurrent request stress |
+| `test_ui_v2_phase0_fixtures.py` | UI v2 golden baseline | Bidi overlap/μ stop, UCS parity, asymmetric ATSP open/closed | tiny controlled fixtures | B2 field production belongs to Phase 1 |
 
 Scale statements such as thousands of NetworkX comparisons inside loops are
 not pytest item counts.
@@ -685,7 +692,9 @@ Completed semantic regressions:
 10. Bidirectional Dijkstra initial frontier and trivial-route mode units;
 11. slot/traffic coherence, route–multiroute guards, effective-trace legend and
     sign-aware ATSP savings, dynamic GraphView, theme behavior and presentation
-    copy/unit rules plus the exact nine-algorithm catalog in the frontend 41-test suite.
+    copy/unit rules plus the exact nine-algorithm catalog in the frontend 42-test suite;
+12. Phase 0 golden parity cho Bidi overlap/μ và ba ATSP methods ở open/closed,
+    cùng regression provenance/objective của copy Giải thích.
 
 Priority semantic tests still missing:
 

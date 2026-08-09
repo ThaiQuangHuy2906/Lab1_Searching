@@ -27,7 +27,10 @@ import time
 from collections import deque
 
 from .graph_store import GraphStore
-from .models import Explanation, Metrics, Mode, TimeSlot, Trace, TraceStep
+from .models import (
+    BidirectionalBoundEvidence, Explanation, Metrics, Mode, RouteTermination,
+    TimeSlot, Trace, TraceStep,
+)
 
 MAX_TRACE_STEPS = 5_000
 IDDFS_MAX_DEPTH = 100  # safety bound; practical only on G_demo (see report)
@@ -71,7 +74,9 @@ class _Recorder:
                h: dict[str, float] | None = None,
                f: dict[str, float] | None = None,
                depth_limit: int | None = None,
-               side: str | None = None) -> None:
+               side: str | None = None,
+               decision: dict | None = None,
+               bidirectional_frontiers: dict | None = None) -> None:
         if not self.enabled:
             return
         if len(self.steps) >= MAX_TRACE_STEPS:
@@ -79,11 +84,61 @@ class _Recorder:
             return
         self.steps.append(TraceStep(
             step=len(self.steps) + 1, expanded=expanded, frontier=frontier,
-            g=g, h=h, f=f, depth_limit=depth_limit, side=side))
+            g=g, h=h, f=f, depth_limit=depth_limit, side=side,
+            decision=decision,
+            bidirectional_frontiers=bidirectional_frontiers))
 
 
 def _round_map(values: dict[str, float]) -> dict[str, float]:
     return {k: round(v, 1) for k, v in values.items()}
+
+
+def _score_payload(*, g=None, h=None, f=None, depth=None) -> dict:
+    return {"g": g, "h": h, "f": f, "depth": depth}
+
+
+def _candidate_payload(node: str, *, g=None, h=None, f=None, depth=None) -> dict:
+    return {"node": node, **_score_payload(g=g, h=h, f=f, depth=depth)}
+
+
+def _decision_payload(
+    rule: str,
+    *,
+    selected_scores: dict | None,
+    runner_up: dict | None,
+    frontier_size_before: int,
+    frontier_size_after: int,
+    neighbors_scanned: int = 0,
+    frontier_added: int = 0,
+    frontier_updated: int = 0,
+    pruned_count: int = 0,
+    iteration: int | None = None,
+    bound: float | None = None,
+    layer: int | None = None,
+    beam_width: int | None = None,
+    top_forward: dict | None = None,
+    top_backward: dict | None = None,
+    mu_before: float | None = None,
+) -> dict:
+    """Build the complete §F.2 decision shape only for a recorded step."""
+    return {
+        "rule": rule,
+        "selected_scores": selected_scores,
+        "runner_up": runner_up,
+        "frontier_size_before": frontier_size_before,
+        "frontier_size_after": frontier_size_after,
+        "neighbors_scanned": neighbors_scanned,
+        "frontier_added": frontier_added,
+        "frontier_updated": frontier_updated,
+        "pruned_count": pruned_count,
+        "iteration": iteration,
+        "bound": bound,
+        "layer": layer,
+        "beam_width": beam_width,
+        "top_forward": top_forward,
+        "top_backward": top_backward,
+        "mu_before": mu_before,
+    }
 
 
 def _check_endpoints(store: GraphStore, start: str, goal: str) -> None:
@@ -94,7 +149,10 @@ def _check_endpoints(store: GraphStore, start: str, goal: str) -> None:
 
 def _finish(algorithm: str, store: GraphStore, mode: Mode, slot: TimeSlot,
             found: bool, path: list[str], expanded: int, max_frontier: int,
-            t0: float, rec: _Recorder, optimal: bool) -> Trace:
+            t0: float, rec: _Recorder, optimal: bool,
+            termination_reason: str | None = None,
+            bidirectional_bound: BidirectionalBoundEvidence | dict | None = None,
+            ) -> Trace:
     runtime_ms = round((time.perf_counter() - t0) * 1000, 3)
     if found:
         # totals stay unrounded: correctness tests compare against the
@@ -104,6 +162,27 @@ def _finish(algorithm: str, store: GraphStore, mode: Mode, slot: TimeSlot,
     else:
         path = []
         totals = dict(total_cost=None, total_distance_m=None, total_time_s=None)
+    if termination_reason is None:
+        termination_reason = (
+            "start_equals_goal" if found and len(path) == 1 else
+            "goal_expanded" if found else "frontier_exhausted"
+        )
+    reachability = (
+        "route_found" if found else
+        "proven_unreachable" if termination_reason == "frontier_exhausted" else
+        "inconclusive"
+    )
+    quality = (
+        "not_applicable" if termination_reason == "start_equals_goal" or not found else
+        "epsilon_bounded" if algorithm == "idastar" else
+        "exact" if optimal else "feasible_unproven"
+    )
+    termination = RouteTermination(
+        reason=termination_reason,
+        reachability=reachability,
+        solution_quality=quality,
+        bidirectional_bound=bidirectional_bound,
+    )
     return Trace(
         algorithm=algorithm, mode=mode, time_slot=slot, graph=store.level,
         found=found, path=path,
@@ -111,7 +190,8 @@ def _finish(algorithm: str, store: GraphStore, mode: Mode, slot: TimeSlot,
                         max_frontier=max_frontier, runtime_ms=runtime_ms,
                         optimal_guarantee=optimal,
                         trace_truncated=rec.truncated),
-        trace=rec.steps, explanation=EMPTY_EXPLANATION)
+        trace=rec.steps, explanation=EMPTY_EXPLANATION,
+        termination=termination)
 
 
 def _trivial(algorithm: str, store: GraphStore, mode: Mode, slot: TimeSlot,
@@ -153,23 +233,48 @@ def bfs(store: GraphStore, start: str, goal: str, mode: Mode = "balanced",
     max_frontier = 1
     while queue:
         node = queue.popleft()
+        record_step = rec.active
+        frontier_size_before = len(open_set)
+        runner_up = (
+            _candidate_payload(queue[0]) if record_step and queue else None
+        )
         open_set.discard(node)
         visited.add(node)
         expanded += 1
         if node == goal:
-            if rec.active:
-                rec.record(node, sorted(open_set))
+            if record_step:
+                frontier = sorted(open_set)
+                rec.record(
+                    node, frontier,
+                    decision=_decision_payload(
+                        "fifo", selected_scores=None, runner_up=runner_up,
+                        frontier_size_before=frontier_size_before,
+                        frontier_size_after=len(frontier),
+                    ),
+                )
             return _finish("bfs", store, mode, time_slot, True,
                            _reconstruct(parent, goal), expanded, max_frontier,
                            t0, rec, False)
+        added = 0
         for nbr, _eid in store.adj[node]:
             if nbr not in visited and nbr not in open_set:
                 parent[nbr] = node
                 queue.append(nbr)
                 open_set.add(nbr)
+                added += 1
         max_frontier = max(max_frontier, len(open_set))
-        if rec.active:
-            rec.record(node, sorted(open_set))
+        if record_step:
+            frontier = sorted(open_set)
+            rec.record(
+                node, frontier,
+                decision=_decision_payload(
+                    "fifo", selected_scores=None, runner_up=runner_up,
+                    frontier_size_before=frontier_size_before,
+                    frontier_size_after=len(frontier),
+                    neighbors_scanned=len(store.adj[node]),
+                    frontier_added=added,
+                ),
+            )
     return _finish("bfs", store, mode, time_slot, False, [], expanded,
                    max_frontier, t0, rec, False)
 
@@ -201,24 +306,54 @@ def dfs(store: GraphStore, start: str, goal: str, mode: Mode = "balanced",
         node, par = stack.pop()
         if node in visited:
             continue
+        record_step = rec.active
         visited.add(node)
+        before_frontier = frontier()
+        frontier_size_before = len(before_frontier) + 1
+        runner_node = next(
+            (candidate for candidate, _ in reversed(stack) if candidate not in visited),
+            None,
+        ) if record_step else None
+        runner_up = _candidate_payload(runner_node) if runner_node is not None else None
         if par is not None:
             parent[node] = par
         expanded += 1
         if node == goal:
-            if rec.active:
-                rec.record(node, frontier())
+            if record_step:
+                fr = frontier()
+                rec.record(
+                    node, fr,
+                    decision=_decision_payload(
+                        "lifo", selected_scores=None, runner_up=runner_up,
+                        frontier_size_before=frontier_size_before,
+                        frontier_size_after=len(fr),
+                    ),
+                )
             return _finish("dfs", store, mode, time_slot, True,
                            _reconstruct(parent, goal), expanded, max_frontier,
                            t0, rec, False)
         # push reversed so the smallest edge id is expanded first (LIFO)
+        known_open = set(before_frontier)
+        added = 0
         for nbr, _eid in reversed(store.adj[node]):
             if nbr not in visited:
                 stack.append((nbr, node))
+                if record_step and nbr not in known_open:
+                    known_open.add(nbr)
+                    added += 1
         fr = frontier()
         max_frontier = max(max_frontier, len(fr))
-        if rec.active:
-            rec.record(node, fr)
+        if record_step:
+            rec.record(
+                node, fr,
+                decision=_decision_payload(
+                    "lifo", selected_scores=None, runner_up=runner_up,
+                    frontier_size_before=frontier_size_before,
+                    frontier_size_after=len(fr),
+                    neighbors_scanned=len(store.adj[node]),
+                    frontier_added=added,
+                ),
+            )
     return _finish("dfs", store, mode, time_slot, False, [], expanded,
                    max_frontier, t0, rec, False)
 
@@ -247,33 +382,98 @@ def iddfs(store: GraphStore, start: str, goal: str, mode: Mode = "balanced",
     max_depth = int(params.get("iddfs_max_depth", IDDFS_MAX_DEPTH))
     expanded_total = 0
     max_frontier = 1
+    final_cutoff = False
     for limit in range(max_depth + 1):
         stack: list[tuple[str, int, str | None]] = [(start, 0, None)]
         best_depth: dict[str, int] = {}
         parent: dict[str, str] = {}
+        round_cutoff = False
         while stack:
             node, depth, par = stack.pop()
             if node in best_depth and best_depth[node] <= depth:
                 continue
+            record_step = rec.active
             best_depth[node] = depth
+            effective_before: dict[str, int] = {}
+            for candidate, candidate_depth, _ in stack:
+                if best_depth.get(candidate, candidate_depth + 1) > candidate_depth:
+                    effective_before[candidate] = min(
+                        candidate_depth,
+                        effective_before.get(candidate, candidate_depth),
+                    )
+            runner_item = next(
+                (
+                    (candidate, candidate_depth)
+                    for candidate, candidate_depth, _ in reversed(stack)
+                    if best_depth.get(candidate, candidate_depth + 1) > candidate_depth
+                ),
+                None,
+            )
+            runner_up = (
+                _candidate_payload(runner_item[0], depth=runner_item[1])
+                if runner_item is not None else None
+            )
             if par is not None:
                 parent[node] = par
             expanded_total += 1
-            if node != goal and depth < limit:
-                for nbr, _eid in reversed(store.adj[node]):
-                    if nbr not in best_depth or best_depth[nbr] > depth + 1:
-                        stack.append((nbr, depth + 1, node))
+            added = updated = cutoff_count = 0
+            neighbors_scanned = 0
+            if node != goal:
+                neighbors_scanned = len(store.adj[node])
+                if depth < limit:
+                    known_depth = dict(effective_before)
+                    for nbr, _eid in reversed(store.adj[node]):
+                        if nbr not in best_depth or best_depth[nbr] > depth + 1:
+                            if record_step:
+                                previous = known_depth.get(nbr)
+                                if previous is None:
+                                    added += 1
+                                elif depth + 1 < previous:
+                                    updated += 1
+                                known_depth[nbr] = min(
+                                    depth + 1, previous if previous is not None else depth + 1,
+                                )
+                            stack.append((nbr, depth + 1, node))
+                else:
+                    pending_depth = dict(effective_before)
+                    for nbr, _eid in store.adj[node]:
+                        known = min(
+                            best_depth.get(nbr, max_depth + 2),
+                            pending_depth.get(nbr, max_depth + 2),
+                        )
+                        if known > depth + 1:
+                            round_cutoff = True
+                            cutoff_count += 1
             fr_nodes = sorted({n for n, d, _ in stack
                                if best_depth.get(n, d + 1) > d})
             max_frontier = max(max_frontier, len(fr_nodes))
-            if rec.active:
-                rec.record(node, fr_nodes, depth_limit=limit)
+            if record_step:
+                rec.record(
+                    node, fr_nodes, depth_limit=limit,
+                    decision=_decision_payload(
+                        "depth_limited_lifo",
+                        selected_scores=_score_payload(depth=depth),
+                        runner_up=runner_up,
+                        frontier_size_before=len(effective_before) + 1,
+                        frontier_size_after=len(fr_nodes),
+                        neighbors_scanned=neighbors_scanned,
+                        frontier_added=added,
+                        frontier_updated=updated,
+                        pruned_count=cutoff_count,
+                        iteration=limit + 1,
+                        bound=float(limit),
+                    ),
+                )
             if node == goal:
                 return _finish("iddfs", store, mode, time_slot, True,
                                _reconstruct(parent, goal), expanded_total,
                                max_frontier, t0, rec, False)
-    return _finish("iddfs", store, mode, time_slot, False, [], expanded_total,
-                   max_frontier, t0, rec, False)
+        final_cutoff = round_cutoff
+    return _finish(
+        "iddfs", store, mode, time_slot, False, [], expanded_total,
+        max_frontier, t0, rec, False,
+        termination_reason="depth_cap_reached" if final_cutoff else "frontier_exhausted",
+    )
 
 
 # -------------------------------------------------------------- UCS / A*
@@ -317,36 +517,78 @@ def _best_first(algorithm: str, store: GraphStore, start: str, goal: str,
         _f, _h, _t, node = heapq.heappop(heap)
         if node in closed:
             continue  # stale entry (lazy deletion)
+        record_step = rec.active
+        frontier_size_before = len(open_set)
         closed.add(node)
         open_set.discard(node)
         expanded += 1
 
-        def snapshot() -> None:
-            rec.record(node, sorted(open_set),
+        runner_entry = min(
+            (entry for entry in heap if entry[3] not in closed),
+            default=None,
+        ) if record_step else None
+        runner_up = None
+        if runner_entry is not None:
+            runner_node = runner_entry[3]
+            runner_up = _candidate_payload(
+                runner_node,
+                g=g_best[runner_node],
+                h=h(runner_node) if use_h else None,
+                f=g_best[runner_node] + h(runner_node) if use_h else None,
+            )
+
+        selected_scores = _score_payload(
+            g=g_best[node],
+            h=h(node) if use_h else None,
+            f=g_best[node] + h(node) if use_h else None,
+        )
+
+        def snapshot(*, neighbors_scanned=0, added=0, updated=0) -> None:
+            frontier = sorted(open_set)
+            rec.record(node, frontier,
                        g=_round_map({n: g_best[n] for n in open_set}),
                        h=_round_map({n: h(n) for n in open_set}) if use_h else None,
                        f=_round_map({n: g_best[n] + h(n) for n in open_set})
-                       if use_h else None)
+                       if use_h else None,
+                       decision=_decision_payload(
+                           "lowest_f_then_h" if use_h else "lowest_g",
+                           selected_scores=selected_scores,
+                           runner_up=runner_up,
+                           frontier_size_before=frontier_size_before,
+                           frontier_size_after=len(frontier),
+                           neighbors_scanned=neighbors_scanned,
+                           frontier_added=added,
+                           frontier_updated=updated,
+                       ))
 
         if node == goal:
-            if rec.active:
+            if record_step:
                 snapshot()
             return _finish(algorithm, store, mode, time_slot, True,
                            _reconstruct(parent, goal), expanded, max_frontier,
                            t0, rec, True)
+        added = updated = 0
         for nbr, eid in store.adj[node]:
             if nbr in closed:
                 continue
             ng = g_best[node] + w[eid]
             if ng < g_best.get(nbr, float("inf")):
+                if nbr in g_best:
+                    updated += 1
+                else:
+                    added += 1
                 g_best[nbr] = ng
                 parent[nbr] = node
                 tie += 1
                 heapq.heappush(heap, (ng + h(nbr), h(nbr), tie, nbr))
                 open_set.add(nbr)
         max_frontier = max(max_frontier, len(open_set))
-        if rec.active:
-            snapshot()
+        if record_step:
+            snapshot(
+                neighbors_scanned=len(store.adj[node]),
+                added=added,
+                updated=updated,
+            )
     return _finish(algorithm, store, mode, time_slot, False, [], expanded,
                    max_frontier, t0, rec, True)
 

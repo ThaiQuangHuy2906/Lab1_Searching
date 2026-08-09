@@ -28,11 +28,14 @@ import itertools
 import math
 import random
 import statistics
+import time
 
 from .graph_store import GraphStore
 from .models import (
-    Leg, LegMetrics, Mode, MultirouteResponse, SaOptimizerStats, TimeSlot,
-    TspMethod,
+    AtspComputationMetrics, AtspMatrixEvidence, HeldKarpMethodStats, Leg,
+    LegMetrics, Mode, MultirouteFailure, MultirouteResponse,
+    NnLocalSearchMethodStats, PathCostBreakdown, SaOptimizerStats,
+    SimulatedAnnealingMethodStats, TimeSlot, TspMethod, comparison_equivalent,
 )
 from .optimization_trace import (
     HELD_KARP_TRACE_CAP, NN_LOCAL_TRACE_CAP, SA_TRACE_CAP,
@@ -51,12 +54,24 @@ TOLERANCE = 1e-12
 class UnreachableStopError(Exception):
     """Raised when some stop cannot be reached from another point."""
 
+    def __init__(
+        self, from_node: str, to_node: str, *,
+        reachable_paths: dict[str, list[str]] | None = None,
+    ) -> None:
+        super().__init__(f"no route {from_node} -> {to_node}")
+        self.from_node = from_node
+        self.to_node = to_node
+        self.reachable_paths = reachable_paths or {}
+        self.partial_cost: dict[tuple[str, str], float] = {}
+        self.partial_path: dict[tuple[str, str], list[str]] = {}
+
 
 # ------------------------------------------------------------ cost matrix
 
 
 def _ucs_to_targets(store: GraphStore, source: str, targets: set[str],
-                    mode: Mode, slot: TimeSlot) -> dict[str, list[str]]:
+                    mode: Mode, slot: TimeSlot,
+                    instrumentation: dict | None = None) -> dict[str, list[str]]:
     """Shortest paths source -> each target; returns node-path per target."""
     w = store.weights(mode, slot)
     dist = {source: 0.0}
@@ -65,11 +80,15 @@ def _ucs_to_targets(store: GraphStore, source: str, targets: set[str],
     done: set[str] = set()
     remaining = set(targets) - {source}
     tie = 0
+    if instrumentation is not None:
+        instrumentation["matrix_search_runs"] += 1
     while heap and remaining:
         d, _t, node = heapq.heappop(heap)
         if node in done:
             continue
         done.add(node)
+        if instrumentation is not None:
+            instrumentation["matrix_nodes_expanded"] += 1
         remaining.discard(node)
         for nbr, eid in store.adj[node]:
             if nbr in done:
@@ -81,27 +100,45 @@ def _ucs_to_targets(store: GraphStore, source: str, targets: set[str],
                 tie += 1
                 heapq.heappush(heap, (nd, tie, nbr))
     paths: dict[str, list[str]] = {}
-    for t in targets:
+    for t in sorted(targets):
         if t == source:
             continue
         if t not in done:
-            raise UnreachableStopError(f"no route {source} -> {t}")
+            continue
         path = [t]
         while path[-1] != source:
             path.append(parent[path[-1]])
         path.reverse()
         paths[t] = path
+    if remaining:
+        raise UnreachableStopError(
+            source, min(remaining), reachable_paths=paths,
+        )
     return paths
 
 
 def build_matrix(store: GraphStore, points: list[str], mode: Mode,
-                 slot: TimeSlot) -> tuple[dict, dict]:
+                 slot: TimeSlot,
+                 instrumentation: dict | None = None) -> tuple[dict, dict]:
     """(cost[(a, b)], node_path[(a, b)]) for all ordered point pairs."""
     cost: dict[tuple[str, str], float] = {}
     path: dict[tuple[str, str], list[str]] = {}
     targets = set(points)
     for src in points:
-        for dst, p in _ucs_to_targets(store, src, targets, mode, slot).items():
+        try:
+            paths = _ucs_to_targets(
+                store, src, targets, mode, slot, instrumentation,
+            )
+        except UnreachableStopError as exc:
+            paths = exc.reachable_paths
+            for dst, p in paths.items():
+                c, _dist, _time = store.path_metrics(p, mode, slot)
+                cost[(src, dst)] = c
+                path[(src, dst)] = p
+            exc.partial_cost = cost
+            exc.partial_path = path
+            raise
+        for dst, p in paths.items():
             c, _dist, _time = store.path_metrics(p, mode, slot)
             cost[(src, dst)] = c
             path[(src, dst)] = p
@@ -123,6 +160,7 @@ def held_karp(
     points: list[str],
     return_to_start: bool,
     recorder: OptimizationTraceRecorder | None = None,
+    stats_out: dict | None = None,
 ) -> tuple[list[str], float]:
     """Exact ATSP by bitmask DP. points[0] is the fixed start."""
     n = len(points)
@@ -141,6 +179,8 @@ def held_karp(
     # dp[mask][i] = best cost from start visiting exactly `mask`, ending at i
     dp: list[dict[int, tuple[float, int]]] = [dict() for _ in range(1 << n)]
     dp[1][0] = (0.0, -1)
+    dp_states_solved = 1
+    transitions_evaluated = 0
     for mask in range(1 << n):
         if not (mask & 1) or not dp[mask]:
             continue
@@ -148,11 +188,14 @@ def held_karp(
             for j in range(1, n):
                 if mask & (1 << j):
                     continue
+                transitions_evaluated += 1
                 nmask = mask | (1 << j)
                 cand = cost_i + c[i][j]
                 previous = dp[nmask].get(j)
                 if previous is None or cand < previous[0]:
                     dp[nmask][j] = (cand, i)
+                    if previous is None:
+                        dp_states_solved += 1
                     if recorder is not None:
                         recorder.emit(
                             lambda ordinal, nmask=nmask, i=i, j=j, cand=cand, previous=previous: {
@@ -204,6 +247,12 @@ def held_karp(
             },
             final=True,
         )
+    if stats_out is not None:
+        stats_out.update({
+            "kind": "held_karp",
+            "dp_states_solved": dp_states_solved,
+            "transitions_evaluated": transitions_evaluated,
+        })
     return order, best
 
 
@@ -214,10 +263,15 @@ def nearest_neighbour(
     cost: dict,
     points: list[str],
     recorder: OptimizationTraceRecorder | None = None,
+    stats_out: dict | None = None,
 ) -> list[str]:
     order, left = [points[0]], set(points[1:])
     while left:
         current = order[-1]
+        if stats_out is not None:
+            stats_out["nn_candidates_evaluated"] = (
+                stats_out.get("nn_candidates_evaluated", 0) + len(left)
+            )
         nxt = min(sorted(left), key=lambda p: cost[(current, p)])
         order.append(nxt)
         left.remove(nxt)
@@ -246,6 +300,7 @@ def two_opt_or_opt(
     order: list[str],
     return_to_start: bool,
     recorder: OptimizationTraceRecorder | None = None,
+    stats_out: dict | None = None,
 ) -> list[str]:
     """Local search: segment reversal (2-opt) + segment relocation
     (Or-opt, lengths 1-3, orientation preserved). ASYMMETRIC-safe:
@@ -262,9 +317,17 @@ def two_opt_or_opt(
             for j in range(i + 1, n):
                 cand = best[:i] + best[i:j + 1][::-1] + best[j + 1:]
                 cc = tour_cost(cost, cand, return_to_start)
+                if stats_out is not None:
+                    stats_out["two_opt_candidates_evaluated"] = (
+                        stats_out.get("two_opt_candidates_evaluated", 0) + 1
+                    )
                 if cc < best_cost - TOLERANCE:
                     before, before_cost = list(best), best_cost
                     best, best_cost, improved = cand, cc, True
+                    if stats_out is not None:
+                        stats_out["accepted_2opt_moves"] = (
+                            stats_out.get("accepted_2opt_moves", 0) + 1
+                        )
                     if recorder is not None:
                         recorder.emit(
                             lambda ordinal, i=i, j=j, before=before, before_cost=before_cost, cc=cc,
@@ -295,9 +358,17 @@ def two_opt_or_opt(
                         continue
                     cand = rest[:j] + seg + rest[j:]
                     cc = tour_cost(cost, cand, return_to_start)
+                    if stats_out is not None:
+                        stats_out["or_opt_candidates_evaluated"] = (
+                            stats_out.get("or_opt_candidates_evaluated", 0) + 1
+                        )
                     if cc < best_cost - TOLERANCE:
                         before, before_cost = list(best), best_cost
                         best, best_cost, improved = cand, cc, True
+                        if stats_out is not None:
+                            stats_out["accepted_oropt_moves"] = (
+                                stats_out.get("accepted_oropt_moves", 0) + 1
+                            )
                         if recorder is not None:
                             recorder.emit(
                                 lambda ordinal, i=i, j=j, seg_len=seg_len, before=before,
@@ -326,9 +397,13 @@ def nn_2opt(
     points: list[str],
     return_to_start: bool,
     recorder: OptimizationTraceRecorder | None = None,
+    stats_out: dict | None = None,
 ) -> tuple[list[str], float]:
+    counters: dict = {}
+    initial_order = nearest_neighbour(cost, points, recorder, counters)
+    initial_cost = tour_cost(cost, initial_order, return_to_start)
     order = two_opt_or_opt(
-        cost, nearest_neighbour(cost, points, recorder), return_to_start, recorder,
+        cost, initial_order, return_to_start, recorder, counters,
     )
     total = tour_cost(cost, order, return_to_start)
     if recorder is not None:
@@ -342,6 +417,22 @@ def nn_2opt(
             },
             final=True,
         )
+    if stats_out is not None:
+        stats_out.update({
+            "kind": "nn_local_search",
+            "nn_initial_cost": initial_cost,
+            "nn_candidates_evaluated": counters.get("nn_candidates_evaluated", 0),
+            "two_opt_candidates_evaluated": counters.get(
+                "two_opt_candidates_evaluated", 0,
+            ),
+            "or_opt_candidates_evaluated": counters.get(
+                "or_opt_candidates_evaluated", 0,
+            ),
+            "accepted_2opt_moves": counters.get("accepted_2opt_moves", 0),
+            "accepted_oropt_moves": counters.get("accepted_oropt_moves", 0),
+            "final_cost": total,
+            "improvement_after_nn": initial_cost - total,
+        })
     return order, total
 
 
@@ -384,6 +475,11 @@ def simulated_annealing(
                 priority="boundary",
             )
         iterations = 0
+        attempted_moves = 0
+        accepted_improving_moves = 0
+        accepted_equal_moves = 0
+        accepted_worse_moves = 0
+        rejected_moves = 0
         for iteration in range(1, SA_ITERS + 1):
             n = len(cur)
             if n > 2 and rng.random() < 0.5:  # swap two stops
@@ -402,6 +498,16 @@ def simulated_annealing(
             delta = cand_cost - cur_cost
             current_order, current_cost = list(cur), cur_cost
             accepted = delta <= 0 or rng.random() < math.exp(-delta / t)
+            attempted_moves += 1
+            if accepted:
+                if delta < 0:
+                    accepted_improving_moves += 1
+                elif delta == 0:
+                    accepted_equal_moves += 1
+                else:
+                    accepted_worse_moves += 1
+            else:
+                rejected_moves += 1
             new_best = False
             if accepted:
                 cur, cur_cost = cand, cand_cost
@@ -443,6 +549,11 @@ def simulated_annealing(
             "final_cost": cur_cost,
             "best_cost": loc_best_cost,
             "best_order": list(loc_best),
+            "attempted_moves": attempted_moves,
+            "accepted_improving_moves": accepted_improving_moves,
+            "accepted_equal_moves": accepted_equal_moves,
+            "accepted_worse_moves": accepted_worse_moves,
+            "rejected_moves": rejected_moves,
         })
         if recorder is not None:
             recorder.emit(
@@ -465,7 +576,11 @@ def simulated_annealing(
             best_order, best_cost = loc_best, loc_best_cost
     best_seed = seed_details[min(range(len(per_seed)), key=lambda index: per_seed[index])]["seed"]
     optimizer_stats = {
-        "seeds": seed_details,
+        "seeds": [{
+            key: seed[key] for key in (
+                "seed", "iterations", "final_cost", "best_cost", "best_order",
+            )
+        } for seed in seed_details],
         "best_seed": best_seed,
         "best_cost": min(per_seed),
         "mean_best_cost": statistics.mean(per_seed),
@@ -476,6 +591,28 @@ def simulated_annealing(
         "best": min(per_seed), "mean": statistics.mean(per_seed),
         "std": statistics.stdev(per_seed) if len(per_seed) > 1 else 0.0,
         "optimizer_stats": optimizer_stats,
+        "method_stats": {
+            "kind": "simulated_annealing",
+            "seed_count": len(seed_details),
+            "best_seed": best_seed,
+            "best_cost": min(per_seed),
+            "mean_best_cost": statistics.mean(per_seed),
+            "stddev_best_cost": (
+                statistics.stdev(per_seed) if len(per_seed) > 1 else 0.0
+            ),
+            "attempted_moves": sum(seed["attempted_moves"] for seed in seed_details),
+            "accepted_improving_moves": sum(
+                seed["accepted_improving_moves"] for seed in seed_details
+            ),
+            "accepted_equal_moves": sum(
+                seed["accepted_equal_moves"] for seed in seed_details
+            ),
+            "accepted_worse_moves": sum(
+                seed["accepted_worse_moves"] for seed in seed_details
+            ),
+            "rejected_moves": sum(seed["rejected_moves"] for seed in seed_details),
+            "seeds": seed_details,
+        },
     }
     if recorder is not None:
         recorder.emit(
@@ -504,6 +641,44 @@ def simulated_annealing(
 # ------------------------------------------------------------- facade
 
 
+def _matrix_evidence(points: list[str], cost: dict) -> AtspMatrixEvidence:
+    asymmetric: list[tuple[float, str, str, float, float]] = []
+    for left, right in itertools.combinations(sorted(points), 2):
+        forward = cost.get((left, right))
+        reverse = cost.get((right, left))
+        if forward is None or reverse is None or comparison_equivalent(forward, reverse):
+            continue
+        asymmetric.append((abs(forward - reverse), left, right, forward, reverse))
+    asymmetric.sort(key=lambda item: (-item[0], item[1], item[2]))
+    example = None
+    if asymmetric:
+        delta, left, right, forward, reverse = asymmetric[0]
+        example = {
+            "from_node": left,
+            "to_node": right,
+            "forward_cost": forward,
+            "reverse_cost": reverse,
+            "absolute_delta": delta,
+        }
+    return AtspMatrixEvidence(
+        point_count=len(points),
+        directed_pair_count=len(points) * (len(points) - 1),
+        reachable_directed_pair_count=len(cost),
+        asymmetric_unordered_pair_count=len(asymmetric),
+        asymmetry_example=example,
+    )
+
+
+def _aggregate_breakdown(legs: list[Leg]) -> PathCostBreakdown:
+    return PathCostBreakdown(**{
+        field_name: sum(
+            getattr(leg.cost_breakdown, field_name)
+            for leg in legs if leg.cost_breakdown is not None
+        )
+        for field_name in PathCostBreakdown.model_fields
+    })
+
+
 def solve_multiroute(store: GraphStore, start: str, stops: list[str],
                      method: TspMethod, mode: Mode = "balanced",
                      time_slot: TimeSlot = "07:30",
@@ -515,60 +690,178 @@ def solve_multiroute(store: GraphStore, start: str, stops: list[str],
         if not store.has_node(node):
             raise KeyError(f"node '{node}' not in graph '{store.level}'")
     points = [start, *stops]
+    if len(points) < 2:
+        raise ValueError("at least one stop is required")
     if len(set(points)) != len(points):
         raise ValueError("start/stops must be distinct")
     if len(points) > MAX_POINTS:
         raise ValueError(f"at most {MAX_POINTS} points total, got {len(points)}")
 
-    base = dict(method=method, mode=mode, time_slot=time_slot, graph=store.level,
-                optimal_guarantee=method == "held_karp")
+    facade_started = time.perf_counter()
+    base = dict(
+        contract_version=2,
+        method=method,
+        mode=mode,
+        time_slot=time_slot,
+        graph=store.level,
+        optimal_guarantee=method == "held_karp",
+        return_to_start=return_to_start,
+        original_order=points,
+    )
+    instrumentation = {"matrix_search_runs": 0, "matrix_nodes_expanded": 0}
+    matrix_started = time.perf_counter()
     try:
-        cost, path = build_matrix(store, points, mode, time_slot)
-    except UnreachableStopError:
-        return MultirouteResponse(**base, found=False, order=[], legs=[],
-                                  totals=None, original_order_totals=None,
-                                  savings_pct=None)
+        cost, path = build_matrix(
+            store, points, mode, time_slot, instrumentation,
+        )
+    except UnreachableStopError as exc:
+        matrix_raw_ms = (time.perf_counter() - matrix_started) * 1000
+        matrix_evidence = _matrix_evidence(points, exc.partial_cost)
+        failure = MultirouteFailure(
+            kind="matrix_incomplete",
+            from_node=exc.from_node,
+            to_node=exc.to_node,
+        )
+        total_raw_ms = (time.perf_counter() - facade_started) * 1000
+        computation = AtspComputationMetrics(
+            matrix_search_runs=instrumentation["matrix_search_runs"],
+            matrix_nodes_expanded=instrumentation["matrix_nodes_expanded"],
+            matrix_runtime_ms=round(matrix_raw_ms, 3),
+            optimizer_runtime_ms=0.0,
+            total_runtime_ms=round(total_raw_ms, 3),
+        )
+        return MultirouteResponse(
+            **base,
+            found=False,
+            order=[],
+            legs=[],
+            totals=None,
+            totals_breakdown=None,
+            original_order_legs=[],
+            original_order_totals=None,
+            original_order_breakdown=None,
+            savings_pct=None,
+            matrix_evidence=matrix_evidence,
+            computation_metrics=computation,
+            failure=failure,
+            method_stats=None,
+            optimization_trace=None,
+            optimizer_stats=None,
+        )
+    matrix_raw_ms = (time.perf_counter() - matrix_started) * 1000
 
     recorder = OptimizationTraceRecorder(
         method, enabled=include_trace, point_count=len(points),
     )
+    optimizer_started = time.perf_counter()
     optimizer_stats: SaOptimizerStats | None = None
+    raw_method_stats: dict = {}
+    raw_stats: dict | None = None
     if method == "held_karp":
-        order, _ = held_karp(cost, points, return_to_start, recorder)
+        order, _ = held_karp(
+            cost, points, return_to_start, recorder, raw_method_stats,
+        )
     elif method == "nn_2opt":
-        order, _ = nn_2opt(cost, points, return_to_start, recorder)
+        order, _ = nn_2opt(
+            cost, points, return_to_start, recorder, raw_method_stats,
+        )
     else:
         order, _, raw_stats = simulated_annealing(
             cost, points, return_to_start, recorder=recorder,
         )
-        optimizer_stats = SaOptimizerStats.model_validate(raw_stats["optimizer_stats"])
+    optimizer_raw_ms = (time.perf_counter() - optimizer_started) * 1000
 
-    def totals_of(seq: list[str]) -> LegMetrics:
+    if method == "held_karp":
+        method_stats = HeldKarpMethodStats.model_validate(raw_method_stats)
+    elif method == "nn_2opt":
+        method_stats = NnLocalSearchMethodStats.model_validate(raw_method_stats)
+    else:
+        assert raw_stats is not None
+        method_stats = SimulatedAnnealingMethodStats.model_validate(
+            raw_stats["method_stats"],
+        )
+        optimizer_stats = SaOptimizerStats.model_validate({
+            "seeds": [{
+                "seed": seed.seed,
+                "iterations": seed.iterations,
+                "final_cost": seed.final_cost,
+                "best_cost": seed.best_cost,
+                "best_order": seed.best_order,
+            } for seed in method_stats.seeds],
+            "best_seed": method_stats.best_seed,
+            "best_cost": method_stats.best_cost,
+            "mean_best_cost": method_stats.mean_best_cost,
+            "stddev_best_cost": method_stats.stddev_best_cost,
+        })
+
+    def legs_of(seq: list[str]) -> list[Leg]:
         pairs = list(zip(seq, seq[1:]))
         if return_to_start:
             pairs.append((seq[-1], seq[0]))
-        c = d = t = 0.0
+        result: list[Leg] = []
         for a, b in pairs:
             lc, ld, lt = store.path_metrics(path[(a, b)], mode, time_slot)
-            c, d, t = c + lc, d + ld, t + lt
-        return LegMetrics(total_cost=c, total_distance_m=d, total_time_s=t)
+            result.append(Leg(
+                from_node=a,
+                to_node=b,
+                path=path[(a, b)],
+                metrics=LegMetrics(
+                    total_cost=lc,
+                    total_distance_m=ld,
+                    total_time_s=lt,
+                ),
+                cost_breakdown=store.path_cost_breakdown(path[(a, b)], time_slot),
+            ))
+        return result
 
-    legs = []
-    pairs = list(zip(order, order[1:]))
-    if return_to_start:
-        pairs.append((order[-1], order[0]))
-    for a, b in pairs:
-        lc, ld, lt = store.path_metrics(path[(a, b)], mode, time_slot)
-        legs.append(Leg(from_node=a, to_node=b, path=path[(a, b)],
-                        metrics=LegMetrics(total_cost=lc, total_distance_m=ld,
-                                           total_time_s=lt)))
+    def totals_of(legs: list[Leg]) -> LegMetrics:
+        return LegMetrics(
+            total_cost=sum(leg.metrics.total_cost for leg in legs),
+            total_distance_m=sum(leg.metrics.total_distance_m for leg in legs),
+            total_time_s=sum(leg.metrics.total_time_s for leg in legs),
+        )
 
-    totals = totals_of(order)
-    original = totals_of(points)
-    savings = round((original.total_cost - totals.total_cost)
-                    / original.total_cost * 100, 1) if original.total_cost else 0.0
-    return MultirouteResponse(**base, found=True, order=order, legs=legs,
-                              totals=totals, original_order_totals=original,
-                              savings_pct=savings,
-                              optimization_trace=recorder.build(),
-                              optimizer_stats=optimizer_stats)
+    legs = legs_of(order)
+    original_legs = legs_of(points)
+    totals = totals_of(legs)
+    original = totals_of(original_legs)
+    totals_breakdown = _aggregate_breakdown(legs)
+    original_breakdown = _aggregate_breakdown(original_legs)
+    if comparison_equivalent(original.total_cost, 0.0):
+        if not comparison_equivalent(totals.total_cost, 0.0):
+            raise ValueError("optimized cost is nonzero while original cost is zero")
+        savings = 0.0
+    else:
+        savings = round(
+            (original.total_cost - totals.total_cost)
+            / original.total_cost * 100,
+            1,
+        )
+    matrix_evidence = _matrix_evidence(points, cost)
+    optimization_trace = recorder.build()
+    total_raw_ms = (time.perf_counter() - facade_started) * 1000
+    computation = AtspComputationMetrics(
+        matrix_search_runs=instrumentation["matrix_search_runs"],
+        matrix_nodes_expanded=instrumentation["matrix_nodes_expanded"],
+        matrix_runtime_ms=round(matrix_raw_ms, 3),
+        optimizer_runtime_ms=round(optimizer_raw_ms, 3),
+        total_runtime_ms=round(total_raw_ms, 3),
+    )
+    return MultirouteResponse(
+        **base,
+        found=True,
+        order=order,
+        legs=legs,
+        totals=totals,
+        totals_breakdown=totals_breakdown,
+        original_order_legs=original_legs,
+        original_order_totals=original,
+        original_order_breakdown=original_breakdown,
+        savings_pct=savings,
+        matrix_evidence=matrix_evidence,
+        computation_metrics=computation,
+        failure=None,
+        method_stats=method_stats,
+        optimization_trace=optimization_trace,
+        optimizer_stats=optimizer_stats,
+    )

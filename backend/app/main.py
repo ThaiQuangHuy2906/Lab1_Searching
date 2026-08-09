@@ -222,9 +222,11 @@ def post_route(req: RouteRequest) -> Trace:
     trace = ALL_ALGORITHMS[req.algorithm](
         store, req.start, req.goal, mode=req.mode, time_slot=req.time_slot,
         include_trace=include_trace, **params)
-    trace.explanation = build_explanation(store, trace)
     trace.applied_scenario = resolved.applied_scenario
-    return trace
+    trace.explanation = build_explanation(store, trace)
+    payload = trace.model_dump()
+    payload["contract_version"] = 2
+    return Trace.model_validate(payload)
 
 
 @app.post(
@@ -237,8 +239,9 @@ def post_multiroute(req: MultirouteRequest) -> MultirouteResponse:
                                mode=req.mode, time_slot=req.time_slot,
                                return_to_start=req.return_to_start,
                                include_trace=req.include_trace)
-    result.applied_scenario = resolved.applied_scenario
-    return result
+    payload = result.model_dump()
+    payload["applied_scenario"] = resolved.applied_scenario.model_dump()
+    return MultirouteResponse.model_validate(payload)
 
 
 @app.post(

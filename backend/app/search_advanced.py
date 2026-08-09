@@ -24,8 +24,11 @@ import heapq
 import time
 
 from .graph_store import GraphStore
-from .models import Mode, TimeSlot, Trace, TraceStep
-from .search import _Recorder, _check_endpoints, _finish, _reconstruct, _round_map, _trivial
+from .models import BidirectionalBoundEvidence, Mode, TimeSlot, Trace
+from .search import (
+    _Recorder, _candidate_payload, _check_endpoints, _decision_payload, _finish,
+    _reconstruct, _round_map, _score_payload, _trivial,
+)
 
 DEFAULT_EPSILON = 5.0
 DEFAULT_BEAM_WIDTH = {"demo": 5, "real": 50}
@@ -67,26 +70,53 @@ def greedy(store: GraphStore, start: str, goal: str, mode: Mode = "balanced",
         _h, _t, node = heapq.heappop(heap)
         if node in closed:
             continue
+        record_step = rec.active
+        frontier_size_before = len(open_set)
+        runner_entry = min(
+            (entry for entry in heap if entry[2] not in closed),
+            default=None,
+        ) if record_step else None
+        runner_up = (
+            _candidate_payload(runner_entry[2], h=runner_entry[0])
+            if runner_entry is not None else None
+        )
         closed.add(node)
         open_set.discard(node)
         expanded += 1
+
+        def snapshot(*, neighbors_scanned=0, added=0) -> None:
+            frontier = sorted(open_set)
+            rec.record(
+                node, frontier,
+                h=_round_map({n: h(n) for n in open_set}),
+                decision=_decision_payload(
+                    "lowest_h",
+                    selected_scores=_score_payload(h=h(node)),
+                    runner_up=runner_up,
+                    frontier_size_before=frontier_size_before,
+                    frontier_size_after=len(frontier),
+                    neighbors_scanned=neighbors_scanned,
+                    frontier_added=added,
+                ),
+            )
+
         if node == goal:
-            if rec.active:
-                rec.record(node, sorted(open_set),
-                           h=_round_map({n: h(n) for n in open_set}))
+            if record_step:
+                snapshot()
             return _finish("greedy", store, mode, time_slot, True,
                            _reconstruct(parent, goal), expanded, max_frontier,
                            t0, rec, False)
+        added = 0
         for nbr, _eid in store.adj[node]:
             if nbr not in closed and nbr not in open_set:
                 parent[nbr] = node
                 tie += 1
                 heapq.heappush(heap, (h(nbr), tie, nbr))
                 open_set.add(nbr)
+                added += 1
         max_frontier = max(max_frontier, len(open_set))
-        if rec.active:
-            rec.record(node, sorted(open_set),
-                       h=_round_map({n: h(n) for n in open_set}))
+        if record_step:
+            snapshot(neighbors_scanned=len(store.adj[node]), added=added)
     return _finish("greedy", store, mode, time_slot, False, [], expanded,
                    max_frontier, t0, rec, False)
 
@@ -115,7 +145,7 @@ def bidijkstra(store: GraphStore, start: str, goal: str, mode: Mode = "balanced"
     g_f: dict[str, float] = {start: 0.0}
     g_b: dict[str, float] = {goal: 0.0}
     par_f: dict[str, str] = {}
-    nxt_b: dict[str, str] = {}  # node -> its successor toward goal
+    nxt_b: dict[str, str] = {}
     heap_f: list[tuple[float, int, str]] = [(0.0, 0, start)]
     heap_b: list[tuple[float, int, str]] = [(0.0, 0, goal)]
     open_f, open_b = {start}, {goal}
@@ -132,32 +162,77 @@ def bidijkstra(store: GraphStore, start: str, goal: str, mode: Mode = "balanced"
         if n in g_f and n in g_b and g_f[n] + g_b[n] < mu:
             mu, meet = g_f[n] + g_b[n], n
 
-    def peek(heap: list, closed: set[str]) -> float:
+    def peek_entry(
+        heap: list[tuple[float, int, str]], closed: set[str],
+    ) -> tuple[float, int, str] | None:
         while heap and heap[0][2] in closed:
             heapq.heappop(heap)
-        return heap[0][0] if heap else float("inf")
+        return heap[0] if heap else None
+
+    def top_payload(entry: tuple[float, int, str] | None) -> dict | None:
+        return None if entry is None else {"node": entry[2], "g": entry[0]}
+
+    stop_forward: tuple[float, int, str] | None = None
+    stop_backward: tuple[float, int, str] | None = None
 
     while True:
-        top_f, top_b = peek(heap_f, closed_f), peek(heap_b, closed_b)
+        top_f_entry = peek_entry(heap_f, closed_f)
+        top_b_entry = peek_entry(heap_b, closed_b)
+        top_f = top_f_entry[0] if top_f_entry is not None else float("inf")
+        top_b = top_b_entry[0] if top_b_entry is not None else float("inf")
         if top_f + top_b >= mu:
+            stop_forward, stop_backward = top_f_entry, top_b_entry
             break
         if top_f == float("inf") and top_b == float("inf"):
+            stop_forward, stop_backward = top_f_entry, top_b_entry
             break
+
         side = "forward" if top_f <= top_b else "backward"
         if side == "forward":
-            heap, closed, open_side, g_this, adj = heap_f, closed_f, open_f, g_f, store.adj
+            heap, closed, open_side, g_this, adj = (
+                heap_f, closed_f, open_f, g_f, store.adj,
+            )
+            other_top = top_b_entry
         else:
-            heap, closed, open_side, g_this, adj = heap_b, closed_b, open_b, g_b, store.radj
+            heap, closed, open_side, g_this, adj = (
+                heap_b, closed_b, open_b, g_b, store.radj,
+            )
+            other_top = top_f_entry
+
+        record_step = rec.active
+        frontier_size_before = len(open_f | open_b)
+        mu_before = None if mu == float("inf") else mu
         _d, _t, node = heapq.heappop(heap)
+
+        runner_up = None
+        if record_step:
+            same_side_candidates = sorted(
+                entry for entry in heap
+                if entry[2] not in closed and entry[0] == g_this[entry[2]]
+            )
+            runner_entries = []
+            if same_side_candidates:
+                runner_entries.append(same_side_candidates[0])
+            if other_top is not None:
+                runner_entries.append(other_top)
+            if runner_entries:
+                runner_entry = min(runner_entries)
+                runner_up = _candidate_payload(runner_entry[2], g=runner_entry[0])
+
         closed.add(node)
         open_side.discard(node)
         expanded += 1
         try_meet(node)
+        added = updated = 0
         for nbr, eid in adj[node]:
             if nbr in closed:
                 continue
             ng = g_this[node] + w[eid]
             if ng < g_this.get(nbr, float("inf")):
+                if nbr in g_this:
+                    updated += 1
+                else:
+                    added += 1
                 g_this[nbr] = ng
                 if side == "forward":
                     par_f[nbr] = node
@@ -167,12 +242,11 @@ def bidijkstra(store: GraphStore, start: str, goal: str, mode: Mode = "balanced"
                 heapq.heappush(heap, (ng, tie, nbr))
                 open_side.add(nbr)
                 try_meet(nbr)
+
         frontier_nodes = open_f | open_b
         max_frontier = max(max_frontier, len(frontier_nodes))
-        if rec.active:
+        if record_step:
             fr = sorted(frontier_nodes)
-            # Use only active-frontier distances. The minimum is meaningful
-            # only when the node is active on both sides (SCHEMA §B.3).
             g_snapshot: dict[str, float] = {}
             for n in fr:
                 if n in open_f and n in open_b:
@@ -181,11 +255,42 @@ def bidijkstra(store: GraphStore, start: str, goal: str, mode: Mode = "balanced"
                     g_snapshot[n] = g_f[n]
                 else:
                     g_snapshot[n] = g_b[n]
-            rec.record(node, fr, side=side, g=_round_map(g_snapshot))
+            forward_nodes = sorted(open_f)
+            backward_nodes = sorted(open_b)
+            rec.record(
+                node, fr, side=side, g=_round_map(g_snapshot),
+                decision=_decision_payload(
+                    "bidirectional_min_key",
+                    selected_scores=_score_payload(g=_d),
+                    runner_up=runner_up,
+                    frontier_size_before=frontier_size_before,
+                    frontier_size_after=len(fr),
+                    neighbors_scanned=len(adj[node]),
+                    frontier_added=added,
+                    frontier_updated=updated,
+                    top_forward=top_payload(top_f_entry),
+                    top_backward=top_payload(top_b_entry),
+                    mu_before=mu_before,
+                ),
+                bidirectional_frontiers={
+                    "forward": {
+                        "nodes": forward_nodes,
+                        "g": _round_map({n: g_f[n] for n in forward_nodes}),
+                    },
+                    "backward": {
+                        "nodes": backward_nodes,
+                        "g": _round_map({n: g_b[n] for n in backward_nodes}),
+                    },
+                    "best_path_cost": None if mu == float("inf") else mu,
+                    "meeting_node": meet,
+                },
+            )
 
     if meet is None:
-        return _finish("bidijkstra", store, mode, time_slot, False, [], expanded,
-                       max_frontier, t0, rec, True)
+        return _finish(
+            "bidijkstra", store, mode, time_slot, False, [], expanded,
+            max_frontier, t0, rec, True,
+        )
     left = [meet]
     while left[-1] in par_f:
         left.append(par_f[left[-1]])
@@ -195,8 +300,18 @@ def bidijkstra(store: GraphStore, start: str, goal: str, mode: Mode = "balanced"
     while cur in nxt_b:
         cur = nxt_b[cur]
         right.append(cur)
-    return _finish("bidijkstra", store, mode, time_slot, True, left + right,
-                   expanded, max_frontier, t0, rec, True)
+    bound = BidirectionalBoundEvidence(
+        top_forward=top_payload(stop_forward),
+        top_backward=top_payload(stop_backward),
+        mu=mu,
+        meeting_node=meet,
+    )
+    return _finish(
+        "bidijkstra", store, mode, time_slot, True, left + right,
+        expanded, max_frontier, t0, rec, True,
+        termination_reason="bidirectional_bound_met",
+        bidirectional_bound=bound,
+    )
 
 
 # --------------------------------------------------------------- IDA*
@@ -234,14 +349,14 @@ def idastar(store: GraphStore, start: str, goal: str, mode: Mode = "balanced",
     expanded = 0
     max_frontier = 1
     threshold = h(start)
-    for _round in range(int(params.get("max_rounds", IDASTAR_MAX_ROUNDS))):
-        # stack frames: (node, g, on_path set via parent chain)
-        stack: list[tuple[str, float, str | None]] = [(start, 0.0, None)]
+    for round_index in range(int(params.get("max_rounds", IDASTAR_MAX_ROUNDS))):
+        # The added depth value is observation-only; stack ordering is unchanged.
+        stack: list[tuple[str, float, str | None, int]] = [(start, 0.0, None, 0)]
         parent: dict[str, str] = {}
         best_g: dict[str, float] = {}
         min_excess = float("inf")
         while stack:
-            node, g, par = stack.pop()
+            node, g, par, depth = stack.pop()
             f = g + h(node)
             if f > threshold + 1e-9:
                 min_excess = min(min_excess, f)
@@ -251,38 +366,90 @@ def idastar(store: GraphStore, start: str, goal: str, mode: Mode = "balanced",
             best_g[node] = g
             if par is not None:
                 parent[node] = par
+            record_step = rec.active
+            frontier_size_before = 1
+            runner_up = None
+            if record_step:
+                frontier_size_before += len({
+                    n for n, _sg, _p, _depth in stack if n not in best_g
+                })
+                for runner_node, runner_g, _runner_parent, runner_depth in reversed(stack):
+                    if runner_node in best_g:
+                        continue
+                    runner_up = _candidate_payload(
+                        runner_node,
+                        g=runner_g,
+                        h=h(runner_node),
+                        f=runner_g + h(runner_node),
+                        depth=runner_depth,
+                    )
+                    break
             expanded += 1
+            neighbors_scanned = added = updated = pruned = 0
             if node != goal:
                 for nbr, eid in reversed(store.adj[node]):
+                    neighbors_scanned += 1
                     ng = g + w[eid]
                     if nbr in best_g and best_g[nbr] <= ng:
+                        if record_step:
+                            pruned += 1
                         continue
-                    stack.append((nbr, ng, node))
+                    if record_step:
+                        if any(existing[0] == nbr for existing in stack):
+                            updated += 1
+                        else:
+                            added += 1
+                        if ng + h(nbr) > threshold + 1e-9:
+                            pruned += 1
+                    stack.append((nbr, ng, node, depth + 1))
             max_frontier = max(max_frontier, len(stack))
-            if rec.active:
+            if record_step:
                 fr_g: dict[str, float] = {}
-                for n, sg, _p in stack:
+                for n, sg, _p, _depth in stack:
                     if n not in best_g and (n not in fr_g or sg < fr_g[n]):
                         fr_g[n] = sg
                 fr = sorted(fr_g)
-                rec.record(node, fr, g=_round_map(fr_g),
-                           h=_round_map({n: h(n) for n in fr}),
-                           f=_round_map({n: fr_g[n] + h(n) for n in fr}))
+                rec.record(
+                    node, fr, g=_round_map(fr_g),
+                    h=_round_map({n: h(n) for n in fr}),
+                    f=_round_map({n: fr_g[n] + h(n) for n in fr}),
+                    decision=_decision_payload(
+                        "f_bound_dfs",
+                        selected_scores=_score_payload(
+                            g=g, h=h(node), f=f, depth=depth,
+                        ),
+                        runner_up=runner_up,
+                        frontier_size_before=frontier_size_before,
+                        frontier_size_after=len(fr),
+                        neighbors_scanned=neighbors_scanned,
+                        frontier_added=added,
+                        frontier_updated=updated,
+                        pruned_count=pruned,
+                        iteration=round_index + 1,
+                        bound=threshold,
+                    ),
+                )
             if node == goal:
                 return _idastar_finish(store, mode, time_slot, parent, goal,
                                        expanded, max_frontier, t0, rec, epsilon)
         if min_excess == float("inf"):
             # Search space was exhausted: unreachability is established rather
             # than merely assumed because a safety cap stopped the run.
-            t = _finish("idastar", store, mode, time_slot, False, [], expanded,
-                        max_frontier, t0, rec, True)
+            t = _finish(
+                "idastar", store, mode, time_slot, False, [], expanded,
+                max_frontier, t0, rec, True,
+                termination_reason="frontier_exhausted",
+            )
             t.metrics.epsilon_bound = epsilon
             return t
         threshold = max(min_excess, threshold + epsilon)
     # The round cap stopped the proof/search before a solution or exhaustive
     # unreachable result. Do not claim the epsilon guarantee for this run.
-    t = _finish("idastar", store, mode, time_slot, False, [], expanded,
-                max_frontier, t0, rec, False)
+    t = _finish(
+        "idastar", store, mode, time_slot, False, [], expanded,
+        max_frontier, t0, rec, False,
+        termination_reason="round_cap_reached",
+    )
     t.metrics.epsilon_bound = epsilon
     return t
 
@@ -328,55 +495,109 @@ def beam(store: GraphStore, start: str, goal: str, mode: Mode = "balanced",
     g_of: dict[str, float] = {start: 0.0}
     parent: dict[str, str] = {}
     visited = {start}
-    layer = [start]  # current beam, sorted by f
+    layer = [start]
     expanded = 0
     max_frontier = 1
     found = False
+    ever_pruned = False
+    layer_number = 1
     while layer and not found:
-        pool: dict[str, float] = {}  # candidates for the next layer
+        pool: dict[str, float] = {}
 
         def ranked_pool() -> list[tuple[str, float]]:
             return sorted(
                 pool.items(), key=lambda kv: kv[1] + h(kv[0])
             )[:k]
 
-        def snapshot(node: str, selected: list[tuple[str, float]]) -> None:
-            # SCHEMA §B.3 exposes the selected next beam, never the raw pool.
+        def snapshot(
+            node: str, selected: list[tuple[str, float]], *,
+            runner_up: dict | None, frontier_size_before: int,
+            neighbors_scanned: int, added: int, updated: int,
+        ) -> None:
             g_all = dict(selected)
             fr = sorted(g_all)
-            rec.record(node, fr, g=_round_map(g_all),
-                       h=_round_map({n: h(n) for n in fr}),
-                       f=_round_map({n: g_all[n] + h(n) for n in fr}))
+            rec.record(
+                node, fr, g=_round_map(g_all),
+                h=_round_map({n: h(n) for n in fr}),
+                f=_round_map({n: g_all[n] + h(n) for n in fr}),
+                decision=_decision_payload(
+                    "top_k_f",
+                    selected_scores=_score_payload(
+                        g=g_of[node], h=h(node), f=g_of[node] + h(node),
+                    ),
+                    runner_up=runner_up,
+                    frontier_size_before=frontier_size_before,
+                    frontier_size_after=len(fr),
+                    neighbors_scanned=neighbors_scanned,
+                    frontier_added=added,
+                    frontier_updated=updated,
+                    pruned_count=max(0, len(pool) - k),
+                    layer=layer_number,
+                    beam_width=k,
+                ),
+            )
 
-        for node in layer:
+        for layer_index, node in enumerate(layer):
+            record_step = rec.active
+            runner_up = None
+            if record_step and layer_index + 1 < len(layer):
+                runner = layer[layer_index + 1]
+                runner_up = _candidate_payload(
+                    runner,
+                    g=g_of[runner], h=h(runner), f=g_of[runner] + h(runner),
+                )
             expanded += 1
             if node == goal:
                 found = True
                 selected = ranked_pool()
                 max_frontier = max(max_frontier, len(selected))
-                if rec.active:
-                    snapshot(node, selected)
+                if record_step:
+                    snapshot(
+                        node, selected, runner_up=runner_up,
+                        frontier_size_before=len(layer) - layer_index,
+                        neighbors_scanned=0, added=0, updated=0,
+                    )
                 break
+            added = updated = 0
             for nbr, eid in store.adj[node]:
                 if nbr in visited:
                     continue
                 ng = g_of[node] + w[eid]
                 if nbr not in pool or ng < pool[nbr]:
+                    if record_step:
+                        if nbr in pool:
+                            updated += 1
+                        else:
+                            added += 1
                     pool[nbr] = ng
                     parent[nbr] = node
             max_frontier = max(max_frontier, min(k, len(pool)))
-            if rec.active:
-                snapshot(node, ranked_pool())
+            if record_step:
+                snapshot(
+                    node, ranked_pool(), runner_up=runner_up,
+                    frontier_size_before=len(layer) - layer_index,
+                    neighbors_scanned=len(store.adj[node]),
+                    added=added, updated=updated,
+                )
         if found:
             break
+        if len(pool) > k:
+            ever_pruned = True
         ranked = ranked_pool()
         layer = [n for n, _ in ranked]
         for n, gval in ranked:
             g_of[n] = gval
             visited.add(n)
-    t = _finish("beam", store, mode, time_slot, found,
-                _reconstruct(parent, goal) if found else [], expanded,
-                max_frontier, t0, rec, False)
+        layer_number += 1
+    t = _finish(
+        "beam", store, mode, time_slot, found,
+        _reconstruct(parent, goal) if found else [], expanded,
+        max_frontier, t0, rec, False,
+        termination_reason=(
+            None if found else
+            "beam_exhausted_after_pruning" if ever_pruned else "frontier_exhausted"
+        ),
+    )
     t.metrics.beam_width = k
     return t
 

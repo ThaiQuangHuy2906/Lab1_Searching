@@ -1,0 +1,41 @@
+{
+  "fixture_version": 1,
+  "route_request": {
+    "start": "n0002",
+    "goal": "n0047",
+    "mode": "balanced",
+    "time_slot": "07:30"
+  },
+  "routes": {
+    "bfs": {"path": ["n0002", "n0012", "n0016", "n0047"], "total_cost": 671.7859258516726, "total_distance_m": 3782.9, "total_time_s": 671.7859258516726, "nodes_expanded": 32, "max_frontier": 18, "optimal_guarantee": false},
+    "dfs": {"path": ["n0002", "n0004", "n0006", "n0013", "n0007", "n0017", "n0011", "n0010", "n0036", "n0037", "n0024", "n0019", "n0018", "n0022", "n0020", "n0028", "n0025", "n0023", "n0016", "n0005", "n0021", "n0026", "n0031", "n0012", "n0015", "n0048", "n0047"], "total_cost": 3832.2513737469103, "total_distance_m": 17755.2, "total_time_s": 3832.2513737469103, "nodes_expanded": 44, "max_frontier": 23, "optimal_guarantee": false},
+    "iddfs": {"path": ["n0002", "n0012", "n0016", "n0047"], "total_cost": 671.7859258516726, "total_distance_m": 3782.9, "total_time_s": 671.7859258516726, "nodes_expanded": 65, "max_frontier": 10, "optimal_guarantee": false},
+    "ucs": {"path": ["n0002", "n0026", "n0016", "n0047"], "total_cost": 342.2491273076001, "total_distance_m": 1887.5, "total_time_s": 342.2491273076001, "nodes_expanded": 24, "max_frontier": 22, "optimal_guarantee": true},
+    "astar": {"path": ["n0002", "n0026", "n0016", "n0047"], "total_cost": 342.2491273076001, "total_distance_m": 1887.5, "total_time_s": 342.2491273076001, "nodes_expanded": 16, "max_frontier": 21, "optimal_guarantee": true},
+    "greedy": {"path": ["n0002", "n0026", "n0016", "n0047"], "total_cost": 342.2491273076001, "total_distance_m": 1887.5, "total_time_s": 342.2491273076001, "nodes_expanded": 4, "max_frontier": 10, "optimal_guarantee": false},
+    "bidijkstra": {"path": ["n0002", "n0026", "n0016", "n0047"], "total_cost": 342.2491273076001, "total_distance_m": 1887.5, "total_time_s": 342.2491273076001, "nodes_expanded": 12, "max_frontier": 21, "optimal_guarantee": true},
+    "idastar": {"path": ["n0002", "n0026", "n0016", "n0047"], "total_cost": 342.2491273076001, "total_distance_m": 1887.5, "total_time_s": 342.2491273076001, "nodes_expanded": 171, "max_frontier": 15, "optimal_guarantee": true, "epsilon_bound": 5.0},
+    "beam": {"path": ["n0002", "n0026", "n0016", "n0047"], "total_cost": 342.2491273076001, "total_distance_m": 1887.5, "total_time_s": 342.2491273076001, "nodes_expanded": 16, "max_frontier": 5, "optimal_guarantee": false, "beam_width": 5}
+  },
+  "multiroute_request": {
+    "start": "n0021",
+    "stops": ["n0002", "n0043", "n0015"],
+    "mode": "balanced",
+    "time_slot": "07:30"
+  },
+  "multiroute": {
+    "order": ["n0021", "n0015", "n0002", "n0043"],
+    "open": {
+      "leg_paths": [["n0021", "n0016", "n0048", "n0015"], ["n0015", "n0048", "n0016", "n0026", "n0002"], ["n0002", "n0006", "n0014", "n0034", "n0043"]],
+      "totals": {"total_cost": 1138.3502511682684, "total_distance_m": 6447.6, "total_time_s": 1138.3502511682684},
+      "original_order_totals": {"total_cost": 1810.6957904017313, "total_distance_m": 9450.099999999999, "total_time_s": 1810.6957904017313},
+      "savings_pct": 37.1
+    },
+    "closed": {
+      "leg_paths": [["n0021", "n0016", "n0048", "n0015"], ["n0015", "n0048", "n0016", "n0026", "n0002"], ["n0002", "n0006", "n0014", "n0034", "n0043"], ["n0043", "n0011", "n0017", "n0040", "n0005", "n0021"]],
+      "totals": {"total_cost": 2001.1556782089526, "total_distance_m": 10648.5, "total_time_s": 2001.1556782089526},
+      "original_order_totals": {"total_cost": 2032.1951510423846, "total_distance_m": 10642.5, "total_time_s": 2032.1951510423846},
+      "savings_pct": 1.5
+    }
+  }
+}

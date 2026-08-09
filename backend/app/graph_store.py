@@ -14,10 +14,10 @@ from __future__ import annotations
 from functools import lru_cache
 from pathlib import Path
 
-from .costs import edge_weight, haversine_m, heuristic_m, heuristic_s
+from .costs import GAMMA, edge_cost_breakdown, edge_weight, haversine_m, heuristic_m, heuristic_s
 from .models import (
-    Edge, GraphFile, GraphLevel, Mode, Node, TimeSlot, TrafficProfiles,
-    TIME_SLOTS,
+    Edge, GraphFile, GraphLevel, Mode, Node, PathCostBreakdown, TimeSlot,
+    TrafficProfiles, TIME_SLOTS,
 )
 
 DATA_DIR = Path(__file__).resolve().parents[2] / "data"
@@ -104,6 +104,48 @@ class GraphStore:
             dist += e.length_m
             time_s += self._weight[("balanced", slot)][e.id]
         return cost, dist, time_s
+
+    def path_cost_breakdown(
+        self, path: list[str], slot: TimeSlot,
+    ) -> PathCostBreakdown:
+        """Aggregate the §F.1 breakdown from the single edge-cost source."""
+        totals = {
+            "distance_m": 0.0,
+            "free_flow_time_s": 0.0,
+            "congestion_adjusted_time_s": 0.0,
+            "penalty_flood_s": 0.0,
+            "penalty_construction_s": 0.0,
+            "penalty_narrow_alley_s": 0.0,
+            "penalty_traffic_light_s": 0.0,
+        }
+        for a, b in zip(path, path[1:]):
+            edge = self.edge_by_uv[(a, b)]
+            details = edge_cost_breakdown(
+                edge,
+                self.congestion(edge.id, slot),
+                gamma=self.gamma if self.gamma is not None else GAMMA,
+            )
+            totals["distance_m"] += float(details["length_m"])
+            totals["free_flow_time_s"] += float(details["t_free_s"])
+            totals["congestion_adjusted_time_s"] += float(details["weight_time_s"])
+            for field_name in (
+                "penalty_flood_s", "penalty_construction_s",
+                "penalty_narrow_alley_s", "penalty_traffic_light_s",
+            ):
+                totals[field_name] += float(details[field_name])
+        totals["congestion_delay_s"] = (
+            totals["congestion_adjusted_time_s"] - totals["free_flow_time_s"]
+        )
+        totals["risk_penalty_total_s"] = sum(
+            totals[field_name] for field_name in (
+                "penalty_flood_s", "penalty_construction_s",
+                "penalty_narrow_alley_s", "penalty_traffic_light_s",
+            )
+        )
+        totals["balanced_cost_s"] = (
+            totals["congestion_adjusted_time_s"] + totals["risk_penalty_total_s"]
+        )
+        return PathCostBreakdown(**totals)
 
     def reweighted(self, gamma: float) -> "GraphStore":
         """A sibling store whose balanced/time weights use a custom gamma

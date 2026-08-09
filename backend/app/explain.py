@@ -18,7 +18,10 @@ import math
 
 from .graph_store import GraphStore
 from .models import (
-    Alternative, CongestedSegment, Explanation, Mode, TimeSlot, Trace,
+    Alternative, COMPARISON_ABS_TOLERANCE, COMPARISON_REL_TOLERANCE,
+    CongestedSegment, Explanation, ExplanationEvidence, ExplanationFactor,
+    ExplanationObjective, LegMetrics, Mode, PathCostBreakdown, ReferenceRoute,
+    SELECTION_RULE_BY_ALGORITHM, TimeSlot, Trace, comparison_equivalent,
 )
 
 ALGO_VI = {
@@ -43,8 +46,6 @@ ALGO_CRITERION_VI = {
 }
 CONGESTION_THRESHOLD = 4
 MAX_NAMED_STOPS = 6
-COMPARISON_ABS_TOLERANCE = 1e-6
-COMPARISON_REL_TOLERANCE = 1e-9
 
 
 def vi_num(x: float, nd: int = 1) -> str:
@@ -158,6 +159,221 @@ def _risk_counts(store: GraphStore, path: list[str]) -> dict[str, int]:
     return c
 
 
+def _path_edge_ids(store: GraphStore, path: list[str]) -> list[str]:
+    return [store.edge_by_uv[(a, b)].id for a, b in zip(path, path[1:])]
+
+
+def _signed_pct(delta: float, denominator: float) -> float | None:
+    if comparison_equivalent(denominator, 0.0):
+        return 0.0 if comparison_equivalent(delta, 0.0) else None
+    return delta / denominator * 100.0
+
+
+def _reference_route(
+    store: GraphStore,
+    *,
+    reference_id: str,
+    kind: str,
+    generated_for_mode: Mode,
+    excluded_edge: str | None,
+    path: list[str],
+    selected_path: list[str],
+    active_mode: Mode,
+    slot: TimeSlot,
+) -> ReferenceRoute:
+    cost, distance_m, balanced_s = store.path_metrics(path, active_mode, slot)
+    selected_cost, selected_distance_m, selected_balanced_s = store.path_metrics(
+        selected_path, active_mode, slot,
+    )
+    delta = cost - selected_cost
+    relation = (
+        "equivalent" if comparison_equivalent(cost, selected_cost) else
+        "better" if delta < 0 else "worse"
+    )
+    return ReferenceRoute(
+        id=reference_id,
+        kind=kind,
+        provenance="posthoc_ucs",
+        generated_for_mode=generated_for_mode,
+        excluded_edge=excluded_edge,
+        path=path,
+        metrics=LegMetrics(
+            total_cost=cost,
+            total_distance_m=distance_m,
+            total_time_s=balanced_s,
+        ),
+        cost_breakdown=store.path_cost_breakdown(path, slot),
+        reference_minus_selected_cost=delta,
+        reference_minus_selected_pct=_signed_pct(delta, selected_cost),
+        reference_minus_selected_distance_m=distance_m - selected_distance_m,
+        reference_minus_selected_balanced_cost_s=balanced_s - selected_balanced_s,
+        relation_to_selected=relation,
+    )
+
+
+def _route_factors(
+    store: GraphStore,
+    trace: Trace,
+    breakdown: PathCostBreakdown | None,
+    gap: float | None,
+) -> list[ExplanationFactor]:
+    if not trace.found or breakdown is None:
+        if trace.termination is not None and trace.termination.reachability == "inconclusive":
+            return [ExplanationFactor(
+                id=f"algorithm-limit:{trace.termination.reason}",
+                kind="algorithm_limit",
+                affects_objective=False,
+                source="trace",
+                edge_ids=[],
+                node_ids=[],
+                contribution_raw=None,
+                contribution_unit=None,
+                timeline_step=None,
+            )]
+        return []
+
+    unit = "m" if trace.mode == "distance" else "s"
+    edge_ids = _path_edge_ids(store, trace.path)
+    factors = [ExplanationFactor(
+        id=f"objective:{trace.mode}",
+        kind="objective_truth",
+        affects_objective=True,
+        source="cost_breakdown",
+        edge_ids=edge_ids,
+        node_ids=list(dict.fromkeys(trace.path)),
+        contribution_raw=breakdown.objective_value(trace.mode),
+        contribution_unit=unit,
+        timeline_step=None,
+    )]
+    if gap is not None:
+        factors.append(ExplanationFactor(
+            id="optimality-gap:same-objective-ucs",
+            kind="optimality_gap",
+            affects_objective=True,
+            source="reference_comparison",
+            edge_ids=[],
+            node_ids=[],
+            contribution_raw=gap,
+            contribution_unit=unit,
+            timeline_step=None,
+        ))
+
+    congestion_edges = [
+        edge_id for edge_id in edge_ids if store.congestion(edge_id, trace.time_slot) > 1
+    ]
+    if congestion_edges:
+        affects = trace.mode != "distance"
+        factors.append(ExplanationFactor(
+            id="cost:congestion-delay",
+            kind="congestion",
+            affects_objective=affects,
+            source="cost_breakdown",
+            edge_ids=congestion_edges,
+            node_ids=[],
+            contribution_raw=breakdown.congestion_delay_s if affects else None,
+            contribution_unit="s" if affects else None,
+            timeline_step=None,
+        ))
+
+    risk_fields = {
+        "flood": ("penalty_flood_s", "flood"),
+        "construction": ("penalty_construction_s", "construction"),
+        "narrow_alley": ("penalty_narrow_alley_s", "narrow_alley"),
+        "traffic_light": ("penalty_traffic_light_s", "traffic_light"),
+    }
+    for risk_name, (breakdown_field, factor_kind) in risk_fields.items():
+        risk_edges = [
+            edge_id for edge_id in edge_ids
+            if getattr(store.edges[edge_id].risk, risk_name) > 0
+        ]
+        if not risk_edges:
+            continue
+        affects = trace.mode == "balanced"
+        factors.append(ExplanationFactor(
+            id=f"cost:risk:{risk_name}",
+            kind=factor_kind,
+            affects_objective=affects,
+            source="cost_breakdown",
+            edge_ids=risk_edges,
+            node_ids=[],
+            contribution_raw=getattr(breakdown, breakdown_field) if affects else None,
+            contribution_unit="s" if affects else None,
+            timeline_step=None,
+        ))
+
+    if trace.found and not trace.metrics.optimal_guarantee:
+        factors.append(ExplanationFactor(
+            id=f"algorithm-limit:{trace.algorithm}",
+            kind="algorithm_limit",
+            affects_objective=False,
+            source="trace",
+            edge_ids=[],
+            node_ids=[],
+            contribution_raw=None,
+            contribution_unit=None,
+            timeline_step=None,
+        ))
+    return factors
+
+
+def _evidence(
+    store: GraphStore,
+    trace: Trace,
+    *,
+    exact_path: list[str] | None = None,
+    reference_routes: list[ReferenceRoute] | None = None,
+) -> ExplanationEvidence:
+    if not trace.found:
+        objective = ExplanationObjective(
+            mode=trace.mode,
+            selected_value=None,
+            exact_reference_value=None,
+            optimality_gap=None,
+            optimality_gap_pct=None,
+        )
+        return ExplanationEvidence(
+            selection_rule=SELECTION_RULE_BY_ALGORITHM[trace.algorithm],
+            objective=objective,
+            cost_breakdown=None,
+            factors=_route_factors(store, trace, None, None),
+            reference_routes=[],
+        )
+
+    assert trace.metrics.total_cost is not None
+    breakdown = store.path_cost_breakdown(trace.path, trace.time_slot)
+    exact_value = None
+    gap = None
+    gap_pct = None
+    if exact_path is not None:
+        exact_value = store.path_metrics(
+            exact_path, trace.mode, trace.time_slot,
+        )[0]
+        raw_gap = trace.metrics.total_cost - exact_value
+        if raw_gap < 0 and not comparison_equivalent(trace.metrics.total_cost, exact_value):
+            raise ValueError(
+                "guaranteed/reference integrity failure: selected route beats exact UCS"
+            )
+        gap = 0.0 if comparison_equivalent(trace.metrics.total_cost, exact_value) else raw_gap
+        if comparison_equivalent(exact_value, 0.0):
+            gap_pct = 0.0 if comparison_equivalent(trace.metrics.total_cost, 0.0) else None
+        else:
+            gap_pct = gap / exact_value * 100.0
+    objective = ExplanationObjective(
+        mode=trace.mode,
+        selected_value=trace.metrics.total_cost,
+        exact_reference_value=exact_value,
+        optimality_gap=gap,
+        optimality_gap_pct=gap_pct,
+    )
+    return ExplanationEvidence(
+        selection_rule=SELECTION_RULE_BY_ALGORITHM[trace.algorithm],
+        objective=objective,
+        cost_breakdown=breakdown,
+        factors=_route_factors(store, trace, breakdown, gap),
+        reference_routes=(reference_routes or [])[:2],
+    )
+
+
 def _ucs_path(store: GraphStore, start: str, goal: str, mode: Mode,
               slot: TimeSlot, banned_edge: str | None = None) -> list[str] | None:
     """Plain internal UCS used only to derive comparison routes."""
@@ -247,12 +463,23 @@ def build_explanation(store: GraphStore, trace: Trace) -> Explanation:
     """Fill Trace.explanation (SCHEMA §B.4) from the finished run."""
     start_goal = (trace.path[0], trace.path[-1]) if trace.path else None
     if not trace.found or start_goal is None:
+        reason = trace.termination.reason if trace.termination is not None else None
+        conclusion = (
+            "Đã duyệt cạn frontier nên snapshot hiện tại chứng minh không có đường đi."
+            if reason == "frontier_exhausted" else
+            "Lần chạy dừng vì giới hạn/pruning nên kết luận reachability vẫn chưa đầy đủ."
+            if reason in (
+                "depth_cap_reached", "round_cap_reached",
+                "beam_exhausted_after_pruning",
+            ) else
+            "Lần chạy chưa tìm thấy tuyến."
+        )
         return Explanation(
-            summary_vi=("Lần chạy này chưa tìm thấy tuyến với thuật toán "
-                        f"{ALGO_VI[trace.algorithm]}. Payload hiện hành chưa phân biệt "
-                        "đã duyệt cạn và chứng minh vô đường với dừng sớm do "
-                        "giới hạn/pruning; vì vậy không tự kết luận điểm đến không tới được."),
-            congested_segments=[], alternatives=[])
+            summary_vi=(f"Lần chạy này chưa tìm thấy tuyến với thuật toán "
+                        f"{ALGO_VI[trace.algorithm]}. {conclusion}"),
+            congested_segments=[], alternatives=[],
+            evidence=_evidence(store, trace),
+        )
     start, goal = start_goal
     mode, slot = trace.mode, trace.time_slot
     if len(trace.path) < 2:
@@ -265,13 +492,31 @@ def build_explanation(store: GraphStore, trace: Trace) -> Explanation:
             summary_vi=(f"Điểm đi và điểm đến trùng nhau ({where}) — quãng đường "
                         f"0 m, chi phí 0 {cost_unit_vi}, không có đoạn đường nào để phân tích. "
                         "Hãy chọn hai điểm khác nhau để so sánh tuyến."),
-            congested_segments=[], alternatives=[])
+            congested_segments=[], alternatives=[],
+            evidence=_evidence(store, trace, exact_path=trace.path),
+        )
     main_cost = trace.metrics.total_cost
     main_dist = trace.metrics.total_distance_m
     main_balanced = trace.metrics.total_time_s
 
     congested = _congested_on_path(store, trace.path, slot)
     risks = _risk_counts(store, trace.path)
+    exact_path = _ucs_path(store, start, goal, mode, slot)
+    if exact_path is None:
+        raise ValueError("exact same-objective UCS reference is unexpectedly unreachable")
+    reference_routes: list[ReferenceRoute] = []
+    if exact_path != trace.path:
+        reference_routes.append(_reference_route(
+            store,
+            reference_id="posthoc:exact:same-objective",
+            kind="same_objective_optimum",
+            generated_for_mode=mode,
+            excluded_edge=None,
+            path=exact_path,
+            selected_path=trace.path,
+            active_mode=mode,
+            slot=slot,
+        ))
 
     # ---- alternatives: distance-shortest (or balanced when mode=distance),
     # then greedy, then a first-edge-banned fallback so >=1 truly differs.
@@ -307,6 +552,27 @@ def build_explanation(store: GraphStore, trace: Trace) -> Explanation:
         alternatives.append(Alternative(
             label=label, path=alt_path, total_distance_m=alt_dist,
             total_time_s=alt_balanced, why_not_vi=why))
+        if len(reference_routes) < 2 and not any(
+            reference.path == alt_path for reference in reference_routes
+        ):
+            reference_routes.append(_reference_route(
+                store,
+                reference_id=(
+                    f"posthoc:avoid:{banned}" if banned is not None else
+                    f"posthoc:mode:{alt_mode}"
+                ),
+                kind=(
+                    "avoid_edge_counterfactual" if banned is not None else
+                    "distance_optimum" if alt_mode == "distance" else
+                    "balanced_optimum"
+                ),
+                generated_for_mode=alt_mode,
+                excluded_edge=banned,
+                path=alt_path,
+                selected_path=trace.path,
+                active_mode=mode,
+                slot=slot,
+            ))
         if alt_dist < main_dist - 10 and alt_cost > main_cost + 0.5:
             names = _street_names(store, alt_path,
                                   {c.edge for c in _congested_on_path(store, alt_path, slot)})
@@ -378,9 +644,8 @@ def build_explanation(store: GraphStore, trace: Trace) -> Explanation:
             parts.append(f"{ALGO_VI[trace.algorithm]} bảo đảm đây là tuyến tối ưu "
                          "theo tiêu chí đã chọn.")
     else:
-        opt_path = _ucs_path(store, start, goal, mode, slot)
-        if opt_path:
-            opt_cost, _d, _t = store.path_metrics(opt_path, mode, slot)
+        if exact_path:
+            opt_cost, _d, _t = store.path_metrics(exact_path, mode, slot)
             gap = main_cost - opt_cost
             if gap <= 0.5:
                 parts.append(f"{ALGO_VI[trace.algorithm]} không bảo đảm tối ưu, "
@@ -391,5 +656,14 @@ def build_explanation(store: GraphStore, trace: Trace) -> Explanation:
                     f"đắt hơn tuyến tối ưu ~{gap:.0f} {_cost_unit(mode)} "
                     f"(+{vi_num(gap / opt_cost * 100)} %).")
 
-    return Explanation(summary_vi=" ".join(parts),
-                       congested_segments=congested, alternatives=alternatives)
+    return Explanation(
+        summary_vi=" ".join(parts),
+        congested_segments=congested,
+        alternatives=alternatives,
+        evidence=_evidence(
+            store,
+            trace,
+            exact_path=exact_path,
+            reference_routes=reference_routes,
+        ),
+    )

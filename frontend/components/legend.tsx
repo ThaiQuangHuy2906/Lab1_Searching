@@ -29,7 +29,9 @@ function Line({ color, dashed }: { color: string; dashed?: boolean }) {
 export function Legend() {
   const trace = useApp((s) => s.trace);
   const trafficLayer = useApp((s) => s.trafficLayer);
-  const compare = useApp((s) => s.compare);
+  const compare = useApp((s) => s.routeComparisonSession?.runs.find(
+    (run, index) => index > 0 && run.result?.response.found,
+  )?.result?.response ?? null);
   const drawerTab = useApp((s) => s.drawerTab);
   const multi = useApp((s) => s.multi);
   const optimizationTrace = useApp((s) => s.optimizationTrace);

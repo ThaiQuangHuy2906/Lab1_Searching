@@ -5,6 +5,9 @@ import type {
   Algorithm, ApiError, ExperimentResult, GraphLevel, GraphResponse, GraphView, Mode,
   MultirouteResponse, ScenarioConfig, TimeSlot, Trace, TrafficResponse, TspMethod,
 } from "./types";
+import {
+  ApiContractError, parseMultirouteResponse, parseTraceResponse,
+} from "./contract-guards";
 
 const BASE = process.env.NEXT_PUBLIC_API_BASE ?? "http://localhost:8000";
 
@@ -16,14 +19,36 @@ export class BackendError extends Error {
   }
 }
 
-async function call<T>(path: string, init?: RequestInit): Promise<T> {
+export class RequestAbortedError extends Error {
+  readonly code = "ABORTED";
+
+  constructor() {
+    super("Request đã bị huỷ vì cấu hình hoặc phiên chạy thay đổi.");
+    this.name = "RequestAbortedError";
+  }
+}
+
+type ResponseParser<T> = (payload: unknown) => T;
+
+function isAbort(error: unknown): boolean {
+  return error instanceof RequestAbortedError
+    || (typeof error === "object" && error !== null && "name" in error
+      && (error as { name?: unknown }).name === "AbortError");
+}
+
+async function call<T>(
+  path: string,
+  init?: RequestInit,
+  parse?: ResponseParser<T>,
+): Promise<T> {
   let res: Response;
   try {
     res = await fetch(`${BASE}${path}`, {
       ...init,
       headers: { "Content-Type": "application/json", ...init?.headers },
     });
-  } catch {
+  } catch (error) {
+    if (isAbort(error)) throw new RequestAbortedError();
     throw new BackendError(
       "OFFLINE",
       "Không gọi được backend (localhost:8000) — hãy chạy uvicorn rồi thử lại.",
@@ -33,7 +58,8 @@ async function call<T>(path: string, init?: RequestInit): Promise<T> {
     let payload: ApiError | null = null;
     try {
       payload = (await res.json()) as ApiError;
-    } catch {
+    } catch (error) {
+      if (isAbort(error)) throw new RequestAbortedError();
       /* non-JSON error body */
     }
     throw new BackendError(
@@ -41,7 +67,19 @@ async function call<T>(path: string, init?: RequestInit): Promise<T> {
       payload?.error?.message_vi ?? `Lỗi HTTP ${res.status} từ backend.`,
     );
   }
-  return (await res.json()) as T;
+  let payload: unknown;
+  try {
+    payload = await res.json();
+  } catch (error) {
+    if (isAbort(error)) throw new RequestAbortedError();
+    throw new ApiContractError("Response thành công không chứa JSON hợp lệ");
+  }
+  try {
+    return parse ? parse(payload) : payload as T;
+  } catch (error) {
+    if (error instanceof ApiContractError) throw error;
+    throw new ApiContractError("Không parse được response JSON theo contract đã khóa");
+  }
 }
 
 export const api = {
@@ -58,16 +96,18 @@ export const api = {
     time_slot: TimeSlot; graph: GraphLevel; include_trace: boolean | null;
     params?: { beam_width?: number; epsilon?: number };
     scenario?: ScenarioConfig;
-  }) => call<Trace>("/api/route", { method: "POST", body: JSON.stringify(body) }),
+  }, options?: { signal?: AbortSignal }) => call<Trace>("/api/route", {
+    method: "POST", body: JSON.stringify(body), signal: options?.signal,
+  }, parseTraceResponse),
 
   multiroute: (body: {
     start: string; stops: string[]; method: TspMethod; mode: Mode;
     time_slot: TimeSlot; graph: GraphLevel; return_to_start: boolean;
     include_trace: boolean;
     scenario?: ScenarioConfig;
-  }) => call<MultirouteResponse>("/api/multiroute", {
-    method: "POST", body: JSON.stringify(body),
-  }),
+  }, options?: { signal?: AbortSignal }) => call<MultirouteResponse>("/api/multiroute", {
+    method: "POST", body: JSON.stringify(body), signal: options?.signal,
+  }, parseMultirouteResponse),
 
   benchmark: (experimentId?: number) =>
     call<{ experiments: ExperimentResult[] }>("/api/benchmark", {

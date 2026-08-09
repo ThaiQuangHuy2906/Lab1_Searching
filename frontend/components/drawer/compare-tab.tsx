@@ -176,8 +176,10 @@ function RouteOverlap({ a, b }: { a: Trace; b: Trace }) {
 export function CompareTab() {
   const s = useApp();
   const a = s.trace;
-  const b = s.compare;
   const selectedCompareAlgo = chooseCompareAlgorithm(a?.algorithm, s.compareAlgo);
+  const b = s.routeComparisonSession?.runs.find(
+    (run) => run.id === selectedCompareAlgo,
+  )?.result?.response ?? null;
   const compareAction = `So sánh với ${shortName(selectedCompareAlgo)}`;
 
   if (s.multiRunning) return <AtspLoading />;
@@ -190,7 +192,13 @@ export function CompareTab() {
           <div className="mb-1.5 text-xs font-medium text-ink-dim">Thuật toán B</div>
           <Select value={selectedCompareAlgo}
             disabled={s.comparing || s.running || s.multiRunning}
-            onValueChange={(v) => s.set({ compareAlgo: v as Algorithm, compare: null })}>
+            onValueChange={(v) => s.set({
+              compareAlgo: v as Algorithm,
+              routeComparisonSession: null,
+              explanationSubject: null,
+              explanationOverlay: null,
+              explanationOverlayVisible: false,
+            })}>
             <SelectTrigger aria-label="Thuật toán so sánh"><SelectValue /></SelectTrigger>
             <SelectContent>
               {ALGORITHM_ORDER

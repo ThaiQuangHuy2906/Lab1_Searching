@@ -1,4 +1,23 @@
-import type { Metrics, Trace } from "./types";
+import type {
+  Explanation, Metrics, ProblemMode, ReachabilityConclusion, SolutionQuality,
+  TerminationReason, Trace, TraceStep, TraceStepV1, TraceV1,
+} from "./types";
+
+export const SEQUENTIAL_TIMELINE_CAP = 5_000;
+
+export interface SequentialTimelineMeta {
+  policy: "per-leg-boundary-proportional-v1";
+  sourceRecordedSteps: number;
+  presentedSteps: number;
+  presentationSampled: boolean;
+  sourceTraceTruncated: boolean;
+  sourceTruncatedLegIndexes: number[];
+}
+
+export interface PresentedStepSource {
+  legIndex: number;
+  sourceStepIndex: number;
+}
 
 export interface SequentialRouteLeg {
   index: number;
@@ -7,6 +26,13 @@ export interface SequentialRouteLeg {
   found: boolean;
   path: string[];
   metrics: Metrics;
+  closing_leg: boolean;
+  label: string;
+  explanation: Explanation;
+  terminationReason: TerminationReason | null;
+  solutionQuality: SolutionQuality | null;
+  reachability: ReachabilityConclusion | null;
+  sourceTrace: Trace;
   trace_start: number | null;
   trace_end: number | null;
 }
@@ -14,6 +40,9 @@ export interface SequentialRouteLeg {
 export interface SequentialRouteRun {
   waypoints: string[];
   legs: SequentialRouteLeg[];
+  timeline: SequentialTimelineMeta;
+  presentedStepSources: PresentedStepSource[];
+  returnToStart: boolean;
 }
 
 export interface SequentialRouteResult {
@@ -22,11 +51,96 @@ export interface SequentialRouteResult {
 }
 
 export function sequentialWaypoints(
+  problemMode: ProblemMode,
   start: string,
   goal: string | null,
   stops: readonly string[],
+  returnToStart = false,
 ): string[] {
-  return stops.length > 0 ? [start, ...stops] : goal ? [start, goal] : [start];
+  if (problemMode === "two_point") return goal ? [start, goal] : [start];
+  const withoutExistingClosingStart = stops.at(-1) === start ? stops.slice(0, -1) : stops;
+  const waypoints = [start, ...withoutExistingClosingStart];
+  if (returnToStart && waypoints.length > 1) waypoints.push(start);
+  return waypoints;
+}
+
+export interface SampledSequentialTrace {
+  steps: Array<{ step: TraceStep; source: PresentedStepSource }>;
+  ranges: Array<{ start: number | null; end: number | null }>;
+  meta: SequentialTimelineMeta;
+}
+
+function sampledInteriorIndexes(interiorCount: number, quota: number): number[] {
+  return Array.from({ length: quota }, (_, index) => (
+    Math.floor((index + 1) * (interiorCount + 1) / (quota + 1))
+  ));
+}
+
+/** Exact `per-leg-boundary-proportional-v1` presentation sampler from §9.5. */
+export function sampleSequentialTrace(
+  traces: readonly Trace[],
+  cap = SEQUENTIAL_TIMELINE_CAP,
+): SampledSequentialTrace {
+  const counts = traces.map((trace) => trace.trace.length);
+  const sourceRecordedSteps = counts.reduce((total, count) => total + count, 0);
+  const boundaryCounts = counts.map((count) => Math.min(2, count));
+  if (!Number.isInteger(cap)
+      || cap < boundaryCounts.reduce((total, count) => total + count, 0))
+    throw new Error("Timeline cap không đủ để reserve boundary của mọi chặng.");
+  const interiors = counts.map((count) => Math.max(count - 2, 0));
+  const totalInterior = interiors.reduce((total, count) => total + count, 0);
+  const remaining = Math.max(0, cap - boundaryCounts.reduce((total, count) => total + count, 0));
+  const quotas = interiors.map((count) => sourceRecordedSteps <= cap
+    ? count
+    : totalInterior === 0 ? 0 : Math.floor(remaining * count / totalInterior));
+  if (sourceRecordedSteps > cap && totalInterior > 0) {
+    let unassigned = Math.min(remaining, totalInterior)
+      - quotas.reduce((total, quota) => total + quota, 0);
+    const remainderOrder = interiors.map((count, index) => ({
+      index,
+      // Integer numerator avoids floating-point drift changing a mathematical
+      // tie; policy requires ties to resolve by ascending leg index.
+      remainder: (remaining * count) % totalInterior,
+    })).sort((left, right) => right.remainder - left.remainder || left.index - right.index);
+    for (const candidate of remainderOrder) {
+      if (unassigned === 0) break;
+      if (quotas[candidate.index] < interiors[candidate.index]) {
+        quotas[candidate.index] += 1;
+        unassigned -= 1;
+      }
+    }
+  }
+
+  const steps: SampledSequentialTrace["steps"] = [];
+  const ranges: SampledSequentialTrace["ranges"] = [];
+  traces.forEach((trace, legIndex) => {
+    const count = trace.trace.length;
+    const selected = sourceRecordedSteps <= cap
+      ? Array.from({ length: count }, (_, index) => index)
+      : count === 0 ? []
+        : count === 1 ? [0]
+          : [0, ...sampledInteriorIndexes(interiors[legIndex], quotas[legIndex]), count - 1];
+    const start = selected.length ? steps.length : null;
+    for (const sourceStepIndex of selected) {
+      steps.push({ step: trace.trace[sourceStepIndex], source: { legIndex, sourceStepIndex } });
+    }
+    ranges.push({ start, end: start === null ? null : steps.length - 1 });
+  });
+  const sourceTruncatedLegIndexes = traces.flatMap((trace, index) => (
+    trace.metrics.trace_truncated ? [index] : []
+  ));
+  return {
+    steps,
+    ranges,
+    meta: {
+      policy: "per-leg-boundary-proportional-v1",
+      sourceRecordedSteps,
+      presentedSteps: steps.length,
+      presentationSampled: steps.length < sourceRecordedSteps,
+      sourceTraceTruncated: sourceTruncatedLegIndexes.length > 0,
+      sourceTruncatedLegIndexes,
+    },
+  };
 }
 
 function sumMetric(
@@ -85,12 +199,16 @@ export function mergeSequentialRouteTraces(
       throw new Error("Đường trả về không khớp hai đầu của chặng.");
   }
 
-  const mergedSteps = [] as Trace["trace"];
+  const sampled = sampleSequentialTrace(traces);
+  const mergedSteps: TraceStepV1[] = [];
+  for (const { step } of sampled.steps) {
+      const { decision: _decision, bidirectional_frontiers: _frontiers, ...legacyStep } = step;
+      mergedSteps.push({ ...legacyStep, step: mergedSteps.length + 1 });
+  }
+  const returnToStart = waypoints.length > 2 && waypoints.at(-1) === waypoints[0];
   const legs: SequentialRouteLeg[] = traces.map((trace, index) => {
-    const traceStart = trace.trace.length > 0 ? mergedSteps.length : null;
-    for (const step of trace.trace) {
-      mergedSteps.push({ ...step, step: mergedSteps.length + 1 });
-    }
+    const range = sampled.ranges[index];
+    const closingLeg = returnToStart && index === waypoints.length - 2;
     return {
       index,
       from_node: waypoints[index],
@@ -98,8 +216,15 @@ export function mergeSequentialRouteTraces(
       found: trace.found,
       path: trace.path,
       metrics: trace.metrics,
-      trace_start: traceStart,
-      trace_end: traceStart === null ? null : mergedSteps.length - 1,
+      closing_leg: closingLeg,
+      label: closingLeg ? `Chặng về Đi ${index + 1}` : `Chặng ${index + 1}`,
+      explanation: trace.explanation,
+      terminationReason: trace.contract_version === 2 ? trace.termination.reason : null,
+      solutionQuality: trace.contract_version === 2 ? trace.termination.solution_quality : null,
+      reachability: trace.contract_version === 2 ? trace.termination.reachability : null,
+      sourceTrace: trace,
+      trace_start: range.start,
+      trace_end: range.end,
     };
   });
 
@@ -110,7 +235,7 @@ export function mergeSequentialRouteTraces(
   const summary = complete
     ? `${algorithm} đã tìm đường qua ${legs.length} chặng theo đúng thứ tự đã nhập: ${order}. Số liệu bên dưới là tổng của toàn bộ hành trình.`
     : failedIndex >= 0
-      ? `${algorithm} không tìm thấy đường ở chặng ${failedIndex + 1}: ${nameOf(waypoints[failedIndex])} → ${nameOf(waypoints[failedIndex + 1])}. Hành trình đa điểm dừng tại chặng này.`
+      ? `${algorithm} không tìm thấy đường ở ${legs[failedIndex].closing_leg ? "chặng cuối về Đi" : `chặng ${failedIndex + 1}`}: ${nameOf(waypoints[failedIndex])} → ${nameOf(waypoints[failedIndex + 1])}. Hành trình đa điểm dừng tại chặng này.`
       : `${algorithm} chưa chạy đủ toàn bộ hành trình đa điểm.`;
 
   const congested = new Map<string, Trace["explanation"]["congested_segments"][number]>();
@@ -121,7 +246,11 @@ export function mergeSequentialRouteTraces(
 
   return {
     trace: {
-      ...first,
+      algorithm: first.algorithm,
+      mode: first.mode,
+      time_slot: first.time_slot,
+      graph: first.graph,
+      applied_scenario: first.applied_scenario,
       found: complete,
       path: complete ? mergePath(traces) : [],
       metrics: {
@@ -148,7 +277,13 @@ export function mergeSequentialRouteTraces(
         congested_segments: [...congested.values()],
         alternatives: [],
       },
+    } satisfies TraceV1,
+    run: {
+      waypoints: [...waypoints],
+      legs,
+      timeline: sampled.meta,
+      presentedStepSources: sampled.steps.map((item) => item.source),
+      returnToStart,
     },
-    run: { waypoints: [...waypoints], legs },
   };
 }

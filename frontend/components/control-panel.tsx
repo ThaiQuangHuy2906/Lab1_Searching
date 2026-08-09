@@ -126,7 +126,9 @@ function NodePicker({ kind }: { kind: "start" | "goal" }) {
       aria-label={kind === "start" ? "Xoá điểm đi" : "Xoá điểm đến"}
       className="inline-flex size-9 shrink-0 items-center justify-center rounded-lg text-ink-dim transition-colors hover:bg-goal/10 hover:text-goal disabled:pointer-events-none disabled:opacity-40"
       disabled={busy}
-      onClick={() => set(kind === "start" ? { start: null } : { goal: null })}
+      onClick={() => set(kind === "start"
+        ? { start: null }
+        : { goal: null, problemMode: "two_point" })}
     >
       <X className="size-4" />
     </button>
@@ -139,10 +141,12 @@ function NodePicker({ kind }: { kind: "start" | "goal" }) {
           {roleDot}
           <Select
             value={value ?? ""}
-            disabled={busy || (kind === "goal" && stops.length > 0)}
+            disabled={busy}
             onValueChange={(nodeId) => {
               if (isEndpointOptionAllowed(kind, nodeId, other, stops))
-                set(kind === "start" ? { start: nodeId } : { goal: nodeId });
+                set(kind === "start"
+                  ? { start: nodeId }
+                  : { goal: nodeId, problemMode: "two_point" });
             }}
           >
             <SelectTrigger
@@ -171,7 +175,7 @@ function NodePicker({ kind }: { kind: "start" | "goal" }) {
         {roleDot}
         <Button
           variant="secondary"
-          disabled={busy || (kind === "goal" && stops.length > 0)}
+          disabled={busy}
           className={`w-full pl-8 ${active ? "border-algo-frontier text-algo-frontier" : ""}`}
           style={active ? undefined : roleBorder}
           onClick={() => set({ pickTarget: active ? null : kind })}
@@ -195,8 +199,10 @@ function SwapButton() {
         size="iconSm"
         aria-label="Đảo chiều Đi và Đến"
         className="rounded-full border border-surface-border bg-surface-control shadow-sm"
-        disabled={busy || state.stops.length > 0 || (!state.start && !state.goal)}
-        onClick={() => state.set({ start: state.goal, goal: state.start })}
+        disabled={busy || state.problemMode === "multi_point" || (!state.start && !state.goal)}
+        onClick={() => state.set({
+          start: state.goal, goal: state.start, problemMode: "two_point",
+        })}
       >
         <ArrowDownUp className="size-4" />
       </Button>
@@ -275,7 +281,7 @@ export function ControlPanel({ mobileOpen = false, onMobileClose }: ControlPanel
   const closeMobile = React.useCallback(() => onMobileClose?.(), [onMobileClose]);
   const onMobilePanelKeyDownCapture = useMobileDialogFocus(mobileOpen, panelRef, headingRef, closeMobile);
   const algorithmShortName = ALGO_LABEL[state.algorithm];
-  const routeAction = state.stops.length > 0
+  const routeAction = state.problemMode === "multi_point"
     ? `Chạy qua ${state.stops.length} điểm`
     : `Chạy ${algorithmShortName}`;
   const overrideCount = Object.keys(state.edgeOverrides).length;
@@ -356,7 +362,7 @@ export function ControlPanel({ mobileOpen = false, onMobileClose }: ControlPanel
         <Section title="Hành trình">
           <Field label="Đi — điểm xuất phát"><NodePicker kind="start" /></Field>
           <SwapButton />
-          <Field label={state.stops.length > 0 ? "Đến — điểm giao cuối trong danh sách" : "Đến — điểm đích"}><NodePicker kind="goal" /></Field>
+          <Field label={state.problemMode === "multi_point" ? "Đến — draft đang được giữ" : "Đến — điểm đích"}><NodePicker kind="goal" /></Field>
           <AtspSetup />
         </Section>
 
@@ -423,7 +429,7 @@ export function ControlPanel({ mobileOpen = false, onMobileClose }: ControlPanel
         </Button>
         {!state.graphLoading && (
           <p className="min-h-5 text-center text-xs leading-5 text-ink-dim">
-            {state.stops.length > 0
+            {state.problemMode === "multi_point"
               ? !state.start ? "Còn thiếu điểm Đi." : MULTI_ROUTE_ACTIVE_MESSAGE
               : !state.start || !state.goal
                 ? !state.start && !state.goal ? "Chọn điểm Đi và Đến ở mục Hành trình trước." : !state.start ? "Còn thiếu điểm Đi." : "Còn thiếu điểm Đến."

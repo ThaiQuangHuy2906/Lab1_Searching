@@ -53,10 +53,14 @@ test("changing the selected ATSP method invalidates the existing optimization re
     graph: "demo",
     graphView: "full",
     tspMethod: "held_karp",
+    returnToStart: false,
+    includeOptimizationTrace: false,
   };
 
   assert.equal(atspInputsChanged(current, { tspMethod: "nn_2opt" }), true);
   assert.equal(atspInputsChanged(current, { tspMethod: "held_karp" }), false);
+  assert.equal(atspInputsChanged(current, { returnToStart: true }), true);
+  assert.equal(atspInputsChanged(current, { includeOptimizationTrace: true }), true);
 });
 
 test("only optimizer final states replace the conceptual order with real road legs", () => {

@@ -122,7 +122,10 @@ export function AtspSetup() {
                     aria-label={`Xóa điểm giao: ${name}`}
                     className="inline-flex size-9 shrink-0 items-center justify-center rounded-lg text-ink-dim transition-colors hover:bg-goal/10 hover:text-goal focus-visible:ring-offset-surface-panel disabled:pointer-events-none disabled:opacity-55"
                     disabled={busy}
-                    onClick={() => s.set({ stops: s.stops.filter((stop) => stop !== id) })}
+                    onClick={() => s.set({
+                      stops: s.stops.filter((stop) => stop !== id),
+                      problemMode: "multi_point",
+                    })}
                   >
                     <X className="size-3.5" />
                   </button>
@@ -140,7 +143,7 @@ export function AtspSetup() {
           onValueChange={(value) => {
             if (isStopOptionAllowed(value, s.start, s.goal, s.stops)
                 && s.stops.length < MAX_STOPS)
-              s.set({ stops: [...s.stops, value] });
+              s.set({ stops: [...s.stops, value], problemMode: "multi_point" });
           }}
         >
           <SelectTrigger aria-label="Thêm điểm giao">

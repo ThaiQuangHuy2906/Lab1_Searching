@@ -87,13 +87,14 @@ export function MetricsTab() {
   const graph = useApp((state) => state.graph);
   const graphData = useApp((state) => state.graphData);
   const stops = useApp((state) => state.stops);
+  const problemMode = useApp((state) => state.problemMode);
 
   if (multiRunning) return <AtspLoading />;
   if (multi) return <AtspResult multi={multi} graphData={graphData} />;
 
   if (!trace) {
     const isDemo = graph === "demo";
-    const hasStops = stops.length > 0;
+    const hasStops = problemMode === "multi_point";
     return (
       <div className="flex flex-col gap-3">
         <EmptyState

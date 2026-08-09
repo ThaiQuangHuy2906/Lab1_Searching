@@ -1,4 +1,6 @@
-import type { GraphLevel, GraphView, TimeSlot, Trace, TraceStep } from "./types";
+import type {
+  GraphLevel, GraphView, ProblemMode, TimeSlot, Trace, TraceStep,
+} from "./types";
 
 export const MULTI_ROUTE_ACTIVE_MESSAGE =
   "Chạy thuật toán sẽ đi qua các điểm giao theo thứ tự đang nhập; Tối ưu thứ tự dùng ATSP.";
@@ -7,7 +9,6 @@ export interface SlotChangePatch {
   slot: TimeSlot;
   traffic: null;
   trace: null;
-  compare: null;
   multi: null;
   sequentialRoute: null;
   stepIdx: 0;
@@ -19,7 +20,6 @@ export interface GraphViewChangePatch {
   graphData: null;
   traffic: null;
   trace: null;
-  compare: null;
   multi: null;
   sequentialRoute: null;
   start: null;
@@ -40,7 +40,6 @@ export function graphViewChangePatch(
     graphData: null,
     traffic: null,
     trace: null,
-    compare: null,
     multi: null,
     sequentialRoute: null,
     start: null,
@@ -61,7 +60,6 @@ export function slotChangePatch(
     slot: next,
     traffic: null,
     trace: null,
-    compare: null,
     multi: null,
     sequentialRoute: null,
     stepIdx: 0,
@@ -105,16 +103,19 @@ export function isTrafficResponseCurrent(
 }
 
 export function routeRunBlockReason(
+  problemMode: ProblemMode,
   start: string | null,
   goal: string | null,
   stops: readonly string[],
 ): string | null {
   if (!start) {
-    return stops.length > 0
+    return problemMode === "multi_point"
       ? "Hãy chọn điểm Đi trước khi chạy hành trình nhiều điểm."
       : "Hãy chọn cả điểm Đi và điểm Đến trước khi chạy.";
   }
-  if (stops.length > 0) {
+  if (problemMode === "multi_point") {
+    if (stops.length === 0) return "Hãy thêm ít nhất một điểm giao trước khi chạy.";
+    if (stops.length > 15) return "Hành trình hỗ trợ tối đa 15 điểm giao.";
     const waypoints = [start, ...stops];
     if (new Set(waypoints).size !== waypoints.length)
       return "Các điểm trong hành trình đang bị trùng nhau.";
@@ -144,18 +145,6 @@ export function isStopOptionAllowed(
   stops: readonly string[],
 ) {
   return nodeId !== start && nodeId !== goal && !stops.includes(nodeId);
-}
-
-/** Preserve the old destination as the first delivery point when the user
- * turns A→B into A→B→C by adding C. */
-export function promoteGoalWhenAddingStop(
-  goal: string | null,
-  currentStops: readonly string[],
-  nextStops: readonly string[],
-): string[] {
-  if (!goal || nextStops.length <= currentStops.length || nextStops.includes(goal))
-    return [...nextStops];
-  return [goal, ...nextStops];
 }
 
 export function effectiveTraceSteps(

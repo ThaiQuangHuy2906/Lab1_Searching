@@ -15,6 +15,8 @@ type AtspInputSnapshot = {
   graph: GraphLevel;
   graphView: GraphView;
   tspMethod: TspMethod;
+  returnToStart: boolean;
+  includeOptimizationTrace: boolean;
 };
 
 const FINAL_OPTIMIZATION_EVENT_KINDS = new Set([
@@ -54,6 +56,9 @@ export function atspInputsChanged(
     || ("graph" in patch && patch.graph !== current.graph)
     || ("graphView" in patch && patch.graphView !== current.graphView)
     || ("tspMethod" in patch && patch.tspMethod !== current.tspMethod)
+    || ("returnToStart" in patch && patch.returnToStart !== current.returnToStart)
+    || ("includeOptimizationTrace" in patch
+      && patch.includeOptimizationTrace !== current.includeOptimizationTrace)
   );
 }
 

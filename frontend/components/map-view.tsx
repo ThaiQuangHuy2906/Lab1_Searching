@@ -102,7 +102,9 @@ export function MapView() {
   const edgeEditMode = useApp((s) => s.edgeEditMode);
   const selectedEdgeId = useApp((s) => s.selectedEdgeId);
   const trace = useApp((s) => s.trace);
-  const compare = useApp((s) => s.compare);
+  const compare = useApp((s) => s.routeComparisonSession?.runs.find(
+    (run, index) => index > 0 && run.result?.response.found,
+  )?.result?.response ?? null);
   const multi = useApp((s) => s.multi);
   const optimizationTrace = useApp((s) => s.optimizationTrace);
   const timelineSource = useApp((s) => s.timelineSource);
@@ -734,7 +736,7 @@ export function MapView() {
         }
         // tour mode (đã có điểm giao) không cần Đến -> đừng auto-chuyển
         set({ start: node.id,
-              pickTarget: st.goal || st.stops.length > 0 ? null : "goal" });
+              pickTarget: st.goal || st.problemMode === "multi_point" ? null : "goal" });
       } else if (target === "goal") {
         if (!isEndpointOptionAllowed("goal", node.id, st.start, st.stops)) {
           if (node.id !== st.start) {
@@ -744,7 +746,11 @@ export function MapView() {
           toast.error("Điểm Đến phải khác điểm Đi.");
           return;
         }
-        set({ goal: node.id, pickTarget: st.start ? null : "start" });
+        set({
+          goal: node.id,
+          problemMode: "two_point",
+          pickTarget: st.start ? null : "start",
+        });
       } else {
         // đừng nuốt im lặng: đang gõ liên tục 9 điểm cho video, click không
         // ăn mà không nói gì thì người quay tưởng app đơ (review v11)
@@ -762,7 +768,11 @@ export function MapView() {
         }
         if (st.stops.length >= 15) return;
         const next = [...st.stops, node.id];
-        set({ stops: next, pickTarget: next.length >= 15 ? null : "stop" });
+        set({
+          stops: next,
+          problemMode: "multi_point",
+          pickTarget: next.length >= 15 ? null : "stop",
+        });
       }
     },
     [set],

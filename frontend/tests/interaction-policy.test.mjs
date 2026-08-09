@@ -9,7 +9,6 @@ import {
   isTrafficResponseCurrent,
   graphViewChangePatch,
   journeyNodePickRadius,
-  promoteGoalWhenAddingStop,
   routeRunBlockReason,
   routeTraceRequestFlag,
   slotChangePatch,
@@ -22,7 +21,6 @@ test("same slot is a no-op and a real slot change clears dependent state", () =>
     slot: "12:00",
     traffic: null,
     trace: null,
-    compare: null,
     multi: null,
     sequentialRoute: null,
     stepIdx: 0,
@@ -37,7 +35,6 @@ test("graph-view changes are no-ops for the same view and clear dependent state 
     graphData: null,
     traffic: null,
     trace: null,
-    compare: null,
     multi: null,
     sequentialRoute: null,
     start: null,
@@ -89,20 +86,22 @@ test("graph and traffic responses require matching level, view, and latest token
 });
 
 test("two-point and ordered multi-point routes require unique usable inputs", () => {
-  assert.equal(routeRunBlockReason("n1", null, ["n2", "n3"]), null);
-  assert.match(routeRunBlockReason(null, null, ["n2"]), /điểm Đi/);
-  assert.match(routeRunBlockReason("n1", null, ["n2", "n1"]), /trùng/);
-  assert.match(routeRunBlockReason("n1", null, []), /Đi và điểm Đến/);
+  assert.equal(routeRunBlockReason("multi_point", "n1", null, ["n2", "n3"]), null);
+  assert.match(routeRunBlockReason("multi_point", null, null, ["n2"]), /điểm Đi/);
+  assert.match(routeRunBlockReason("multi_point", "n1", null, ["n2", "n1"]), /trùng/);
+  assert.match(routeRunBlockReason("multi_point", "n1", null, []), /ít nhất một điểm giao/);
+  assert.match(
+    routeRunBlockReason(
+      "multi_point", "n1", null,
+      Array.from({ length: 16 }, (_, index) => `n${index + 2}`),
+    ),
+    /tối đa 15/,
+  );
+  assert.match(routeRunBlockReason("two_point", "n1", null, ["inactive-stop"]), /Đi và điểm Đến/);
   assert.equal(isEndpointOptionAllowed("start", "n3", "n2", ["n3"]), false);
   assert.equal(isEndpointOptionAllowed("goal", "n3", "n1", ["n3"]), false);
   assert.equal(isStopOptionAllowed("n2", "n1", "n2", ["n3"]), false);
   assert.equal(isStopOptionAllowed("n4", "n1", "n2", ["n3"]), true);
-});
-
-test("adding C to A→B preserves B and creates the ordered route A→B→C", () => {
-  assert.deepEqual(promoteGoalWhenAddingStop("B", [], ["C"]), ["B", "C"]);
-  assert.deepEqual(promoteGoalWhenAddingStop(null, [], ["C"]), ["C"]);
-  assert.deepEqual(promoteGoalWhenAddingStop("B", ["C"], []), []);
 });
 
 test("route trace stays visible on G_real like G_demo", () => {

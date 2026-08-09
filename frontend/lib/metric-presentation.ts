@@ -1,4 +1,6 @@
-import type { Mode } from "./types";
+import type {
+  AtspComputationMetrics, AtspMethodStats, Mode, PathCostBreakdown,
+} from "./types";
 
 // Keep these tiny render helpers local: `npm test` imports this TypeScript
 // module directly with Node's strip-types runner, which does not implement
@@ -122,4 +124,95 @@ export function presentRouteNarrative(copy: string): string {
     const value = parseVietnameseNumber(metres);
     return value === null ? _match : `${approximate}${formatKilometres(value)}`;
   });
+}
+
+export interface CostBreakdownRow {
+  key: keyof PathCostBreakdown;
+  label: string;
+  value: number;
+  unit: "m" | "s";
+  affectsObjective: boolean;
+}
+
+/** Structured breakdown rows; no value is reconstructed from localized prose. */
+export function costBreakdownRows(
+  mode: Mode,
+  breakdown: PathCostBreakdown,
+): CostBreakdownRow[] {
+  const rows: CostBreakdownRow[] = [
+    {
+      key: "distance_m", label: "Quãng đường", value: breakdown.distance_m,
+      unit: "m", affectsObjective: mode === "distance",
+    },
+    {
+      key: "free_flow_time_s", label: "Thời gian thông thoáng", value: breakdown.free_flow_time_s,
+      unit: "s", affectsObjective: false,
+    },
+    {
+      key: "congestion_adjusted_time_s", label: "Thời gian ước tính theo ùn tắc",
+      value: breakdown.congestion_adjusted_time_s, unit: "s", affectsObjective: mode !== "distance",
+    },
+    {
+      key: "congestion_delay_s", label: "Phần tăng do ùn tắc",
+      value: breakdown.congestion_delay_s, unit: "s", affectsObjective: mode !== "distance",
+    },
+    {
+      key: "risk_penalty_total_s", label: "Tổng penalty nguy cơ",
+      value: breakdown.risk_penalty_total_s, unit: "s", affectsObjective: mode === "balanced",
+    },
+    {
+      key: "balanced_cost_s", label: "Chi phí cân bằng",
+      value: breakdown.balanced_cost_s, unit: "s", affectsObjective: mode === "balanced",
+    },
+  ];
+  return rows;
+}
+
+export function atspComputationRows(metrics: AtspComputationMetrics): Array<{
+  key: keyof AtspComputationMetrics;
+  label: string;
+  value: number;
+  unit: "count" | "ms";
+}> {
+  return [
+    { key: "matrix_search_runs", label: "Số lượt tìm đường dựng ma trận", value: metrics.matrix_search_runs, unit: "count" },
+    { key: "matrix_nodes_expanded", label: "Node mở rộng khi dựng ma trận", value: metrics.matrix_nodes_expanded, unit: "count" },
+    { key: "matrix_runtime_ms", label: "Dựng ma trận", value: metrics.matrix_runtime_ms, unit: "ms" },
+    { key: "optimizer_runtime_ms", label: "Tối ưu thứ tự", value: metrics.optimizer_runtime_ms, unit: "ms" },
+    { key: "total_runtime_ms", label: "Tổng xử lý backend", value: metrics.total_runtime_ms, unit: "ms" },
+  ];
+}
+
+export function atspMethodStatsLabels(stats: AtspMethodStats): string[] {
+  if (stats.kind === "held_karp") return ["Trạng thái DP đã giải", "Transition đã đánh giá"];
+  if (stats.kind === "nn_local_search") return [
+    "Ứng viên NN", "Ứng viên 2-opt", "Ứng viên Or-opt", "Move 2-opt chấp nhận", "Move Or-opt chấp nhận",
+  ];
+  return [
+    "Move cải thiện chấp nhận", "Move bằng nhau chấp nhận",
+    "Move kém hơn chấp nhận", "Move bị từ chối", "Độ lệch chuẩn mẫu qua seed",
+  ];
+}
+
+const RAW_ABS_TOLERANCE = 1e-6;
+const RAW_REL_TOLERANCE = 1e-9;
+
+export function rawEquivalent(left: number, right: number): boolean {
+  return Math.abs(left - right) <= Math.max(
+    RAW_ABS_TOLERANCE,
+    RAW_REL_TOLERANCE * Math.max(Math.abs(left), Math.abs(right)),
+  );
+}
+
+export function exactOptimalityGap(
+  selected: number | null,
+  exactReference: number | null,
+): { raw: number; pct: number | null } | null {
+  if (selected === null || exactReference === null) return null;
+  const raw = rawEquivalent(selected, exactReference) ? 0 : selected - exactReference;
+  if (raw < 0) return null;
+  if (rawEquivalent(exactReference, 0)) {
+    return { raw, pct: rawEquivalent(selected, 0) ? 0 : null };
+  }
+  return { raw, pct: raw / exactReference * 100 };
 }

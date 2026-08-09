@@ -19,6 +19,13 @@
 > 2026-08-08: 8/8 URL hiện đã review/tích hợp, còn caveat lịch sử/không gian/ngữ
 > nghĩa được ghi tại `data/DATA.md` §2.1.
 >
+> **Bổ sung 2026-08-09:** phase **UI & Explanation v2** đã được duyệt ở cấp
+> kế hoạch/contract nhưng chưa triển khai runtime. Implementation brief duy nhất
+> là `UI_caithien.md`; contract migration additive là `docs/SCHEMA.md` §F và thiết
+> kế đích là `docs/DESIGN.md` §13. Không dùng các đề xuất UI lịch sử trong thân
+> file này để ghi đè Phase 0–8, numeric semantics, compatibility matrix hoặc
+> acceptance/DoD của brief mới.
+>
 > **Ngày audit:** 2026-08-04.
 
 ## 1. Tóm tắt baseline trước triển khai

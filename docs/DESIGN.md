@@ -209,8 +209,8 @@ danh. (i) **Legend né timeline (đã sửa lại 2026-08-04):** tự nâng
 `bottom-[5.5rem]` khi effective trace thực sự làm timeline hiện, không phụ thuộc
 drawer mở/đóng; transition 200ms. (j) **Fix theo review:**
 So sánh chạy B bằng ĐÚNG mode/slot/graph của tuyến A (đổi Tiêu chí sau khi chạy
-không còn làm B lệch đơn vị); hàng "Thời gian đi" một đơn vị cho cả hàng, balanced
-LUÔN phút; bảng g/h/f bỏ thập phân khi ≥1 000 + cột h w-14 (mode Ngắn nhất h là
+không còn làm B lệch đơn vị); hàng balanced-cost (tên lịch sử “Thời gian đi”,
+không dùng lại ở UI mới) một đơn vị cho cả hàng và LUÔN phút; bảng g/h/f bỏ thập phân khi ≥1 000 + cột h w-14 (mode Ngắn nhất h là
 mét 4 chữ số); bảng So sánh overflow-x-auto + map tên ngắn thật (BiDijkstra,
 Greedy…); `pickingRadius` 8px cho node G_real 2px; toast khi click thêm điểm giao
 bị nuốt (trùng/trùng-Đi); khu hint CTA min-h cố định hết nhảy layout; footer g/h/f
@@ -289,7 +289,7 @@ Button/SelectTrigger/Switch/input. Switch: thumb TRẮNG cố định + viền
 - Số liệu: card objective/quãng đường/expanded/max frontier/runtime + badge
   "Đảm bảo tối ưu"/"Tối ưu trong ε"/"Không đảm bảo" và **bảng g/h/f** của frontier
   tại bước hiện tại. Objective theo mode lấy từ `total_cost`: Quãng đường ở mode
-  distance; Thời gian chạy ở mode time; Chi phí cân bằng ở mode balanced.
+  distance; Thời gian ước tính theo ùn tắc ở mode time; Chi phí cân bằng ở mode balanced.
   (v12 — current): mode time/balanced đặt objective và quãng đường thành hai card
   50/50 cùng hàng trên desktop; dưới 640 px tự xếp một cột. Mode distance chỉ có
   một card toàn hàng để không lặp cùng metric. Mọi distance/travel-cost nhìn thấy
@@ -571,7 +571,8 @@ search. Màn hình phải ưu tiên theo thứ tự: **hành động hoặc kế
 theo ngữ cảnh → chi tiết kỹ thuật**. Kết quả route luôn cho thấy trạng thái tìm
 thấy, thuật toán/tiêu chí/slot/graph, bảo đảm và metric chính đúng đơn vị trước khi
 lộ fingerprint, enum hoặc raw event: `distance` là **Quãng đường**,
-`time` là **Thời gian chạy**, còn `balanced` là **Chi phí cân bằng**. Ba metric này
+`time` là **Thời gian ước tính theo ùn tắc**, còn `balanced` là **Chi phí cân
+bằng**. Ba metric này
 đều lấy từ `total_cost` theo mode hiện hành. `total_time_s` là balanced path weight
 theo contract `docs/SCHEMA.md`, không được gọi mơ hồ là “Thời gian đi”; ở mode
 `balanced` nó trùng `total_cost` nên không xuất hiện thành card/hàng so sánh thứ hai.
@@ -734,3 +735,45 @@ route/ATSP 200 và console 0 errors.
 Bổ sung ngày 2026-08-08, hai ảnh này được chụp lại sau khi contract
 `Thử nghiệm` và marker Đi/Đến ở §12.3–§12.4 ổn định; session runtime clean xác
 nhận graph/traffic/route/multiroute 200, console 0 errors và không tràn ngang.
+
+## 13. UI & Explanation v2 — thiết kế đích đã duyệt 2026-08-09
+
+> **Trạng thái:** đã duyệt để triển khai theo phase, chưa được coi là hành vi UI
+> hiện hành và chưa có browser evidence. Bằng chứng ở §12.6 chỉ áp dụng cho UI
+> đang chạy trước phase này. Contract dữ liệu đích nằm ở `docs/SCHEMA.md` §F;
+> lộ trình, test và acceptance duy nhất nằm trong `UI_caithien.md`.
+
+Thiết kế mới tách rõ ba lớp: **Hai điểm/Nhiều điểm**; với Nhiều điểm là **Đi theo
+thứ tự đã chọn/Tối ưu thứ tự ATSP**; sau cùng là **Chạy một/So sánh nhiều**.
+Route comparison hỗ trợ 2–4 thuật toán, ATSP comparison 2–3 phương pháp, và mỗi
+kết quả có một pane/map riêng. Tính năng đi tuần tự qua N điểm hiện có phải được
+giữ nguyên. Tùy chọn `Quay về Đi` mặc định tắt và dùng nhất quán cho ordered route
+lẫn ATSP. Panel trái có disclosure riêng trên desktop; đóng panel chỉ đổi layout,
+không xóa input, result, timeline, camera hoặc request state.
+
+Mọi comparison dùng một request snapshot bất biến. Scenario phải được copy ở
+dạng typed normalized data; fingerprint do response server đầu tiên thiết lập
+write-once cho session, các response sau phải khớp. Không xếp hạng response stale,
+thiếu fingerprint bắt buộc hoặc sai snapshot. UI không suy Dijkstra hai chiều từ
+frontier hợp: khi backend v2 có payload thì hiển thị hai phía, khi thiếu thì dùng
+fallback union có nhãn tương thích.
+
+Phần `Giải thích` trở thành workspace gắn với **một result cụ thể**: context,
+verdict và giới hạn luôn ở đầu; tiếp theo là bước/mốc đang xem, cost breakdown,
+factor có provenance, tuyến tham chiếu hậu kiểm và hướng dẫn thuật toán. Không gọi
+tuyến hậu kiểm là tuyến thuật toán “đã xét/bị loại”; không dùng prose/regex làm
+nguồn số liệu; không kết luận unreachable nếu termination chỉ là cap/pruning.
+Ordered multi giữ explanation từng chặng; comparison mở đúng result được bấm.
+
+Quy ước số liệu không thay đổi: `total_cost` theo mode; `total_time_s` luôn là
+**chi phí cân bằng**, không phải ETA; thời gian ước tính theo ùn tắc dùng
+`congestion_adjusted_time_s`; runtime dùng ms. Savings, signed trade-off và
+optimality gap là ba khái niệm riêng, dùng tolerance raw đã khóa ở schema.
+
+Responsive/a11y là điều kiện hoàn tất, không phải polish sau cùng. Reorder stop
+luôn có nút `Lên`/`Xuống` dùng bàn phím bên cạnh drag tùy chọn. Carousel mobile
+luôn có nút `Trước`/`Sau` và chỉ báo vị trí, không phụ thuộc swipe. Target tương
+tác đạt ít nhất 24×24 CSS px hoặc có khoảng cách ngoại lệ đúng WCAG 2.2; mục tiêu
+thiết kế của control chính là 40–44 px. Không có page-level horizontal scroll ở
+320 CSS px; async status, focus return, reduced motion và cue không phụ thuộc màu
+phải qua browser QA trước khi ghi nhận phase hoàn tất.

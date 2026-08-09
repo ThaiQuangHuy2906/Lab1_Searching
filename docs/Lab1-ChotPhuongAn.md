@@ -1,9 +1,18 @@
 # CHỐT PHƯƠNG ÁN — Lab 1: Search Algorithms for Vietnamese Traffic
 
-> **Kiểm lại 2026-08-08:** đây là bản quyết định dự án hiện hành, đứng sau đề bài
+> **Kiểm lại 2026-08-09:** đây là bản quyết định dự án hiện hành, đứng sau đề bài
 > và trước đặc tả thi công lịch sử `PROMPT-MASTER.md`. ✅ = đã chốt; ⬜ = việc
 > con người hoặc dữ liệu cuối chưa hoàn tất.
-> UI Clarity Phase không đổi kịch bản, thuật toán, API, graph, cost hay dữ liệu đã chốt.
+> UI Clarity Phase 2026-08-07 là mốc lịch sử đã hoàn tất và không đổi kịch bản,
+> thuật toán, API, graph, cost hay dữ liệu đã chốt.
+>
+> **Quyết định bổ sung được người dùng duyệt 2026-08-09:** mở phase riêng
+> **UI & Explanation v2** để cải thiện cách chọn bài toán, so sánh nhiều kết quả,
+> số liệu, Dijkstra hai chiều và phần Giải thích. Phase này được phép mở rộng
+> **additive** response/trace contract theo `docs/SCHEMA.md` §F, nhưng không được
+> đổi graph, công thức cost, heuristic, tie-break, đường đi/kết quả thuật toán,
+> seed, dữ liệu hay benchmark. Việc triển khai phải backend-first, giữ reader cũ
+> hoạt động trong giai đoạn chuyển tiếp và qua các gate trong `UI_caithien.md`.
 
 ## 1. Kịch bản và phạm vi
 

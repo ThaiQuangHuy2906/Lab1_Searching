@@ -1,6 +1,6 @@
 # SCHEMA.md — Các hợp đồng dữ liệu và API
 
-> **Trạng thái kiểm lại 2026-08-08:** §A–§D mô tả contract base đang chạy. §E khóa phần
+> **Trạng thái kiểm lại 2026-08-09:** §A–§D mô tả contract base đang chạy. §E khóa phần
 > mở rộng đã được người dùng duyệt: GraphView dạy học, scenario edge-override
 > request-scoped, `AppliedScenario`/fingerprint và ATSP optimization trace.
 > **Milestone 2 đã triển khai** GraphView, graph/traffic response echo và
@@ -11,8 +11,13 @@
 > derived cost/`v_max`, fingerprint server-authoritative và editor frontend.
 > Không được tự coi code cũ là authority để bỏ hoặc đổi các semantics đã khóa ở §E.
 > Dữ liệu benchmark trong `results/` là artifact cũ và không thay đổi contract này.
-> UI Clarity Phase không đổi API/schema: backend/store tiếp tục dùng mét/giây;
-> frontend chỉ chuyển sang km/phút ở tầng presentation theo `docs/DESIGN.md` §12.
+> UI Clarity Phase 2026-08-07 không đổi API/schema: backend/store tiếp tục dùng
+> mét/giây; frontend chỉ chuyển sang km/phút ở tầng presentation theo
+> `docs/DESIGN.md` §12. **Phase UI & Explanation v2 được người dùng duyệt
+> 2026-08-09** có contract đích additive tại §F. §F hiện là đặc tả migration đã
+> duyệt nhưng **chưa phải bằng chứng code đang triển khai**; trước khi Phase 1
+> hoàn tất, §A–§E vẫn là contract executable v1. Không được sửa frontend theo §F
+> trước producer/backend và compatibility tests tương ứng.
 > **Thay đổi được nhóm duyệt 2026-08-08:** loại lựa chọn route `dijkstra` độc lập
 > vì implementation một-cặp trùng với UCS. Contract còn 9 thuật toán route;
 > `bidijkstra` vẫn được giữ vì là tìm kiếm hai chiều trên graph có hướng.
@@ -20,9 +25,14 @@
 > **Quy tắc vàng của nhóm:** không ai code trước khi 3 hợp đồng này được duyệt.
 > Sau khi duyệt, **mọi** thay đổi schema phải cập nhật file này và báo rõ trong tóm tắt phase (PROMPT-MASTER luật 2).
 >
-> Hiện thân executable của file này là `backend/app/models.py` (Pydantic v2) — test `backend/tests/test_schema.py` bảo đảm mock data khớp schema. Nếu file này và `models.py` lệch nhau → `models.py` sai, phải sửa theo file này.
+> Hiện thân executable của §A–§E là `backend/app/models.py` (Pydantic v2) — test
+> `backend/tests/test_schema.py` bảo đảm mock data khớp schema. Nếu §A–§E và
+> `models.py` lệch nhau → `models.py` sai. Với migration §F, việc model v1 chưa có
+> field mới là trạng thái chuyển tiếp đã ghi rõ; ngay khi producer phát
+> `contract_version=2`, models/code/tests phải khớp toàn bộ variant §F, không được
+> viện lý do “đang rollout” cho payload version 2 thiếu field.
 
-**Phạm vi:** §A định dạng dữ liệu đồ thị + hồ sơ ùn tắc · §B cấu trúc `trace` mọi thuật toán trả về · §C REST API · §D công thức cost & heuristic (tham chiếu chung cho §B, §C).
+**Phạm vi:** §A định dạng dữ liệu đồ thị + hồ sơ ùn tắc · §B cấu trúc `trace` mọi thuật toán trả về · §C REST API · §D công thức cost & heuristic (tham chiếu chung cho §B, §C) · §E contract mở rộng đang chạy · §F contract migration đích cho UI & Explanation v2.
 
 **Các enum dùng chung toàn dự án:**
 
@@ -221,7 +231,7 @@ Do `explain.py` điền ở Phase 4. **Phase 2–3 trả đúng shape rỗng:** 
   "alternatives": [               // ≥1 tuyến thay thế để so sánh (cùng OD: mode=distance, tuyến greedy, …)
     { "label": "Ngắn nhất theo km", "path": ["n0001", "…"],
       "total_distance_m": 2800.0, "total_time_s": 990.0,
-      "why_not_vi": "Ngắn hơn 320 m nhưng lúc 07:30 dính đoạn ùn tắc mức 4/5 và 2 đèn đỏ, ước chậm hơn ~178 s." }
+      "why_not_vi": "Ngắn hơn 320 m nhưng chi phí cân bằng cao hơn 178 s quy đổi trong hồ sơ 07:30." }
   ]
 }
 ```
@@ -703,6 +713,10 @@ Old frontend → new backend phải giữ base behavior: query thiếu `view`, r
 không được hỗ trợ rollout: request scenario có thể 422, query view có thể bị server
 cũ bỏ qua; frontend phải phát hiện echo mismatch thay vì hiển thị sai view.
 
+Trong đoạn này, “old backend” là bản **trước §E**. Compatibility B1/B2 ở §F.5
+định nghĩa B1 là backend hiện hành đã triển khai đầy đủ §A–§E; vì vậy F2→B1 có
+dual-read giới hạn và không mâu thuẫn cảnh báo trên.
+
 ### E.6. Error envelope mới
 
 Mọi lỗi vẫn dùng §C.7 envelope. Bổ sung code typed, không dò substring message:
@@ -716,6 +730,407 @@ Mọi lỗi vẫn dùng §C.7 envelope. Bổ sung code typed, không dò substri
 | node không thuộc resolved view | 404 / `NODE_NOT_FOUND` |
 | enum hoặc JSON shape sai | 422 / `VALIDATION_ERROR` |
 | unexpected internal error | 500 / `INTERNAL`, không leak exception |
+
+## §F. Contract đích đã duyệt 2026-08-09 — UI & Explanation v2
+
+### F.0. Trạng thái, phạm vi và version
+
+§F là migration contract **additive** đã được duyệt, nhưng chưa được coi là đã
+triển khai cho đến khi backend models/producers/tests của Phase 1 trong
+`UI_caithien.md` cùng hoàn tất. Không nội dung nào ở §F cho phép đổi graph, cost,
+heuristic, tie-break, traversal order, stopping rule tạo nghiệm, path
+reconstruction, seed, data hoặc benchmark đã chốt.
+
+Producer v2 thêm `contract_version: 2` vào root của response `Trace` và
+`MultirouteResponse`. Reader phải hiểu field vắng mặt là v1. Producer chỉ được
+phát version 2 khi **toàn bộ field bắt buộc cho đúng endpoint/result variant** đã
+được điền và qua validation; không phát version 2 cho payload nửa v1/nửa v2.
+Mọi field §A–§E vẫn giữ tên, type, default và semantics. Đặc biệt:
+
+- `total_cost` là objective theo request `mode`;
+- `total_time_s` luôn là balanced path weight, kể cả mode `distance` hoặc `time`;
+- trace cap 5.000 chỉ cắt payload, không cắt search hay full-run metrics;
+- ATSP vẫn asymmetric, order không lặp Start cuối và closing leg nằm trong `legs`;
+- field v2 mới không được làm thay đổi result khi bật/tắt route/optimization trace.
+
+### F.1. Số học dùng chung: breakdown, tolerance, signed trade-off và phần trăm
+
+`PathCostBreakdown` áp dụng cho route path, từng ATSP leg và tổng nhiều leg:
+
+```text
+PathCostBreakdown
+  distance_m: finite float >= 0
+  free_flow_time_s: finite float >= 0
+  congestion_adjusted_time_s: finite float >= 0
+  congestion_delay_s: finite float >= 0
+  penalty_flood_s: finite float >= 0
+  penalty_construction_s: finite float >= 0
+  penalty_narrow_alley_s: finite float >= 0
+  penalty_traffic_light_s: finite float >= 0
+  risk_penalty_total_s: finite float >= 0
+  balanced_cost_s: finite float >= 0
+```
+
+Nguồn tính duy nhất là aggregate của `backend/app/costs.py::edge_cost_breakdown`
+trên đúng directed edges của path. Các identity phải đúng trong comparison
+tolerance:
+
+```text
+congestion_delay_s
+  = congestion_adjusted_time_s - free_flow_time_s
+
+risk_penalty_total_s
+  = penalty_flood_s + penalty_construction_s
+  + penalty_narrow_alley_s + penalty_traffic_light_s
+
+balanced_cost_s
+  = congestion_adjusted_time_s + risk_penalty_total_s
+
+mode=distance  -> metrics.total_cost = distance_m
+mode=time      -> metrics.total_cost = congestion_adjusted_time_s
+mode=balanced  -> metrics.total_cost = balanced_cost_s
+mọi mode       -> metrics.total_time_s = balanced_cost_s
+```
+
+Không dùng số đã format/round để quyết định tie, rank, relation hoặc integrity.
+Comparison equality dùng raw active-mode unit:
+
+```text
+COMPARISON_ABS_TOLERANCE = 1e-6       # mét với distance, giây với time/balanced
+COMPARISON_REL_TOLERANCE = 1e-9
+
+equivalent(a, b) iff
+  abs(a-b) <= max(COMPARISON_ABS_TOLERANCE,
+                  COMPARISON_REL_TOLERANCE * max(abs(a), abs(b)))
+```
+
+Đây là tolerance của contract/UI comparison, **khác** tolerance cải thiện nội bộ
+`1e-12` của local search hiện hành; không được dùng nó để đổi quyết định thuật toán.
+
+Ba phép so sánh không được trộn tên hoặc dấu:
+
+1. `reference_minus_selected_cost = reference.total_cost - selected.total_cost`.
+   Âm ngoài tolerance nghĩa là reference tốt hơn; dương nghĩa là reference kém
+   hơn; trong tolerance là equivalent. Đây là signed trade-off, không phải gap.
+2. `optimality_gap = selected.total_cost - exact_reference.total_cost`, chỉ có
+   khi reference exact cùng snapshot/mode/topology. Trong tolerance serialize 0;
+   nếu âm ngoài tolerance là contract-integrity error. `optimality_gap_pct =
+   optimality_gap / exact_reference.total_cost * 100` khi mẫu số lớn hơn
+   tolerance. Nếu cả exact và selected equivalent 0 thì gap và pct đều 0; nếu
+   exact equivalent 0 nhưng selected dương thì pct là `null` và UI nói mẫu số 0.
+3. `savings_pct = (original.total_cost - optimized.total_cost) /
+   original.total_cost * 100`, chỉ khi baseline và optimized cùng open/closed
+   topology. Nếu original và optimized đều equivalent 0 thì savings là 0; nếu
+   original equivalent 0 nhưng optimized không equivalent 0 thì savings là
+   `null` và response bị đánh dấu integrity error. Savings âm là tăng chi phí.
+
+Response legacy `savings_pct` tiếp tục round 0,1 điểm phần trăm như §C.5; mọi
+relation/ranking vẫn dùng totals raw trước round. Không frontend nào tự tính lại
+breakdown hoặc relation từ localized prose.
+
+### F.2. Route Trace v2: termination, decision và Dijkstra hai chiều
+
+Root `Trace` version 2 luôn thêm `termination`, kể cả `include_trace=false`,
+found=false hoặc start=goal:
+
+```text
+termination
+  reason:
+    start_equals_goal | goal_expanded | frontier_exhausted |
+    depth_cap_reached | round_cap_reached |
+    beam_exhausted_after_pruning
+  reachability: route_found | proven_unreachable | inconclusive
+  solution_quality: exact | epsilon_bounded | feasible_unproven | not_applicable
+```
+
+Mapping bắt buộc:
+
+- `start_equals_goal`: found, `route_found`, `not_applicable`; không đánh giá chất
+  lượng một tuyến khi không có cạnh nào cần đi và giữ nguyên
+  `optimal_guarantee` legacy theo algorithm policy hiện hành.
+- `goal_expanded`: found; UCS/A*/Bidijkstra là `exact` khi precondition §B.5 giữ;
+  IDA* là `epsilon_bounded`; BFS/DFS/IDDFS/Greedy/Beam là `feasible_unproven`.
+- `frontier_exhausted`: not found, `proven_unreachable`, `not_applicable`.
+- ba reason cap/pruning: not found, `inconclusive`, `not_applicable`.
+
+Nếu precondition guarantee không được attested trong result snapshot, hạ quality
+về `feasible_unproven`; frontend không suy quality chỉ từ tên algorithm.
+`optimal_guarantee` legacy phải nhất quán với quality khi found.
+
+IDDFS không được mặc định coi mọi lần chạm `iddfs_max_depth` là inconclusive.
+Depth-limited search nội bộ phải phân biệt `found`, `failure`, `cutoff`:
+
+- `cutoff` chỉ khi ít nhất một effective successor state bị bỏ **chỉ vì** depth
+  limit sau cùng, theo đúng duplicate/best-depth policy của implementation;
+- final round `cutoff` -> `depth_cap_reached`;
+- final round `failure` -> `frontier_exhausted`.
+
+Beam theo dõi full-run `ever_pruned`. Một layer chỉ tính là pruned khi pool unique
+sau khi quét toàn layer có hơn `beam_width` node và node bị loại chỉ vì top-k;
+visited/duplicate skip không phải pruning. Not-found với `ever_pruned=true` dùng
+`beam_exhausted_after_pruning`; không có pruning dùng `frontier_exhausted`.
+IDA* chỉ dùng `round_cap_reached` khi còn threshold hữu hạn cần thử nhưng đã hết
+`max_rounds`; nếu probe trả exhaustive/no next threshold thì dùng
+`frontier_exhausted`.
+
+Mỗi recorded `TraceStep` của producer version 2 bắt buộc thêm `decision`; reader
+v2 vẫn cho phép field vắng ở payload version 1:
+
+```text
+decision
+  rule: fifo | lifo | depth_limited_lifo | lowest_g | lowest_h |
+        lowest_f_then_h | bidirectional_min_key | f_bound_dfs | top_k_f
+  selected_scores: {g?, h?, f?, depth?}
+  runner_up: {node, g?, h?, f?} | null
+  frontier_size_before: int >= 0
+  frontier_size_after: int >= 0
+  neighbors_scanned: int >= 0
+  frontier_added: int >= 0
+  frontier_updated: int >= 0
+  pruned_count: int >= 0
+  iteration: int >= 1 | null
+  bound: finite float | null
+  layer: int >= 1 | null
+  beam_width: int >= 1 | null
+  top_forward: {node, g} | null
+  top_backward: {node, g} | null
+  mu_before: finite float >= 0 | null
+```
+
+Scores, runner-up, frontier-before, top keys và `mu_before` là state effective
+ngay trước pop/expand, sau khi bỏ stale heap entries. Counters và frontier-after
+là state của action vừa ghi. `iteration` (IDDFS/IDA*) và `layer` (Beam) serialize
+**1-based**; `ordinal` ATSP ở §E.4 vẫn 0-based. Field không áp dụng được omit/null.
+Snapshot chỉ được tạo khi recorder active và không được thêm RNG call.
+
+Riêng `bidijkstra`, mỗi recorded step thêm:
+
+```text
+bidirectional_frontiers
+  forward: {nodes: sorted unique node ids, g: exact same-key map}
+  backward: {nodes: sorted unique node ids, g: exact same-key map}
+  best_path_cost: finite float >= 0 | null
+  meeting_node: node id | null
+```
+
+Forward `g` là Start→node; backward `g` là node→Goal trên graph gốc. Node overlap
+ở cả hai list và giữ hai giá trị. Legacy `frontier` bằng union; legacy `g` dùng
+giá trị phía duy nhất hoặc min khi overlap; `side` là phía vừa expand.
+`decision.mu_before` là μ trước expansion; `best_path_cost` là μ sau expansion.
+Producer v2 bắt buộc payload này ở mọi recorded bidirectional step và cấm nó ở
+algorithm khác. Reader v1/v2 thiếu field chỉ được render union có nhãn fallback,
+không tái dựng hai phía.
+
+### F.3. Explanation v2 và tuyến tham chiếu
+
+Giữ `summary_vi`, `congested_segments`, `alternatives` legacy trong rollout, nhưng
+producer sinh chúng từ cùng typed facts. UI v2 dùng `explanation.evidence` làm
+nguồn chính:
+
+```text
+evidence
+  selection_rule: decision rule enum
+  objective: {mode, selected_value|null, exact_reference_value?,
+              optimality_gap?, optimality_gap_pct?}
+  cost_breakdown: PathCostBreakdown | null
+  factors: [{id, kind, edge_ids, level?, count, contribution_s?}]
+  reference_routes: [ReferenceRoute]    # tối đa 2
+```
+
+Found route có finite `selected_value` và non-null breakdown; trivial có value 0
+và breakdown toàn 0. Not-found có `selected_value=null`, exact/gap null,
+`cost_breakdown=null`, references rỗng; factors chỉ được mô tả typed
+cap/pruning/context thật. `selection_rule` phải khớp algorithm/decision enum.
+
+`ReferenceRoute`:
+
+```text
+id: stable non-localized id
+kind: same_objective_optimum | distance_optimum | balanced_optimum |
+      avoid_edge_counterfactual
+provenance: posthoc_ucs
+generated_for_mode: mode
+excluded_edge: edge id | null
+path: directed-valid node ids
+metrics: LegMetrics
+cost_breakdown: PathCostBreakdown
+reference_minus_selected_cost: finite float
+reference_minus_selected_pct: finite float | null
+reference_minus_selected_distance_m: finite float
+reference_minus_selected_balanced_cost_s: finite float
+relation_to_selected: better | equivalent | worse
+```
+
+`reference_minus_selected_pct = reference_minus_selected_cost /
+selected.total_cost * 100` khi selected lớn hơn tolerance. Nếu cả selected và
+reference equivalent 0 thì pct=0; nếu selected equivalent 0 nhưng reference không
+equivalent 0 thì pct=`null`. Đây vẫn là signed trade-off. Optimality gap chỉ nằm
+trong objective evidence và chỉ dùng exact same-objective reference. Tuyến reference là hậu kiểm;
+localized copy không được nói thuật toán chính đã “xét” hay “loại” full route đó.
+Hai field distance/balanced còn lại cũng luôn dùng dấu `reference - selected`,
+không đổi dấu theo localized sentence.
+Guaranteed exact result có reference exact tốt hơn ngoài tolerance là integrity
+error: frontend dừng claim/ranking thay vì che mâu thuẫn.
+
+Mỗi ordered-search leg phải giữ nguyên explanation/termination của route response
+gốc. Aggregate không được tạo một whole-tour alternative giả hoặc biến đảm bảo
+từng chặng thành đảm bảo tối ưu thứ tự điểm.
+
+### F.4. MultirouteResponse v2
+
+Response reachable thêm các field sau, ngoài field v1 và §E:
+
+```text
+return_to_start: bool                         # echo request sau validation
+original_order: [start, ...stops]             # không lặp start cuối
+original_order_legs: [Leg]
+totals_breakdown: PathCostBreakdown
+original_order_breakdown: PathCostBreakdown
+computation_metrics:
+  matrix_search_runs: int >= 0
+  matrix_nodes_expanded: int >= 0
+  matrix_runtime_ms: finite float >= 0
+  optimizer_runtime_ms: finite float >= 0
+  total_runtime_ms: finite float >= 0
+failure: MultirouteFailure | null
+method_stats: AtspMethodStats
+```
+
+Mỗi optimized/baseline `Leg` thêm `cost_breakdown: PathCostBreakdown`. Totals và
+hai aggregate breakdown bằng tổng đúng các leg tương ứng trong tolerance.
+`original_order_legs` có closing leg khi return=true. Với tối đa 15 stops: open
+có tối đa 15 legs, closed có tối đa **16** legs.
+
+`matrix_search_runs` là số lượt multi-target UCS thực sự bắt đầu;
+`matrix_nodes_expanded` cộng pop/settle hợp lệ của các lượt đó.
+`matrix_runtime_ms` bao toàn bộ dựng cost/path matrix; `optimizer_runtime_ms` chỉ
+bao solver trên matrix; `total_runtime_ms` đo facade sau validation đến hết result
+assembly. Đo bằng monotonic clock ở raw precision, validate
+`total_raw >= matrix_raw + optimizer_raw`, rồi mới round từng field 3 chữ số thập
+phân như route runtime. Nếu chỉ kiểm serialized values, cho sai số accounting tối
+đa 0,002 ms do ba phép round. Không runtime nào được dùng làm benchmark khoa học.
+Trace recorder/assembly có thể làm runtime khác; vì vậy trace-on/off regression bỏ
+qua runtime nhưng phải so mọi field deterministic khác.
+
+`AtspMethodStats` là discriminated union và luôn đo **full run**, không derive từ
+sampled events:
+
+```text
+held_karp
+  dp_states_solved
+  transitions_evaluated
+
+nn_local_search
+  nn_initial_cost
+  nn_candidates_evaluated
+  two_opt_candidates_evaluated
+  or_opt_candidates_evaluated
+  accepted_2opt_moves
+  accepted_oropt_moves
+  final_cost
+  improvement_after_nn
+
+simulated_annealing
+  seed_count
+  best_seed
+  best_cost
+  mean_best_cost
+  stddev_best_cost
+  attempted_moves
+  accepted_improving_moves
+  accepted_equal_moves
+  accepted_worse_moves
+  rejected_moves
+  seeds: [{seed, iterations, final_cost, best_cost, best_order,
+           attempted_moves, accepted_improving_moves,
+           accepted_equal_moves, accepted_worse_moves, rejected_moves}]
+```
+
+Định nghĩa count:
+
+- Held–Karp `dp_states_solved` là số entry `(mask, endpoint)` materialized sau DP,
+  gồm base `(1,start)`. `transitions_evaluated` tăng cho mỗi phép tính candidate
+  trong recurrence `cost_i + c[i][j]`, kể cả candidate không cải thiện; không gồm
+  scan chọn endpoint cuối, reconstruction hoặc trace sampling.
+- NN `nn_candidates_evaluated` cộng số node trong candidate set ở mỗi greedy
+  decision. Hai local-search counters tăng cho mỗi candidate tour thực sự được
+  full-recost theo đúng loop/move type; no-op bị skip không tính. Accepted counter
+  tăng đúng khi move qua internal improvement rule hiện hành.
+  `improvement_after_nn = nn_initial_cost - final_cost` bằng raw active-mode unit.
+- SA `attempted_moves` tăng sau mỗi candidate được recost với
+  `delta = candidate_cost - current_cost`; phân loại
+  **đúng dấu raw dùng bởi acceptance hiện hành**: `delta < 0` improving,
+  `delta == 0` equal, `delta > 0` worse. Accepted-equal là field riêng vì code
+  nhận mọi `delta <= 0`. Identity bắt buộc:
+  `attempted = accepted_improving + accepted_equal + accepted_worse + rejected`.
+  Việc ghi stats không thêm RNG call và không đổi acceptance.
+- `best_seed` là seed có `best_cost` nhỏ nhất, tie theo thứ tự seed input (mặc định
+  0–4). Mean là arithmetic mean của per-seed best costs. `stddev_best_cost` là
+  **sample standard deviation** (mẫu số `seed_count-1`, tương đương
+  `statistics.stdev`); bằng 0 khi chỉ có một seed.
+
+`optimizer_stats` SA legacy ở §E.4 tiếp tục tồn tại và phải được sinh từ chính
+`method_stats`, không phải một bộ đếm thứ hai.
+
+Khi matrix thiếu một directed pair, response 200 có:
+
+```text
+found=false
+return_to_start=<echo request>
+order=[]
+legs=[]
+totals=null
+totals_breakdown=null
+original_order=[start, ...stops]
+original_order_legs=[]
+original_order_totals=null
+original_order_breakdown=null
+savings_pct=null
+failure={kind: matrix_incomplete, from_node, to_node}
+method_stats=null
+computation_metrics=<counters/timing đã thu được>
+```
+
+Optimizer không chạy sau `matrix_incomplete`. Copy chỉ được nói không dựng được
+ma trận đầy đủ cho pair có hướng, không khẳng định mọi open order đều bất khả thi.
+HTTP validation errors trước khi facade bắt đầu vẫn dùng §C.7 và không cần response
+shape trên.
+
+### F.5. Compatibility, rollout và rollback
+
+Comparison client phải deep-copy normalized typed `ScenarioConfig` trong immutable
+request snapshot; không giữ draft string/reference và không tự hash. Session có
+`authoritative_scenario_fingerprint: string|null`, khởi tạo null. Fingerprint của
+response hợp lệ đầu tiên (kể cả found=false) thiết lập field đúng một lần; mọi
+response/retry sau phải khớp. Missing/mismatch là contract error, không vào
+ranking; capability/fingerprint đổi giữa session buộc cancel phần còn lại và tạo
+session mới. Ordered-search comparison kiểm mỗi `/api/route` leg response, kể cả
+closing/failed leg, không đợi tới merged result.
+
+Compatibility matrix bắt buộc:
+
+| Frontend | Backend | Hành vi |
+|---|---|---|
+| v1 | v1 | Hành vi hiện hành §A–§E |
+| v1 | v2 | Phải hoạt động; reader cũ bỏ field additive, field legacy không đổi |
+| v2 | v1 | Dual-read: union bidi có nhãn fallback; Explanation dùng copy bảo thủ; ẩn breakdown/baseline/stats thiếu dữ liệu. Open/closed chỉ lấy từ immutable request snapshot, không suy từ số legs. Response thiếu server scenario fingerprint bắt buộc là contract error và không được xếp hạng |
+| v2 | v2 | Toàn bộ §F; vẫn validate từng capability/field bắt buộc theo result variant |
+
+Rollout theo thứ tự:
+
+1. Cập nhật schema/models/tests và deploy backend v2 trong khi frontend v1 còn chạy.
+2. Chạy producer/legacy compatibility tests và xác nhận path/cost/result parity.
+3. Deploy frontend v2 với dual-read/capability checks; không chỉ kiểm một global
+   version rồi giả định nested field luôn có.
+4. Chỉ bỏ fallback trong một schema version/decision riêng sau telemetry/QA; không
+   thuộc phase này.
+
+Rollback frontend v2→v1 an toàn vì backend giữ legacy fields. Rollback backend
+v2→v1 khi frontend v2 đang chạy chỉ an toàn trong phạm vi dual-read ở matrix trên;
+frontend phải degrade thay vì fabricate. Phase này không có DB/persistent schema,
+không cần migration/backfill và rollback không xóa data. Mọi response v2 đã lưu
+trong memory của session bị clear khi backend capability/fingerprint thay đổi;
+không trộn v1/v2 result trong cùng comparison session.
 
 ## Phụ lục: ví dụ JSON hợp lệ tối thiểu
 

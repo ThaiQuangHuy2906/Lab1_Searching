@@ -111,6 +111,24 @@ function lengthDraftInKm(lengthMetres: number): string {
 }
 
 export function ScenarioTab() {
+  const runKind = useApp((state) => state.runKind);
+  const overrideCount = useApp((state) => Object.keys(state.edgeOverrides).length);
+  if (runKind === "compare") {
+    return (
+      <div className="rounded-lg border border-surface-border bg-surface-control/70 p-3">
+        <p className="text-sm font-semibold text-ink">Kịch bản đang ở chế độ chỉ đọc</p>
+        <p className="mt-1 text-xs leading-5 text-ink-dim">
+          Mọi thuật toán so sánh dùng cùng một snapshot
+          {overrideCount > 0 ? ` với ${overrideCount} đoạn đã chỉnh` : " không có đoạn chỉnh thêm"}.
+          Quay về <b className="text-ink">Chạy một</b> để chọn cạnh hoặc thay trọng số.
+        </p>
+      </div>
+    );
+  }
+  return <ScenarioEditor />;
+}
+
+function ScenarioEditor() {
   const state = useApp();
   const edge = state.graphData?.edges.find((item) => item.id === state.selectedEdgeId);
   const override = edge ? state.edgeOverrides[edge.id] : undefined;

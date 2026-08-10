@@ -2,8 +2,8 @@
 
 import * as React from "react";
 import {
-  ArrowDownUp, ChevronDown, Crosshair, Loader2, PanelLeftClose, PanelLeftOpen,
-  Play, Route, X,
+  ArrowDownUp, Check, ChevronDown, Crosshair, Loader2, PanelLeftClose,
+  PanelLeftOpen, Play, Route, X,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { Switch } from "./ui/switch";
@@ -326,6 +326,58 @@ function GraphNodeCountInput({ isDemo, busy }: { isDemo: boolean; busy: boolean 
   );
 }
 
+function RouteComparisonSelector({ busy }: { busy: boolean }) {
+  const selected = useApp((state) => state.routeCompareAlgorithms);
+  const setSelected = useApp((state) => state.setRouteCompareAlgorithms);
+  const atMaximum = selected.length >= 4;
+
+  return (
+    <div className="flex flex-col gap-2">
+      <div
+        role="group"
+        aria-label="Chọn từ hai đến bốn thuật toán để so sánh"
+        className="grid grid-cols-2 gap-1.5"
+      >
+        {ALGORITHM_GROUPS.flatMap((group) => group.algos).map((algorithm) => {
+          const checked = selected.includes(algorithm);
+          const cannotRemove = checked && selected.length <= 2;
+          return (
+            <button
+              key={algorithm}
+              type="button"
+              aria-pressed={checked}
+              disabled={busy || cannotRemove || (!checked && atMaximum)}
+              onClick={() => setSelected(checked
+                ? selected.filter((item) => item !== algorithm)
+                : [...selected, algorithm])}
+              className={`flex min-h-10 items-center gap-2 rounded-lg border px-2.5 text-left text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-algo-frontier disabled:cursor-not-allowed disabled:opacity-45 ${
+                checked
+                  ? "border-algo-frontier/55 bg-algo-frontier/10 text-ink"
+                  : "border-surface-border bg-surface-control text-ink-dim hover:border-surface-strong hover:text-ink"
+              }`}
+            >
+              <span className={`flex size-4 shrink-0 items-center justify-center rounded border ${
+                checked ? "border-algo-frontier bg-algo-frontier text-zinc-950" : "border-surface-strong"
+              }`}>
+                {checked && <Check className="size-3" />}
+              </span>
+              <span className="min-w-0 break-words">{ALGO_LABEL[algorithm]}</span>
+            </button>
+          );
+        })}
+      </div>
+      <p className="text-xs leading-5 text-ink-dim">
+        Đã chọn <b className="font-mono text-ink">{selected.length}/4</b>. Các bản đồ giữ đúng thứ tự chọn và cùng một snapshot.
+      </p>
+      {atMaximum && (
+        <p className="text-xs leading-5 text-algo-frontier">
+          Đã đủ 4 bản đồ. Bỏ một thuật toán trước khi thêm thuật toán khác.
+        </p>
+      )}
+    </div>
+  );
+}
+
 type ControlPanelProps = {
   mobileOpen?: boolean;
   onMobileClose?: () => void;
@@ -365,6 +417,7 @@ export function ControlPanel({
     goal: state.goal,
     stops: state.stops,
     algorithm: state.algorithm,
+    comparisonAlgorithms: state.routeCompareAlgorithms,
     method: state.tspMethod,
   });
   const overrideCount = Object.keys(state.edgeOverrides).length;
@@ -542,7 +595,7 @@ export function ControlPanel({
           />
           {state.runKind === "compare" && (
             <p className="rounded-lg border border-algo-path/35 bg-algo-path/10 px-2.5 py-2 text-xs leading-5 text-ink">
-              Không gian so sánh nhiều bản đồ chưa có trong màn hình này. Nút bên dưới sẽ không chạy nhầm tác vụ đơn.
+              Chọn 2–4 thuật toán bên dưới. Mỗi thuật toán có một bản đồ riêng; chỉnh trọng số bị khóa trong chế độ này.
             </p>
           )}
         </Section>
@@ -588,6 +641,41 @@ export function ControlPanel({
           </Section>
         )}
 
+        {visibleControls.selection === "route_comparison" && (
+          <Section
+            title="Thuật toán so sánh"
+            tip="Chọn từ 2 đến 4 thuật toán. Các lượt chạy diễn ra tuần tự trên cùng dữ liệu và không tải trace."
+          >
+            <RouteComparisonSelector busy={busy} />
+            {state.routeCompareAlgorithms.includes("beam") && (
+              <Field label="Độ rộng Beam (k)" tip="Áp dụng cho pane Beam Search trong lần so sánh tiếp theo.">
+                <input type="number" min={1} disabled={busy} value={state.beamWidth}
+                  placeholder={isDemo ? "Mặc định 5" : "Mặc định 50"}
+                  className="h-10 rounded-lg border border-surface-border bg-surface-control px-3 font-mono text-sm hover:border-surface-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-algo-frontier disabled:cursor-not-allowed disabled:opacity-55"
+                  onChange={(event) => state.set({ beamWidth: event.target.value === "" ? "" : Number(event.target.value) })} />
+              </Field>
+            )}
+            {state.routeCompareAlgorithms.includes("idastar") && (
+              <Field label={`ε — nới ngưỡng (${epsilonUnit})`} tip="Áp dụng cho pane IDA* trong lần so sánh tiếp theo.">
+                <input type="number" min={epsilonMin} step={epsilonStep} disabled={busy} value={epsilonDisplay}
+                  placeholder={`Mặc định ${epsilonDefaultText}`}
+                  className="h-10 rounded-lg border border-surface-border bg-surface-control px-3 font-mono text-sm hover:border-surface-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-algo-frontier disabled:cursor-not-allowed disabled:opacity-55"
+                  onChange={(event) => {
+                    const value = event.target.value;
+                    const parsed = Number(value);
+                    state.set({ epsilon: value === "" || !Number.isFinite(parsed) ? "" : presentationEpsilonToRaw(state.mode, parsed) });
+                  }} />
+              </Field>
+            )}
+          </Section>
+        )}
+
+        {visibleControls.selection === "comparison_pending" && (
+          <p className="rounded-lg border border-surface-border bg-surface-control/70 px-3 py-2.5 text-xs leading-5 text-ink-dim">
+            So sánh nhiều hiện áp dụng cho thuật toán tìm đường. Hãy chọn “Đi theo thứ tự đã chọn” để tiếp tục.
+          </p>
+        )}
+
         {visibleControls.selection === "atsp_method" && (
           <Section title="Phương pháp ATSP">
             <Select value={state.tspMethod} disabled={busy} onValueChange={(value) => state.set({ tspMethod: value as TspMethod })}>
@@ -616,32 +704,46 @@ export function ControlPanel({
           {!isDemo && <p className="text-xs leading-5 text-ink-dim">Trace từng bước được yêu cầu cho G_real; chỉ nên dùng khi cần quan sát vì có thể rất dài. Giới hạn hiển thị 5.000 bước không cắt công việc tìm kiếm.</p>}
         </Section>
 
-        <Section
-          title="Kịch bản thử nghiệm"
-          defaultOpen={false}
-          tip="Chọn một đoạn đường trên bản đồ; trình chỉnh đầy đủ sẽ mở ở panel bên phải. Dữ liệu gốc không bị sửa."
-        >
-          <EdgeExperimentLauncher />
-        </Section>
+        {state.runKind === "single" ? (
+          <Section
+            title="Kịch bản thử nghiệm"
+            defaultOpen={false}
+            tip="Chọn một đoạn đường trên bản đồ; trình chỉnh đầy đủ sẽ mở ở panel bên phải. Dữ liệu gốc không bị sửa."
+          >
+            <EdgeExperimentLauncher />
+          </Section>
+        ) : overrideCount > 0 ? (
+          <p className="rounded-lg border border-surface-border bg-surface-control/70 px-3 py-2.5 text-xs leading-5 text-ink-dim">
+            Đang áp dụng read-only cùng một kịch bản gồm <b className="font-mono text-ink">{overrideCount}</b> đoạn đã chỉnh cho mọi thuật toán.
+          </p>
+        ) : null}
       </div>
 
       <div className="app-footer flex shrink-0 flex-col gap-1.5 border-t border-surface-border/80 px-4 py-3">
         <Button
           size="lg"
           className="h-auto min-h-11 w-full whitespace-normal px-3 py-2 text-center leading-5"
-          disabled={busy || state.graphLoading || cta.action === null || cta.blockedReason !== null}
+          disabled={state.comparing
+            ? false
+            : busy || state.graphLoading || cta.action === null || cta.blockedReason !== null}
           aria-describedby="single-run-cta-reason"
           onClick={() => {
+            if (state.comparing) {
+              state.cancelActiveRun();
+              return;
+            }
             if (cta.action === "route") void state.runRoute();
+            if (cta.action === "compare_route") void state.runRouteComparison(state.routeCompareAlgorithms);
             if (cta.action === "atsp") void state.runMulti(state.tspMethod);
           }}
         >
-          {busy ? <Loader2 className="animate-spin" /> : <Play />}
-          {state.running
+          {state.comparing ? <X /> : busy ? <Loader2 className="animate-spin" /> : <Play />}
+          {state.comparing
+            ? "Hủy so sánh"
+            : state.running
             ? state.routeProgress ? `Đang chạy chặng ${state.routeProgress.current}/${state.routeProgress.total}…` : "Đang tìm đường…"
             : state.multiRunning ? "Đang dựng ma trận và tối ưu…"
-              : state.comparing ? "Đang so sánh…"
-                : ctaLabel}
+              : ctaLabel}
         </Button>
         {!state.graphLoading && <p id="single-run-cta-reason" className="min-h-5 text-center text-xs leading-5 text-ink-dim">{cta.blockedReason ?? ""}</p>}
         {state.graphLoading && <Skeleton className="h-5 w-full" />}

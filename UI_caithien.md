@@ -1147,13 +1147,12 @@ Mobile:
 
 Mỗi map pane phải có chiều cao tối thiểu được chốt trong `docs/DESIGN.md` sau browser QA; không hard-code con số trước khi kiểm tra toolbar/timeline ở 1366×768.
 
-### 11.3. Shared camera
+### 11.3. Camera độc lập theo pane
 
-- Camera sync mặc định bật.
-- Pan/zoom ở một map cập nhật các map khác.
-- Có toggle “Đồng bộ góc nhìn”.
-- Chống feedback loop bằng source pane ID/equality check.
-- Khi tắt sync, mỗi pane giữ view state riêng.
+- Mỗi map sở hữu camera riêng ngay từ đầu.
+- Pan/zoom/Home trên một map không thay đổi map khác.
+- Không có toggle đồng bộ camera trong comparison workspace.
+- Mục tiêu là cho phép phóng to từng tuyến để kiểm tra chi tiết độc lập.
 - Khi collapse panel, resize map nhưng không auto fly/refit; camera người dùng được giữ. Nút Home hiện có vẫn là thao tác refit chủ động.
 
 ### 11.4. Không nhân bản `MapView` hiện tại
@@ -1897,7 +1896,7 @@ Việc làm:
 - Per-card status/error/retry/cancel.
 - Summary table.
 - N map panes.
-- Shared camera.
+- Camera độc lập cho từng pane.
 - Ordered multi comparison.
 - Mỗi result pane mở đúng explanation subject; route cross-result insights có integrity guard.
 
@@ -2409,7 +2408,7 @@ Phải phân biệt rõ passed/failed/skipped/not run. Không dùng kết quả 
 - [ ] found=false không thành HTTP error.
 - [ ] Ordered N-point comparison hoạt động.
 - [ ] Retry/cancel/stale guard đúng.
-- [ ] Shared camera không feedback loop.
+- [ ] Pan/zoom/Home của một pane không thay đổi camera pane khác.
 
 ### 24.6. ATSP comparison
 
@@ -2595,7 +2594,7 @@ Thiết kế tốt nhất cho dự án là:
 - Tách đúng frontier Bidirectional Dijkstra bằng contract backend additive.
 - Nâng ATSP metrics thành outcome + effort + per-leg/baseline.
 - So sánh route 2–4 thuật toán và ATSP 2–3 phương pháp.
-- Mỗi lựa chọn có một result pane/map riêng; final-only, shared camera, partial failure.
+- Mỗi lựa chọn có một result pane/map riêng; final-only, camera độc lập, partial failure.
 - Cho thu gọn panel trái trên desktop mà không làm mất state.
 - Thiết kế lại Giải thích thành structured workspace: đúng result, verdict, step/event, objective breakdown, post-hoc provenance, guarantee/limitation và map-linked evidence.
 - Triển khai theo schema → policy/state → single UI → map extraction → comparison → hardening.

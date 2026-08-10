@@ -29,6 +29,10 @@ test("panel renders only controls for the explicit mode, strategy and run kind",
     activePanelControls("multi_point", "atsp", "compare").selection,
     "comparison_pending",
   );
+  assert.equal(
+    activePanelControls("two_point", "ordered_search", "compare").selection,
+    "route_comparison",
+  );
 });
 
 test("three single-run CTA variants are concrete and expose persistent block reasons", () => {
@@ -78,10 +82,25 @@ test("comparison selection cannot dispatch a single-run action", () => {
     goal: "B",
     stops: [],
     algorithm: "astar",
+    comparisonAlgorithms: ["astar", "ucs", "bidijkstra"],
     method: "held_karp",
   });
-  assert.equal(cta.action, null);
-  assert.match(cta.blockedReason ?? "", /Phase 6/);
+  assert.deepEqual(cta, {
+    label: "So sánh 3 thuật toán",
+    action: "compare_route",
+    blockedReason: null,
+  });
+  assert.match(singleRunCta({
+    problemMode: "two_point",
+    multiStrategy: "ordered_search",
+    runKind: "compare",
+    start: "A",
+    goal: "B",
+    stops: [],
+    algorithm: "astar",
+    comparisonAlgorithms: ["astar"],
+    method: "held_karp",
+  }).blockedReason ?? "", /ít nhất 2/);
 });
 
 test("stop reorder respects boundaries and announces the moved item once", () => {

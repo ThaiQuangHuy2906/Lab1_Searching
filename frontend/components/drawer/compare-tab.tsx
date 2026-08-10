@@ -1,313 +1,318 @@
 "use client";
 
-import { GitCompareArrows, Loader2 } from "lucide-react";
-import { Badge } from "../ui/badge";
-import { Button } from "../ui/button";
-import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from "../ui/select";
+import { AlertTriangle, GitCompareArrows, Loader2, RefreshCw } from "lucide-react";
+
 import { AtspCompare } from "../atsp/atsp-compare";
 import { AtspLoading } from "../atsp/atsp-result";
+import { Badge } from "../ui/badge";
+import { Button } from "../ui/button";
+import { routeGuaranteeLabel } from "@/lib/algorithm-policy";
+import { routeComparisonInsights } from "@/lib/comparison-insights";
 import {
-  ALGORITHM_ORDER,
-  chooseCompareAlgorithm,
-  routeGuaranteeLabel,
-} from "@/lib/algorithm-policy";
+  comparisonEquivalent,
+  comparisonRankLabel,
+  rankComparisonResults,
+} from "@/lib/comparison-policy";
+import { fmtInt, fmtMs } from "@/lib/format";
 import {
   formatOutcomeMetricValue,
   outcomeMetricsForMode,
   presentationUnitForMode,
-  primaryOutcomeMetric,
   rawEpsilonToPresentation,
 } from "@/lib/metric-presentation";
 import { ALGO_LABEL, useApp } from "@/lib/store";
-import { fmtInt, fmtMs, fmtVi } from "@/lib/format";
-import type { Algorithm, Trace } from "@/lib/types";
+import type {
+  Algorithm, CompareRun, CompareRunStatus, RouteResultEnvelope, Trace,
+} from "@/lib/types";
 
-/** Real short names for the tight 4-column header — splitting ALGO_LABEL on
- * " — " left "Greedy Best-First"/"Dijkstra hai chiều" full-length and the Δ
- * column got clipped (review v11). */
-const SHORT: Record<Algorithm, string> = {
-  bfs: "BFS", dfs: "DFS", iddfs: "IDDFS", ucs: "UCS",
-  astar: "A*", greedy: "Greedy", bidijkstra: "BiDijkstra", idastar: "IDA*",
-  beam: "Beam",
+const STATUS_COPY: Record<CompareRunStatus, string> = {
+  queued: "Đang chờ",
+  running: "Đang chạy",
+  success: "Hoàn tất",
+  no_path: "Không có đường",
+  error: "Lỗi",
+  cancelled: "Đã hủy",
 };
-const shortName = (a: Algorithm) => SHORT[a];
 
-type Row = {
+interface MetricRow {
   label: string;
-  fa: number | null;
-  fb: number | null;
-  fmt: (x: number) => string;
-};
+  value: (trace: Trace) => number | null;
+  format: (value: number) => string;
+}
 
-/** Rows depend on the mode: total_time_s is a balanced path weight, therefore
- * it never becomes a second outcome row. */
-function metricRows(a: Trace, b: Trace): Row[] {
-  const rows: Row[] = outcomeMetricsForMode(a.mode).map((metric) => {
-    const fa = a.metrics[metric.key];
-    const fb = b.metrics[metric.key];
-    return {
+const METRIC_COLUMN_WIDTH = 240;
+const ALGORITHM_COLUMN_WIDTH = 216;
+
+function comparisonMetricRows(mode: Trace["mode"]): MetricRow[] {
+  return [
+    ...outcomeMetricsForMode(mode).map((metric) => ({
       label: metric.label,
-      fa,
-      fb,
-      fmt: (value) => formatOutcomeMetricValue(metric, value),
-    };
-  });
-  rows.push(
-    { label: "Số điểm đã duyệt", fa: a.metrics.nodes_expanded, fb: b.metrics.nodes_expanded, fmt: fmtInt },
-    { label: "Số điểm chờ lớn nhất", fa: a.metrics.max_frontier, fb: b.metrics.max_frontier, fmt: fmtInt },
-    { label: "Thời gian xử lý", fa: a.metrics.runtime_ms, fb: b.metrics.runtime_ms, fmt: fmtMs },
-  );
-  return rows;
+      value: (trace: Trace) => trace.metrics[metric.key],
+      format: (value: number) => formatOutcomeMetricValue(metric, value),
+    })),
+    {
+      label: "Số điểm đã duyệt",
+      value: (trace: Trace) => trace.metrics.nodes_expanded,
+      format: fmtInt,
+    },
+    {
+      label: "Số điểm chờ lớn nhất",
+      value: (trace: Trace) => trace.metrics.max_frontier,
+      format: fmtInt,
+    },
+    {
+      label: "Thời gian xử lý",
+      value: (trace: Trace) => trace.metrics.runtime_ms,
+      format: fmtMs,
+    },
+  ];
 }
 
-/** Signed % of B relative to A; lower is better for every numeric row. */
-function DeltaCell({ fa, fb }: { fa: number | null; fb: number | null }) {
-  if (fa === null || fb === null || fa <= 0)
-    return <td className="border-l border-surface-border/70 px-2 py-1.5 text-right font-mono text-ink-dim">—</td>;
-  const pct = ((fb - fa) / fa) * 100;
-  if (Math.abs(pct) < 0.05)
-    return <td className="border-l border-surface-border/70 px-2 py-1.5 text-right font-mono text-ink-dim">0 %</td>;
-  const cls = pct > 0 ? "text-goal" : "text-start";
-  return (
-    <td className={`whitespace-nowrap border-l border-surface-border/70 px-2 py-1.5 text-right font-mono ${cls}`}>
-      {pct > 0 ? "+" : "−"}{fmtVi(Math.abs(pct), Math.abs(pct) < 10 ? 1 : 0)} %
-    </td>
-  );
+function statusVariant(status: CompareRunStatus): "default" | "ok" | "warn" | "danger" {
+  if (status === "success") return "ok";
+  if (status === "error") return "danger";
+  if (status === "no_path" || status === "cancelled") return "warn";
+  return "default";
 }
 
-/** One-sentence takeaway: who pays more, and what the loser buys instead. */
-function Verdict({ a, b, multiPoint = false }: {
-  a: Trace; b: Trace; multiPoint?: boolean;
+function ResultActions({
+  run,
+  sessionId,
+}: {
+  run: CompareRun<RouteResultEnvelope>;
+  sessionId: string;
 }) {
-  const nameA = shortName(a.algorithm);
-  const nameB = shortName(b.algorithm);
-  const primaryMetric = primaryOutcomeMetric(a.mode);
-  const fmtCost = (value: number) => formatOutcomeMetricValue(primaryMetric, value);
-  const ca = a.metrics.total_cost;
-  const cb = b.metrics.total_cost;
-
-  if (cb === null || ca === null) {
-    return (
-      <p className="rounded-lg border border-surface-border bg-surface-control px-3 py-2.5 text-[13px] leading-5">
-        {ca === null && cb === null
-          ? <>Cả <b>{nameA}</b> lẫn <b>{nameB}</b> đều không tìm được đường ở cấu hình này</>
-          : <><b>{cb === null ? nameB : nameA}</b> không tìm được đường ở cấu hình này</>}
-        {" "}Hãy xem tab Giải thích để biết nguyên nhân. Bảng dưới vẫn so được công sức tìm kiếm.
-      </p>
-    );
-  }
-
-  const expA = a.metrics.nodes_expanded;
-  const expB = b.metrics.nodes_expanded;
-  const expClause = expA === expB ? null : (
-    <> Về công sức, <b>{expB < expA ? nameB : nameA}</b> duyệt ít điểm hơn
-      ({fmtInt(Math.min(expA, expB))} so với {fmtInt(Math.max(expA, expB))} điểm).</>
-  );
-
-  if (Math.abs(ca - cb) < 0.05) {
-    return (
-      <p className="rounded-lg border border-surface-border bg-surface-control px-3 py-2.5 text-[13px] leading-5">
-        Hai thuật toán tìm được tuyến <b>cùng chi phí</b> ({fmtCost(ca)}).{expClause}
-      </p>
-    );
-  }
-  const [wName, lName, wCost, lCost] = ca < cb
-    ? [nameA, nameB, ca, cb] : [nameB, nameA, cb, ca];
-  const pct = ((lCost - wCost) / wCost) * 100;
-  return (
-    <p className="rounded-lg border border-surface-border bg-surface-control px-3 py-2.5 text-[13px] leading-5">
-      Tuyến của <b>{lName}</b> đắt hơn <b>{wName}</b>{" "}
-      <b className="font-mono">{fmtCost(lCost - wCost)}</b>
-      <span className="font-mono"> (+{fmtVi(pct, pct < 10 ? 1 : 0)} %)</span> trên
-      {multiPoint ? "cùng hành trình nhiều điểm." : "cùng cặp Đi/Đến."}{expClause}
-    </p>
-  );
-}
-
-function directedEdges(path: string[]) {
-  return new Set(path.slice(0, -1).map((node, index) => `${node}\u0000${path[index + 1]}`));
-}
-
-/** Geometry-oriented complement to the cost verdict. The percentage is a
- * directed-edge Jaccard score, so 100% means the two node paths are identical
- * even when their search effort differs. */
-function RouteOverlap({ a, b }: { a: Trace; b: Trace }) {
-  const edgesA = directedEdges(a.path);
-  const edgesB = directedEdges(b.path);
-  const common = [...edgesA].filter((edge) => edgesB.has(edge)).length;
-  const onlyA = edgesA.size - common;
-  const onlyB = edgesB.size - common;
-  const union = common + onlyA + onlyB;
-  const percentage = union === 0 ? null : Math.round((common / union) * 100);
+  const retry = useApp((state) => state.retryRouteComparisonRun);
+  const comparing = useApp((state) => state.comparing);
+  const setSubject = useApp((state) => state.setExplanationSubject);
+  const set = useApp((state) => state.set);
+  const algorithm = run.id as Algorithm;
+  const retryable = run.status === "error" || run.status === "cancelled";
 
   return (
-    <div className="rounded-lg border border-surface-border bg-surface-panel p-2.5">
-      <div className="flex items-center justify-between gap-2">
-        <p className="text-xs font-bold text-ink-dim">
-          Độ trùng tuyến
-        </p>
-        <Badge className="shrink-0 font-mono">
-          {percentage === null ? "—" : `${percentage} %`}
-        </Badge>
+    <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-surface-border bg-surface-control/70 p-2.5">
+      <div className="min-w-0">
+        <p className="truncate text-xs font-semibold text-ink">{ALGO_LABEL[algorithm]}</p>
+        {run.error && <p className="mt-0.5 text-xs leading-5 text-goal">{run.error}</p>}
       </div>
-      <div className="mt-2 grid grid-cols-3 gap-1.5 text-center">
-        <div className="rounded-md bg-surface-control px-1.5 py-1.5">
-          <p className="font-mono text-sm font-bold text-ink">{fmtInt(common)}</p>
-          <p className="text-xs text-ink-dim">đoạn chung</p>
-        </div>
-        <div className="rounded-md bg-algo-path/10 px-1.5 py-1.5">
-          <p className="font-mono text-sm font-bold text-algo-path">{fmtInt(onlyA)}</p>
-          <p className="text-xs text-ink-dim">chỉ tuyến A</p>
-        </div>
-        <div className="rounded-md bg-algo-frontier/10 px-1.5 py-1.5">
-          <p className="font-mono text-sm font-bold text-algo-frontier">{fmtInt(onlyB)}</p>
-          <p className="text-xs text-ink-dim">chỉ tuyến B</p>
-        </div>
+      <div className="flex items-center gap-1.5">
+        <Badge variant={statusVariant(run.status)}>{STATUS_COPY[run.status]}</Badge>
+        {retryable && (
+          <Button
+            variant="ghost"
+            size="sm"
+            disabled={comparing}
+            aria-label={`Chạy lại ${ALGO_LABEL[algorithm]}`}
+            onClick={() => void retry(algorithm)}
+          >
+            <RefreshCw /> Chạy lại
+          </Button>
+        )}
+        {run.result && (
+          <Button
+            variant="ghost"
+            size="sm"
+            aria-label={`Xem giải thích ${ALGO_LABEL[algorithm]}`}
+            onClick={() => {
+              setSubject({
+                kind: "route_comparison",
+                sessionId,
+                resultId: run.result?.id ?? algorithm,
+              });
+              set({ drawerOpen: true, drawerTab: "explain", playing: false });
+            }}
+          >
+            Giải thích
+          </Button>
+        )}
       </div>
-      <p className="mt-1.5 text-xs leading-5 text-ink-faint">
-        Tính theo cạnh có hướng: số đoạn chung chia cho tổng số đoạn khác nhau.
-      </p>
     </div>
   );
 }
 
 export function CompareTab() {
-  const s = useApp();
-  const a = s.trace;
-  const selectedCompareAlgo = chooseCompareAlgorithm(a?.algorithm, s.compareAlgo);
-  const b = s.routeComparisonSession?.runs.find(
-    (run) => run.id === selectedCompareAlgo,
-  )?.result?.response ?? null;
-  const compareAction = `So sánh với ${shortName(selectedCompareAlgo)}`;
+  const state = useApp();
+  const session = state.routeComparisonSession;
+  const routeCompareMode = state.runKind === "compare"
+    && (state.problemMode === "two_point" || state.multiStrategy === "ordered_search");
 
-  if (s.multiRunning) return <AtspLoading />;
-  if (s.multi) return <AtspCompare multi={s.multi} />;
+  if (state.multiRunning) return <AtspLoading />;
+  if (state.multi) return <AtspCompare multi={state.multi} />;
+
+  if (!routeCompareMode) {
+    return (
+      <div className="flex flex-col items-center gap-3 py-8 text-center">
+        <GitCompareArrows className="size-8 text-algo-frontier" />
+        <p className="text-sm font-semibold text-ink">Chưa ở chế độ so sánh nhiều</p>
+        <p className="max-w-72 text-xs leading-5 text-ink-dim">
+          Chọn <b className="text-ink">So sánh nhiều</b> trong mục Chế độ chạy ở panel thiết lập bên trái.
+        </p>
+      </div>
+    );
+  }
+
+  if (!session) {
+    return (
+      <div className="flex flex-col items-center gap-3 py-8 text-center">
+        <GitCompareArrows className="size-8 text-algo-frontier" />
+        <p className="text-sm font-semibold text-ink">Chưa có kết quả so sánh</p>
+        <p className="max-w-72 text-xs leading-5 text-ink-dim">
+          Chọn 2–4 thuật toán ở panel trái rồi bấm <b className="text-ink">So sánh</b>. Bảng này chỉ chứa số liệu; mỗi đường đi nằm trên bản đồ riêng ở giữa.
+        </p>
+      </div>
+    );
+  }
+
+  const results = session.runs.flatMap((run) => run.result ? [run.result] : []);
+  const traces = new Map(results.map((result) => [result.id, result.response]));
+  const mode = results[0]?.response.mode ?? session.snapshot.mode;
+  const rows = comparisonMetricRows(mode);
+  const ranking = rankComparisonResults(session, (result) => result.response.metrics.total_cost);
+  const rankById = new Map(ranking.map((item) => [item.id, item]));
+  const insights = routeComparisonInsights(results);
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex items-end gap-2">
-        <div className="flex-1">
-          <div className="mb-1.5 text-xs font-medium text-ink-dim">Thuật toán B</div>
-          <Select value={selectedCompareAlgo}
-            disabled={s.comparing || s.running || s.multiRunning}
-            onValueChange={(v) => s.set({
-              compareAlgo: v as Algorithm,
-              routeComparisonSession: null,
-              explanationSubject: null,
-              explanationOverlay: null,
-              explanationOverlayVisible: false,
-            })}>
-            <SelectTrigger aria-label="Thuật toán so sánh"><SelectValue /></SelectTrigger>
-            <SelectContent>
-              {ALGORITHM_ORDER
-                .filter((x) => x !== a?.algorithm)
-                .map((x) => (
-                  <SelectItem key={x} value={x}>{ALGO_LABEL[x]}</SelectItem>
-                ))}
-            </SelectContent>
-          </Select>
+      {state.comparing && state.comparisonProgress && (
+        <div role="status" className="flex items-center gap-2 rounded-lg border border-algo-frontier/35 bg-algo-frontier/10 px-3 py-2 text-xs text-ink">
+          <Loader2 className="size-4 animate-spin text-algo-frontier" />
+          Đang chạy thuật toán {state.comparisonProgress.currentItem}/{state.comparisonProgress.totalItems}
+          {state.comparisonProgress.totalLegs > 1
+            ? ` · chặng ${state.comparisonProgress.currentLeg}/${state.comparisonProgress.totalLegs}`
+            : ""}
         </div>
-        <Button variant="secondary"
-          disabled={!a || s.comparing || s.running || s.multiRunning}
-          onClick={() => void s.runCompare()}>
-          {s.comparing ? <Loader2 className="animate-spin" /> : <GitCompareArrows />}
-          {s.comparing ? "Đang so sánh…" : compareAction}
-        </Button>
-      </div>
-
-      {!a && (
-        <p className="py-6 text-center text-sm text-ink-dim">
-          Chạy thuật toán chính trước, rồi chọn thuật toán B để so sánh cùng hành trình.
-        </p>
-      )}
-      {a && !b && !s.comparing && (
-        <p className="py-6 text-center text-sm text-ink-dim">
-          Tuyến A ({ALGO_LABEL[a.algorithm]}) đã sẵn sàng. Thuật toán B đang chọn là{" "}
-          <b className="text-ink">{shortName(selectedCompareAlgo)}</b> — bấm{" "}
-          <b className="text-ink">{compareAction}</b> để chạy.
-        </p>
       )}
 
-      {a && b && (
-        <>
-          <Verdict a={a} b={b} multiPoint={Boolean(s.sequentialRoute)} />
-          <RouteOverlap a={a} b={b} />
+      {insights.filter((insight) => insight.kind !== "no_rankable_result").map((insight) => (
+        <p
+          key={`${insight.kind}-${insight.resultIds.join("-")}`}
+          role={insight.severity === "error" ? "alert" : "status"}
+          className={`rounded-lg border px-3 py-2 text-xs leading-5 ${
+            insight.severity === "error"
+              ? "border-goal/40 bg-goal/10 text-ink"
+              : "border-surface-border bg-surface-control/70 text-ink-dim"
+          }`}
+        >
+          {insight.severity === "error" && <AlertTriangle className="mr-1 inline size-3.5 text-goal" />}
+          {insight.message}
+        </p>
+      ))}
 
-          {/* overflow-x-auto chứ không hidden: 4 cột + tên dài không bao giờ
-              được phép CẮT CỤT cột Δ (bug class v10, review v11 bắt lại) */}
-          <div role="region" aria-label="Bảng so sánh hai thuật toán định tuyến"
-            aria-describedby="route-comparison-note" tabIndex={0}
-            className="overflow-x-auto rounded-lg border border-surface-border">
-            <table className="w-full text-xs">
-              <caption className="sr-only">Chỉ số của tuyến A, tuyến B và phần trăm B so với A</caption>
-              <thead className="bg-surface-control text-ink-dim">
-                <tr>
-                  <th scope="col" className="px-2.5 py-2 text-left font-medium">Chỉ số</th>
-                  <th scope="col" className="whitespace-nowrap border-l border-surface-border px-2 py-2 text-right font-medium text-algo-path">
-                    {/* swatch = map legend: A solid amber */}
-                    <span aria-hidden className="mr-1 inline-block h-0.5 w-3.5 rounded bg-algo-path align-middle" />
-                    A · {shortName(a.algorithm)}
-                  </th>
-                  <th scope="col" className="whitespace-nowrap border-l border-surface-border px-2 py-2 text-right font-medium text-algo-frontier">
-                    {/* swatch = map legend: B dashed pink */}
-                    <span aria-hidden className="mr-1 inline-block w-3.5 border-t-2 border-dashed border-algo-frontier align-middle" />
-                    B · {shortName(b.algorithm)}
-                  </th>
-                  <th scope="col" className="border-l border-surface-border px-2 py-2 text-right font-medium">Δ B/A</th>
-                </tr>
-              </thead>
-              <tbody>
-                {metricRows(a, b).map((r) => {
-                  // lower is better on every numeric row; winner in solid ink,
-                  // the other side dimmed — route colors stay in the header so
-                  // "màu tuyến" and "ai thắng" never mix (audit of v10 UI)
-                  const tie = r.fa === null || r.fb === null || Math.abs(r.fa - r.fb) < 1e-9;
-                  const aWins = !tie && (r.fa as number) < (r.fb as number);
-                  const cell = (v: number | null, wins: boolean) => (
-                    <td className={`whitespace-nowrap border-l border-surface-border/70 px-2 py-1.5 text-right font-mono ${
-                      tie ? "" : wins ? "font-semibold text-ink" : "text-ink-dim"}`}>
-                      {v === null ? "—" : r.fmt(v)}
-                    </td>
-                  );
-                  return (
-                    <tr key={r.label} className="border-t border-surface-border/60">
-                      <td className="px-2.5 py-1.5 text-ink-dim">{r.label}</td>
-                      {cell(r.fa, aWins)}
-                      {cell(r.fb, !aWins)}
-                      <DeltaCell fa={r.fa} fb={r.fb} />
-                    </tr>
-                  );
-                })}
-                <tr className="border-t border-surface-border/60">
-                  <td className="px-2.5 py-1.5 text-ink-dim">Bảo đảm kết quả</td>
-                  {[a, b].map((t, i) => (
-                    <td key={i} className="border-l border-surface-border/70 px-2 py-1.5 text-right">
-                      <Badge variant={t.metrics.optimal_guarantee ? "ok" : "warn"}
-                        className="px-1.5 py-0 text-xs">
-                        {routeGuaranteeLabel(
-                          t.algorithm,
-                          t.metrics.optimal_guarantee,
-                          rawEpsilonToPresentation(t.mode, t.metrics.epsilon_bound),
-                          presentationUnitForMode(t.mode),
-                        )}
-                      </Badge>
+      <div
+        role="region"
+        aria-label={`Bảng so sánh ${session.selectedIds.length} thuật toán định tuyến`}
+        tabIndex={0}
+        className="overflow-x-auto rounded-lg border border-surface-border"
+      >
+        <table
+          className="table-fixed text-xs"
+          style={{
+            width: `max(100%, ${METRIC_COLUMN_WIDTH + session.selectedIds.length * ALGORITHM_COLUMN_WIDTH}px)`,
+          }}
+        >
+          <caption className="sr-only">Các chỉ số kết quả của mọi thuật toán được chọn</caption>
+          <colgroup>
+            <col style={{ width: METRIC_COLUMN_WIDTH }} />
+            {session.selectedIds.map((id) => (
+              <col key={id} style={{ width: ALGORITHM_COLUMN_WIDTH }} />
+            ))}
+          </colgroup>
+          <thead className="bg-surface-control text-ink-dim">
+            <tr>
+              <th scope="col" className="sticky left-0 z-10 bg-surface-control px-2.5 py-2 text-left font-medium">Chỉ số</th>
+              {session.selectedIds.map((id) => (
+                <th key={id} scope="col" className="border-l border-surface-border px-2.5 py-2 text-center font-medium leading-4 text-ink">
+                  {ALGO_LABEL[id as Algorithm]}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            <tr className="border-t border-surface-border/60">
+              <th scope="row" className="sticky left-0 bg-surface-panel px-2.5 py-2 text-left font-medium text-ink-dim">Trạng thái</th>
+              {session.runs.map((run) => (
+                <td key={run.id} className="border-l border-surface-border/70 px-2.5 py-2 text-center">
+                  <Badge
+                    variant={statusVariant(run.status)}
+                    className="max-w-full justify-center whitespace-normal text-center leading-4 before:shrink-0"
+                  >
+                    {STATUS_COPY[run.status]}
+                  </Badge>
+                </td>
+              ))}
+            </tr>
+            <tr className="border-t border-surface-border/60">
+              <th scope="row" className="sticky left-0 bg-surface-panel px-2.5 py-2 text-left font-medium text-ink-dim">Xếp hạng chi phí mục tiêu</th>
+              {session.selectedIds.map((id) => {
+                const item = rankById.get(id);
+                return (
+                  <td key={id} className="border-l border-surface-border/70 px-2.5 py-2 text-center font-mono font-semibold text-ink">
+                    {comparisonRankLabel(item)}
+                  </td>
+                );
+              })}
+            </tr>
+            {rows.map((row) => {
+              const values = session.selectedIds.map((id) => {
+                const trace = traces.get(id);
+                return trace ? row.value(trace) : null;
+              });
+              const finite = values.filter((value): value is number => value !== null && Number.isFinite(value));
+              const best = finite.length ? Math.min(...finite) : null;
+              return (
+                <tr key={row.label} className="border-t border-surface-border/60">
+                  <th scope="row" className="sticky left-0 bg-surface-panel px-2.5 py-1.5 text-left font-normal text-ink-dim">{row.label}</th>
+                  {values.map((value, index) => (
+                    <td
+                      key={session.selectedIds[index]}
+                      className={`border-l border-surface-border/70 px-2.5 py-1.5 text-center font-mono ${
+                        value !== null && best !== null && comparisonEquivalent(value, best)
+                          ? "font-bold text-[rgb(var(--start))]" : "text-ink"
+                      }`}
+                    >
+                      {value === null ? "—" : row.format(value)}
                     </td>
                   ))}
-                  <td className="border-l border-surface-border/70 px-2 py-1.5 text-right font-mono text-ink-dim">—</td>
                 </tr>
-              </tbody>
-            </table>
-          </div>
+              );
+            })}
+            <tr className="border-t border-surface-border/60">
+              <th scope="row" className="sticky left-0 bg-surface-panel px-2.5 py-2 text-left font-normal text-ink-dim">Bảo đảm kết quả</th>
+              {session.selectedIds.map((id) => {
+                const trace = traces.get(id);
+                return (
+                  <td key={id} className="border-l border-surface-border/70 px-2.5 py-2 text-center">
+                    {trace ? (
+                      <Badge
+                        variant={trace.metrics.optimal_guarantee ? "ok" : "warn"}
+                        className="max-w-full justify-center whitespace-normal text-center leading-4 before:shrink-0"
+                      >
+                        {routeGuaranteeLabel(
+                          trace.algorithm,
+                          trace.metrics.optimal_guarantee,
+                          rawEpsilonToPresentation(trace.mode, trace.metrics.epsilon_bound),
+                          presentationUnitForMode(trace.mode),
+                        )}
+                      </Badge>
+                    ) : "—"}
+                  </td>
+                );
+              })}
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
-          <p id="route-comparison-note" className="text-xs leading-5 text-ink-dim">
-            Δ = B so với A (xanh: B tốt hơn, đỏ: B kém hơn — mọi chỉ số càng thấp càng
-            tốt). Vạch màu ở tiêu đề trùng chú giải tuyến trên bản đồ. Tuyến B được
-            dịch ngang 4 px chỉ để lộ phần trùng; tọa độ và số liệu không đổi.
-          </p>
-        </>
-      )}
+      <p className="text-xs leading-5 text-ink-dim">
+        Màu xanh đánh dấu giá trị thấp nhất theo từng hàng. Runtime được đo tuần tự trên cùng backend process; không chạy song song.{" "}
+        “Đồng hạng” nghĩa là chi phí mục tiêu gốc chênh nhau không quá ngưỡng so sánh.
+      </p>
+
+      <div className="flex flex-col gap-2">
+        {session.runs.map((run) => (
+          <ResultActions key={run.id} run={run} sessionId={session.id} />
+        ))}
+      </div>
     </div>
   );
 }

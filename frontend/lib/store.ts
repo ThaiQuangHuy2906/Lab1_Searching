@@ -5,7 +5,7 @@
 
 import { create } from "zustand";
 import { toast } from "sonner";
-import { chooseCompareAlgorithm } from "./algorithm-policy";
+import { ALGORITHM_ORDER } from "./algorithm-policy";
 import { api, BackendError, RequestAbortedError } from "./api";
 import {
   attachComparisonResult,
@@ -15,6 +15,7 @@ import {
   createRouteResultEnvelope,
   failComparisonRun,
   markComparisonRunRunning,
+  retryComparisonRuns,
 } from "./comparison-policy";
 import {
   isExplanationOverlayValid,
@@ -102,6 +103,7 @@ interface AppState {
   journeyDrafts: JourneyDrafts;
   returnToStart: boolean;
   algorithm: Algorithm;
+  routeCompareAlgorithms: Algorithm[];
   // Transitional projections for Phase-1 components. `journeyDrafts` and the
   // explicit mode fields above are the business source of truth.
   start: string | null;
@@ -133,7 +135,6 @@ interface AppState {
     totalLegs: number;
   } | null;
   running: boolean;
-  compareAlgo: Algorithm;
   comparing: boolean;
   multi: MultirouteResponse | null;
   multiRunning: boolean;
@@ -168,8 +169,9 @@ interface AppState {
   clearMap: () => void;
   setSlot: (slot: TimeSlot) => void;
   runRoute: () => Promise<void>;
-  runCompare: () => Promise<void>;
   runRouteComparison: (algorithms: readonly Algorithm[]) => Promise<void>;
+  setRouteCompareAlgorithms: (algorithms: readonly Algorithm[]) => void;
+  retryRouteComparisonRun: (algorithm: Algorithm) => Promise<void>;
   runMulti: (method: TspMethod) => Promise<void>;
   runAtspComparison: (methods: readonly TspMethod[]) => Promise<void>;
   setProblemMode: (mode: ProblemMode) => void;
@@ -209,6 +211,7 @@ export const useApp = create<AppState>((set, get) => ({
   journeyDrafts: { ...DEFAULT_JOURNEY_STATE.drafts },
   returnToStart: false,
   algorithm: "astar",
+  routeCompareAlgorithms: ["astar", "ucs"],
   start: null,
   goal: null,
   stops: [],
@@ -232,7 +235,6 @@ export const useApp = create<AppState>((set, get) => ({
   routeProgress: null,
   comparisonProgress: null,
   running: false,
-  compareAlgo: "ucs",
   comparing: false,
   multi: null,
   multiRunning: false,
@@ -384,7 +386,54 @@ export const useApp = create<AppState>((set, get) => ({
       runKind: state.runKind,
       drafts: state.journeyDrafts,
     }, { type: "run_kind", value: kind });
-    get().set({ runKind: transition.state.runKind });
+    const routeCompareAlgorithms = kind === "compare"
+      ? [
+          state.algorithm,
+          ...state.routeCompareAlgorithms.filter((algorithm) => algorithm !== state.algorithm),
+          ...ALGORITHM_ORDER.filter((algorithm) => (
+            algorithm !== state.algorithm && !state.routeCompareAlgorithms.includes(algorithm)
+          )),
+        ].slice(0, Math.max(2, state.routeCompareAlgorithms.length)) as Algorithm[]
+      : state.routeCompareAlgorithms;
+    get().set({
+      runKind: transition.state.runKind,
+      routeCompareAlgorithms,
+      drawerOpen: true,
+      drawerTab: kind === "compare" ? "compare" : "metrics",
+      ...(kind === "compare" ? { edgeEditMode: false, selectedEdgeId: null } : {}),
+    });
+  },
+
+  setRouteCompareAlgorithms: (algorithms) => {
+    const state = get();
+    if (state.running || state.comparing || state.multiRunning) return;
+    const normalized = [...new Set(algorithms)].filter((algorithm): algorithm is Algorithm =>
+      ALGORITHM_ORDER.includes(algorithm as Algorithm),
+    );
+    if (normalized.length < 2 || normalized.length > 4) {
+      toast.error("Hãy giữ từ 2 đến 4 thuật toán để so sánh.");
+      return;
+    }
+    if (normalized.length === state.routeCompareAlgorithms.length
+        && normalized.every((algorithm, index) => algorithm === state.routeCompareAlgorithms[index]))
+      return;
+    const runId = runLifecycle.invalidate();
+    set({
+      routeCompareAlgorithms: normalized,
+      routeComparisonSession: null,
+      activeSnapshot: null,
+      explanationSubject: null,
+      explanationOverlay: null,
+      explanationOverlayVisible: false,
+      comparisonProgress: null,
+      comparing: false,
+      trace: null,
+      sequentialRoute: null,
+      timelineSource: null,
+      stepIdx: 0,
+      playing: false,
+      runId,
+    });
   },
 
   setReturnToStart: (enabled) => get().set({ returnToStart: enabled }),
@@ -573,6 +622,7 @@ export const useApp = create<AppState>((set, get) => ({
 
   setEdgeEditMode: (enabled) => {
     const state = get();
+    if (enabled && state.runKind === "compare") return;
     if (state.running || state.comparing || state.multiRunning || state.edgeEditMode === enabled)
       return;
     set({
@@ -593,6 +643,7 @@ export const useApp = create<AppState>((set, get) => ({
 
   setEdgeOverride: (edgeId, override) => {
     const state = get();
+    if (state.runKind === "compare") return;
     const next = { ...state.edgeOverrides };
     if (override) next[edgeId] = override;
     else delete next[edgeId];
@@ -604,6 +655,7 @@ export const useApp = create<AppState>((set, get) => ({
   },
 
   resetAllEdgeOverrides: () => {
+    if (get().runKind === "compare") return;
     if (Object.keys(get().edgeOverrides).length === 0) return;
     get().set({ edgeOverrides: {} });
   },
@@ -751,28 +803,13 @@ export const useApp = create<AppState>((set, get) => ({
     }
   },
 
-  runCompare: async () => {
-    const s = get();
-    if (!s.trace) {
-      toast.error("Hãy chạy thuật toán chính trước, rồi mới so sánh.");
-      return;
-    }
-    const compareAlgo = chooseCompareAlgorithm(s.trace.algorithm, s.compareAlgo);
-    set({ compareAlgo });
-    await get().runRouteComparison([s.trace.algorithm, compareAlgo]);
-  },
-
   runRouteComparison: async (algorithms) => {
     let s = get();
     if (s.running || s.comparing || s.multiRunning) return;
-    if (s.runKind !== "compare"
-        || (s.problemMode === "multi_point" && s.multiStrategy !== "ordered_search")) {
-      get().set({
-        runKind: "compare",
-        ...(s.problemMode === "multi_point" ? { multiStrategy: "ordered_search" as const } : {}),
-      });
-      s = get();
-    }
+    if (s.problemMode === "multi_point" && s.multiStrategy !== "ordered_search")
+      get().setMultiStrategy("ordered_search");
+    if (get().runKind !== "compare") get().setRunKind("compare");
+    s = get();
     const active = activeJourneyInputs({
       problemMode: s.problemMode,
       multiStrategy: s.multiStrategy,
@@ -831,6 +868,7 @@ export const useApp = create<AppState>((set, get) => ({
     set({
       runId: handle.runId,
       activeSnapshot: snapshot,
+      routeCompareAlgorithms: [...algorithms],
       comparing: true,
       comparisonProgress: {
         currentItem: 1, totalItems: algorithms.length,
@@ -908,10 +946,6 @@ export const useApp = create<AppState>((set, get) => ({
           toast.error(attached.contractError ?? "Comparison contract error.");
           return;
         }
-        const primaryId = algorithms[0];
-        if (algorithm === primaryId) {
-          set({ trace: response, sequentialRoute: merged.run, timelineSource: null });
-        }
       } catch (error) {
         if (error instanceof RequestAbortedError || !runLifecycle.isCurrent(handle.runId)) return;
         session = failComparisonRun(
@@ -935,8 +969,128 @@ export const useApp = create<AppState>((set, get) => ({
       }
     }
     if (runLifecycle.isCurrent(handle.runId)) {
-      set({ comparing: false, comparisonProgress: null, drawerTab: "compare" });
+      set({
+        comparing: false,
+        comparisonProgress: null,
+        drawerOpen: true,
+        drawerTab: "compare",
+      });
       toast.success(`Đã hoàn tất ${algorithms.length} thuật toán theo cùng snapshot.`);
+    }
+  },
+
+  retryRouteComparisonRun: async (algorithm) => {
+    const state = get();
+    const existing = state.routeComparisonSession;
+    const run = existing?.runs.find((candidate) => candidate.id === algorithm);
+    if (!existing || existing.kind !== "route" || state.running || state.comparing
+        || state.multiRunning || !run || !["error", "cancelled"].includes(run.status))
+      return;
+
+    const snapshot = existing.snapshot;
+    if (!snapshot.start) return;
+    const waypoints = sequentialWaypoints(
+      snapshot.problemMode,
+      snapshot.start,
+      snapshot.goal,
+      snapshot.stops,
+      snapshot.returnToStart,
+    );
+    const handle = runLifecycle.begin();
+    let session = retryComparisonRuns(existing, [algorithm]) as CompareSession<RouteResultEnvelope>;
+    session = markComparisonRunRunning(session, algorithm);
+    const itemIndex = Math.max(0, session.selectedIds.indexOf(algorithm));
+    set({
+      runId: handle.runId,
+      activeSnapshot: snapshot,
+      comparing: true,
+      routeComparisonSession: session,
+      comparisonProgress: {
+        currentItem: itemIndex + 1,
+        totalItems: session.selectedIds.length,
+        currentLeg: 1,
+        totalLegs: waypoints.length - 1,
+      },
+    });
+
+    try {
+      const traces: Trace[] = [];
+      for (let legIndex = 0; legIndex < waypoints.length - 1; legIndex += 1) {
+        set({ comparisonProgress: {
+          currentItem: itemIndex + 1,
+          totalItems: session.selectedIds.length,
+          currentLeg: legIndex + 1,
+          totalLegs: waypoints.length - 1,
+        } });
+        const leg = await api.route(routeRequestFromSnapshot(
+          snapshot,
+          algorithm,
+          waypoints[legIndex],
+          waypoints[legIndex + 1],
+        ), { signal: handle.signal });
+        if (!runLifecycle.isCurrent(handle.runId)) return;
+        traces.push(leg);
+        if (!leg.found) break;
+      }
+      if (traces.length === 0)
+        throw new BackendError("CONTRACT_ERROR", "Retry comparison không có response leg hợp lệ.");
+      const merged = snapshot.problemMode === "multi_point"
+        ? mergeSequentialRouteTraces(
+            waypoints,
+            traces,
+            (id) => get().graphData?.nodes.find((node) => node.id === id)?.name ?? id,
+            ALGO_LABEL[algorithm],
+          )
+        : { trace: traces[0], run: null };
+      const envelope = createRouteResultEnvelope(
+        algorithm,
+        handle.runId,
+        snapshot,
+        merged.trace,
+        traces,
+      );
+      const attached = attachComparisonResult(session, envelope, Date.now());
+      session = attached.session;
+      if (!attached.accepted) {
+        runLifecycle.cancel();
+        set({
+          runId: runLifecycle.currentRunId(),
+          routeComparisonSession: session,
+          comparing: false,
+          comparisonProgress: null,
+        });
+        toast.error(attached.contractError ?? "Comparison contract error.");
+        return;
+      }
+      set({ routeComparisonSession: session });
+      toast.success(`Đã chạy lại ${ALGO_LABEL[algorithm]}.`);
+    } catch (error) {
+      if (error instanceof RequestAbortedError || !runLifecycle.isCurrent(handle.runId)) return;
+      session = failComparisonRun(
+        session,
+        algorithm,
+        error instanceof Error ? error.message : "Comparison item thất bại.",
+        Date.now(),
+      );
+      if (isFatalContractError(error)) {
+        session = cancelComparisonSession(session, Date.now());
+        const nextRunId = runLifecycle.cancel();
+        set({
+          runId: nextRunId,
+          routeComparisonSession: session,
+          comparing: false,
+          comparisonProgress: null,
+          drawerOpen: true,
+          drawerTab: "compare",
+        });
+        toast.error(error.message);
+      } else {
+        set({ routeComparisonSession: session });
+      }
+    } finally {
+      if (runLifecycle.isCurrent(handle.runId)) {
+        set({ comparing: false, comparisonProgress: null, drawerOpen: true, drawerTab: "compare" });
+      }
     }
   },
 

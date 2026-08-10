@@ -2,11 +2,19 @@ import type {
   Algorithm, MultiStrategy, ProblemMode, RunKind, TspMethod,
 } from "./types";
 
+function routeComparisonSelectionError(selected: readonly Algorithm[]): string | null {
+  if (selected.length < 2) return "Cần chọn ít nhất 2 mục để so sánh.";
+  if (selected.length > 4) return "Chỉ được chọn tối đa 4 mục để so sánh.";
+  if (new Set(selected).size !== selected.length)
+    return "Các thuật toán so sánh không được trùng nhau.";
+  return null;
+}
+
 export interface ActivePanelControls {
   showGoal: boolean;
   showStops: boolean;
   showStrategy: boolean;
-  selection: "route_algorithm" | "atsp_method" | "comparison_pending";
+  selection: "route_algorithm" | "route_comparison" | "atsp_method" | "comparison_pending";
 }
 
 export function activePanelControls(
@@ -20,7 +28,7 @@ export function activePanelControls(
     showStops: problemMode === "multi_point",
     showStrategy: problemMode === "multi_point",
     selection: runKind === "compare"
-      ? "comparison_pending"
+      ? routeFlow ? "route_comparison" : "comparison_pending"
       : routeFlow ? "route_algorithm" : "atsp_method",
   };
 }
@@ -51,22 +59,41 @@ export interface SingleRunCtaInput {
   goal: string | null;
   stops: readonly string[];
   algorithm: Algorithm;
+  comparisonAlgorithms?: readonly Algorithm[];
   method: TspMethod;
 }
 
 export interface SingleRunCta {
   label: string;
-  action: "route" | "atsp" | null;
+  action: "route" | "compare_route" | "atsp" | null;
   blockedReason: string | null;
 }
 
 export function singleRunCta(input: SingleRunCtaInput): SingleRunCta {
   if (input.runKind === "compare") {
+    if (input.problemMode === "multi_point" && input.multiStrategy === "atsp") {
+      return {
+        label: "So sánh nhiều",
+        action: null,
+        blockedReason: "So sánh nhiều hiện áp dụng cho tìm đường; hãy chọn Đi theo thứ tự đã chọn.",
+      };
+    }
+    const selected = input.comparisonAlgorithms ?? [];
+    const journeyError = !input.start
+      ? "Hãy chọn điểm Đi."
+      : input.problemMode === "two_point"
+        ? !input.goal
+          ? "Hãy chọn điểm Đến."
+          : input.start === input.goal ? "Điểm Đi và Đến phải khác nhau." : null
+        : input.stops.length === 0
+          ? "Hãy thêm ít nhất một điểm giao."
+          : new Set([input.start, ...input.stops]).size !== input.stops.length + 1
+            ? "Điểm Đi và các điểm giao phải khác nhau."
+            : null;
     return {
-      label: "So sánh nhiều",
-      action: null,
-      blockedReason:
-        "Không gian so sánh nhiều bản đồ thuộc Phase 6. Lựa chọn này không chạy nhầm tác vụ đơn.",
+      label: `So sánh ${selected.length} thuật toán`,
+      action: "compare_route",
+      blockedReason: journeyError ?? routeComparisonSelectionError(selected),
     };
   }
   if (input.problemMode === "multi_point" && input.multiStrategy === "atsp") {

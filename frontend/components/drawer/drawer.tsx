@@ -10,6 +10,13 @@ import { CompareTab } from "./compare-tab";
 import { ScenarioTab } from "./scenario-tab";
 import { useApp, type DrawerTab } from "@/lib/store";
 import { useMobileDialogFocus } from "@/lib/use-mobile-dialog-focus";
+import {
+  availableDrawerWidth,
+  clampDrawerWidth,
+  DEFAULT_DRAWER_WIDTH,
+  MAX_DRAWER_WIDTH,
+  MIN_DRAWER_WIDTH,
+} from "@/lib/drawer-resize-policy";
 
 type DrawerProps = {
   mobileOpen?: boolean;
@@ -35,17 +42,48 @@ export function Drawer({ mobileOpen = false, onMobileClose }: DrawerProps) {
   const tab = useApp((s) => s.drawerTab);
   const set = useApp((s) => s.set);
   const leaveExplanation = useApp((s) => s.leaveExplanation);
+  const [desktopWidth, setDesktopWidth] = React.useState(DEFAULT_DRAWER_WIDTH);
+  const [maximumWidth, setMaximumWidth] = React.useState(MAX_DRAWER_WIDTH);
   const compactViewport = useCompactViewport();
   const openButtonRef = React.useRef<HTMLButtonElement>(null);
   const titleRef = React.useRef<HTMLHeadingElement>(null);
   const sheetRef = React.useRef<HTMLElement>(null);
   const previousOpen = React.useRef(open);
   const wasCompact = React.useRef(false);
+  const resizeDrag = React.useRef<{
+    pointerId: number;
+    startX: number;
+    startWidth: number;
+    previousCursor: string;
+    previousUserSelect: string;
+  } | null>(null);
   const scenarioActive = tab === "scenario";
   const panelTitle = scenarioActive ? "Thử nghiệm" : "Kết quả";
   const panelSubtitle = scenarioActive
     ? "Chỉnh tạm thời một đoạn đường trên bản đồ"
     : "Số liệu, giải thích và đối chiếu hành trình";
+
+  const finishResize = React.useCallback(() => {
+    const drag = resizeDrag.current;
+    if (!drag) return;
+    document.body.style.cursor = drag.previousCursor;
+    document.body.style.userSelect = drag.previousUserSelect;
+    resizeDrag.current = null;
+  }, []);
+
+  React.useEffect(() => {
+    const updateMaximum = () => {
+      const maximum = availableDrawerWidth(window.innerWidth);
+      setMaximumWidth(maximum);
+      setDesktopWidth((current) => clampDrawerWidth(current, maximum));
+    };
+    updateMaximum();
+    window.addEventListener("resize", updateMaximum);
+    return () => {
+      window.removeEventListener("resize", updateMaximum);
+      finishResize();
+    };
+  }, [finishResize]);
 
   const closeMobile = React.useCallback(() => onMobileClose?.(), [onMobileClose]);
   const onMobileSheetKeyDownCapture = useMobileDialogFocus(mobileOpen, sheetRef, titleRef, closeMobile);
@@ -100,8 +138,63 @@ export function Drawer({ mobileOpen = false, onMobileClose }: DrawerProps) {
       onKeyDownCapture={mobileOpen
         ? onMobileSheetKeyDownCapture
         : compactViewport ? onCompactPanelKeyDownCapture : undefined}
-      className={`app-rail relative z-10 flex h-full w-[400px] shrink-0 flex-col overflow-hidden rounded-xl border border-surface-border/80 min-[960px]:max-[1279px]:absolute min-[960px]:max-[1279px]:bottom-2 min-[960px]:max-[1279px]:right-2 min-[960px]:max-[1279px]:top-2 min-[960px]:max-[1279px]:h-auto min-[960px]:max-[1279px]:w-[min(400px,44vw)] ${mobileClasses}`}
+      style={{ "--drawer-width": `${desktopWidth}px` } as React.CSSProperties}
+      className={`app-rail relative z-10 flex h-full w-[400px] shrink-0 flex-col overflow-hidden rounded-xl border border-surface-border/80 min-[1280px]:w-[var(--drawer-width)] min-[960px]:max-[1279px]:absolute min-[960px]:max-[1279px]:bottom-2 min-[960px]:max-[1279px]:right-2 min-[960px]:max-[1279px]:top-2 min-[960px]:max-[1279px]:h-auto min-[960px]:max-[1279px]:w-[min(400px,44vw)] ${mobileClasses}`}
     >
+      <div
+        role="separator"
+        aria-label="Thay đổi độ rộng panel kết quả"
+        aria-orientation="vertical"
+        aria-valuemin={MIN_DRAWER_WIDTH}
+        aria-valuemax={maximumWidth}
+        aria-valuenow={desktopWidth}
+        aria-valuetext={`${desktopWidth} pixel`}
+        tabIndex={0}
+        title="Kéo để đổi độ rộng · nhấp đúp để về 400 px"
+        className="group absolute bottom-0 left-0 top-0 z-40 hidden w-2 cursor-col-resize touch-none items-center justify-center outline-none min-[1280px]:flex focus-visible:bg-algo-frontier/15"
+        onDoubleClick={() => setDesktopWidth(clampDrawerWidth(DEFAULT_DRAWER_WIDTH, maximumWidth))}
+        onKeyDown={(event) => {
+          let next: number | null = null;
+          if (event.key === "ArrowLeft") next = desktopWidth + 24;
+          if (event.key === "ArrowRight") next = desktopWidth - 24;
+          if (event.key === "Home") next = MIN_DRAWER_WIDTH;
+          if (event.key === "End") next = maximumWidth;
+          if (next === null) return;
+          event.preventDefault();
+          setDesktopWidth(clampDrawerWidth(next, maximumWidth));
+        }}
+        onPointerDown={(event) => {
+          if (event.button !== 0) return;
+          event.preventDefault();
+          event.currentTarget.setPointerCapture(event.pointerId);
+          resizeDrag.current = {
+            pointerId: event.pointerId,
+            startX: event.clientX,
+            startWidth: desktopWidth,
+            previousCursor: document.body.style.cursor,
+            previousUserSelect: document.body.style.userSelect,
+          };
+          document.body.style.cursor = "col-resize";
+          document.body.style.userSelect = "none";
+        }}
+        onPointerMove={(event) => {
+          const drag = resizeDrag.current;
+          if (!drag || drag.pointerId !== event.pointerId) return;
+          setDesktopWidth(clampDrawerWidth(
+            drag.startWidth + drag.startX - event.clientX,
+            maximumWidth,
+          ));
+        }}
+        onPointerUp={(event) => {
+          if (resizeDrag.current?.pointerId !== event.pointerId) return;
+          event.currentTarget.releasePointerCapture(event.pointerId);
+          finishResize();
+        }}
+        onPointerCancel={finishResize}
+        onLostPointerCapture={finishResize}
+      >
+        <span className="h-16 w-0.5 rounded-full bg-surface-strong transition-colors group-hover:bg-algo-frontier group-focus-visible:bg-algo-frontier" />
+      </div>
       <div className="app-header flex min-h-[72px] shrink-0 items-center gap-2 border-b border-surface-border/80 px-4">
         <span className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-algo-frontier/25 bg-surface-raised text-algo-frontier">
           {scenarioActive ? <SlidersHorizontal className="size-[18px]" /> : <Route className="size-[18px]" />}

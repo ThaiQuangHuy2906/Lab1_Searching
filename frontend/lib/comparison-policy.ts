@@ -323,6 +323,13 @@ export interface RankedComparisonItem {
   tied: boolean;
 }
 
+export function comparisonRankLabel(
+  item: Pick<RankedComparisonItem, "rank" | "tied"> | null | undefined,
+): string {
+  if (!item) return "—";
+  return item.tied ? `Đồng hạng ${item.rank}` : `Hạng ${item.rank}`;
+}
+
 export function rankComparisonResults<T extends AppResultEnvelope>(
   session: CompareSession<T>,
   selectValue: (result: T) => number | null,

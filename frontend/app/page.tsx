@@ -28,15 +28,26 @@ const MapView = dynamic(
   },
 );
 
+const RouteComparisonWorkspace = dynamic(
+  () => import("@/components/comparison/route-comparison-workspace")
+    .then((module) => module.RouteComparisonWorkspace),
+  { ssr: false },
+);
+
 type MobilePanel = "controls" | "results" | null;
 
 export default function Home() {
   const loadGraph = useApp((state) => state.loadGraph);
   const offline = useApp((state) => state.offlineMode);
+  const runKind = useApp((state) => state.runKind);
+  const problemMode = useApp((state) => state.problemMode);
+  const multiStrategy = useApp((state) => state.multiStrategy);
   const [mobilePanel, setMobilePanel] = React.useState<MobilePanel>(null);
   const [controlsOpen, setControlsOpen] = React.useState(true);
   const lastMobileTrigger = React.useRef<HTMLElement | null>(null);
   const wasMobilePanelOpen = React.useRef(false);
+  const routeComparisonMode = runKind === "compare"
+    && (problemMode === "two_point" || multiStrategy === "ordered_search");
 
   React.useEffect(() => {
     void loadGraph("demo");
@@ -74,7 +85,7 @@ export default function Home() {
           onDesktopOpenChange={setControlsOpen}
         />
         <div className="map-frame relative z-0 min-w-0 flex-1 overflow-hidden rounded-xl border border-surface-border/80 max-[959px]:h-[100dvh] max-[959px]:rounded-none max-[959px]:border-0">
-          <MapView />
+          {routeComparisonMode ? <RouteComparisonWorkspace /> : <MapView />}
           <div
             aria-label="Công cụ ứng dụng"
             role="toolbar"

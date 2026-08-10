@@ -5,6 +5,7 @@ import {
   attachComparisonResult,
   cancelComparisonSession,
   comparisonProgress,
+  comparisonRankLabel,
   comparisonSelectionEligibility,
   createCompareSession,
   createRouteResultEnvelope,
@@ -262,6 +263,9 @@ test("ranking excludes null/error/no-path and applies raw tolerance ties", () =>
     { id: "astar", value: 10, rank: 1, tied: true },
     { id: "ucs", value: 10 + 5e-7, rank: 1, tied: true },
   ]);
+  assert.equal(comparisonRankLabel({ rank: 1, tied: true }), "Đồng hạng 1");
+  assert.equal(comparisonRankLabel({ rank: 2, tied: false }), "Hạng 2");
+  assert.equal(comparisonRankLabel(null), "—");
   assert.equal(isStaleRun(4, 5), true);
   assert.equal(isStaleRun(5, 5), false);
 });

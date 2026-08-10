@@ -156,10 +156,13 @@ không nhận pointer để không chặn thao tác map.
 4. Nút **"Chạy thuật toán"** lớn, full-width, cao 44px — **GHIM cố định đáy panel** (header + footer đứng yên, chỉ vùng giữa cuộn; duyệt v4: CTA từng bị đẩy khỏi màn hình)
 + Công tắc "Chế độ offline" (vẽ thuần deck.gl trên nền `surface`) và "Lớp ùn tắc".
 
-*(Drawer nới 360→400 px ở duyệt v5d: cột f của bảng g/h/f từng bị cắt mép.)*
+*(Drawer nới 360→400 px ở duyệt v5d: cột f của bảng g/h/f từng bị cắt mép.
+Từ UI v2 Phase 6, desktop `>=1280px` có separator kéo ở mép trái để đổi rộng
+360–720 px; double-click trả về 400 px và keyboard Left/Right đổi từng 24 px.)*
 
 **UI-03 — accessibility/responsive audit:** ở layout chuẩn 1180–1600 px, panel
-trái vẫn 320 px và drawer vẫn 400 px. Chỉ khi CSS viewport dưới 900 px (trường
+trái vẫn 320 px và drawer mặc định 400 px; từ 1280 px drawer có thể kéo rộng
+theo contract phía trên. Chỉ khi CSS viewport dưới 900 px (trường
 hợp audit browser zoom 200%) hai rail co còn 280 px để map không sụp về 0; không
 auto-collapse, không overlay và không đổi state/interaction. Toolbar giữ nguyên
 chức năng nhưng ẩn nhãn chữ trực quan ở ngưỡng này (accessible name vẫn đầy đủ),
@@ -656,7 +659,9 @@ chỉ dựa vào màu. Tooltip phải gọi đúng “Nút” cho node và “Đ
 ### 12.4. Responsive shell và disclosure
 
 - Từ 1280 px: giữ ba vùng (controls 304–320 px, map nhận phần còn lại, result
-  384–400 px) với CTA sticky trong panel trái.
+  mặc định 400 px và kéo được 360–720 px theo available viewport) với CTA sticky
+  trong panel trái. Resize handle có semantics separator, keyboard Left/Right,
+  Home/End và double-click reset; không persist qua reload.
 - Từ 960 đến 1279 px: chỉ controls là rail cố định; kết quả là side panel overlay
   mở bằng trigger `Kết quả`, rộng `min(400px, 44vw)`. Mở panel đưa focus vào panel;
   nút đóng hoặc `Escape` (sau khi đóng tooltip/select lồng nếu có) phải đóng panel và

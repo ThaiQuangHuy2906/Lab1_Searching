@@ -32,10 +32,6 @@ function Line({ color, dashed }: { color: string; dashed?: boolean }) {
 export function Legend() {
   const trace = useApp((s) => s.trace);
   const trafficLayer = useApp((s) => s.trafficLayer);
-  const compare = useApp((s) => s.routeComparisonSession?.runs.find(
-    (run, index) => index > 0 && run.result?.response.found,
-  )?.result?.response ?? null);
-  const drawerTab = useApp((s) => s.drawerTab);
   const multi = useApp((s) => s.multi);
   const optimizationTrace = useApp((s) => s.optimizationTrace);
   const timelineSource = useApp((s) => s.timelineSource);
@@ -59,7 +55,6 @@ export function Legend() {
       currentTraceStep.bidirectional_frontiers?.backward.nodes.includes(node)
     )),
   );
-  const comparing = drawerTab === "compare" && compare;
   const optimizationActive = timelineSource === "optimization"
     && Boolean(optimizationTrace?.events.length);
   const optimizationEvent = optimizationActive && optimizationTrace
@@ -70,7 +65,7 @@ export function Legend() {
 
   // v11: chưa có gì đáng giải mã (không kết quả, không lớp ùn tắc) thì đừng
   // chiếm góc bản đồ chỉ để chú giải mỗi "Nút giao"
-  if (!hasTraceLegend && !multi?.found && !optimizationActive && !comparing && !trafficLayer
+  if (!hasTraceLegend && !multi?.found && !optimizationActive && !trafficLayer
       && overrideCount === 0) return null;
 
   // Khi timeline xuất hiện, luôn nâng chú giải lên trên thanh. Ở viewport hẹp,
@@ -101,10 +96,10 @@ export function Legend() {
           {hasStepLegend && (
             <span className="flex items-center gap-2"><Dot color={H.current} ring /> Đang duyệt</span>
           )}
-          {trace.found && !comparing && (
+          {trace.found && (
             <span className="flex items-center gap-2"><Line color={H.path} /> Tuyến kết quả</span>
           )}
-          {trace.found && !comparing && (
+          {trace.found && (
             <span className="flex items-center gap-2"><span className="w-4 text-center text-xs leading-none">▶</span> Hướng di chuyển</span>
           )}
         </>
@@ -127,15 +122,6 @@ export function Legend() {
           <span className="flex items-center gap-2">
             <span className="flex size-4 items-center justify-center rounded-full bg-algo-path font-mono text-[11px] font-bold text-surface">1</span>
             Thứ tự giao tối ưu
-          </span>
-        </>
-      )}
-      {comparing && (
-        <>
-          <span className="flex items-center gap-2"><Line color={H.path} /> Thuật toán A</span>
-          <span className="flex items-center gap-2"><Line color={H.frontier} dashed /> Thuật toán B</span>
-          <span className="max-w-44 pl-[26px] text-xs leading-5 text-ink-faint">
-            B lệch hiển thị 4 px; tọa độ không đổi.
           </span>
         </>
       )}

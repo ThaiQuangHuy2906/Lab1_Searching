@@ -1,5 +1,9 @@
 # UI & Explanation v2 — Phase 3 Readiness
 
+> Checkpoint lịch sử của Phase 3. Current-state và gate còn mở xem
+> `docs/UI-V2-PHASE6-READINESS.md`; các câu về N-pane chưa triển khai chỉ mô tả
+> ranh giới tại thời điểm Phase 3.
+
 Ngày kiểm chứng: 2026-08-10  
 Repository: `C:\Python\CSTTNT\Lab1_Searching`  
 Branch/HEAD khi handoff: `main` / `97ec24fa7218e10bdbb1d17fd2c15f7c5fbd9994`

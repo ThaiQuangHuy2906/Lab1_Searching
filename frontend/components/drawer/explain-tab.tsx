@@ -54,6 +54,7 @@ export function ExplainTab() {
       graphData={graphData}
       sequentialRoute={singleRoute?.id === envelope.id ? sequentialRoute : null}
       stepIdx={stepIdx}
+      enableReferenceComparison={subject?.kind === "single_route"}
     />
   ) : (
     <AtspResultExplanation envelope={envelope} graphData={graphData} />

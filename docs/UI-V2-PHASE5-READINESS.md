@@ -1,5 +1,9 @@
 # UI & Explanation v2 — Phase 5 Readiness
 
+> Đây là checkpoint Phase 5 tại thời điểm hoàn tất. Current-state sau khi bật
+> N-map nằm ở `docs/UI-V2-PHASE6-READINESS.md`; không dùng các câu “chưa bật
+> N-map” phía dưới để mô tả runtime sau Phase 6.
+
 Ngày kiểm chứng: 2026-08-10  
 Repository: `C:\HCMUS\AI\Lab1_Searching`  
 Branch/HEAD khi kiểm chứng: `main` / `94eb7e3d77e01e2a44b7847d7af2b491981b415b`

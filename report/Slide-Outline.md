@@ -85,7 +85,7 @@
 > 🗣 45s: nhấn "hợp đồng dữ liệu chốt trước khi code" — cách 5 người làm song song không giẫm chân.
 
 **Slide 11 — Demo GUI** *(demo live hoặc video 60–90 s)*
-- Kịch bản: chọn Đi/Đến → A* → play timeline → Giải thích/So sánh → Thử nghiệm một cạnh → multiroute
+- Kịch bản: chọn Đi/Đến → A* → play timeline → Giải thích/tuyến tham chiếu → So sánh nhiều N-map → Thử nghiệm một cạnh → multiroute
 - Dự phòng: chế độ Offline (mất wifi vẫn demo) + video quay sẵn
 > 🗣 chạy demo theo checklist mục 11 Video-KichBan.md.
 
@@ -97,7 +97,7 @@
 
 **Slide 13 — Ùn tắc đổi tuyến + giải thích lộ trình** *(rubric: explanation 10đ)*
 - 83,5% cặp đổi tuyến giữa 07:30 và 22:00 (exp4)
-- [SCREENSHOT: tab Giải thích — summary tiếng Việt + tuyến thay thế + vì sao bị loại]
+- [SCREENSHOT: tab Giải thích — breakdown + tuyến tham chiếu hậu kiểm + trade-off đúng objective]
 - Đối chứng Google Maps: 5 cặp (exp6) — trùng/khác và lý do
 > 🗣 60s: đọc to 1 câu giải thích thật của app — cho giảng viên thấy máy "nói được tiếng người".
 

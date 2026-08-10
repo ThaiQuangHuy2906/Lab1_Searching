@@ -28,6 +28,10 @@
 > được lặp trên service sạch và đúng máy/độ phân giải quay. UI Clarity Phase sau
 > M1–M5 cũng đã hoàn tất; contract hiện hành nằm ở `docs/DESIGN.md` §12 và
 > evidence triển khai nằm ở `UI_PLAN.md`.
+> UI & Explanation v2 là workstream sau đó: Phase 5 map extraction và Phase 6
+> route comparison 2–4 đã READY sau manual browser QA do người dùng xác nhận; xem
+> `UI_caithien.md` và `docs/UI-V2-PHASE6-READINESS.md`. Không dùng numbering
+> Milestone/Phase trong file lịch sử này để suy trạng thái Phase 5–6 mới.
 >
 > PLAN này đã hoàn tất đến Milestone 5. Không tự chạy benchmark, hiệu chuẩn γ,
 > teaching generator hoặc đóng gói submission nếu chưa có ủy quyền riêng.

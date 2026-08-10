@@ -82,6 +82,7 @@ test("Explain UI identifies post-run references without forbidden claims", () =>
   assert.doesNotMatch(source, /vì sao bị loại/);
   assert.match(source, /Hậu kiểm bằng UCS/);
   assert.match(source, /relation_to_selected/);
+  assert.match(source, /Đường đỏ trên bản đồ.*ùn tắc mức 4–5.*không phải đường thuật toán/);
 });
 
 test("every optimization event has a Vietnamese presentation separate from raw fields", () => {

@@ -3,6 +3,7 @@ import type { Mode, Trace, TraceDecision, TraceStepV2 } from "./types";
 export interface SearchStepPresentation {
   availability: "structured_v2" | "legacy_fallback" | "trace_off";
   title: string;
+  summary: string;
   action: string;
   rule: string;
   evidence: string;
@@ -37,6 +38,7 @@ function effect(decision: TraceDecision): string {
 }
 
 function structuredRule(step: TraceStepV2, mode: Mode): {
+  summary: string;
   rule: string;
   evidence: string;
   effect?: string;
@@ -48,18 +50,21 @@ function structuredRule(step: TraceStepV2, mode: Mode): {
   switch (decision.rule) {
     case "fifo":
       return {
+        summary: "BFS lấy điểm đã chờ lâu nhất để mở rộng tiếp, giống như phục vụ một hàng đợi.",
         rule: "BFS lấy node ở đầu hàng đợi FIFO.",
         evidence: `Frontier hiệu lực trước khi lấy có ${decision.frontier_size_before} node.`,
         caveat: "BFS tối ưu số cạnh/lớp, không bảo đảm tối ưu weighted objective.",
       };
     case "lifo":
       return {
+        summary: "DFS tiếp tục đi sâu theo nhánh hiện tại trước khi quay lại thử nhánh khác.",
         rule: "DFS lấy node trên đỉnh ngăn xếp LIFO.",
         evidence: `Frontier hiệu lực trước khi lấy có ${decision.frontier_size_before} node.`,
         caveat: "DFS trả path đầu theo stable adjacency order, không bảo đảm tối ưu cost.",
       };
     case "depth_limited_lifo":
       return {
+        summary: "IDDFS đang tìm trong một giới hạn độ sâu; nếu chưa thấy đích, vòng sau sẽ cho phép đi sâu hơn.",
         rule: "IDDFS dùng DFS giới hạn sâu và tăng giới hạn qua từng vòng.",
         evidence: `Vòng ${decision.iteration}; depth=${score(selected?.depth ?? null)}; `
           + `giới hạn=${decision.bound ?? "không có"}.`,
@@ -67,6 +72,7 @@ function structuredRule(step: TraceStepV2, mode: Mode): {
       };
     case "lowest_g":
       return {
+        summary: "UCS chọn phương án có chi phí đã đi thấp nhất trong các phương án đang chờ.",
         rule: "UCS chọn node có g nhỏ nhất.",
         evidence: `Node được chọn có g=${formatSearchCost(selected?.g, mode)}; `
           + `ứng viên kế tiếp ${runner?.node ?? "không có"} có g=${formatSearchCost(runner?.g, mode)}.`,
@@ -74,6 +80,7 @@ function structuredRule(step: TraceStepV2, mode: Mode): {
       };
     case "lowest_h":
       return {
+        summary: "Greedy chọn điểm có vẻ gần đích nhất theo ước lượng, chưa tính chi phí đã đi để ra quyết định này.",
         rule: "Greedy Best-First chọn node có h nhỏ nhất và không dùng g để chọn.",
         evidence: `Node được chọn có h=${formatSearchCost(selected?.h, mode)}; `
           + `ứng viên kế tiếp ${runner?.node ?? "không có"} có h=${formatSearchCost(runner?.h, mode)}.`,
@@ -81,6 +88,7 @@ function structuredRule(step: TraceStepV2, mode: Mode): {
       };
     case "lowest_f_then_h":
       return {
+        summary: "A* chọn phương án có tổng chi phí đã đi và phần ước lượng còn lại thấp nhất.",
         rule: "A* chọn f=g+h nhỏ nhất và tie-break theo h.",
         evidence: `Node được chọn có g=${formatSearchCost(selected?.g, mode)}, `
           + `h=${formatSearchCost(selected?.h, mode)}, f=${formatSearchCost(selected?.f, mode)}; `
@@ -91,6 +99,7 @@ function structuredRule(step: TraceStepV2, mode: Mode): {
       const sides = step.bidirectional_frontiers;
       const side = step.side === "forward" ? "phía Đi" : "phía Đến";
       return {
+        summary: `Dijkstra hai chiều đang mở rộng ${side} vì phía này có chi phí chờ thấp hơn.`,
         rule: "Dijkstra hai chiều chọn phía có giá trị nhỏ nhất đang chờ (effective top key) thấp hơn.",
         evidence: `Trước bước: chọn mở rộng ${side} với g=${formatSearchCost(selected?.g, mode)}; `
           + `top F=${formatSearchCost(decision.top_forward?.g, mode)}, `
@@ -103,6 +112,7 @@ function structuredRule(step: TraceStepV2, mode: Mode): {
     }
     case "f_bound_dfs":
       return {
+        summary: "IDA* đang đi sâu trong ngưỡng chi phí ước lượng hiện tại; vượt ngưỡng sẽ được xét ở vòng sau.",
         rule: "IDA* duyệt DFS trong f-bound hiện tại.",
         evidence: `Vòng ${decision.iteration}; f=${formatSearchCost(selected?.f, mode)}; `
           + `bound=${formatSearchCost(decision.bound, mode)}.`,
@@ -110,6 +120,7 @@ function structuredRule(step: TraceStepV2, mode: Mode): {
       };
     case "top_k_f":
       return {
+        summary: "Beam chỉ giữ lại một số phương án có triển vọng nhất ở lớp này và bỏ bớt phần còn lại.",
         rule: "Beam giữ top-k ứng viên theo f ở mỗi lớp.",
         evidence: `Lớp ${decision.layer}; k=${decision.beam_width}; `
           + `f được chọn=${formatSearchCost(selected?.f, mode)}; đã cắt ${decision.pruned_count} ứng viên.`,
@@ -136,6 +147,7 @@ export function presentSearchStep(trace: Trace, stepIndex: number): SearchStepPr
     return {
       availability: "trace_off",
       title: "Không có timeline từng bước",
+      summary: "Lần chạy này không ghi lại diễn biến tìm kiếm để giải thích từng bước.",
       action: "Lần chạy này không ghi diễn biến từng bước.",
       rule: "Kết quả và guarantee vẫn dùng full run.",
       evidence: "Backend hiện tại chưa cung cấp step để trình bày.",
@@ -149,6 +161,7 @@ export function presentSearchStep(trace: Trace, stepIndex: number): SearchStepPr
     return {
       availability: "legacy_fallback",
       title: `Bước ${boundedIndex + 1}/${trace.trace.length}`,
+      summary: "Backend legacy chỉ cho biết điểm vừa được mở rộng, chưa đủ bằng chứng để giải thích vì sao nó được chọn.",
       action: `Bước này vừa mở rộng ${step.expanded}.`,
       rule: "Response legacy chưa có decision evidence để chứng minh thứ tự ưu tiên lúc chọn.",
       evidence: `Frontier sau bước có ${step.frontier.length} node.`,
@@ -163,6 +176,7 @@ export function presentSearchStep(trace: Trace, stepIndex: number): SearchStepPr
   return {
     availability: "structured_v2",
     title: `Bước ${boundedIndex + 1}/${trace.trace.length}`,
+    summary: presentation.summary,
     action: `Đang mở rộng ${v2Step.expanded}.`,
     rule: presentation.rule,
     evidence: presentation.evidence,

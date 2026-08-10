@@ -68,6 +68,7 @@ const EMPTY_COORDINATES: ReadonlyMap<string, MapCoordinate> = new Map();
 
 const RESULT_ROUTE_PATH_LAYER_IDS = new Set([
   "route-casing", "route",
+  "reference-route-casing", "reference-route",
   "multi-path-casing", "multi-path",
 ]);
 const RESULT_ROUTE_ARROW_LAYER_IDS = new Set([
@@ -144,6 +145,7 @@ export interface RouteMapCanvasProps {
   model: RouteMapModel;
   geometry?: RouteMapGeometry | null;
   finalRouteNodeIds?: readonly string[] | null;
+  referenceRouteNodeIds?: readonly string[] | null;
   animation?: AnimationState;
   palette: Palette;
   interactionMode?: RouteMapInteractionMode;
@@ -163,6 +165,7 @@ export function RouteMapCanvas({
   model,
   geometry: sharedGeometry,
   finalRouteNodeIds,
+  referenceRouteNodeIds,
   animation,
   palette: P,
   interactionMode = "primary",
@@ -302,6 +305,10 @@ export function RouteMapCanvas({
       : finalRouteNodeIds;
     return nodeIds ? pathCoordinates(nodeIds, coord) : [];
   }, [coord, finalRouteNodeIds, trace]);
+  const referenceRoutePath = React.useMemo(
+    () => referenceRouteNodeIds ? pathCoordinates(referenceRouteNodeIds, coord) : [],
+    [coord, referenceRouteNodeIds],
+  );
 
   const routeFlowPath = React.useMemo(() => {
     if (multi?.found && showFinalMultiRoute) {
@@ -317,6 +324,7 @@ export function RouteMapCanvas({
   }, [multi, showFinalMultiRoute, anim.showPath, finalRoutePath, toPath]);
   const routeFlowActive = capabilities.allowSearchAnimation && routeFlowPath.length > 1;
   const hasResultRoute = (anim.showPath && finalRoutePath.length > 1)
+    || referenceRoutePath.length > 1
     || Boolean(multi?.found && showFinalMultiRoute);
 
   const nodeColor = React.useCallback(
@@ -503,6 +511,16 @@ export function RouteMapCanvas({
       casedPath("route", [{ path: finalRoutePath }], C.path);
       routeArrows("route-arrows", [finalRoutePath], C.path);
     }
+    if (referenceRoutePath.length > 1) {
+      casedPath(
+        "reference-route",
+        [{ path: referenceRoutePath }],
+        C.frontier,
+        4.5,
+        [7, 5],
+        4,
+      );
+    }
     // nodes (pickable for G_real start/goal picking)
     out.push(
       new ScatterplotLayer({
@@ -673,7 +691,7 @@ export function RouteMapCanvas({
     return out;
   }, [graphData, geometry, coord, toPath, traffic, slot, edgeOverrides, edgeEditMode, selectedEdgeId,
       trafficLayer, congestedSet, trace,
-      multi, optimizationEvent, heldKarpHighlightSet, showFinalMultiRoute, finalRoutePath, hasResultRoute, anim, nodeColor, isDemo, showLabels, start, goal, problemMode, stops, activeSnapshot,
+      multi, optimizationEvent, heldKarpHighlightSet, showFinalMultiRoute, finalRoutePath, referenceRoutePath, hasResultRoute, anim, nodeColor, isDemo, showLabels, start, goal, problemMode, stops, activeSnapshot,
       pickTarget, drawerTab, graph, C, CONGESTION, theme, zoomBucket]);
 
   const routeFlowLayers = React.useMemo(() => {

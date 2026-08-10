@@ -1,6 +1,7 @@
 # Kế hoạch triển khai cải thiện UI tìm đường và đa điểm
 
-> Trạng thái: **Phase 0 đã hoàn tất và đủ điều kiện bắt đầu Phase 1; contract/UI v2 vẫn chưa triển khai vào runtime**
+> Trạng thái 2026-08-10: **Phase 0–6 đã hoàn tất; Phase 6 đã qua manual browser
+> QA do người dùng xác nhận; Phase 7–8 chưa triển khai**
 >
 > Ngày khảo sát: **2026-08-09**
 >
@@ -42,8 +43,9 @@ Tài liệu dùng ba nhãn bằng chứng:
 - **Đích đã duyệt**: bắt buộc phải triển khai, nhưng chưa được nói là đang chạy.
 - **Đã kiểm chứng**: chỉ dùng sau khi phase tương ứng qua test/gate/browser QA.
 
-Mọi type/payload mới dưới đây là **đích đã duyệt** cho tới khi Phase 1–8 hoàn tất.
-Không dùng việc đã cập nhật tài liệu để tuyên bố UI/backend mới đã tồn tại.
+Contract/type/payload của Phase 1–6 dưới đây hiện đã có trong runtime. Các phần
+chỉ dành cho Phase 7–8 vẫn là **đích đã duyệt**, không phải claim hành vi hiện
+hành. Mỗi claim current phải trỏ tới readiness tương ứng và kết quả test mới chạy.
 
 ### 0.2. Một nguồn quy định cho mỗi khái niệm trong file
 
@@ -89,13 +91,17 @@ Mười dòng này là index đóng review, không lặp lại semantics chi ti�
 
 ### 0.4. Trạng thái phase hiện hành
 
-- **Phase 0: hoàn tất.** Contract/readiness verdict, writer-reader inventory,
-  compatibility matrix, fixture golden và bằng chứng gate được ghi tại
-  `docs/UI-V2-PHASE0-READINESS.md`.
-- **Phase 1–8: chưa triển khai.** Mọi payload/type/component v2 trong tài liệu
-  vẫn là đích đã duyệt, không phải claim runtime.
-- Truthfulness hotfix của Phase 0 chỉ sửa copy/provenance/nhãn hiện hành;
-  nó không phát `contract_version=2` và không thay route/cost/trace result.
+- **Phase 0–5: hoàn tất.** Readiness theo từng phase nằm trong
+  `docs/UI-V2-PHASE0-READINESS.md` … `docs/UI-V2-PHASE5-READINESS.md`.
+- **Phase 6: READY.** Route comparison 2–4 đã nối end-to-end và manual browser
+  QA do người dùng xác nhận đã đạt; evidence và phạm vi kiểm tra nằm ở
+  `docs/UI-V2-PHASE6-READINESS.md`.
+- **Phase 7–8: chưa triển khai.** Không suy ATSP comparison hoặc hardening cuối
+  từ việc route comparison Phase 6 đã tồn tại.
+- Known issue hiện hành: validator `Trace` đang xem `optimal_guarantee=true` của
+  IDA* như exact, nên có thể trả 500 khi exact reference tốt hơn nhưng gap vẫn
+  nằm trong ε. Contract đúng được chốt ở `docs/SCHEMA.md` §F.3; backend cần một
+  regression riêng trước khi đóng browser/demo gate.
 
 ---
 
@@ -152,6 +158,11 @@ Không có tổ hợp “Hai điểm + ATSP”. Không gọi chức năng đi tu
 
 ## 2. Hiện trạng đã xác minh từ code
 
+> **Mốc lịch sử:** mục 2 ghi lại baseline khảo sát ngày 2026-08-09 trước khi
+> Phase 1–6 được triển khai. Các câu “hiện”, “chưa có” và finding trong mục này
+> giải thích lý do thiết kế, không phải current-state ngày 2026-08-10. Trạng thái
+> hiện hành xem §0.4 và readiness của từng phase.
+
 ### 2.1. Tính năng “đi qua N điểm theo thứ tự đã chọn” đã tồn tại
 
 `frontend/lib/store.ts` hiện gọi `/api/route` lần lượt qua các waypoint. `frontend/lib/sequential-route.ts` ghép path, timeline và metrics của các chặng thành một kết quả liên tục. `frontend/tests/sequential-route.test.mjs` đã có test cho hành trình nhiều chặng và chặng thất bại.
@@ -180,11 +191,12 @@ Hành vi này giữ dữ liệu khá tốt nhưng khó dự đoán: người dù
 
 Đây là hạng mục có thể triển khai mà không đổi thuật toán ATSP, nhưng response nên echo flag để kết quả tự mô tả và tránh UI suy luận.
 
-### 2.4. So sánh route hiện chỉ là A/B trên một map
+### 2.4. Baseline trước Phase 6: so sánh route chỉ là A/B trên một map
 
 Store chỉ giữ một `compareAlgo` và một trace `compare`. `frontend/components/drawer/compare-tab.tsx` cho chọn đúng một thuật toán B; `frontend/components/map-view.tsx` vẽ A và B chồng lên cùng map.
 
-Yêu cầu N map cần:
+Phase 6 đã thay scalar A/B bằng comparison session 2–4 và N map final-only. Danh
+sách dưới đây là yêu cầu migration lịch sử đã dẫn tới implementation hiện hành:
 
 - Store dạng collection/session, không phải scalar A/B.
 - Comparison workspace riêng.
@@ -218,9 +230,11 @@ Sau phép union/min, membership và g-value riêng của từng phía đã mất
 - `optimizer_stats` có ý nghĩa chủ yếu cho SA và hiện chưa được trình bày đầy đủ.
 - Số optimization events không có cùng ý nghĩa giữa Held–Karp, NN + local search và SA; không được gắn nhãn chung là “nodes expanded” hoặc dùng như một thước đo công bằng.
 
-### 2.9. Phần “Giải thích” hiện có vấn đề bản chất
+### 2.9. Baseline trước Explanation v2: phần “Giải thích” có vấn đề bản chất
 
-Static audit ngày 2026-08-09 xác nhận cảm giác phần này “hơi bị gì” là có cơ sở:
+Static audit ngày 2026-08-09 xác nhận cảm giác phần này “hơi bị gì” là có cơ sở.
+Phase 1–6 đã xử lý structured evidence, đúng subject, step presenter và tuyến
+tham chiếu; các bullet dưới đây được giữ làm problem statement lịch sử:
 
 - Tiêu đề “Vì sao chọn tuyến này?” hứa giải thích quyết định, nhưng phần lớn nội dung là report hậu nghiệm sau khi search đã hoàn tất.
 - Cụm “Tuyến thay thế đã xét — và vì sao bị loại” không đúng provenance. `backend/app/explain.py` chạy thêm UCS để tạo các tuyến đối chiếu; thuật toán chính không nhất thiết từng xét hoặc loại các full route đó.
@@ -1871,6 +1885,9 @@ Gate hoàn tất:
 
 ### Phase 5 — Map extraction parity
 
+Trạng thái: **HOÀN TẤT / READY 2026-08-10**. Evidence:
+`docs/UI-V2-PHASE5-READINESS.md`.
+
 Việc làm:
 
 - Extract geometry/layers/canvas.
@@ -1888,6 +1905,12 @@ Gate hoàn tất:
 - Chưa bật N maps nếu parity chưa pass.
 
 ### Phase 6 — Route comparison 2–4
+
+Trạng thái: **READY 2026-08-10**. Evidence:
+`docs/UI-V2-PHASE6-READINESS.md`. Code/test/typecheck đã đạt; người dùng xác nhận
+manual browser QA cho 2/3/4 pane, camera độc lập, thêm/bỏ thuật toán, compare
+read-only, bảng so sánh và resize panel đã pass. IDA* ε là known issue backend
+được theo dõi riêng, không phải browser gate của Phase 6.
 
 Việc làm:
 
@@ -1911,6 +1934,8 @@ Gate hoàn tất:
 
 ### Phase 7 — ATSP metrics và comparison 2–3
 
+Trạng thái: **CHƯA TRIỂN KHAI**. Không nằm trong phạm vi Phase 5–6 hiện tại.
+
 Việc làm:
 
 - Outcome/effort redesign.
@@ -1932,6 +1957,8 @@ Gate hoàn tất:
 - Partial failure và retry pass.
 
 ### Phase 8 — Hardening
+
+Trạng thái: **CHƯA TRIỂN KHAI**.
 
 Việc làm:
 
@@ -3124,7 +3151,11 @@ Invariant:
 - Nếu non-guaranteed algorithm, ưu tiên một `same_objective_optimum`; gap riêng
   được tính `selected - exact` trong objective evidence, không tái dùng signed
   reference field.
-- Nếu guaranteed result có exact same-objective reference tốt hơn tolerance: contract integrity error; UI dừng ranking/claim và hiện warning.
+- Nếu quality `exact` có exact same-objective reference tốt hơn tolerance:
+  contract integrity error; UI dừng ranking/claim và hiện warning. Nếu quality
+  `epsilon_bounded`, reference được phép tốt hơn trong `epsilon_bound`; chỉ gap
+  âm hoặc vượt ε mới là integrity error. Không suy exact chỉ từ
+  `optimal_guarantee=true`.
 - Nếu route/reference giống nhau, có thể nói “lần chạy này trùng reference exact”; không gọi non-guaranteed algorithm thành exact.
 - Edge-counterfactual chỉ nói “đường nếu tránh cạnh X”, không “bị thuật toán loại”.
 

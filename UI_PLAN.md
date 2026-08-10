@@ -4,6 +4,13 @@
 > Kế hoạch gốc được lập trước khi code; đến 2026-08-08 toàn bộ phase, stop gate,
 > acceptance criteria và Definition of Done đã hoàn tất theo evidence cuối file.
 >
+> **Phân biệt hệ phase:** “Phase 5/6” trong file này thuộc lượt **UI Clarity
+> lịch sử** (ATSP trace/scenario editor), không phải Phase 5 map extraction và
+> Phase 6 route comparison 2–4 của `UI_caithien.md`. Trạng thái UI & Explanation
+> v2 hiện hành xem `docs/UI-V2-PHASE5-READINESS.md`,
+> `docs/UI-V2-PHASE6-READINESS.md` và `docs/DESIGN.md` §13. Các mô tả compare
+> A/B trong thân file được giữ làm bằng chứng lịch sử, không phải UX hiện hành.
+>
 > **Mốc lập kế hoạch:** 2026-08-07 (Asia/Saigon), sau checkpoint đã push
 > `98a82b2` (`Audit documentation and refresh project handoff`) trên `main`.
 >

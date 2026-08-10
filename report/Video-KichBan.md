@@ -81,12 +81,13 @@
 - (12:00) **Route 2 điểm — test case 1** (07:30, Cân bằng, A*): ĐH KHTN → Thảo Cầm Viên.
   Play → pause giữa chừng chỉ frontier/expanded → tuyến + Số liệu (badge "Đảm bảo tối ưu").
 - (13:30) **Đổi khung giờ — test case 2**: cùng OD lúc 22:00 → TUYẾN ĐỔI (nhắc exp4:
-  83,5% cặp đổi tuyến). Đọc to phần Giải thích: đoạn ùn tắc nào bị né, tuyến ngắn hơn
-  vì sao bị loại.
+  83,5% cặp đổi tuyến). Đọc to phần Giải thích: breakdown ùn tắc và trade-off với
+  tuyến tham chiếu UCS hậu kiểm; không nói thuật toán chính đã xét/bị loại full route.
 - (15:00) **Đổi tiêu chí — test case 3**: cùng OD "Ngắn nhất" vs "Cân bằng" — objective
   đổi giữa quãng đường và chi phí cân bằng; UI luôn trình bày km/phút, không đọc raw mét/giây.
-- (15:45) **So sánh 2 thuật toán**: A* (vàng liền) vs BFS (lam đứt) cùng OD — bảng
-  đối chiếu expand/chi phí; 1 câu kết luận.
+- (15:45) **So sánh nhiều thuật toán**: chuyển `Chế độ chạy` sang `So sánh nhiều`,
+  chọn A*/UCS/Greedy cùng OD → ba map final-only cùng kích thước; zoom một map để
+  chứng minh camera độc lập rồi đọc bảng N-way về objective/expand/guarantee.
 - (16:20) **Thử nghiệm một đoạn đường**: mở tab `Thử nghiệm`, dùng `Chọn nhanh`,
   chọn một cạnh trên map rồi cho thấy bảng `Thông số/Gốc/Đang thử`; khôi phục đoạn
   để chứng minh thay đổi chỉ có hiệu lực trong phiên/request hiện tại.

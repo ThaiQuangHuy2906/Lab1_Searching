@@ -21,10 +21,9 @@
 > 2026-08-08: 8/8 URL hiện đã review/tích hợp, còn caveat lịch sử/không gian/ngữ
 > nghĩa được ghi tại `data/DATA.md` §2.1.
 >
-> **Bổ sung 2026-08-09:** phase **UI & Explanation v2** đã được duyệt;
-> Phase 0 đã hoàn tất với readiness verdict `READY` tại
-> `docs/UI-V2-PHASE0-READINESS.md`, còn Phase 1–8 chưa triển khai runtime.
-> Implementation brief duy nhất
+> **Bổ sung trạng thái 2026-08-10:** UI & Explanation v2 đã triển khai qua
+> Phase 6. Phase 0–6 hoàn tất; Phase 6 READY sau manual browser QA do người dùng
+> xác nhận. Known issue validator IDA* được theo dõi riêng; Phase 7–8 chưa triển khai. Implementation brief duy nhất
 > là `UI_caithien.md`; contract migration additive là `docs/SCHEMA.md` §F và thiết
 > kế đích là `docs/DESIGN.md` §13. Không dùng các đề xuất UI lịch sử trong thân
 > file này để ghi đè Phase 0–8, numeric semantics, compatibility matrix hoặc

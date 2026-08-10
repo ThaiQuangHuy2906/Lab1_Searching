@@ -425,28 +425,47 @@ cải thiện theo neighbourhood đã chọn.]
 ## i. Hướng dẫn sử dụng (2–3 trang)
 
 > ✍️ Phụ trách: **CHƯA CHỐT**
-> 💡 Gợi ý: dựng từ README (đã có lệnh PowerShell + bash). Kèm ví dụ input/output cụ thể.
+> Nguồn thao tác hiện hành: `docs/HUONG-DAN-SU-DUNG-UI.md`.
 
-Cài đặt & chạy: *(chép từ README.md — venv → pip → uvicorn → npm run dev; pipeline
-data chỉ cần khi muốn build lại từ OSM)*.
+Cài đặt và chạy theo README: tạo `.venv`, cài backend, `npm ci`, chạy uvicorn ở
+cổng 8000 và Next dev ở cổng 3000. Demo sản phẩm chỉ đọc snapshot đã commit;
+không cần và không được chạy lại pipeline OSM/TomTom/benchmark trong lúc demo.
 
-**Luồng sử dụng GUI:** [ĐIỀN theo trải nghiệm thật: chọn đồ thị/khung giờ/tiêu chí →
-thuật toán (+tham số) → Đi/Đến → Chạy → timeline ▶ + bảng g/h/f → tab Giải thích →
-So sánh → tab Thử nghiệm (Chọn nhanh/Chỉnh chi tiết) → multiroute → trang Benchmark].
+**Luồng Chạy một:** chọn graph/view → khung giờ → tiêu chí → Hai điểm → Đi/Đến →
+Chạy một → thuật toán (+k/ε nếu có) → Chạy. Tab Số liệu tách outcome khỏi effort;
+timeline đồng bộ map và g/h/f. Tab Giải thích cho biết verdict/guarantee,
+breakdown, yếu tố tham gia objective và câu theo đúng quy tắc của thuật toán.
+Tuyến tham chiếu do UCS tính hậu kiểm có selector và overlay nét đứt; không nói
+thuật toán chính đã xét hay loại full route đó. Đường đỏ là cạnh mức ùn tắc 4–5
+trên tuyến kết quả cuối cùng, không phải search path của bước timeline hiện tại.
+
+**Luồng So sánh nhiều:** chuyển `Chế độ chạy` sang `So sánh nhiều`, chọn 2–4
+thuật toán rồi chạy. Đúng N thuật toán tạo N map final-only cùng kích thước; từng
+map pan/zoom/Home độc lập và không cho chỉnh node/cạnh/scenario. Drawer phải gom
+bảng N-way, rank, objective, effort và guarantee; partial failure không xoá item
+thành công, retry theo item. `Xem giải thích` mở đúng result đã chọn; selector
+tuyến tham chiếu chỉ có ở Chạy một.
+
+**Luồng nhiều điểm:** chọn `Nhiều điểm`. `Đi theo thứ tự đã chọn` chạy search cho
+từng chặng và hỗ trợ comparison 2–4. `Tối ưu thứ tự giao hàng` hiện chạy một
+phương pháp Held–Karp/NN+local-search/SA và đối chiếu trước/sau; comparison nhiều
+phương pháp ATSP thuộc Phase 7, chưa tuyên bố trong sản phẩm hiện hành.
 
 **Danh sách 9 screenshot cần chụp** *(chế độ Tối)*:
 1. [SCREENSHOT: toàn cảnh trang chính G_demo + lớp ùn tắc 07:30]
 2. [SCREENSHOT: animation A* đang chạy — node trắng pulse + frontier cyan + bảng g/h/f]
 3. [SCREENSHOT: tuyến kết quả amber + panel Số liệu + badge "Đảm bảo tối ưu"]
-4. [SCREENSHOT: tab Giải thích — summary tiếng Việt + đoạn ùn tắc tô đỏ trên map]
+4. [SCREENSHOT: Chạy một — bảng tuyến kết quả/tham chiếu + overlay nét đứt + chú thích đường đỏ ùn tắc]
 5. [SCREENSHOT: Dijkstra hai chiều — 2 màu 2 phía]
-6. [SCREENSHOT: chế độ So sánh A* vs BFS — 2 tuyến chồng + bảng đối chiếu]
+6. [SCREENSHOT: So sánh 3 thuật toán — 3 map độc lập, cùng kích thước + bảng N-way]
 7. [SCREENSHOT: multiroute 9 điểm — số thứ tự + tiết kiệm %]
 8. [SCREENSHOT: tab Thử nghiệm — bảng Thông số/Gốc/Đang thử và cạnh đang chọn]
 9. [SCREENSHOT: trang /benchmark với 3 biểu đồ]
 
-**Ví dụ input/output:** [ĐIỀN: 1 request POST /api/route mẫu + đoạn JSON trả về rút gọn
-(cắt trace), giải thích từng trường theo SCHEMA].
+**Ví dụ input/output API:** dùng request `/api/route` trong README/Swagger và chỉ
+trích response rút gọn gồm `contract_version`, `found`, `path`, `metrics`,
+`termination`, `explanation.evidence` và 1–2 `trace` step. Không chép payload
+trace hàng nghìn bước vào báo cáo; đơn vị và invariant giải thích theo SCHEMA.
 
 ---
 

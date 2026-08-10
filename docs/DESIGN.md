@@ -1,18 +1,12 @@
-# DESIGN.md — Hợp đồng thiết kế giao diện (Phase 5)
+# DESIGN.md — Hợp đồng thiết kế giao diện
 
-> **Trạng thái kiểm lại 2026-08-09:** đây là nguồn chuẩn về ý đồ, token và hành vi UI.
-> Phase 0 của UI & Explanation v2 đã qua design/contract review; biên bản
-> gate nằm tại `docs/UI-V2-PHASE0-READINESS.md`. §13 vẫn là thiết kế
-> đích chưa triển khai runtime cho tới khi các Phase 1–8 qua gate.
-> M1–M5 và UI Clarity Phase đã có implementation. Automated evidence mới của
-> Phase 0 là `npm test` (42 test), `npx tsc --noEmit` và production
-> `npm run build` (6/6 static pages) đạt. Browser QA ở 1366×768, 1024×768,
-> 390×844 thuộc lượt UI freeze ngay trước
-> thay đổi catalog; catalog 9 thuật toán mới đã qua regression/build nhưng chưa có
-> phiên browser thủ công mới. Lượt UI đó đã xác nhận route/ATSP, responsive shell,
-> keyboard/focus, reduced motion, bảy theme, API thành công và không có console
-> error. Đây không phải chứng nhận screen-reader hay GPU đa thiết
-> bị; vẫn phải pre-flight trên đúng trình duyệt/độ phân giải dùng để quay hoặc bảo vệ.
+> **Trạng thái kiểm lại 2026-08-10:** đây là nguồn chuẩn về ý đồ, token và hành
+> vi UI. UI & Explanation v2 đã triển khai qua Phase 6: Phase 5 map extraction
+> và Phase 6 route comparison 2–4 đều READY. Evidence gần nhất là backend 230
+> test, frontend 124 test, `ALL DATA VALID`, TypeScript pass và manual browser QA
+> Phase 6 do người dùng xác nhận. Validator IDA* vẫn có known issue backend riêng.
+> Trước khi quay vẫn phải pre-flight trên đúng trình duyệt/độ phân giải sử dụng.
+> Phase 7 ATSP comparison và Phase 8 hardening chưa triển khai.
 >
 > **Luật:** mọi màu/font/hiệu ứng trên UI phải tra được về token trong file này và
 > `frontend/tailwind.config.ts`. Không tự thêm hiệu ứng ngoài đặc tả. Nếu cần token
@@ -306,35 +300,28 @@ Button/SelectTrigger/Switch/input. Switch: thumb TRẮNG cố định + viền
   bề rộng cố định (g/f w-16, h w-12) — tên node dài hết đẩy cột f tràn khỏi drawer
   (bug cắt cụt v10), tên tự truncate kèm title tooltip; "mức x/5" ở card ùn tắc tô
   congestionHex (chỉ xuất hiện mức ≥4 nên tương phản cao, cần mắt người xác nhận).
-- Giải thích: `summary_vi`, danh sách đoạn ùn tắc (màu theo mức), card alternatives
-  (label + số liệu + why_not). Khi tab mở → tô các cạnh `congested_segments` trên map.
-  (v11 — redesign sau góp ý UI, KHÔNG đổi text backend): tên Đi/Đến WRAP thay vì
-  truncate ("Chùa X…" hết cắt cụt); summary tách câu đầu làm LEAD in đậm `ink`, phần
-  còn lại `ink-dim` (tách tại ". " — an toàn vì số liệu tiếng Việt dùng dấu phẩy thập
-  phân); hàng chips thêm Badge ok/warn theo đúng contract (IDA* ghi biên ε thay vì
-  "Đảm bảo tối ưu") đồng bộ 2 tab kia; mọi thời lượng hành trình đọc trực tiếp
-  bằng phút, kể cả giá trị dưới 90 giây; card ùn tắc: badge đếm tổng đoạn + caption
-  "gộp theo tên đường, lấy mức cao nhất" + chữ "mức x/5" tô đúng `congestionHex` của
-  mức; nhóm alternatives có kicker "Tuyến tham chiếu được tính thêm sau khi chạy", mỗi
-  card thêm **Δ so tuyến chính** (phút + km, `start` nhanh/ngắn hơn · `goal`
-  chậm/dài hơn — cùng ngữ nghĩa màu với cột Δ tab So sánh).
-- So sánh (v11 — redesign sau góp ý UI): **câu kết luận** đứng trước bảng ("Tuyến của
-  Greedy đắt hơn A* 5,6 phút (+17 %)… Về công sức, Greedy expand ít hơn" — Δ ≥ 10 %
-  in 0 chữ số lẻ, < 10 % in 1 chữ số), tự phân
-  nhánh: cùng chi phí / một bên found=false. Bảng 4 cột `Chỉ số · A · B · Δ B/A`:
-  (a) dòng theo mode — không bao giờ có 2 dòng trùng số (balanced bỏ dòng thời gian
-  giây thô, chỉ hiển thị phút; distance bỏ dòng quãng
-  đường trùng); (b) **màu tuyến chỉ nằm ở header** (kèm vạch swatch liền vàng / đứt
-  lam trùng chú giải bản đồ) — bên THẮNG in đậm `ink`, bên thua `ink-dim`, không dùng
-  màu tuyến tô giá trị (hết lẫn "màu của ai" với "ai tốt hơn"); (c) cột Δ = % B so A,
-  `start` khi B tốt hơn / `goal` khi kém (mọi chỉ số càng thấp càng tốt), caption ghi
-  chú quy ước; (d) hàng "Bảo đảm kết quả" dùng Badge ok/warn như tab Số liệu và ghi
-  rõ biên ε khi một tuyến dùng IDA*.
-  Khi hai thuật toán dùng chung cạnh, tuyến B và mũi tên B được `PathStyleExtension`
-  dịch sang phải 4 px ở tầng render; casing và thân dùng hệ số khác nhau để cùng đạt
-  đúng 4 px. Legend/caption nói rõ đây chỉ là lệch hiển thị. Một card "Độ trùng tuyến"
-  báo số cạnh có hướng chung, chỉ A, chỉ B và tỷ lệ Jaccard `chung / hợp`, nên trường
-  hợp cùng chi phí nhưng khác đường hoặc cùng đường nhưng khác công sức vẫn đọc được.
+- Giải thích dùng evidence typed, không parse `summary_vi`. Với route hai điểm ở
+  **Chạy một**, ngay sau verdict là khối “Vì sao chọn tuyến này?”: selector tối đa
+  hai tuyến hậu kiểm, path có tên điểm, bảng route kết quả/reference/Δ cho quãng
+  đường, thời gian theo ùn tắc, delay, penalty và balanced cost, cùng kết luận
+  trade-off theo đúng mode và guarantee của từng thuật toán. Nút view-only vẽ
+  reference nét đứt lệch 4 px trên primary map; legend phân biệt hai tuyến. Flow
+  này cấm ở **So sánh nhiều**. “Thuật toán đang làm gì?” chuyển xuống cuối,
+  câu phổ thông theo từng algorithm luôn hiện còn g/h/f/frontier/μ/bound nằm trong
+  disclosure kỹ thuật. Không gọi route hậu kiểm là route thuật toán đã xét/bị loại.
+  Khi response có `congested_segments`, map tô đỏ các cạnh mức 4–5 của **tuyến kết
+  quả cuối cùng** và panel ghi rõ đây không phải đường thuật toán đang đi ở bước
+  timeline hiện tại.
+- So sánh route Phase 6 dùng **small multiples 2–4**: selector nằm trong `Chế độ
+  chạy` ở panel trái; đúng N thuật toán tạo N pane/map final-only có cùng kích
+  thước và camera độc lập. Map comparison chỉ cho pan/zoom/Home/tooltip, không
+  chọn node/cạnh, clear, sửa scenario, timeline hoặc autoplay. Drawer phải gom
+  status, objective, outcome, effort, guarantee và xếp hạng vào một bảng N-way có
+  các cột thuật toán canh giữa; cột `Chỉ số` sticky khi cuộn ngang. Rank dùng
+  `Hạng n`/`Đồng hạng n`, không dùng ký hiệu mơ hồ như `#1=`. Scenario và request
+  snapshot phải giống nhau; exact methods bất đồng ngoài tolerance tạo integrity
+  warning thay vì xếp hạng bình thường. Mỗi result mở đúng explanation subject;
+  reference-route selector riêng của Chạy một không xuất hiện trong compare mode.
 
 **UI-02 — ATSP control flow refinement:** phần Hành trình giữ nguyên NodePicker,
 store và `runMulti`, nhưng trình bày ATSP theo chuỗi Đi → thứ tự điểm giao → phương
@@ -650,8 +637,8 @@ tính dùng cho chrome nổi trên bản đồ; không được mang màu theme.
 Rail là surface liên tục. Card chỉ dùng để gom một đơn vị thông tin; không bọc mọi
 khối nhỏ bằng card lồng nhau. Map giữ visual weight lớn nhất. Khi đã có route,
 cạnh/node nền giảm emphasis bằng opacity/width token nhưng vẫn còn context, còn
-casing, arrow, chip `Đi`/`Đến`, stop ordinal, current ring, route A/B solid/dashed
-và chú giải không-màu giữ nguyên semantics đã khóa. Điểm Đi và Đến có marker tròn
+casing, arrow, chip `Đi`/`Đến`, stop ordinal, current ring, final route, reference
+route nét đứt và chú giải không-màu giữ nguyên semantics đã khóa. Điểm Đi và Đến có marker tròn
 đặc riêng theo token `start`/`goal`, viền tương phản và chip chữ tương ứng; không
 chỉ dựa vào màu. Tooltip phải gọi đúng “Nút” cho node và “Đoạn” cho edge, không
 được cast edge thành node chỉ vì cả hai cùng có `id`.
@@ -750,12 +737,14 @@ Bổ sung ngày 2026-08-08, hai ảnh này được chụp lại sau khi contrac
 `Thử nghiệm` và marker Đi/Đến ở §12.3–§12.4 ổn định; session runtime clean xác
 nhận graph/traffic/route/multiroute 200, console 0 errors và không tràn ngang.
 
-## 13. UI & Explanation v2 — thiết kế đích đã duyệt 2026-08-09
+## 13. UI & Explanation v2 — thiết kế và trạng thái triển khai
 
-> **Trạng thái:** đã duyệt để triển khai theo phase, chưa được coi là hành vi UI
-> hiện hành và chưa có browser evidence. Bằng chứng ở §12.6 chỉ áp dụng cho UI
-> đang chạy trước phase này. Contract dữ liệu đích nằm ở `docs/SCHEMA.md` §F;
-> lộ trình, test và acceptance duy nhất nằm trong `UI_caithien.md`.
+> **Trạng thái 2026-08-10:** contract/runtime v2 đã triển khai qua Phase 6.
+> Phase 5 map extraction và Phase 6 route comparison 2–4 đều READY; Phase 6 đã
+> qua test/typecheck và manual browser QA do người dùng xác nhận. Phase 7 ATSP
+> comparison và Phase 8 hardening chưa triển khai. Evidence
+> hiện hành nằm ở `docs/UI-V2-PHASE5-READINESS.md` và
+> `docs/UI-V2-PHASE6-READINESS.md`; contract nằm ở `docs/SCHEMA.md` §F.
 
 Thiết kế mới tách rõ ba lớp: **Hai điểm/Nhiều điểm**; với Nhiều điểm là **Đi theo
 thứ tự đã chọn/Tối ưu thứ tự ATSP**; sau cùng là **Chạy một/So sánh nhiều**.
@@ -773,8 +762,9 @@ frontier hợp: khi backend v2 có payload thì hiển thị hai phía, khi thi�
 fallback union có nhãn tương thích.
 
 Phần `Giải thích` trở thành workspace gắn với **một result cụ thể**: context,
-verdict và giới hạn luôn ở đầu; tiếp theo là bước/mốc đang xem, cost breakdown,
-factor có provenance, tuyến tham chiếu hậu kiểm và hướng dẫn thuật toán. Không gọi
+verdict và giới hạn luôn ở đầu; single two-point tiếp theo bằng so sánh route với
+tuyến tham chiếu hậu kiểm, rồi cost breakdown/factor có provenance; bước/mốc đang
+xem nằm cuối dưới disclosure kỹ thuật. Không gọi
 tuyến hậu kiểm là tuyến thuật toán “đã xét/bị loại”; không dùng prose/regex làm
 nguồn số liệu; không kết luận unreachable nếu termination chỉ là cap/pruning.
 Ordered multi giữ explanation từng chặng; comparison mở đúng result được bấm.

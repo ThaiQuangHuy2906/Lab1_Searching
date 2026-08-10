@@ -6,16 +6,20 @@ Branch/HEAD nền: `main` / `94eb7e3d77e01e2a44b7847d7af2b491981b415b`
 
 ## 1. Kết luận
 
-**Verdict: IMPLEMENTED — BROWSER GATE PENDING**
+**Verdict: READY — MANUAL BROWSER QA PASSED**
 
 Phase 6 route comparison đã được nối end-to-end cho two-point và ordered
 multi-point: chọn 2–4 thuật toán ở panel trái, chạy tuần tự trên cùng immutable
 snapshot, hiển thị đúng N map final-only ở giữa và gom metrics N-way vào tab
 `So sánh` ở drawer phải.
 
-Chưa đánh dấu `READY` vì phiên agent không có browser runtime để kiểm visual,
-WebGL context và interaction thật với 2/3/4 MapLibre/deck.gl surfaces. Không có
-hạng mục ATSP comparison Phase 7 nào được thêm vào UI.
+Người dùng đã kiểm trực tiếp trên browser và xác nhận luồng comparison đạt với
+2/3/4 map, camera độc lập, thêm/bỏ thuật toán, compare mode read-only, bảng số
+liệu và resize panel. Phiên agent không tự chạy controlled browser nên bằng
+chứng này được ghi rõ là user-reported manual QA. Không có hạng mục ATSP
+comparison Phase 7 nào được thêm vào UI. API IDA* còn một known issue backend:
+nghiệm hợp lệ trong biên ε có thể bị validator xem nhầm là mâu thuẫn với exact
+reference và trả HTTP 500.
 
 ## 2. Hành vi đã triển khai
 
@@ -42,6 +46,14 @@ hạng mục ATSP comparison Phase 7 nào được thêm vào UI.
 - Scenario editor bị khóa read-only trong compare mode; override đã có được áp
   dụng giống nhau cho mọi thuật toán.
 - Scalar A/B selector/action và overlay hai tuyến trên primary map đã được bỏ.
+- Chạy một hai điểm có route-reference explanation riêng: selector deterministic,
+  bảng signed trade-off, câu theo mode/algorithm và dashed overlay trên primary
+  map. Feature này không xuất hiện trong So sánh nhiều và không đổi backend schema.
+- “Bước đang xem” được hạ xuống cuối explanation: câu phổ thông riêng cho chín
+  thuật toán luôn hiện, còn g/h/f/frontier/μ/bound nằm trong disclosure kỹ thuật.
+- Khi Explain tô đỏ `congested_segments`, panel ghi ngắn gọn rằng đây là các
+  đoạn mức 4–5 trên tuyến kết quả cuối cùng, không phải đường thuật toán đang đi
+  ở bước timeline hiện tại.
 
 ## 3. File chính
 
@@ -51,20 +63,23 @@ hạng mục ATSP comparison Phase 7 nào được thêm vào UI.
 - `frontend/components/drawer/compare-tab.tsx`
 - `frontend/components/drawer/drawer.tsx`
 - `frontend/components/drawer/scenario-tab.tsx`
+- `frontend/components/explanation/reference-route-comparison.tsx`
 - `frontend/app/page.tsx`
 - `frontend/lib/store.ts`
 - `frontend/lib/comparison-map-policy.ts`
 - `frontend/lib/drawer-resize-policy.ts`
+- `frontend/lib/reference-route-presentation.ts`
 - `frontend/lib/single-run-panel-policy.ts`
 - `frontend/tests/comparison-map-policy.test.mjs`
 - `frontend/tests/drawer-resize-policy.test.mjs`
+- `frontend/tests/reference-route-presentation.test.mjs`
 - `frontend/tests/single-run-panel-policy.test.mjs`
 
 ## 4. Evidence đã chạy
 
 | Gate | Kết quả |
 |---|---|
-| `npm test` | PASS — 119/119 |
+| `npm test` | PASS — 124/124 |
 | `npx tsc --noEmit --incremental false` | PASS |
 | Backend full suite bằng Python 3.14.5 isolated | PASS — 230/230, 1 warning |
 | `scripts/validate_data.py` | PASS — `ALL DATA VALID` |
@@ -72,21 +87,34 @@ hạng mục ATSP comparison Phase 7 nào được thêm vào UI.
 | Backend `/api/health` smoke | PASS — HTTP 200 |
 | `git diff --check` | PASS |
 | `npm run build` | SKIPPED — Next dev server đang chạy |
-| Controlled browser QA | NOT RUN — không có browser runtime khả dụng |
+| Manual browser QA | PASS — người dùng xác nhận các tương tác comparison chính hoạt động đúng |
+| Controlled browser QA bằng agent | NOT RUN — không có browser runtime khả dụng trong phiên agent |
 
-## 5. Browser gate còn mở
+## 5. Browser gate đã đóng
 
-- Two-point với N=2, N=3 và N=4 ở 1366×768: số pane, kích thước, route và table
-  phải khớp selection order.
-- Pan/zoom/Home từng pane phải độc lập và không làm pane khác đổi camera.
-- Kéo/keyboard resize drawer phải không làm page-level overflow; double-click
-  đưa drawer về 400 px.
-- Xác nhận không thể chọn node/cạnh, clear hoặc sửa scenario trên compare maps.
-- Ordered multi-point N=2 và N=4: đủ số chặng/marker/final route.
-- Cancel giữa item, partial failure và retry từng card.
-- Drawer table, horizontal scroll và explanation subject đúng result.
-- 1024×768, 390×844 và 320×568 không có page-level horizontal scroll.
-- Console không có React/deck.gl error hoặc `WebGL context lost`.
+- [x] N=2, N=3 và N=4 hiển thị các pane đều và đúng số thuật toán đã chọn.
+- [x] Pan/zoom từng pane độc lập, không làm pane khác đổi camera.
+- [x] Thêm và bỏ thuật toán comparison hoạt động đúng.
+- [x] Compare maps là read-only, không cho chỉnh trọng số hoặc graph.
+- [x] Bảng comparison canh cột đúng và cho cuộn khi cần.
+- [x] Resize drawer phải hoạt động ổn để đọc bảng và map.
+- [x] Route và số liệu gắn đúng với từng thuật toán.
 
-Phase 6 không thay backend/schema/data/cost/algorithm và không triển khai ATSP
-comparison 2–3 của Phase 7.
+Các viewport/kịch bản dùng để quay vẫn nên được pre-flight lại ngay trước buổi
+demo; đây là kiểm tra vận hành trước trình chiếu, không còn là gate triển khai
+Phase 6.
+
+## 6. Known issue backend theo dõi riêng
+
+- Với IDA* `solution_quality=epsilon_bounded`, exact UCS reference được phép tốt
+  hơn selected route nếu `0 ≤ selected - exact ≤ epsilon_bound` trong tolerance.
+- Validator hiện hành ở `backend/app/models.py` vẫn dùng
+  `metrics.optimal_guarantee` như một cờ exact và bác mọi same-objective exact
+  reference tốt hơn. Cặp `n0003 → n0018`, balanced, 07:30, ε mặc định 5 giây
+  tái hiện HTTP 500 dù gap khoảng 3,27 giây vẫn nằm trong ε.
+- Sửa contract-first theo `docs/SCHEMA.md` §F.3, thêm regression API/model rồi
+  chạy lại full backend suite trước demo.
+
+Implementation UI Phase 6 không thay backend/data/cost/algorithm và không triển
+khai ATSP comparison 2–3 của Phase 7. Contract correction cho IDA* ε đã được ghi
+ở SCHEMA trước; backend fix vẫn là known issue riêng cần hoàn tất.

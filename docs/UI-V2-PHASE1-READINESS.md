@@ -1,5 +1,9 @@
 # UI & Explanation v2 — Phase 1 Readiness
 
+> Checkpoint lịch sử của Phase 1. Current-state và gate còn mở xem
+> `docs/UI-V2-PHASE6-READINESS.md`; số test phía dưới là evidence tại thời điểm
+> Phase 1, không phải tổng hiện hành.
+
 Ngày kiểm chứng: 2026-08-09  
 Repository: `C:\Users\Admin\Desktop\Lab01_Searching`  
 Baseline bắt đầu: `main...origin/main`, HEAD

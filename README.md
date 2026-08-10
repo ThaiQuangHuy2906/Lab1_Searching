@@ -49,22 +49,26 @@ thay thế cho toàn bộ screenshot bắt buộc trong report/video.
 - Sandbox chỉnh cạnh chỉ trong request/phiên hiện tại, có preview cost, provenance và
   fingerprint do backend sinh; không sửa graph/profile gốc.
 - Luồng sáng nhấn tuyến, focus/keyboard đầy đủ và fallback `prefers-reduced-motion`.
-- Giải thích tiếng Việt cho tuyến hai điểm và ATSP; so sánh hai thuật toán có
-  chỉ báo phần tuyến trùng/khác; đối chiếu ATSP trước/sau tối ưu.
+- Giải thích tiếng Việt từ evidence typed cho đủ 9 thuật toán route; ở chế độ
+  Chạy một có đối chiếu tuyến tham chiếu hậu kiểm và overlay nét đứt. So sánh
+  route chọn 2–4 thuật toán, đúng N lựa chọn tạo N map final-only độc lập và bảng
+  N-way trong drawer; ATSP hiện vẫn chỉ đối chiếu trước/sau một phương pháp.
 - Drawer kết quả có bốn tab `Số liệu`, `Giải thích`, `So sánh`, `Thử nghiệm`;
   editor kịch bản chỉ nằm ở tab `Thử nghiệm` với `Chọn nhanh`/`Chỉnh chi tiết`.
 - Tên thuật toán dùng nhãn ngắn; số liệu hành trình hiển thị km/phút. Ở desktop,
   objective và quãng đường nằm cạnh nhau; thời gian xử lý thuật toán vẫn dùng ms.
 - Benchmark viewer chỉ đọc với cảnh báo nguồn dữ liệu rõ ràng.
 
-> **Trạng thái ngày 2026-08-09 — M1–M5 đã triển khai, chưa được nộp:**
+> **Trạng thái ngày 2026-08-10 — UI & Explanation v2 đã triển khai qua Phase 6,
+> chưa được nộp:**
 > Lượt data refresh cuối đã tích hợp đủ raw TomTom 07:30, 12:00, 17:30 và 22:00
 > dưới dạng bốn snapshot đại diện lấy trên hai ngày thứ Hai; profile hiện là
 > `tomtom+synthetic`. Raw GraphML, bốn TomTom JSON và OSMnx cache hiện được Git
-> track dưới `data/raw/`. UI & Explanation v2 Phase 0 đã có readiness verdict
-> `READY` cho Phase 1 nhưng runtime v2 chưa triển khai. Fresh core gate đạt
-> `189 passed` backend, `ALL DATA VALID`, `42/42` frontend test, TypeScript và
-> production build; `G_demo` hiện có
+> track dưới `data/raw/`. Contract/runtime Explanation v2, map extraction Phase 5
+> và route comparison 2–4 Phase 6 đã được nối end-to-end. Phase 6 đang ở trạng
+> thái `READY` sau manual browser QA do người dùng xác nhận; Phase 7 ATSP comparison chưa triển
+> khai. Gate gần nhất đạt `230 passed` backend, `ALL DATA VALID`, `124/124`
+> frontend test và TypeScript; `G_demo` hiện có
 > 51 node / 298 cạnh.
 > `results/` vẫn là số tạm từ lượt 2026-07-26 và không được dùng làm kết quả
 > chính thức. Không rerun data; benchmark/hiệu chuẩn γ/generator vẫn chờ một
@@ -74,17 +78,17 @@ thay thế cho toàn bộ screenshot bắt buộc trong report/video.
 
 | Hạng mục | Trạng thái hiện tại | Bằng chứng |
 |---|---|---|
-| Backend | **Đạt** | `189 passed, 1 warning` trên current worktree ngày 2026-08-09 |
+| Backend | **Đạt, có known issue IDA\*** | `230 passed, 1 warning`; validator hiện còn bác một số nghiệm `epsilon_bounded` hợp lệ khi exact reference tốt hơn nhưng gap vẫn nằm trong ε |
 | Data contract | **Đạt** | `ALL DATA VALID`; profile `tomtom+synthetic`; raw GraphML và TomTom 4/4 hiện diện, được Git track |
-| Frontend automated | **Đạt** | `npm test`: 42/42 pass |
+| Frontend automated | **Đạt** | `npm test`: 124/124 pass |
 | TypeScript | **Đạt** | `npx tsc --noEmit` exit 0 |
-| Frontend production build | **Đạt** | `npm run build` sau khi dừng dev services: compile thành công, 6/6 static pages |
+| Frontend production build | **Chưa chạy lại sau Phase 6** | Build 6/6 static pages đã đạt ở UI freeze trước; lượt Phase 6 chỉ chạy test/TypeScript vì Next dev server đang hoạt động |
 | G_demo | **Hiện hành** | 51 node, 298 cạnh có hướng, 60 cạnh một chiều |
 | G_real | **Hiện hành** | 2.118 node, 4.699 cạnh có hướng, 1.433 cạnh một chiều |
 | Benchmark | **Chưa hiện hành** | `results/` cũ hơn graph; xem [`results/README.md`](results/README.md) |
-| UI/runtime | **Đạt browser QA ở lượt UI freeze** | Đã kiểm ở 1366×768, 1024×768 và 390×844 trước thay đổi catalog; catalog 9 thuật toán có regression/build nhưng chưa có phiên browser thủ công mới. Vẫn phải lặp full pre-flight ở máy/độ phân giải dùng để demo |
+| UI/runtime | **Phase 5–6 READY** | Người dùng đã manual browser QA N-map 2/3/4, camera độc lập, thêm/bỏ thuật toán, khóa chỉnh sửa trong compare mode, bảng so sánh và resize drawer; vẫn nên pre-flight lại trên đúng máy/độ phân giải trước khi quay |
 | Backend sau clean restart | **Đạt tại lượt audit; phải lặp trước demo** | `/api/graph?level=demo&view=full` trả G_demo 51/298 từ snapshot trên đĩa |
-| Trước khi nộp | **Còn việc tay** | 8 URL nguồn risk đã tích hợp nhưng còn final link QA; 11 marker nội dung cần điền trong report (13 occurrence tổng, trừ hai lần nhắc marker trong hướng dẫn); ảnh/sơ đồ ngoài hai ảnh README, report PDF, slide, video/link và ZIP |
+| Trước khi nộp | **Còn việc tay** | 8 URL nguồn risk đã tích hợp nhưng còn final link QA; report vẫn còn nhiều marker nội dung/screenshot và phân công chưa chốt; ảnh/sơ đồ ngoài hai ảnh README, report PDF, slide, video/link và ZIP chưa hoàn tất |
 
 Backend dùng cache theo vòng đời process. Trước khi demo hoặc chụp hình, phải
 restart cả hai service, hard-refresh trình duyệt và xác nhận
@@ -99,7 +103,7 @@ restart cả hai service, hard-refresh trình duyệt và xác nhận
 | Thuật toán bắt buộc | BFS, DFS, UCS, A* |
 | Thuật toán bổ sung | IDDFS, Greedy, Bidirectional Dijkstra, IDA*, Beam |
 | Đa điểm | Held–Karp, Nearest Neighbor + cải thiện bất đối xứng, Simulated Annealing |
-| GUI | Shell điều hành với bảy giao diện, chọn điểm trên map, animation trace và luồng sáng tuyến có reduced-motion, timeline, bảng g/h/f, ATSP, so sánh tuyến có độ trùng, giải thích tiếng Việt cho route/ATSP, trang benchmark có trạng thái dữ liệu tạm |
+| GUI | Shell điều hành với bảy giao diện, chọn điểm trên map, animation trace và luồng sáng tuyến có reduced-motion, timeline, bảng g/h/f, ATSP, route comparison 2–4 bằng N map độc lập, explanation typed theo từng result/thuật toán và trang benchmark có trạng thái dữ liệu tạm |
 | Báo cáo và video | Có khung a–j, outline 14 slide và kịch bản video; vẫn cần nhóm hoàn thiện artifact thật |
 
 Rubric chính thức 100 điểm và yêu cầu đóng gói nằm trong
@@ -222,6 +226,10 @@ Mở:
 - benchmark viewer: <http://localhost:3000/benchmark>
 - OpenAPI/Swagger: <http://localhost:8000/docs>
 
+Hướng dẫn thao tác Chạy một, So sánh nhiều 2–4 map, timeline, tab Giải thích,
+tuyến tham chiếu, đường đỏ ùn tắc và nhiều điểm nằm tại
+[`docs/HUONG-DAN-SU-DUNG-UI.md`](docs/HUONG-DAN-SU-DUNG-UI.md).
+
 Với Git Bash trên Windows, dùng `.venv/Scripts/python.exe` và dấu `/`; trên
 macOS/Linux dùng `.venv/bin/python`. Không sao chép nguyên lệnh PowerShell có
 dấu `\` sang Bash.
@@ -311,9 +319,11 @@ scripts/           pipeline data, validator, generator và QA
 | [`docs/SCHEMA.md`](docs/SCHEMA.md) | contract graph, trace, API và cost |
 | [`data/DATA.md`](data/DATA.md) | nguồn, pipeline, giả định và snapshot |
 | [`docs/DESIGN.md`](docs/DESIGN.md) | contract thiết kế UI |
+| [`docs/HUONG-DAN-SU-DUNG-UI.md`](docs/HUONG-DAN-SU-DUNG-UI.md) | hướng dẫn thao tác giao diện hiện hành qua Phase 6 |
 | [`UI_PLAN.md`](UI_PLAN.md) | checklist triển khai và bằng chứng hoàn tất phase UI Clarity |
+| [`UI_caithien.md`](UI_caithien.md) | master plan UI & Explanation v2; Phase 5–6 hiện hành dùng hệ phase này |
 | [`docs/CODEX-BASELINE.md`](docs/CODEX-BASELINE.md) | baseline kỹ thuật ngày 2026-07-27; giữ làm lịch sử |
-| [`docs/CODEX-CODEBASE-MAP.md`](docs/CODEX-CODEBASE-MAP.md) | bản đồ kiến trúc và current-state đã cập nhật qua UI Clarity 2026-08-08 |
+| [`docs/CODEX-CODEBASE-MAP.md`](docs/CODEX-CODEBASE-MAP.md) | bản đồ kiến trúc và current-state đã cập nhật qua UI & Explanation v2 Phase 6 |
 | [`docs/TIENDO.md`](docs/TIENDO.md) · [`docs/KIEMTOAN.md`](docs/KIEMTOAN.md) · [`docs/AUDIT-CLAUDE-PRE-SUBMISSION.md`](docs/AUDIT-CLAUDE-PRE-SUBMISSION.md) | nhật ký/audit lịch sử, không phải bằng chứng current |
 | [`docs/GIAI-THICH-THUAT-TOAN.md`](docs/GIAI-THICH-THUAT-TOAN.md) | tài liệu sinh tự động; hiện vẫn là số tạm |
 | [`docs/ROLE-C-ADVANCED-ATSP-GIAI-THICH-DE-HIEU.md`](docs/ROLE-C-ADVANCED-ATSP-GIAI-THICH-DE-HIEU.md) | tài liệu lịch sử tên Role C; hiện dùng để học thuật toán nâng cao và ATSP, không đại diện vai trò đã chốt |
@@ -343,6 +353,7 @@ benchmark/generator cuối được duyệt, rồi mới gỡ 5 banner `SỐ T�
 | API trả graph cũ | tắt process cũ, restart backend, hard-refresh và kiểm `/api/graph?level=demo` |
 | Port 8000/3000 bận | tìm PID bằng `netstat -ano \| findstr :<port>` rồi chỉ tắt đúng process đó |
 | Map nền trống | kiểm mạng hoặc bật chế độ offline |
+| IDA* đôi lúc trả HTTP 500 với ε mặc định | known issue validator `epsilon_bounded`; thử ε nhỏ hơn hoặc A*/UCS cho demo, sau đó sửa theo `SCHEMA.md` §F.3 thay vì coi graph vô đường |
 | 404 hàng loạt file Next | tắt dev server, xoá riêng `frontend/.next`, chạy `npm run dev` lại |
 | Đổi `next.config.ts` nhưng không có hiệu lực | restart dev server |
 | Chữ Việt lỗi trên console Windows | đọc/ghi UTF-8 và cấu hình stdout UTF-8 trong script |

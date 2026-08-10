@@ -1,5 +1,9 @@
 # UI & Explanation v2 — Biên bản readiness Phase 0
 
+> Checkpoint lịch sử của Phase 0. Current-state đã qua Phase 6; các câu “Phase
+> 1–8 chưa triển khai” phía dưới chỉ đúng tại ngày kiểm chứng của file. Xem
+> `docs/UI-V2-PHASE6-READINESS.md`.
+
 > Ngày chốt: **2026-08-09**
 > Phạm vi: contract, thiết kế, compatibility, fixture và truthfulness hotfix
 > Readiness verdict: **READY**

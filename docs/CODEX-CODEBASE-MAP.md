@@ -24,11 +24,14 @@ automated tests/build, not by a new manual browser session. Dated
 onboarding/FINAL-01 sections below remain historical evidence; the exact
 projector/browser used for recording still needs its own pre-flight.
 
-**UI & Explanation v2 Phase 0 refresh — 2026-08-09:** contract/readiness,
-truthfulness hotfix và golden fixtures đã qua gate trên base HEAD `bb21db1` cộng
-worktree Phase 0. Fresh gates là 189 backend tests, 42 frontend tests,
-`ALL DATA VALID`, TypeScript check và production build 6/6 static pages.
-Readiness verdict `READY` chỉ mở Phase 1; contract/UI v2 chưa chạy runtime.
+**UI & Explanation v2 refresh — 2026-08-10:** Phase 0–5 đã hoàn tất và Phase 6
+route comparison 2–4 đã triển khai end-to-end. Runtime hiện có typed
+termination/decision/explanation, subject binding, single-route reference
+comparison, prop-driven map canvas và N map final-only với camera độc lập. Fresh
+gates gần nhất là 230 backend tests, 124 frontend tests, `ALL DATA VALID`,
+TypeScript pass và manual browser QA Phase 6 do người dùng xác nhận. Phase 6 đã
+READY; validator IDA* còn known issue với
+exact reference tốt hơn nhưng gap vẫn trong ε. Phase 7–8 chưa triển khai.
 
 **Route-contract delta — 2026-08-08:** the group removed the standalone
 `dijkstra` choice because it duplicated UCS. The current product exposes nine
@@ -593,11 +596,13 @@ race if a later request starts before an earlier stale request finishes.
 
 ## 19. Visualization and timeline
 
-`MapView` combines MapLibre/Carto or an offline plain background with deck.gl
-layers for roads, traffic, nodes, paths, alternatives, direction arrows,
-labels, the current-node pulse, and an animated route-flow emphasis layer.
-`useAnimation` projects the current `TraceStep`; the map, timeline, and g/h/f
-table share `stepIdx`.
+`MapView` is now the single-run state wrapper around prop-driven
+`RouteMapCanvas`. The canvas combines MapLibre/Carto or an offline background
+with deck.gl layers for roads, traffic, nodes, final/reference paths, direction
+arrows, labels, the current-node pulse and route-flow emphasis. Comparison
+reuses the canvas with shared geometry and view-only capabilities. `useAnimation`
+projects the current `TraceStep`; the primary map, timeline and g/h/f table share
+`stepIdx`.
 
 Verified/current findings:
 
@@ -620,14 +625,17 @@ Verified/current findings:
   not cut the route into visually disconnected fragments. Current-node rings,
   POI labels and endpoint/stop chips remain above the route; route layers stay
   non-pickable so node selection behavior is unchanged.
-- Compare route B keeps its original node coordinates and metrics but uses a
-  render-only 4 px `PathStyleExtension` offset for casing, dashed body and
-  direction arrows. The compare drawer also reports directed-edge overlap
-  (common, A-only, B-only and Jaccard percentage) so shared geometry is explicit.
-- Drawer Explanation and Compare now recognize `multi`: ATSP explanation is
-  derived from the current `MultirouteResponse`, while ATSP comparison means
-  input order versus optimized order. Cross-method ATSP comparison is not
-  claimed because the store intentionally retains only one `multi` result.
+- Route comparison selects 2–4 algorithms. N selected algorithms create N
+  equal-size final-only map panes with independent camera; panes do not expose
+  picking, editing, clear, timeline or autoplay. The drawer presents an N-way
+  table, per-item status/retry and binds Explain to the selected result.
+- Single two-point Explain can select a posthoc UCS reference and render it as
+  a dashed, 4 px offset route. Congestion levels 4–5 on the selected final route
+  are highlighted red only as result evidence; panel copy says this is not the
+  algorithm's current timeline path.
+- Drawer Explanation recognizes ordered multi per-leg evidence. Current ATSP
+  comparison still means input order versus one optimized order; cross-method
+  ATSP comparison belongs to Phase 7 and is not claimed.
 - FINAL-01 functional route-flow QA passed G_demo/G_real, compare, trace,
   clear/invalidation and reduced-motion states. G_real measured only about
   16 FPS under Chromium SwiftShader; a hardware-GPU run was not reproduced.
@@ -653,11 +661,12 @@ The map route retained root body overflow ownership.
 
 ## 20. Test architecture
 
-Current collection produces **189 pytest items**. All 189 passed on the
-2026-08-09 Phase 0 worktree; frontend has a separate **42-test** Node suite plus a
-passing TypeScript check and production build. The suites include GraphView,
-ATSP trace, sandbox, presentation-unit, copy, fingerprint and regression
-coverage.
+The latest full gate produced **230 passing backend tests** (one dependency
+warning). Frontend has a separate **124-test** Node suite plus a passing
+TypeScript check. The suites now also cover v2 termination/decision/explanation,
+comparison sessions, map isolation, drawer resize and reference-route
+presentation. The production build was not rerun after Phase 6 because the Next
+dev server was active; browser N-map QA remains pending.
 
 | Test file | Module/type | Main invariant/oracle | Dataset | Important gap |
 |---|---|---|---|---|
@@ -672,7 +681,7 @@ coverage.
 | `test_optimization_trace.py` | ATSP recorder | strict event union, caps/sampling, trace-on/off equality | demo + controlled cases | dedicated frontend render test |
 | `test_scenario.py` | GraphView/scenario | dynamic 3…50 views, SCC, preset/generator parity, fingerprint | current demo/real | browser parity after final generator run |
 | `test_scenario_overrides.py` | sandbox | validation, immutability, recomputation, fingerprint/API errors | current demo | long-running concurrent request stress |
-| `test_ui_v2_phase0_fixtures.py` | UI v2 golden baseline | Bidi overlap/μ stop, UCS parity, asymmetric ATSP open/closed | tiny controlled fixtures | B2 field production belongs to Phase 1 |
+| `test_ui_v2_phase0_fixtures.py` + `test_ui_v2_phase1_contract.py` | UI v2 contract/golden | Bidi overlap/μ stop, termination/decision/explanation, trace on/off parity, asymmetric ATSP | tiny controlled + demo fixtures | browser presentation remains separate |
 
 Scale statements such as thousands of NetworkX comparisons inside loops are
 not pytest item counts.

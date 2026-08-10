@@ -1046,8 +1046,12 @@ trong objective evidence và chỉ dùng exact same-objective reference. Tuyến
 localized copy không được nói thuật toán chính đã “xét” hay “loại” full route đó.
 Hai field distance/balanced còn lại cũng luôn dùng dấu `reference - selected`,
 không đổi dấu theo localized sentence.
-Guaranteed exact result có reference exact tốt hơn ngoài tolerance là integrity
-error: frontend dừng claim/ranking thay vì che mâu thuẫn.
+Result có `solution_quality=exact` mà reference exact tốt hơn ngoài tolerance là
+integrity error: frontend dừng claim/ranking thay vì che mâu thuẫn. Với IDA*
+`solution_quality=epsilon_bounded`, exact reference được phép tốt hơn selected
+route khi `0 ≤ selected.total_cost - exact.total_cost ≤ metrics.epsilon_bound`
+trong tolerance; chỉ gap âm hoặc vượt ε mới là integrity error. Không dùng riêng
+`metrics.optimal_guarantee=true` để suy result là exact.
 
 Mỗi ordered-search leg phải giữ nguyên explanation/termination của route response
 gốc. Aggregate không được tạo một whole-tour alternative giả hoặc biến đảm bảo

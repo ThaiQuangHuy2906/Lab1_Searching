@@ -39,6 +39,10 @@ export function Legend() {
   const graph = useApp((s) => s.graph);
   const traceOnReal = useApp((s) => s.traceOnReal);
   const overrideCount = useApp((s) => Object.keys(s.edgeOverrides).length);
+  const runKind = useApp((s) => s.runKind);
+  const singleRouteResult = useApp((s) => s.singleRouteResult);
+  const explanationOverlay = useApp((s) => s.explanationOverlay);
+  const explanationOverlayVisible = useApp((s) => s.explanationOverlayVisible);
   const P = usePalette();
   const H = P.hex;
 
@@ -62,6 +66,10 @@ export function Legend() {
     : null;
   const showFinalMultiRoute = isOptimizationFinalEvent(optimizationEvent?.kind)
     || !optimizationEvent;
+  const referenceVisible = runKind === "single"
+    && explanationOverlayVisible
+    && explanationOverlay?.kind === "reference_route"
+    && explanationOverlay.resultId === singleRouteResult?.id;
 
   // v11: chưa có gì đáng giải mã (không kết quả, không lớp ùn tắc) thì đừng
   // chiếm góc bản đồ chỉ để chú giải mỗi "Nút giao"
@@ -98,6 +106,9 @@ export function Legend() {
           )}
           {trace.found && (
             <span className="flex items-center gap-2"><Line color={H.path} /> Tuyến kết quả</span>
+          )}
+          {referenceVisible && (
+            <span className="flex items-center gap-2"><Line color={H.frontier} dashed /> Tuyến tham chiếu</span>
           )}
           {trace.found && (
             <span className="flex items-center gap-2"><span className="w-4 text-center text-xs leading-none">▶</span> Hướng di chuyển</span>

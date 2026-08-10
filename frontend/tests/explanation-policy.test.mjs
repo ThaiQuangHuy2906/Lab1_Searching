@@ -9,6 +9,7 @@ import {
   leaveExplanationTab,
   resolveExplanationSubject,
   returnToExplanationTab,
+  resolveSingleRouteReferenceOverlay,
   routeExplanationViewModel,
   selectExplanationOverlay,
   selectExplanationSubject,
@@ -211,6 +212,22 @@ test("overlay IDs must exist in structured evidence of the same result", () => {
   assert.equal(isExplanationOverlayValid(envelope, {
     kind: "leg", resultId: "astar", legIndex: 1,
   }), false);
+});
+
+test("reference route overlay resolves only for the matching single two-point result", () => {
+  const envelope = routeEnvelope();
+  const overlay = {
+    kind: "reference_route", resultId: envelope.id, referenceId: "ref-1",
+  };
+  assert.equal(
+    resolveSingleRouteReferenceOverlay(envelope, overlay, true, true)?.id,
+    "ref-1",
+  );
+  assert.equal(resolveSingleRouteReferenceOverlay(envelope, overlay, true, false), null);
+  assert.equal(resolveSingleRouteReferenceOverlay(envelope, overlay, false, true), null);
+  assert.equal(resolveSingleRouteReferenceOverlay(envelope, {
+    ...overlay, resultId: "other",
+  }, true, true), null);
 });
 
 test("ATSP open/closed comes from immutable snapshot for v1 and must match echo for v2", () => {

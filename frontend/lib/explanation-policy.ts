@@ -114,6 +114,21 @@ export function isExplanationOverlayValid(
   return evidence.reference_routes.some((reference) => reference.id === overlay.referenceId);
 }
 
+export function resolveSingleRouteReferenceOverlay(
+  envelope: RouteResultEnvelope | null,
+  overlay: ExplanationOverlay,
+  overlayVisible: boolean,
+  singleMode: boolean,
+) {
+  if (!singleMode || !overlayVisible || overlay?.kind !== "reference_route"
+      || !envelope || overlay.resultId !== envelope.id
+      || envelope.snapshot.problemMode !== "two_point"
+      || envelope.response.contract_version !== 2) return null;
+  return envelope.response.explanation.evidence.reference_routes.find(
+    (reference) => reference.id === overlay.referenceId,
+  ) ?? null;
+}
+
 export type ExplanationAvailability = "structured_v2" | "legacy_fallback" | "contract_error";
 export type ExplanationOutcome = "found" | "trivial" | "not_found";
 

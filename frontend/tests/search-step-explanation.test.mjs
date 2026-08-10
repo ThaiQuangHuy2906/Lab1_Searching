@@ -99,22 +99,29 @@ function trace(algorithm) {
 }
 
 test("all nine algorithms have deterministic structured action/rule/evidence/effect copy", () => {
+  const summaries = [];
   for (const algorithm of Object.keys(RULES)) {
     const view = presentSearchStep(trace(algorithm), 0);
     assert.equal(view.availability, "structured_v2", algorithm);
     assert.match(view.title, /Bước 1\/1/, algorithm);
     assert.match(view.action, /n0002/, algorithm);
+    assert.ok(view.summary.length > 20, algorithm);
+    summaries.push(view.summary);
+    assert.doesNotMatch(view.summary, /frontier|\bg=|\bh=|\bf=|\bμ\b|tie-break/i, algorithm);
     assert.ok(view.rule.length > 10, algorithm);
     assert.ok(view.evidence.length > 10, algorithm);
     assert.match(view.effect, /quét 3 cạnh/, algorithm);
     assert.doesNotMatch(JSON.stringify(view), /đã xét|bị loại|tuyến thay thế/i, algorithm);
   }
+  assert.equal(new Set(summaries).size, Object.keys(RULES).length);
 });
 
 test("algorithm-specific presenter uses typed scores, iteration/layer and bidi μ", () => {
   assert.match(presentSearchStep(trace("ucs"), 0).evidence, /g=0,1 phút quy đổi/);
   assert.match(presentSearchStep(trace("astar"), 0).evidence, /g=0,1 phút quy đổi.*h=0 phút quy đổi.*f=0,1 phút quy đổi/);
   assert.match(presentSearchStep(trace("greedy"), 0).rule, /không dùng g/);
+  assert.match(presentSearchStep(trace("greedy"), 0).summary, /chưa tính chi phí đã đi/);
+  assert.match(presentSearchStep(trace("astar"), 0).summary, /chi phí đã đi.*ước lượng còn lại/);
   assert.match(presentSearchStep(trace("iddfs"), 0).evidence, /Vòng 2/);
   assert.match(presentSearchStep(trace("idastar"), 0).evidence, /bound=0,2 phút quy đổi/);
   assert.match(presentSearchStep(trace("beam"), 0).evidence, /Lớp 3.*k=5.*cắt 2/);

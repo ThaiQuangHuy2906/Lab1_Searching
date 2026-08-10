@@ -13,9 +13,11 @@
 > đổi graph, công thức cost, heuristic, tie-break, đường đi/kết quả thuật toán,
 > seed, dữ liệu hay benchmark. Việc triển khai phải backend-first, giữ reader cũ
 > hoạt động trong giai đoạn chuyển tiếp và qua các gate trong `UI_caithien.md`.
-> **Phase 0 đã hoàn tất ngày 2026-08-09** với readiness verdict `READY` cho việc
-> bắt đầu Phase 1; bằng chứng nằm tại `docs/UI-V2-PHASE0-READINESS.md`. Điều này
-> không có nghĩa contract/UI v2 đã được triển khai runtime.
+> **Cập nhật 2026-08-10:** Phase 0–6 đã hoàn tất; Phase 6 route comparison 2–4
+> đã READY sau manual browser QA do người dùng xác nhận. Known issue validator
+> IDA* được theo dõi riêng ở backend. Contract/UI Explanation v2 hiện đã chạy runtime. Phase 7 ATSP comparison
+> và Phase 8 hardening chưa triển khai. Bằng chứng mới nhất nằm tại
+> `docs/UI-V2-PHASE6-READINESS.md`.
 
 ## 1. Kịch bản và phạm vi
 

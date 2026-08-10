@@ -1,5 +1,6 @@
 import { Badge } from "../ui/badge";
 import { CostBreakdown } from "./cost-breakdown";
+import { ReferenceRouteComparison } from "./reference-route-comparison";
 import { ResultContextStrip } from "./result-context-strip";
 import { SearchStepExplanation } from "./search-step";
 import { routeExplanationViewModel } from "@/lib/explanation-policy";
@@ -103,11 +104,13 @@ export function RouteExplanation({
   graphData,
   sequentialRoute,
   stepIdx,
+  enableReferenceComparison,
 }: {
   envelope: RouteResultEnvelope;
   graphData: GraphResponse | null;
   sequentialRoute: SequentialRouteRun | null;
   stepIdx: number;
+  enableReferenceComparison: boolean;
 }) {
   const sources = envelope.sourceResponses;
   const verdict = routeVerdict(envelope, sources);
@@ -118,6 +121,9 @@ export function RouteExplanation({
   const sourceStepIndex = presentedSource?.sourceStepIndex ?? stepIdx;
   const structuredSources = sources.filter((trace): trace is TraceV2 => trace.contract_version === 2);
   const legacy = structuredSources.length !== sources.length;
+  const singleTwoPointReference = enableReferenceComparison
+    && envelope.snapshot.problemMode === "two_point"
+    && envelope.response.contract_version === 2;
 
   return (
     <div className="flex flex-col gap-3">
@@ -136,7 +142,13 @@ export function RouteExplanation({
         <p className="mt-2 text-xs leading-5 text-ink-dim">{verdict.limitation}</p>
       </section>
 
-      {stepTrace && <SearchStepExplanation trace={stepTrace} stepIndex={sourceStepIndex} />}
+      {singleTwoPointReference && (
+        <ReferenceRouteComparison
+          envelope={envelope}
+          trace={envelope.response}
+          graphData={graphData}
+        />
+      )}
 
       <section aria-labelledby="explanation-cost-title">
         <h3 id="explanation-cost-title" className="text-sm font-bold text-ink">Chi phí được chia như thế nào?</h3>
@@ -167,6 +179,11 @@ export function RouteExplanation({
         <p className="mb-2 mt-1 rounded-lg border border-surface-border bg-surface-panel p-2.5 text-xs leading-5 text-ink-dim">
           {criterionExplanation(envelope.snapshot.mode)} Nhãn “Có tính vào tiêu chí” nghĩa là yếu tố đó có tham gia đánh giá tuyến trong chế độ hiện tại.
         </p>
+        {envelope.response.explanation.congested_segments.length > 0 && (
+          <p className="mb-2 rounded-lg border border-goal/30 bg-goal/5 px-2.5 py-2 text-xs leading-5 text-ink-dim">
+            Đường đỏ trên bản đồ đánh dấu các đoạn thuộc tuyến kết quả có ùn tắc mức 4–5 theo hồ sơ khung giờ; không phải đường thuật toán đang đi ở bước hiện tại.
+          </p>
+        )}
         {structuredSources.some((trace) => trace.explanation.evidence.factors.length > 0) ? (
           <div className="flex flex-col gap-2">
             {structuredSources.map((trace, legIndex) => {
@@ -198,31 +215,35 @@ export function RouteExplanation({
         )}
       </section>
 
-      <section aria-labelledby="explanation-reference-title">
-        <h3 id="explanation-reference-title" className="text-sm font-bold text-ink">Các tuyến tham chiếu để đối chiếu</h3>
-        <p className="mt-1 text-xs leading-5 text-ink-dim">
-          Tuyến tham chiếu được hệ thống tính thêm sau khi chạy. Không dùng các tuyến hậu kiểm này để kết luận thuật toán chính đã xét hay loại một full route.
-        </p>
-        {structuredSources.some((trace) => trace.explanation.evidence.reference_routes.length > 0) ? (
-          <ul className="mt-2 flex flex-col gap-1.5">
-            {structuredSources.flatMap((trace, legIndex) => trace.explanation.evidence.reference_routes.map((reference) => (
-              <li key={`${legIndex}-${reference.id}`} className="rounded-lg border border-surface-border bg-surface-panel p-2.5 text-xs">
-                <p className="font-semibold text-ink">{envelope.snapshot.problemMode === "multi_point" ? `Chặng ${legIndex + 1} · ` : ""}{reference.kind.replaceAll("_", " ")}</p>
-                <p className="mt-1 text-ink-dim">Hậu kiểm bằng UCS · {referenceRelation(reference, envelope.snapshot.mode)}</p>
-              </li>
-            ))) }
-          </ul>
-        ) : envelope.response.explanation.alternatives.length > 0 ? (
-          <ul className="mt-2 flex flex-col gap-1.5">
-            {envelope.response.explanation.alternatives.map((reference) => (
-              <li key={reference.label} className="rounded-lg border border-surface-border bg-surface-panel p-2.5 text-xs">
-                <p className="font-semibold text-ink">{reference.label}</p>
-                <p className="mt-1 leading-5 text-ink-dim">Dữ liệu v1 có tuyến hậu kiểm nhưng không đủ tổng chi phí theo đúng tiêu chí để tính mức chênh lệch.</p>
-              </li>
-            ))}
-          </ul>
-        ) : <p className="mt-2 text-xs text-ink-dim">Không có tuyến tham chiếu typed cho result này.</p>}
-      </section>
+      {!singleTwoPointReference && (
+        <section aria-labelledby="explanation-reference-title">
+          <h3 id="explanation-reference-title" className="text-sm font-bold text-ink">Các tuyến tham chiếu để đối chiếu</h3>
+          <p className="mt-1 text-xs leading-5 text-ink-dim">
+            Tuyến tham chiếu được hệ thống tính thêm sau khi chạy. Không dùng các tuyến hậu kiểm này để kết luận thuật toán chính đã xét hay loại một full route.
+          </p>
+          {structuredSources.some((trace) => trace.explanation.evidence.reference_routes.length > 0) ? (
+            <ul className="mt-2 flex flex-col gap-1.5">
+              {structuredSources.flatMap((trace, legIndex) => trace.explanation.evidence.reference_routes.map((reference) => (
+                <li key={`${legIndex}-${reference.id}`} className="rounded-lg border border-surface-border bg-surface-panel p-2.5 text-xs">
+                  <p className="font-semibold text-ink">{envelope.snapshot.problemMode === "multi_point" ? `Chặng ${legIndex + 1} · ` : ""}{reference.kind.replaceAll("_", " ")}</p>
+                  <p className="mt-1 text-ink-dim">Hậu kiểm bằng UCS · {referenceRelation(reference, envelope.snapshot.mode)}</p>
+                </li>
+              ))) }
+            </ul>
+          ) : envelope.response.explanation.alternatives.length > 0 ? (
+            <ul className="mt-2 flex flex-col gap-1.5">
+              {envelope.response.explanation.alternatives.map((reference) => (
+                <li key={reference.label} className="rounded-lg border border-surface-border bg-surface-panel p-2.5 text-xs">
+                  <p className="font-semibold text-ink">{reference.label}</p>
+                  <p className="mt-1 leading-5 text-ink-dim">Dữ liệu v1 có tuyến hậu kiểm nhưng không đủ tổng chi phí theo đúng tiêu chí để tính mức chênh lệch.</p>
+                </li>
+              ))}
+            </ul>
+          ) : <p className="mt-2 text-xs text-ink-dim">Không có tuyến tham chiếu typed cho result này.</p>}
+        </section>
+      )}
+
+      {stepTrace && <SearchStepExplanation trace={stepTrace} stepIndex={sourceStepIndex} />}
     </div>
   );
 }

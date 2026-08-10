@@ -13,6 +13,7 @@ import { useApp } from "@/lib/store";
 import { useAnimation } from "@/lib/use-animation";
 import { usePalette } from "@/lib/use-palette";
 import { buildRouteMapGeometry } from "@/lib/map-geometry";
+import { resolveSingleRouteReferenceOverlay } from "@/lib/explanation-policy";
 import {
   isEndpointOptionAllowed,
   isStopOptionAllowed,
@@ -49,6 +50,10 @@ export function MapView() {
   const problemMode = useApp((state) => state.problemMode);
   const stops = useApp((state) => state.stops);
   const activeSnapshot = useApp((state) => state.activeSnapshot);
+  const runKind = useApp((state) => state.runKind);
+  const singleRouteResult = useApp((state) => state.singleRouteResult);
+  const explanationOverlay = useApp((state) => state.explanationOverlay);
+  const explanationOverlayVisible = useApp((state) => state.explanationOverlayVisible);
   const pickTarget = useApp((state) => state.pickTarget);
   const theme = useApp((state) => state.theme);
   const set = useApp((state) => state.set);
@@ -60,6 +65,16 @@ export function MapView() {
     () => graphData ? buildRouteMapGeometry(graphData.nodes, graphData.edges) : null,
     [graphData],
   );
+  const referenceRouteNodeIds = React.useMemo(() => {
+    return resolveSingleRouteReferenceOverlay(
+      singleRouteResult,
+      explanationOverlay,
+      explanationOverlayVisible,
+      runKind === "single",
+    )?.path ?? null;
+  }, [
+    runKind, explanationOverlayVisible, explanationOverlay, singleRouteResult,
+  ]);
 
   const model = React.useMemo<RouteMapModel>(() => ({
     graphData,
@@ -167,6 +182,7 @@ export function MapView() {
     <RouteMapCanvas
       model={model}
       geometry={geometry}
+      referenceRouteNodeIds={referenceRouteNodeIds}
       animation={animation}
       palette={palette}
       interactionMode="primary"

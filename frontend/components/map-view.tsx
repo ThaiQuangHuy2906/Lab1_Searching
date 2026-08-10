@@ -23,6 +23,7 @@ import { useAnimation } from "@/lib/use-animation";
 import {
   activeTimelineLength,
   conceptualOptimizationOrder,
+  deliveryMarkerOrder,
   heldKarpHighlightIds,
   isOptimizationFinalEvent,
   mapControlsBottomClass,
@@ -31,6 +32,7 @@ import {
   isEndpointOptionAllowed,
   isStopOptionAllowed,
   journeyNodePickRadius,
+  shouldShowGoalMarker,
 } from "@/lib/interaction-policy";
 import { effectiveCongestion } from "@/lib/scenario";
 import type { GraphNode } from "@/lib/types";
@@ -112,7 +114,9 @@ export function MapView() {
   const drawerTab = useApp((s) => s.drawerTab);
   const start = useApp((s) => s.start);
   const goal = useApp((s) => s.goal);
+  const problemMode = useApp((s) => s.problemMode);
   const stops = useApp((s) => s.stops);
+  const activeSnapshot = useApp((s) => s.activeSnapshot);
   const clearMap = useApp((s) => s.clearMap);
   const pickTarget = useApp((s) => s.pickTarget);
   const theme = useApp((s) => s.theme);
@@ -249,6 +253,8 @@ export function MapView() {
         if (side === "backward") return C.bidiBackward;
         return C.expanded;
       }
+      if (anim.forwardFrontierSet.has(n.id)) return C.bidiForward;
+      if (anim.backwardFrontierSet.has(n.id)) return C.bidiBackward;
       if (anim.frontierSet.has(n.id)) return C.frontier;
       return deEmphasizeBaseColor(isDemo ? C.node : C.nodeReal, hasResultRoute);
     },
@@ -459,6 +465,8 @@ export function MapView() {
         pickable: !edgeEditMode,
         getPosition: (n: GraphNode) => [n.lon, n.lat],
         getFillColor: nodeColor,
+        getLineColor: (n: GraphNode): RGBA => anim.bidiOverlapSet.has(n.id)
+          ? C.bidiBackward : [0, 0, 0, 0],
         getRadius: (n: GraphNode) => {
           if (optimizationEvent?.kind === "held_karp_update" && n.id === optimizationEvent.endpoint)
             return isDemo ? 7.2 : 5.8;
@@ -469,13 +477,17 @@ export function MapView() {
           return isDemo ? 4.2 : realNodeR;
         },
         radiusUnits: "pixels",
-        stroked: false,
+        stroked: true,
+        lineWidthUnits: "pixels",
+        getLineWidth: (n: GraphNode) => anim.bidiOverlapSet.has(n.id) ? 2.5 : 0,
         // anim.steps.length is load-bearing: toggling "Trace trên G_real" OFF
         // empties anim.steps while stepIdx/trace/theme all stay unchanged —
         // without it deck.gl kept the stale expanded/frontier fill colors
         // (audit finding L3-03; same bug class as the label layer below)
         updateTriggers: {
           getFillColor: [anim.stepIdx, anim.steps.length, trace, optimizationEvent, theme],
+          getLineColor: [anim.stepIdx, anim.steps.length, trace, theme],
+          getLineWidth: [anim.stepIdx, anim.steps.length, trace],
           getRadius: [anim.stepIdx, anim.steps.length, trace, optimizationEvent, zoomBucket],
         },
       }),
@@ -483,7 +495,9 @@ export function MapView() {
 
     const endpoints: { id: "start" | "goal"; pos: [number, number]; color: RGBA }[] = [];
     if (start && coord.get(start)) endpoints.push({ id: "start", pos: coord.get(start)!, color: C.start });
-    if (goal && coord.get(goal) && !(multi?.found && showFinalMultiRoute))
+    if (goal && coord.get(goal) && shouldShowGoalMarker(
+      problemMode, Boolean(multi?.found && showFinalMultiRoute),
+    ))
       endpoints.push({ id: "goal", pos: coord.get(goal)!, color: C.goal });
     if (endpoints.length) {
       out.push(
@@ -531,7 +545,9 @@ export function MapView() {
             getPosition: (d: { pos: [number, number] }) => d.pos,
             stroked: true,
             filled: false,
-            getLineColor: C.frontier,
+            getLineColor: anim.current.side === "forward"
+              ? C.bidiForward
+              : anim.current.side === "backward" ? C.bidiBackward : C.frontier,
             lineWidthUnits: "pixels",
             getLineWidth: 2,
             getRadius: isDemo ? 8.7 : 7,
@@ -573,9 +589,17 @@ export function MapView() {
     const chips: { pos: [number, number]; text: string; bg: RGBA; fg: RGBA }[] = [];
     if (start && coord.get(start)) chips.push({ pos: coord.get(start)!, text: "Đi", bg: C.chipStart, fg: C.chipText });
     // multiroute result = Đi -> stops; "Đến" is NOT part of it -> hide its chip
-    if (goal && coord.get(goal) && !(multi?.found && showFinalMultiRoute))
+    if (goal && coord.get(goal) && shouldShowGoalMarker(
+      problemMode, Boolean(multi?.found && showFinalMultiRoute),
+    ))
       chips.push({ pos: coord.get(goal)!, text: "Đến", bg: C.chipGoal, fg: C.chipText });
-    const orderedStops = multi?.found && showFinalMultiRoute ? multi.order.slice(1) : stops;
+    const orderedStops = multi?.found && showFinalMultiRoute
+      ? deliveryMarkerOrder(
+          multi.order,
+          activeSnapshot?.start ?? null,
+          activeSnapshot?.returnToStart ?? false,
+        )
+      : stops;
     orderedStops.forEach((id, i) => {
       const pos = coord.get(id);
       if (pos) chips.push({ pos, text: String(i + 1), bg: C.stop, fg: C.stopText });
@@ -603,7 +627,7 @@ export function MapView() {
     return out;
   }, [graphData, coord, toPath, traffic, slot, edgeOverrides, edgeEditMode, selectedEdgeId,
       trafficLayer, congestedSet, trace, compare,
-      multi, optimizationEvent, heldKarpHighlightSet, showFinalMultiRoute, hasResultRoute, anim, nodeColor, isDemo, showLabels, start, goal, stops,
+      multi, optimizationEvent, heldKarpHighlightSet, showFinalMultiRoute, hasResultRoute, anim, nodeColor, isDemo, showLabels, start, goal, problemMode, stops, activeSnapshot,
       pickTarget, drawerTab, graph, C, CONGESTION, theme, zoomBucket]);
 
   const routeFlowLayers = React.useMemo(() => {
@@ -726,8 +750,10 @@ export function MapView() {
       // lại); chế độ thêm điểm giao GIỮ NGUYÊN để gõ liên tục 9 điểm cho
       // cảnh multiroute của video, tự thoát khi chạm trần 15.
       if (target === "start") {
-        if (!isEndpointOptionAllowed("start", node.id, st.goal, st.stops)) {
-          if (node.id !== st.goal) {
+        const activeGoal = st.problemMode === "two_point" ? st.goal : null;
+        const activeStops = st.problemMode === "multi_point" ? st.stops : [];
+        if (!isEndpointOptionAllowed("start", node.id, activeGoal, activeStops)) {
+          if (activeStops.includes(node.id)) {
             toast.error("Điểm Đi không thể đồng thời là điểm giao.");
             return;
           }
@@ -738,11 +764,7 @@ export function MapView() {
         set({ start: node.id,
               pickTarget: st.goal || st.problemMode === "multi_point" ? null : "goal" });
       } else if (target === "goal") {
-        if (!isEndpointOptionAllowed("goal", node.id, st.start, st.stops)) {
-          if (node.id !== st.start) {
-            toast.error("Điểm Đến không thể đồng thời là điểm giao.");
-            return;
-          }
+        if (!isEndpointOptionAllowed("goal", node.id, st.start, [])) {
           toast.error("Điểm Đến phải khác điểm Đi.");
           return;
         }
@@ -754,11 +776,7 @@ export function MapView() {
       } else {
         // đừng nuốt im lặng: đang gõ liên tục 9 điểm cho video, click không
         // ăn mà không nói gì thì người quay tưởng app đơ (review v11)
-        if (!isStopOptionAllowed(node.id, st.start, st.goal, st.stops)) {
-          if (node.id === st.goal) {
-            toast.info("Điểm Đến không thể đồng thời là điểm giao.");
-            return;
-          }
+        if (!isStopOptionAllowed(node.id, st.start, null, st.stops)) {
           if (node.id !== st.start) {
             toast.info("Điểm này đã có trong danh sách giao.");
             return;
@@ -797,7 +815,7 @@ export function MapView() {
         ) : (
           <>
             <span className="max-w-sm text-center text-sm">
-              Không tải được đồ thị — backend (localhost:8000) đã chạy chưa?
+              Không tải được đồ thị — backend đã chạy chưa?
             </span>
             <Button variant="secondary" onClick={() => void loadGraph(graph)}>
               Thử lại

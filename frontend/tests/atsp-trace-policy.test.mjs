@@ -6,6 +6,7 @@ import {
   atspInputsChanged,
   classifySaMove,
   conceptualOptimizationOrder,
+  deliveryMarkerOrder,
   heldKarpHighlightIds,
   isOptimizationFinalEvent,
   mapControlsBottomClass,
@@ -19,6 +20,11 @@ import {
 
 const routeTrace = { trace: [{ step: 1 }, { step: 2 }] };
 const optimizationTrace = { events: [{ ordinal: 0 }, { ordinal: 3 }, { ordinal: 7 }] };
+
+test("closing Start is never exposed as a delivery marker", () => {
+  assert.deepEqual(deliveryMarkerOrder(["s", "a", "b"], "s", false), ["a", "b"]);
+  assert.deepEqual(deliveryMarkerOrder(["s", "a", "b", "s"], "s", true), ["a", "b"]);
+});
 
 test("route timeline stays visible on G_real and ATSP keeps its own source", () => {
   assert.equal(activeTimelineLength("route", routeTrace, optimizationTrace, "real", false), 2);

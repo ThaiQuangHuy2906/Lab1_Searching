@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { presentSearchStep } from "../lib/search-step-explanation.ts";
+import { presentBidirectionalTermination, presentSearchStep } from "../lib/search-step-explanation.ts";
 
 const RULES = {
   bfs: "fifo",
@@ -88,7 +88,12 @@ function trace(algorithm) {
       reachability: "route_found",
       solution_quality: ["ucs", "astar", "bidijkstra"].includes(algorithm)
         ? "exact" : algorithm === "idastar" ? "epsilon_bounded" : "feasible_unproven",
-      bidirectional_bound: null,
+      bidirectional_bound: algorithm === "bidijkstra" ? {
+        top_forward: { node: "n0003", g: 4 },
+        top_backward: { node: "n0004", g: 4 },
+        mu: 8,
+        meeting_node: "n0002",
+      } : null,
     },
   };
 }
@@ -107,13 +112,18 @@ test("all nine algorithms have deterministic structured action/rule/evidence/eff
 });
 
 test("algorithm-specific presenter uses typed scores, iteration/layer and bidi μ", () => {
-  assert.match(presentSearchStep(trace("ucs"), 0).evidence, /g=3 s/);
-  assert.match(presentSearchStep(trace("astar"), 0).evidence, /g=3 s.*h=2 s.*f=5 s/);
+  assert.match(presentSearchStep(trace("ucs"), 0).evidence, /g=0,1 phút quy đổi/);
+  assert.match(presentSearchStep(trace("astar"), 0).evidence, /g=0,1 phút quy đổi.*h=0 phút quy đổi.*f=0,1 phút quy đổi/);
   assert.match(presentSearchStep(trace("greedy"), 0).rule, /không dùng g/);
   assert.match(presentSearchStep(trace("iddfs"), 0).evidence, /Vòng 2/);
-  assert.match(presentSearchStep(trace("idastar"), 0).evidence, /bound=10 s/);
+  assert.match(presentSearchStep(trace("idastar"), 0).evidence, /bound=0,2 phút quy đổi/);
   assert.match(presentSearchStep(trace("beam"), 0).evidence, /Lớp 3.*k=5.*cắt 2/);
-  assert.match(presentSearchStep(trace("bidijkstra"), 0).evidence, /top F=3 s.*top B=4 s.*μ trước=9 s.*μ sau=8 s/);
+  const bidi = presentSearchStep(trace("bidijkstra"), 0);
+  assert.match(bidi.evidence, /g=.*top F=0,1 phút quy đổi.*top B=0,1 phút quy đổi.*μ trước=0,1 phút quy đổi/);
+  assert.doesNotMatch(bidi.evidence, /μ sau/);
+  assert.match(bidi.effect, /phía Đi\/Đến.*μ sau=0,1 phút quy đổi.*điểm gặp=n0002/);
+  assert.match(presentBidirectionalTermination(trace("bidijkstra")), /top F.*\+ top B.*≥ μ.*n0002/);
+  assert.equal(presentBidirectionalTermination(trace("astar")), null);
 });
 
 test("legacy step fallback never claims a minimum selected score", () => {
@@ -136,4 +146,12 @@ test("trace-off and source-truncated states remain explicit", () => {
   const truncated = trace("astar");
   truncated.metrics.trace_truncated = true;
   assert.match(presentSearchStep(truncated, 0).caveat, /payload rút gọn/);
+});
+
+test("an empty bidirectional frontier is presented as an effective infinite top", () => {
+  const bidi = trace("bidijkstra");
+  bidi.termination.bidirectional_bound.top_backward = null;
+  const text = presentBidirectionalTermination(bidi);
+  assert.match(text, /top B \(\+∞ \(frontier rỗng\)\)/);
+  assert.doesNotMatch(text, /top B \(chưa có\)/);
 });

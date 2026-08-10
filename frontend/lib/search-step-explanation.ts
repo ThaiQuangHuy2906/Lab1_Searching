@@ -10,9 +10,20 @@ export interface SearchStepPresentation {
   caveat: string | null;
 }
 
-function rawCost(value: number | null | undefined, mode: Mode): string {
+function fmtVi(value: number, digits: number): string {
+  const fixed = value.toFixed(digits);
+  const [integer, fraction] = fixed.split(".");
+  const grouped = integer.replace(/\B(?=(\d{3})+(?!\d))/g, "\u00a0");
+  return fraction && Number(fraction) !== 0 ? `${grouped},${fraction}` : grouped;
+}
+
+export function formatSearchCost(value: number | null | undefined, mode: Mode): string {
   if (value === null || value === undefined) return "chưa có";
-  return `${value} ${mode === "distance" ? "m" : "s"}`;
+  if (mode === "distance") {
+    const kilometres = value / 1000;
+    return `${fmtVi(kilometres, Math.abs(value) > 0 && Math.abs(value) < 10 ? 3 : 2)} km`;
+  }
+  return `${fmtVi(value / 60, 1)} phút${mode === "balanced" ? " quy đổi" : ""}`;
 }
 
 function score(value: number | null): string {
@@ -28,6 +39,7 @@ function effect(decision: TraceDecision): string {
 function structuredRule(step: TraceStepV2, mode: Mode): {
   rule: string;
   evidence: string;
+  effect?: string;
   caveat: string | null;
 } {
   const decision = step.decision;
@@ -50,57 +62,73 @@ function structuredRule(step: TraceStepV2, mode: Mode): {
       return {
         rule: "IDDFS dùng DFS giới hạn sâu và tăng giới hạn qua từng vòng.",
         evidence: `Vòng ${decision.iteration}; depth=${score(selected?.depth ?? null)}; `
-          + `giới hạn=${rawCost(decision.bound, "distance").replace(" m", "")}.`,
+          + `giới hạn=${decision.bound ?? "không có"}.`,
         caveat: "Chạm depth cap làm no-path inconclusive; không tự chứng minh graph vô đường.",
       };
     case "lowest_g":
       return {
         rule: "UCS chọn node có g nhỏ nhất.",
-        evidence: `Node được chọn có g=${rawCost(selected?.g, mode)}; `
-          + `ứng viên kế tiếp ${runner?.node ?? "không có"} có g=${rawCost(runner?.g, mode)}.`,
+        evidence: `Node được chọn có g=${formatSearchCost(selected?.g, mode)}; `
+          + `ứng viên kế tiếp ${runner?.node ?? "không có"} có g=${formatSearchCost(runner?.g, mode)}.`,
         caveat: "Bảo đảm exact cần weight không âm trong snapshot này.",
       };
     case "lowest_h":
       return {
         rule: "Greedy Best-First chọn node có h nhỏ nhất và không dùng g để chọn.",
-        evidence: `Node được chọn có h=${rawCost(selected?.h, mode)}; `
-          + `ứng viên kế tiếp ${runner?.node ?? "không có"} có h=${rawCost(runner?.h, mode)}.`,
+        evidence: `Node được chọn có h=${formatSearchCost(selected?.h, mode)}; `
+          + `ứng viên kế tiếp ${runner?.node ?? "không có"} có h=${formatSearchCost(runner?.h, mode)}.`,
         caveat: "Greedy không có bảo đảm weighted optimum.",
       };
     case "lowest_f_then_h":
       return {
         rule: "A* chọn f=g+h nhỏ nhất và tie-break theo h.",
-        evidence: `Node được chọn có g=${rawCost(selected?.g, mode)}, `
-          + `h=${rawCost(selected?.h, mode)}, f=${rawCost(selected?.f, mode)}; `
-          + `ứng viên kế tiếp ${runner?.node ?? "không có"} có f=${rawCost(runner?.f, mode)}.`,
+        evidence: `Node được chọn có g=${formatSearchCost(selected?.g, mode)}, `
+          + `h=${formatSearchCost(selected?.h, mode)}, f=${formatSearchCost(selected?.f, mode)}; `
+          + `ứng viên kế tiếp ${runner?.node ?? "không có"} có f=${formatSearchCost(runner?.f, mode)}.`,
         caveat: "Bảo đảm exact phụ thuộc heuristic admissible và consistent của snapshot.",
       };
     case "bidirectional_min_key": {
       const sides = step.bidirectional_frontiers;
       const side = step.side === "forward" ? "phía Đi" : "phía Đến";
       return {
-        rule: "Bidirectional Dijkstra chọn phía có effective top key nhỏ hơn.",
-        evidence: `Bước này mở rộng ${side}; top F=${rawCost(decision.top_forward?.g, mode)}, `
-          + `top B=${rawCost(decision.top_backward?.g, mode)}, μ trước=${rawCost(decision.mu_before, mode)}, `
-          + `μ sau=${rawCost(sides?.best_path_cost, mode)}.`,
-        caveat: "Backward g là chi phí node→Goal trên graph gốc; hai frontier không được suy từ legacy union.",
+        rule: "Dijkstra hai chiều chọn phía có giá trị nhỏ nhất đang chờ (effective top key) thấp hơn.",
+        evidence: `Trước bước: chọn mở rộng ${side} với g=${formatSearchCost(selected?.g, mode)}; `
+          + `top F=${formatSearchCost(decision.top_forward?.g, mode)}, `
+          + `top B=${formatSearchCost(decision.top_backward?.g, mode)}, μ trước=${formatSearchCost(decision.mu_before, mode)}.`,
+        effect: `${effect(decision)} Hàng chờ phía Đi/Đến sau bước có `
+          + `${sides?.forward.nodes.length ?? 0}/${sides?.backward.nodes.length ?? 0} điểm; `
+          + `μ sau=${formatSearchCost(sides?.best_path_cost, mode)}, điểm gặp=${sides?.meeting_node ?? "chưa có"}.`,
+        caveat: "g ở phía ngược là chi phí từ điểm đó đến Đến (node→Goal) trên đồ thị gốc; dữ liệu v1 không được dùng để dựng giả hai hàng chờ.",
       };
     }
     case "f_bound_dfs":
       return {
         rule: "IDA* duyệt DFS trong f-bound hiện tại.",
-        evidence: `Vòng ${decision.iteration}; f=${rawCost(selected?.f, mode)}; `
-          + `bound=${rawCost(decision.bound, mode)}.`,
+        evidence: `Vòng ${decision.iteration}; f=${formatSearchCost(selected?.f, mode)}; `
+          + `bound=${formatSearchCost(decision.bound, mode)}.`,
         caveat: "Bảo đảm sai số cộng không quá ε chỉ áp dụng nếu hoàn tất trước round cap.",
       };
     case "top_k_f":
       return {
         rule: "Beam giữ top-k ứng viên theo f ở mỗi lớp.",
         evidence: `Lớp ${decision.layer}; k=${decision.beam_width}; `
-          + `f được chọn=${rawCost(selected?.f, mode)}; đã cắt ${decision.pruned_count} ứng viên.`,
+          + `f được chọn=${formatSearchCost(selected?.f, mode)}; đã cắt ${decision.pruned_count} ứng viên.`,
         caveat: "Pruning làm Beam incomplete và không có optimal guarantee.",
       };
   }
+}
+
+export function presentBidirectionalTermination(trace: Trace): string | null {
+  if (trace.contract_version !== 2
+      || trace.termination.reason !== "bidirectional_bound_met"
+      || !trace.termination.bidirectional_bound) return null;
+  const bound = trace.termination.bidirectional_bound;
+  const effectiveTop = (value: number | null | undefined) => value === null || value === undefined
+    ? "+∞ (frontier rỗng)"
+    : formatSearchCost(value, trace.mode);
+  return `Điều kiện dừng toàn bộ phép tìm: top F (${effectiveTop(bound.top_forward?.g)}) `
+    + `+ top B (${effectiveTop(bound.top_backward?.g)}) ≥ μ `
+    + `(${formatSearchCost(bound.mu, trace.mode)}), gặp tại ${bound.meeting_node}.`;
 }
 
 export function presentSearchStep(trace: Trace, stepIndex: number): SearchStepPresentation {
@@ -138,7 +166,7 @@ export function presentSearchStep(trace: Trace, stepIndex: number): SearchStepPr
     action: `Đang mở rộng ${v2Step.expanded}.`,
     rule: presentation.rule,
     evidence: presentation.evidence,
-    effect: effect(v2Step.decision),
+    effect: presentation.effect ?? effect(v2Step.decision),
     caveat: trace.metrics.trace_truncated
       ? `${presentation.caveat ?? ""} Timeline là payload rút gọn; metrics và kết quả vẫn là full run.`.trim()
       : presentation.caveat,

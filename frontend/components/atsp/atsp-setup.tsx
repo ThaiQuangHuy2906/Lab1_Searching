@@ -1,6 +1,7 @@
 "use client";
 
-import { Crosshair, ListOrdered, Loader2, Route as RouteIcon, X } from "lucide-react";
+import * as React from "react";
+import { ArrowDown, ArrowUp, Crosshair, Route as RouteIcon, X } from "lucide-react";
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 import { Switch } from "../ui/switch";
@@ -9,59 +10,36 @@ import {
 } from "../ui/select";
 import { useApp } from "@/lib/store";
 import { isStopOptionAllowed } from "@/lib/interaction-policy";
-import type { TspMethod } from "@/lib/types";
+import { moveStop, type StopMoveDirection } from "@/lib/single-run-panel-policy";
 
 const MAX_STOPS = 15;
-const HELD_KARP_MAX_STOPS = 14;
-
-const METHOD_DETAILS: Record<TspMethod, {
-  label: string;
-  option: string;
-  description: string;
-  guarantee: boolean;
-}> = {
-  held_karp: {
-    label: "Held-Karp",
-    option: "Held-Karp — tối ưu tuyệt đối",
-    description: "Nghiệm tối ưu tuyệt đối; tối đa 14 điểm giao cộng với điểm Đi.",
-    guarantee: true,
-  },
-  nn_2opt: {
-    label: "NN + 2-opt/Or-opt",
-    option: "NN + 2-opt/Or-opt — xấp xỉ nhanh",
-    description: "NN chọn điểm gần nhất; 2-opt đảo đoạn và Or-opt di chuyển đoạn để cải thiện.",
-    guarantee: false,
-  },
-  sa: {
-    label: "Simulated Annealing",
-    option: "Simulated Annealing — 5 seed",
-    description: "Nghiệm xấp xỉ qua 5 seed theo cấu hình hiện tại.",
-    guarantee: false,
-  },
-};
 
 export function AtspSetup() {
   const s = useApp();
   const isDemo = s.graph === "demo";
   const busy = s.running || s.comparing || s.multiRunning;
   const atLimit = s.stops.length >= MAX_STOPS;
-  const method = METHOD_DETAILS[s.tspMethod];
-  const tooManyForHeldKarp = s.tspMethod === "held_karp" &&
-    s.stops.length > HELD_KARP_MAX_STOPS;
-  const startName = s.start
-    ? s.graphData?.nodes.find((node) => node.id === s.start)?.name ?? s.start
-    : "Chưa chọn điểm Đi";
-  const heldKarpWarningId = "held-karp-limit-warning";
-  const runningStatusId = "atsp-running-status";
+  const rowRefs = React.useRef(new Map<string, HTMLLIElement>());
+  const [announcement, setAnnouncement] = React.useState("");
+  const nameOf = React.useCallback((id: string) => (
+    s.graphData?.nodes.find((node) => node.id === id)?.name ?? id
+  ), [s.graphData]);
+
+  const reorder = (index: number, direction: StopMoveDirection) => {
+    const moved = moveStop(s.stops, index, direction, nameOf);
+    if (!moved) return;
+    const movedId = moved.order[moved.movedIndex];
+    setAnnouncement(moved.announcement);
+    s.set({ stops: moved.order });
+    window.requestAnimationFrame(() => rowRefs.current.get(movedId)?.focus());
+  };
 
   return (
     <div className="flex flex-col gap-2.5">
       <div className="flex items-end justify-between gap-2">
         <div className="min-w-0">
           <p className="text-sm font-medium text-ink-dim">Điểm giao hàng</p>
-          {s.stops.length > 0 && (
-            <p className="mt-0.5 text-xs text-ink-faint">Thứ tự đang nhập</p>
-          )}
+          {s.stops.length > 0 && <p className="mt-0.5 text-xs text-ink-faint">Thứ tự đang chọn</p>}
         </div>
         <Badge className="shrink-0 font-mono">{s.stops.length}/{MAX_STOPS}</Badge>
       </div>
@@ -74,76 +52,72 @@ export function AtspSetup() {
           <div className="min-w-0">
             <p className="text-xs font-semibold text-ink">Chưa có điểm giao</p>
             <p className="mt-1 text-xs leading-5 text-ink-dim">
-              Chọn điểm Đi, thêm ít nhất một điểm giao, rồi chọn phương pháp để tối ưu thứ tự ghé.
+              Thêm ít nhất một điểm. Thứ tự này được giữ nguyên khi đi lần lượt và là thứ tự ban đầu để ATSP tối ưu.
             </p>
           </div>
         </div>
       ) : (
-        <>
-          <div
-            role="status"
-            aria-live="polite"
-            aria-atomic="true"
-            className="rounded-lg border border-algo-path/30 bg-algo-path/5 p-2.5"
-          >
-            <div className="flex flex-wrap items-center justify-between gap-1.5">
-              <Badge variant="warn">Chế độ nhiều điểm</Badge>
-              <span className="font-mono text-xs text-ink-dim">
-                {s.stops.length} điểm giao
-              </span>
-            </div>
-            <p className="mt-1.5 truncate text-xs leading-5 text-ink-dim" title={startName}>
-              Đi: <span className="font-medium text-ink">{startName}</span>
-            </p>
-            <p className="mt-0.5 text-xs leading-5 text-ink-dim">
-              Nút Chạy thuật toán đi theo thứ tự này; ATSP dùng để tìm thứ tự ghé tốt hơn.
-            </p>
-          </div>
-
-          <ol className="flex flex-col gap-1.5" aria-label="Thứ tự điểm giao đang nhập">
-            {s.stops.map((id, index) => {
-              const name = s.graphData?.nodes.find((node) => node.id === id)?.name ?? id;
-              return (
-                <li
-                  key={id}
-                  className="flex min-h-10 items-center gap-2 rounded-lg border border-surface-border bg-surface-control pl-2.5 text-xs transition-colors hover:border-surface-strong"
+        <ol className="flex flex-col gap-1.5" aria-label="Thứ tự điểm giao đang chọn">
+          {s.stops.map((id, index) => {
+            const name = nameOf(id);
+            return (
+              <li
+                key={id}
+                ref={(node) => {
+                  if (node) rowRefs.current.set(id, node);
+                  else rowRefs.current.delete(id);
+                }}
+                tabIndex={-1}
+                className="flex min-h-11 items-center gap-1 rounded-lg border border-surface-border bg-surface-control pl-2.5 text-xs outline-none transition-colors hover:border-surface-strong focus-visible:ring-2 focus-visible:ring-algo-frontier"
+              >
+                <span aria-hidden="true" className="flex size-6 shrink-0 items-center justify-center rounded-full bg-algo-path font-mono text-xs font-bold text-zinc-950">
+                  {index + 1}
+                </span>
+                <span className="min-w-0 flex-1 break-words px-1 font-medium text-ink">{name}</span>
+                <button
+                  type="button"
+                  aria-label={`Chuyển ${name} lên`}
+                  className="inline-flex size-9 shrink-0 items-center justify-center rounded-lg text-ink-dim hover:bg-surface-raised hover:text-ink disabled:opacity-35"
+                  disabled={busy || index === 0}
+                  onClick={() => reorder(index, "up")}
                 >
-                  <span
-                    aria-hidden="true"
-                    className="flex size-5 shrink-0 items-center justify-center rounded-full bg-algo-path font-mono text-[11px] font-bold text-zinc-950"
-                  >
-                    {index + 1}
-                  </span>
-                  <span className="min-w-0 flex-1 truncate font-medium text-ink" title={name}>
-                    {name}
-                  </span>
-                  <button
-                    type="button"
-                    aria-label={`Xóa điểm giao: ${name}`}
-                    className="inline-flex size-9 shrink-0 items-center justify-center rounded-lg text-ink-dim transition-colors hover:bg-goal/10 hover:text-goal focus-visible:ring-offset-surface-panel disabled:pointer-events-none disabled:opacity-55"
-                    disabled={busy}
-                    onClick={() => s.set({
-                      stops: s.stops.filter((stop) => stop !== id),
-                      problemMode: "multi_point",
-                    })}
-                  >
-                    <X className="size-3.5" />
-                  </button>
-                </li>
-              );
-            })}
-          </ol>
-        </>
+                  <ArrowUp className="size-3.5" />
+                </button>
+                <button
+                  type="button"
+                  aria-label={`Chuyển ${name} xuống`}
+                  className="inline-flex size-9 shrink-0 items-center justify-center rounded-lg text-ink-dim hover:bg-surface-raised hover:text-ink disabled:opacity-35"
+                  disabled={busy || index === s.stops.length - 1}
+                  onClick={() => reorder(index, "down")}
+                >
+                  <ArrowDown className="size-3.5" />
+                </button>
+                <button
+                  type="button"
+                  aria-label={`Xóa điểm giao ${name} ở vị trí ${index + 1}`}
+                  className="inline-flex size-9 shrink-0 items-center justify-center rounded-lg text-ink-dim hover:bg-goal/10 hover:text-goal disabled:opacity-35"
+                  disabled={busy}
+                  onClick={() => s.set({ stops: s.stops.filter((stop) => stop !== id) })}
+                >
+                  <X className="size-3.5" />
+                </button>
+              </li>
+            );
+          })}
+        </ol>
       )}
+
+      <p className="sr-only" role="status" aria-live="polite" aria-atomic="true">{announcement}</p>
 
       {isDemo ? (
         <Select
           value=""
           disabled={busy || atLimit}
           onValueChange={(value) => {
-            if (isStopOptionAllowed(value, s.start, s.goal, s.stops)
-                && s.stops.length < MAX_STOPS)
-              s.set({ stops: [...s.stops, value], problemMode: "multi_point" });
+            // Goal is an independent inactive draft in multi-point mode and
+            // must not constrain the delivery-stop draft.
+            if (isStopOptionAllowed(value, s.start, null, s.stops) && !atLimit)
+              s.set({ stops: [...s.stops, value] });
           }}
         >
           <SelectTrigger aria-label="Thêm điểm giao">
@@ -151,12 +125,8 @@ export function AtspSetup() {
           </SelectTrigger>
           <SelectContent>
             {s.graphData?.nodes
-              .filter((node) => isStopOptionAllowed(
-                node.id, s.start, s.goal, s.stops,
-              ))
-              .map((node) => (
-                <SelectItem key={node.id} value={node.id}>{node.name ?? node.id}</SelectItem>
-              ))}
+              .filter((node) => isStopOptionAllowed(node.id, s.start, null, s.stops))
+              .map((node) => <SelectItem key={node.id} value={node.id}>{node.name ?? node.id}</SelectItem>)}
           </SelectContent>
         </Select>
       ) : (
@@ -168,97 +138,30 @@ export function AtspSetup() {
           onClick={() => s.set({ pickTarget: s.pickTarget === "stop" ? null : "stop" })}
         >
           <Crosshair />
-          {atLimit
-            ? "Đã đủ 15 điểm giao"
-            : s.pickTarget === "stop" ? "Đang chọn trên bản đồ…" : "Thêm điểm từ bản đồ"}
+          {atLimit ? "Đã đủ 15 điểm giao" : s.pickTarget === "stop" ? "Đang chọn trên bản đồ…" : "Thêm điểm từ bản đồ"}
         </Button>
       )}
 
-      {atLimit && (
-        <p className="text-xs leading-5 text-ink-dim">
-          Đã đạt giới hạn {MAX_STOPS} điểm giao.
-        </p>
-      )}
+      {atLimit && <p className="text-xs leading-5 text-ink-dim">Đã đạt giới hạn {MAX_STOPS} điểm giao.</p>}
 
-      {s.stops.length > 0 && (
-        <div className="flex flex-col gap-2 rounded-lg border border-surface-border bg-surface-control/55 p-2.5">
-          <div>
-            <p className="text-xs font-bold text-ink-dim">
-              Tối ưu thứ tự ghé (ATSP)
-            </p>
-            <p className="mt-0.5 text-xs leading-5 text-ink-faint">
-              Tuỳ chọn riêng: đổi thứ tự Đi + danh sách điểm giao trước khi tìm đường.
-            </p>
-          </div>
-          <Select
-            value={s.tspMethod}
+      <div className="rounded-lg border border-surface-border bg-surface-control/55 px-2.5 py-2">
+        <div className="flex min-h-11 items-center justify-between gap-3">
+          <label htmlFor="return-to-start" className="text-xs font-medium leading-5 text-ink">
+            Quay về điểm Đi sau điểm giao cuối
+          </label>
+          <Switch
+            id="return-to-start"
+            checked={s.returnToStart}
             disabled={busy}
-            onValueChange={(value) => s.set({ tspMethod: value as TspMethod })}
-          >
-            <SelectTrigger aria-label="Phương pháp ATSP"><SelectValue /></SelectTrigger>
-            <SelectContent>
-              {(Object.keys(METHOD_DETAILS) as TspMethod[]).map((value) => (
-                <SelectItem key={value} value={value}>{METHOD_DETAILS[value].option}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <div className="flex items-start gap-2">
-            <Badge variant={method.guarantee ? "ok" : "warn"} className="shrink-0">
-              {method.guarantee ? "Tối ưu tuyệt đối" : "Nghiệm xấp xỉ"}
-            </Badge>
-            <p className="min-w-0 text-xs leading-5 text-ink-dim">
-              <span className="font-medium text-ink">{method.label}.</span>{" "}
-              {method.description}
-            </p>
-          </div>
-          <div className="flex min-h-9 items-center justify-between gap-2">
-            <label htmlFor="include-optimization-trace" className="text-xs text-ink-dim">
-              Hiện quá trình tối ưu
-            </label>
-            <Switch
-              id="include-optimization-trace"
-              checked={s.includeOptimizationTrace}
-              disabled={busy}
-              aria-label="Hiện quá trình tối ưu ở lần chạy tiếp theo"
-              onCheckedChange={(checked) => s.set({ includeOptimizationTrace: checked })}
-            />
-          </div>
-          <p className="-mt-1 text-xs leading-5 text-ink-faint">
-            Chỉ áp dụng cho lần chạy tiếp theo; đây là diễn biến đổi thứ tự ghé, không phải đường xe chạy.
-          </p>
-          {tooManyForHeldKarp && (
-            <p
-              id={heldKarpWarningId}
-              role="status"
-              className="rounded-lg border border-algo-path/35 bg-algo-path/10 px-2.5 py-2 text-xs leading-5 text-ink"
-            >
-              Held-Karp nhận tối đa 14 điểm giao + 1 điểm Đi (15 điểm tổng). Hãy đổi sang NN + 2-opt/Or-opt hoặc Simulated Annealing; danh sách sẽ được giữ nguyên.
-            </p>
-          )}
-          <Button
-            variant="secondary"
-            className="w-full border-algo-path/45 bg-algo-path/10 hover:border-algo-path/70 hover:bg-algo-path/15"
-            disabled={busy || tooManyForHeldKarp}
-            aria-describedby={tooManyForHeldKarp
-              ? heldKarpWarningId
-              : s.multiRunning ? runningStatusId : undefined}
-            onClick={() => void s.runMulti(s.tspMethod)}
-          >
-            {s.multiRunning ? <Loader2 className="animate-spin" /> : <ListOrdered />}
-            {s.multiRunning ? "Đang tối ưu…" : "Tối ưu thứ tự"}
-          </Button>
-          {s.multiRunning && (
-            <p
-              id={runningStatusId}
-              role="status"
-              aria-live="polite"
-              className="text-center text-xs leading-5 text-ink-dim"
-            >
-              Đang tính ma trận chi phí và thứ tự ghé…
-            </p>
-          )}
+            onCheckedChange={s.setReturnToStart}
+          />
         </div>
-      )}
+        <p className="text-xs leading-5 text-ink-dim">
+          {s.returnToStart
+            ? "Vòng kín: thêm đúng một chặng quay về Đi; Đi không trở thành điểm giao mới."
+            : "Hành trình mở: kết thúc tại điểm giao cuối."}
+        </p>
+      </div>
     </div>
   );
 }

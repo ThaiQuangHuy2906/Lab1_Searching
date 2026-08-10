@@ -8,11 +8,14 @@ import { effectiveTraceSteps } from "@/lib/interaction-policy";
 import { isOptimizationFinalEvent } from "@/lib/atsp-trace-policy";
 import { usePalette } from "@/lib/use-palette";
 
-function Dot({ color, ring }: { color: string; ring?: boolean }) {
+function Dot({ color, ring, outline }: { color: string; ring?: boolean; outline?: string }) {
   return (
     <span
       className="inline-block size-2.5 shrink-0 rounded-full"
-      style={{ background: color, boxShadow: ring ? `0 0 0 2px ${color}55` : undefined }}
+      style={{
+        background: color,
+        boxShadow: outline ? `0 0 0 2px ${outline}` : ring ? `0 0 0 2px ${color}55` : undefined,
+      }}
     />
   );
 }
@@ -43,9 +46,19 @@ export function Legend() {
   const P = usePalette();
   const H = P.hex;
 
-  const hasStepLegend = effectiveTraceSteps(trace, graph, traceOnReal).length > 0;
+  const traceSteps = effectiveTraceSteps(trace, graph, traceOnReal);
+  const hasStepLegend = traceSteps.length > 0;
   const hasTraceLegend = hasStepLegend || Boolean(trace?.found);
   const isBidi = hasStepLegend && trace?.algorithm === "bidijkstra";
+  const currentTraceStep = traceSteps[Math.min(stepIdx, traceSteps.length - 1)];
+  const hasBidiOverlap = Boolean(
+    currentTraceStep
+    && "bidirectional_frontiers" in currentTraceStep
+    && currentTraceStep.bidirectional_frontiers
+    && currentTraceStep.bidirectional_frontiers.forward.nodes.some((node) => (
+      currentTraceStep.bidirectional_frontiers?.backward.nodes.includes(node)
+    )),
+  );
   const comparing = drawerTab === "compare" && compare;
   const optimizationActive = timelineSource === "optimization"
     && Boolean(optimizationTrace?.events.length);
@@ -76,6 +89,7 @@ export function Legend() {
               <>
                 <span className="flex items-center gap-2"><Dot color={H.bidiForward} /> Phía xuôi (từ Đi)</span>
                 <span className="flex items-center gap-2"><Dot color={H.bidiBackward} /> Phía ngược (từ Đến)</span>
+                {hasBidiOverlap && <span className="flex items-center gap-2"><Dot color={H.bidiForward} outline={H.bidiBackward} /> Ở cả hai phía (viền kép)</span>}
               </>
             ) : (
               <>

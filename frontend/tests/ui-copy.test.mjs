@@ -18,6 +18,15 @@ import {
 } from "../lib/metric-presentation.ts";
 import { MODE_PRESENTATION } from "../lib/ui-copy.ts";
 
+test("timeline slider exposes its accessible name on the focusable thumb", () => {
+  const source = readFileSync(
+    new URL("../components/ui/slider.tsx", import.meta.url),
+    "utf8",
+  );
+  assert.match(source, /"aria-label": ariaLabel/);
+  assert.match(source, /<SliderPrimitive\.Thumb[\s\S]*aria-label=\{ariaLabel\}/);
+});
+
 test("mode presentation keeps all visible cost units in km or minutes", () => {
   assert.equal(MODE_PRESENTATION.distance.unit, "km");
   assert.equal(MODE_PRESENTATION.time.unit, "phút");
@@ -63,16 +72,16 @@ test("route outcomes and backend narrative use only km and minutes on screen", (
   );
 });
 
-test("legacy Explain UI identifies post-run references without forbidden claims", () => {
+test("Explain UI identifies post-run references without forbidden claims", () => {
   const source = readFileSync(
-    new URL("../components/drawer/explain-tab.tsx", import.meta.url),
+    new URL("../components/explanation/route-explanation.tsx", import.meta.url),
     "utf8",
   );
-  assert.match(source, /Tuyến tham chiếu được tính thêm sau khi chạy/);
+  assert.match(source, /Tuyến tham chiếu được hệ thống tính thêm sau khi chạy/);
   assert.doesNotMatch(source, /Tuyến thay thế đã xét/);
   assert.doesNotMatch(source, /vì sao bị loại/);
-  assert.match(source, /Δ cân bằng/);
-  assert.match(source, /Δ quãng đường/);
+  assert.match(source, /Hậu kiểm bằng UCS/);
+  assert.match(source, /relation_to_selected/);
 });
 
 test("every optimization event has a Vietnamese presentation separate from raw fields", () => {

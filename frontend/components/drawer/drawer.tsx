@@ -34,6 +34,7 @@ export function Drawer({ mobileOpen = false, onMobileClose }: DrawerProps) {
   const open = useApp((s) => s.drawerOpen);
   const tab = useApp((s) => s.drawerTab);
   const set = useApp((s) => s.set);
+  const leaveExplanation = useApp((s) => s.leaveExplanation);
   const compactViewport = useCompactViewport();
   const openButtonRef = React.useRef<HTMLButtonElement>(null);
   const titleRef = React.useRef<HTMLHeadingElement>(null);
@@ -119,7 +120,11 @@ export function Drawer({ mobileOpen = false, onMobileClose }: DrawerProps) {
         </Button>
       </div>
       <div className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto p-3">
-        <Tabs value={tab} onValueChange={(value) => set({ drawerTab: value as DrawerTab })}>
+        <Tabs value={tab} onValueChange={(value) => {
+          const next = value as DrawerTab;
+          if (next !== "explain") leaveExplanation();
+          set({ drawerTab: next, ...(next === "explain" ? { playing: false } : {}) });
+        }}>
           <div className="sticky -top-3 z-20 -mx-3 border-b border-surface-border/80 bg-surface-rail px-3 pb-2 pt-3">
             <TabsList aria-label="Chế độ xem kết quả và kịch bản" className="shadow-sm">
               <TabsTrigger value="metrics">Số liệu</TabsTrigger>

@@ -9,6 +9,7 @@ import * as React from "react";
 import { useApp } from "@/lib/store";
 import { useAnimation } from "@/lib/use-animation";
 import { fmtVi } from "@/lib/format";
+import { BidirectionalFrontierTables } from "./bidirectional-frontier-tables";
 
 function val(m: Record<string, number> | null, id: string): string {
   const v = m?.[id];
@@ -50,6 +51,10 @@ export function GhfTable() {
       set({ playing: false });
     }
   };
+
+  if (trace.algorithm === "bidijkstra" && cur) {
+    return <BidirectionalFrontierTables step={cur} mode={trace.mode} nameOf={nameOf} onJump={jump} />;
+  }
 
   return (
     <div className="flex flex-col gap-1">

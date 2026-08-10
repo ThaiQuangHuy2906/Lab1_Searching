@@ -186,12 +186,16 @@ Copy-Item .env.example .env
 # Điền TOMTOM_API_KEY trong .env khi thực sự crawl.
 ```
 
-Nếu backend không ở `http://localhost:8000`, tạo
-`frontend/.env.local`:
+Mặc định, frontend gọi `/api/*` cùng origin và Next.js chuyển tiếp request tới
+`http://127.0.0.1:8000`. Cách này hoạt động cả khi mở giao diện bằng `localhost`
+lẫn IP LAN. Nếu backend chạy ở địa chỉ khác, tạo `frontend/.env.local`:
 
 ```dotenv
-NEXT_PUBLIC_API_BASE=http://localhost:8000
+BACKEND_INTERNAL_URL=http://127.0.0.1:8000
 ```
+
+Chỉ đặt `NEXT_PUBLIC_API_BASE` khi muốn trình duyệt gọi thẳng FastAPI; khi đó
+backend phải cho phép origin của frontend qua CORS.
 
 `.env`, các biến thể local và `frontend/.env.local` đã được Git ignore;
 `.env.example` vẫn được track.
@@ -335,7 +339,7 @@ benchmark/generator cuối được duyệt, rồi mới gỡ 5 banner `SỐ T�
 
 | Triệu chứng | Cách xử lý |
 |---|---|
-| Frontend không gọi được backend | chạy uvicorn, kiểm `NEXT_PUBLIC_API_BASE`, rồi restart frontend |
+| Frontend không gọi được backend | chạy uvicorn, kiểm `BACKEND_INTERNAL_URL`, rồi restart frontend |
 | API trả graph cũ | tắt process cũ, restart backend, hard-refresh và kiểm `/api/graph?level=demo` |
 | Port 8000/3000 bận | tìm PID bằng `netstat -ano \| findstr :<port>` rồi chỉ tắt đúng process đó |
 | Map nền trống | kiểm mạng hoặc bật chế độ offline |

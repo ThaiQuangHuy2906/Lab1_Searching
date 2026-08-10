@@ -16,6 +16,12 @@ export interface AnimationState {
   expandedSet: Set<string>;
   /** frontier of the current step (pink) */
   frontierSet: Set<string>;
+  /** v2 Bidijkstra frontier owned by the Start side */
+  forwardFrontierSet: Set<string>;
+  /** v2 Bidijkstra frontier owned by the Goal side */
+  backwardFrontierSet: Set<string>;
+  /** nodes present in both v2 frontier payloads */
+  bidiOverlapSet: Set<string>;
   /** bidijkstra: node -> side it was expanded on (up to current step) */
   sideByNode: Map<string, "forward" | "backward">;
   /** first step index at which a node was expanded (click row -> jump) */
@@ -56,9 +62,16 @@ export function useAnimation(): AnimationState {
     }
     if (current?.side) sideByNode.set(current.expanded, current.side);
     const frontierSet = new Set(current?.frontier ?? []);
+    const forwardFrontierSet = new Set(current?.bidirectional_frontiers?.forward.nodes ?? []);
+    const backwardFrontierSet = new Set(current?.bidirectional_frontiers?.backward.nodes ?? []);
+    const bidiOverlapSet = new Set(
+      [...forwardFrontierSet].filter((node) => backwardFrontierSet.has(node)),
+    );
     const atEnd = steps.length === 0 || stepIdx >= steps.length - 1;
     return {
-      steps, stepIdx, current, expandedSet, frontierSet, sideByNode, stepOfNode,
+      steps, stepIdx, current, expandedSet, frontierSet,
+      forwardFrontierSet, backwardFrontierSet, bidiOverlapSet,
+      sideByNode, stepOfNode,
       atEnd,
       showPath: Boolean(trace?.found) && atEnd,
     };

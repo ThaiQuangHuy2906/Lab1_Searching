@@ -34,6 +34,7 @@ export default function Home() {
   const loadGraph = useApp((state) => state.loadGraph);
   const offline = useApp((state) => state.offlineMode);
   const [mobilePanel, setMobilePanel] = React.useState<MobilePanel>(null);
+  const [controlsOpen, setControlsOpen] = React.useState(true);
   const lastMobileTrigger = React.useRef<HTMLElement | null>(null);
   const wasMobilePanelOpen = React.useRef(false);
 
@@ -50,6 +51,13 @@ export default function Home() {
     wasMobilePanelOpen.current = mobilePanel !== null;
   }, [mobilePanel]);
 
+  React.useEffect(() => {
+    // DeckGL/MapLibre react to resize without changing the controlled camera.
+    // Dispatch once after the rail width changes; never fit/fly automatically.
+    const frame = window.requestAnimationFrame(() => window.dispatchEvent(new Event("resize")));
+    return () => window.cancelAnimationFrame(frame);
+  }, [controlsOpen]);
+
   const openMobilePanel = (panel: Exclude<MobilePanel, null>) =>
     (event: React.MouseEvent<HTMLButtonElement>) => {
       lastMobileTrigger.current = event.currentTarget;
@@ -62,6 +70,8 @@ export default function Home() {
         <ControlPanel
           mobileOpen={mobilePanel === "controls"}
           onMobileClose={() => setMobilePanel(null)}
+          desktopOpen={controlsOpen}
+          onDesktopOpenChange={setControlsOpen}
         />
         <div className="map-frame relative z-0 min-w-0 flex-1 overflow-hidden rounded-xl border border-surface-border/80 max-[959px]:h-[100dvh] max-[959px]:rounded-none max-[959px]:border-0">
           <MapView />

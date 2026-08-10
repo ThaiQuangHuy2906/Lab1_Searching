@@ -2,7 +2,8 @@
 
 import * as React from "react";
 import {
-  ArrowDownUp, ChevronDown, Crosshair, Loader2, PanelLeftClose, Play, Route, X,
+  ArrowDownUp, ChevronDown, Crosshair, Loader2, PanelLeftClose, PanelLeftOpen,
+  Play, Route, X,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { Switch } from "./ui/switch";
@@ -21,7 +22,6 @@ import {
 import { ALGORITHM_SUMMARY } from "@/lib/ui-copy";
 import {
   isEndpointOptionAllowed,
-  MULTI_ROUTE_ACTIVE_MESSAGE,
 } from "@/lib/interaction-policy";
 import {
   graphViewForNodeCount,
@@ -31,9 +31,15 @@ import {
   parseDemoNodeCount,
 } from "@/lib/graph-view";
 import { ALGO_LABEL, useApp } from "@/lib/store";
+import {
+  activePanelControls,
+  singleRunCta,
+} from "@/lib/single-run-panel-policy";
 import { useMobileDialogFocus } from "@/lib/use-mobile-dialog-focus";
 import { fmtVi } from "@/lib/format";
-import type { Algorithm, Mode, TimeSlot } from "@/lib/types";
+import type {
+  Algorithm, Mode, MultiStrategy, ProblemMode, RunKind, TimeSlot, TspMethod,
+} from "@/lib/types";
 import { AtspSetup } from "./atsp/atsp-setup";
 import { EdgeExperimentLauncher } from "./edge-weight-presets";
 
@@ -43,6 +49,56 @@ const MODES: { v: Mode; label: string }[] = [
   { v: "time", label: "Nhanh nhất" },
   { v: "distance", label: "Ngắn nhất" },
 ];
+
+const METHOD_DETAILS: Record<TspMethod, { label: string; description: string }> = {
+  held_karp: {
+    label: "Held–Karp",
+    description: "Tối ưu exact; tối đa 15 điểm gồm Đi.",
+  },
+  nn_2opt: {
+    label: "NN + 2-opt/Or-opt",
+    description: "Heuristic nhanh trên ma trận chi phí có hướng.",
+  },
+  sa: {
+    label: "Simulated Annealing",
+    description: "Heuristic qua năm seed cố định 0–4.",
+  },
+};
+
+function SegmentedRadio<T extends string>({
+  name, label, value, options, disabled, onChange,
+}: {
+  name: string;
+  label: string;
+  value: T;
+  options: readonly { value: T; label: string }[];
+  disabled?: boolean;
+  onChange: (value: T) => void;
+}) {
+  return (
+    <fieldset className="min-w-0">
+      <legend className="sr-only">{label}</legend>
+      <div className={`grid gap-0.5 rounded-lg border border-surface-border bg-surface-control p-0.5 ${options.length === 2 ? "grid-cols-2" : "grid-cols-3"}`}>
+        {options.map((option) => (
+          <label key={option.value} className="relative min-w-0">
+            <input
+              type="radio"
+              name={name}
+              value={option.value}
+              checked={value === option.value}
+              disabled={disabled}
+              onChange={() => onChange(option.value)}
+              className="peer sr-only"
+            />
+            <span className="flex min-h-9 cursor-pointer items-center justify-center rounded-md px-2 text-center text-xs font-medium text-ink-dim transition-colors peer-checked:bg-surface-raised peer-checked:text-ink peer-checked:shadow-sm peer-focus-visible:ring-2 peer-focus-visible:ring-algo-frontier peer-disabled:cursor-not-allowed peer-disabled:opacity-55">
+              {option.label}
+            </span>
+          </label>
+        ))}
+      </div>
+    </fieldset>
+  );
+}
 
 function FieldLabel({ children, tip, dot }: {
   children: React.ReactNode; tip?: string; dot?: string;
@@ -104,9 +160,18 @@ function Section({ title, tip, children, defaultOpen = true }: {
 function NodePicker({ kind }: { kind: "start" | "goal" }) {
   const graphData = useApp((state) => state.graphData);
   const graph = useApp((state) => state.graph);
-  const value = useApp((state) => (kind === "start" ? state.start : state.goal));
-  const other = useApp((state) => (kind === "start" ? state.goal : state.start));
-  const stops = useApp((state) => state.stops);
+  const problemMode = useApp((state) => state.problemMode);
+  const start = useApp((state) => state.start);
+  const goal = useApp((state) => state.goal);
+  const allStops = useApp((state) => state.stops);
+  const value = kind === "start" ? start : goal;
+  const other = kind === "start"
+    ? problemMode === "two_point" ? goal : null
+    : start;
+  // Compute inactive conflicts after subscription. Returning `[]` directly
+  // from a Zustand selector creates a fresh snapshot on every read and can
+  // trigger React's getServerSnapshot infinite-loop guard.
+  const stops = kind === "start" && problemMode === "multi_point" ? allStops : [];
   const pickTarget = useApp((state) => state.pickTarget);
   const busy = useApp((state) => state.running || state.comparing || state.multiRunning);
   const set = useApp((state) => state.set);
@@ -264,9 +329,16 @@ function GraphNodeCountInput({ isDemo, busy }: { isDemo: boolean; busy: boolean 
 type ControlPanelProps = {
   mobileOpen?: boolean;
   onMobileClose?: () => void;
+  desktopOpen?: boolean;
+  onDesktopOpenChange?: (open: boolean) => void;
 };
 
-export function ControlPanel({ mobileOpen = false, onMobileClose }: ControlPanelProps) {
+export function ControlPanel({
+  mobileOpen = false,
+  onMobileClose,
+  desktopOpen = true,
+  onDesktopOpenChange,
+}: ControlPanelProps) {
   const state = useApp();
   const isDemo = state.graph === "demo";
   const busy = state.running || state.comparing || state.multiRunning;
@@ -278,22 +350,64 @@ export function ControlPanel({ mobileOpen = false, onMobileClose }: ControlPanel
   const epsilonDefaultText = fmtVi(epsilonDefault, state.mode === "distance" ? 3 : 1);
   const panelRef = React.useRef<HTMLElement>(null);
   const headingRef = React.useRef<HTMLHeadingElement>(null);
+  const collapsedTriggerRef = React.useRef<HTMLButtonElement>(null);
+  const previousDesktopOpen = React.useRef(desktopOpen);
   const closeMobile = React.useCallback(() => onMobileClose?.(), [onMobileClose]);
   const onMobilePanelKeyDownCapture = useMobileDialogFocus(mobileOpen, panelRef, headingRef, closeMobile);
-  const algorithmShortName = ALGO_LABEL[state.algorithm];
-  const routeAction = state.problemMode === "multi_point"
-    ? `Chạy qua ${state.stops.length} điểm`
-    : `Chạy ${algorithmShortName}`;
+  const visibleControls = activePanelControls(
+    state.problemMode, state.multiStrategy, state.runKind,
+  );
+  const cta = singleRunCta({
+    problemMode: state.problemMode,
+    multiStrategy: state.multiStrategy,
+    runKind: state.runKind,
+    start: state.start,
+    goal: state.goal,
+    stops: state.stops,
+    algorithm: state.algorithm,
+    method: state.tspMethod,
+  });
   const overrideCount = Object.keys(state.edgeOverrides).length;
-  const ctaLabel = overrideCount > 0
-    ? `${routeAction} · ${overrideCount} đoạn thử`
-    : routeAction;
+  const ctaLabel = overrideCount > 0 && cta.action
+    ? `${cta.label} · ${overrideCount} đoạn thử`
+    : cta.label;
   const mobileClasses = mobileOpen
     ? "max-[959px]:fixed max-[959px]:inset-0 max-[959px]:z-50 max-[959px]:flex max-[959px]:h-[100dvh] max-[959px]:w-full max-[959px]:rounded-none"
     : "max-[959px]:hidden";
 
+  React.useEffect(() => {
+    if (previousDesktopOpen.current === desktopOpen) return;
+    previousDesktopOpen.current = desktopOpen;
+    const frame = window.requestAnimationFrame(() => {
+      (desktopOpen ? headingRef.current : collapsedTriggerRef.current)?.focus();
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [desktopOpen]);
+
+  if (!desktopOpen && !mobileOpen) {
+    return (
+      <aside
+        aria-label="Bảng thiết lập đang thu gọn"
+        className="app-rail relative z-10 flex h-full w-14 shrink-0 items-start justify-center rounded-xl border border-surface-border/80 p-2 max-[959px]:hidden"
+      >
+        <Button
+          ref={collapsedTriggerRef}
+          variant="secondary"
+          size="iconSm"
+          aria-expanded="false"
+          aria-controls="control-panel"
+          aria-label="Mở bảng thiết lập"
+          onClick={() => onDesktopOpenChange?.(true)}
+        >
+          <PanelLeftOpen />
+        </Button>
+      </aside>
+    );
+  }
+
   return (
     <aside
+      id="control-panel"
       ref={panelRef}
       aria-label="Bảng điều khiển định tuyến"
       aria-modal={mobileOpen || undefined}
@@ -312,6 +426,17 @@ export function ControlPanel({ mobileOpen = false, onMobileClose }: ControlPanel
         <Button
           variant="ghost"
           size="iconSm"
+          className="max-[959px]:hidden"
+          aria-expanded="true"
+          aria-controls="control-panel"
+          aria-label="Thu gọn bảng thiết lập"
+          onClick={() => onDesktopOpenChange?.(false)}
+        >
+          <PanelLeftClose />
+        </Button>
+        <Button
+          variant="ghost"
+          size="iconSm"
           className="hidden max-[959px]:inline-flex"
           aria-label="Đóng bảng thiết lập"
           onClick={closeMobile}
@@ -321,7 +446,7 @@ export function ControlPanel({ mobileOpen = false, onMobileClose }: ControlPanel
       </div>
 
       <div className="flex min-h-0 flex-1 flex-col gap-2.5 overflow-x-hidden overflow-y-auto p-3">
-        <Section title="Thiết lập bài toán">
+        <Section title="Thiết lập dữ liệu">
           <Field label="Đồ thị">
             <Select value={state.graph} disabled={busy} onValueChange={(value) => void state.loadGraph(value as "demo" | "real")}>
               <SelectTrigger aria-label="Đồ thị"><SelectValue /></SelectTrigger>
@@ -359,51 +484,131 @@ export function ControlPanel({ mobileOpen = false, onMobileClose }: ControlPanel
           </Field>
         </Section>
 
-        <Section title="Hành trình">
-          <Field label="Đi — điểm xuất phát"><NodePicker kind="start" /></Field>
-          <SwapButton />
-          <Field label={state.problemMode === "multi_point" ? "Đến — draft đang được giữ" : "Đến — điểm đích"}><NodePicker kind="goal" /></Field>
-          <AtspSetup />
+        <Section title="Loại bài toán">
+          <SegmentedRadio<ProblemMode>
+            name="problem-mode"
+            label="Loại bài toán"
+            value={state.problemMode}
+            disabled={busy}
+            options={[
+              { value: "two_point", label: "Hai điểm" },
+              { value: "multi_point", label: "Nhiều điểm" },
+            ]}
+            onChange={state.setProblemMode}
+          />
+          <p className="text-xs leading-5 text-ink-dim">
+            Điểm Đến và danh sách điểm giao được lưu riêng; chuyển loại bài toán không tự biến điểm Đến thành điểm giao.
+          </p>
         </Section>
 
-        <Section
-          title="Thuật toán"
-          tip="UCS, A* và Dijkstra hai chiều đảm bảo tối ưu; IDA* dùng biên ε; các thuật toán còn lại là đánh đổi."
-        >
-          <Select value={state.algorithm} disabled={busy} onValueChange={(value) => state.set({ algorithm: value as Algorithm })}>
-            <SelectTrigger aria-label="Thuật toán"><SelectValue /></SelectTrigger>
-            <SelectContent>
-              {ALGORITHM_GROUPS.map((group) => (
-                <SelectGroup key={group.label}>
-                  <SelectLabel className={`flex items-center gap-1.5 ${group.cls}`}>
-                    <span className="size-1.5 rounded-full bg-current" />{group.label}
-                  </SelectLabel>
-                  {group.algos.map((algorithm) => <SelectItem key={algorithm} value={algorithm}>{ALGO_LABEL[algorithm]}</SelectItem>)}
-                </SelectGroup>
-              ))}
-            </SelectContent>
-          </Select>
-          <p className="rounded-lg border border-surface-border bg-surface-control/70 px-2.5 py-2 text-xs leading-5 text-ink-dim">{ALGORITHM_SUMMARY[state.algorithm]}</p>
-          {state.algorithm === "beam" && (
-            <Field label="Độ rộng Beam (k)" tip="Số điểm tốt nhất giữ lại ở mỗi lớp; k nhỏ nhanh hơn nhưng có thể mất đường đi.">
-              <input type="number" min={1} disabled={busy} value={state.beamWidth}
-                placeholder={isDemo ? "Mặc định 5" : "Mặc định 50"}
-                className="h-10 rounded-lg border border-surface-border bg-surface-control px-3 font-mono text-sm hover:border-surface-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-algo-frontier focus-visible:ring-offset-2 focus-visible:ring-offset-surface-panel disabled:cursor-not-allowed disabled:opacity-55"
-                onChange={(event) => state.set({ beamWidth: event.target.value === "" ? "" : Number(event.target.value) })} />
-            </Field>
+        <Section title="Hành trình">
+          <Field label="Đi — điểm xuất phát"><NodePicker kind="start" /></Field>
+          {visibleControls.showGoal && (
+            <>
+              <SwapButton />
+              <Field label="Đến — điểm đích"><NodePicker kind="goal" /></Field>
+            </>
           )}
-          {state.algorithm === "idastar" && (
-            <Field label={`ε — nới ngưỡng (${epsilonUnit})`} tip={`Mỗi vòng IDA* nới ngưỡng thêm ε ${epsilonUnit}; nghiệm nằm trong khoảng tối ưu + ε.`}>
-              <input type="number" min={epsilonMin} step={epsilonStep} disabled={busy} value={epsilonDisplay} placeholder={`Mặc định ${epsilonDefaultText}`}
-                className="h-10 rounded-lg border border-surface-border bg-surface-control px-3 font-mono text-sm hover:border-surface-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-algo-frontier focus-visible:ring-offset-2 focus-visible:ring-offset-surface-panel disabled:cursor-not-allowed disabled:opacity-55"
-                onChange={(event) => {
-                  const value = event.target.value;
-                  const parsed = Number(value);
-                  state.set({ epsilon: value === "" || !Number.isFinite(parsed) ? "" : presentationEpsilonToRaw(state.mode, parsed) });
-                }} />
-            </Field>
+          {visibleControls.showStops && <AtspSetup />}
+        </Section>
+
+        {visibleControls.showStrategy && (
+          <Section title="Cách xử lý">
+            <SegmentedRadio<MultiStrategy>
+              name="multi-strategy"
+              label="Cách xử lý hành trình nhiều điểm"
+              value={state.multiStrategy}
+              disabled={busy}
+              options={[
+                { value: "ordered_search", label: "Đi theo thứ tự đã chọn" },
+                { value: "atsp", label: "Tối ưu thứ tự ATSP" },
+              ]}
+              onChange={state.setMultiStrategy}
+            />
+          </Section>
+        )}
+
+        <Section title="Chế độ chạy">
+          <SegmentedRadio<RunKind>
+            name="run-kind"
+            label="Chế độ chạy"
+            value={state.runKind}
+            disabled={busy}
+            options={[
+              { value: "single", label: "Chạy một" },
+              { value: "compare", label: "So sánh nhiều" },
+            ]}
+            onChange={state.setRunKind}
+          />
+          {state.runKind === "compare" && (
+            <p className="rounded-lg border border-algo-path/35 bg-algo-path/10 px-2.5 py-2 text-xs leading-5 text-ink">
+              Không gian so sánh nhiều bản đồ chưa có trong màn hình này. Nút bên dưới sẽ không chạy nhầm tác vụ đơn.
+            </p>
           )}
         </Section>
+
+        {visibleControls.selection === "route_algorithm" && (
+          <Section
+            title="Thuật toán"
+            tip="UCS, A* và Dijkstra hai chiều đảm bảo tối ưu; IDA* dùng biên ε; các thuật toán còn lại là đánh đổi."
+          >
+            <Select value={state.algorithm} disabled={busy} onValueChange={(value) => state.set({ algorithm: value as Algorithm })}>
+              <SelectTrigger aria-label="Thuật toán"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {ALGORITHM_GROUPS.map((group) => (
+                  <SelectGroup key={group.label}>
+                    <SelectLabel className={`flex items-center gap-1.5 ${group.cls}`}>
+                      <span className="size-1.5 rounded-full bg-current" />{group.label}
+                    </SelectLabel>
+                    {group.algos.map((algorithm) => <SelectItem key={algorithm} value={algorithm}>{ALGO_LABEL[algorithm]}</SelectItem>)}
+                  </SelectGroup>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="rounded-lg border border-surface-border bg-surface-control/70 px-2.5 py-2 text-xs leading-5 text-ink-dim">{ALGORITHM_SUMMARY[state.algorithm]}</p>
+            {state.algorithm === "beam" && (
+              <Field label="Độ rộng Beam (k)" tip="Số điểm tốt nhất giữ lại ở mỗi lớp; k nhỏ nhanh hơn nhưng có thể mất đường đi.">
+                <input type="number" min={1} disabled={busy} value={state.beamWidth}
+                  placeholder={isDemo ? "Mặc định 5" : "Mặc định 50"}
+                  className="h-10 rounded-lg border border-surface-border bg-surface-control px-3 font-mono text-sm hover:border-surface-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-algo-frontier focus-visible:ring-offset-2 focus-visible:ring-offset-surface-panel disabled:cursor-not-allowed disabled:opacity-55"
+                  onChange={(event) => state.set({ beamWidth: event.target.value === "" ? "" : Number(event.target.value) })} />
+              </Field>
+            )}
+            {state.algorithm === "idastar" && (
+              <Field label={`ε — nới ngưỡng (${epsilonUnit})`} tip={`Mỗi vòng IDA* nới ngưỡng thêm ε ${epsilonUnit}; nghiệm nằm trong khoảng tối ưu + ε.`}>
+                <input type="number" min={epsilonMin} step={epsilonStep} disabled={busy} value={epsilonDisplay} placeholder={`Mặc định ${epsilonDefaultText}`}
+                  className="h-10 rounded-lg border border-surface-border bg-surface-control px-3 font-mono text-sm hover:border-surface-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-algo-frontier focus-visible:ring-offset-2 focus-visible:ring-offset-surface-panel disabled:cursor-not-allowed disabled:opacity-55"
+                  onChange={(event) => {
+                    const value = event.target.value;
+                    const parsed = Number(value);
+                    state.set({ epsilon: value === "" || !Number.isFinite(parsed) ? "" : presentationEpsilonToRaw(state.mode, parsed) });
+                  }} />
+              </Field>
+            )}
+          </Section>
+        )}
+
+        {visibleControls.selection === "atsp_method" && (
+          <Section title="Phương pháp ATSP">
+            <Select value={state.tspMethod} disabled={busy} onValueChange={(value) => state.set({ tspMethod: value as TspMethod })}>
+              <SelectTrigger aria-label="Phương pháp ATSP"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {(Object.keys(METHOD_DETAILS) as TspMethod[]).map((method) => (
+                  <SelectItem key={method} value={method}>{METHOD_DETAILS[method].label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="rounded-lg border border-surface-border bg-surface-control/70 px-2.5 py-2 text-xs leading-5 text-ink-dim">
+              {METHOD_DETAILS[state.tspMethod].description}
+            </p>
+            <SwitchRow
+              label="Hiện quá trình tối ưu"
+              tip="Đây là diễn biến đổi thứ tự ghé, không phải đường xe chạy."
+              checked={state.includeOptimizationTrace}
+              onChange={(value) => state.set({ includeOptimizationTrace: value })}
+            />
+          </Section>
+        )}
 
         <Section title="Hiển thị">
           <SwitchRow label="Lớp ùn tắc" tip="Tô màu đoạn đường theo mức ùn tắc 1 đến 5 của khung giờ đang chọn." checked={state.trafficLayer} onChange={(value) => state.set({ trafficLayer: value })} />
@@ -421,21 +626,24 @@ export function ControlPanel({ mobileOpen = false, onMobileClose }: ControlPanel
       </div>
 
       <div className="app-footer flex shrink-0 flex-col gap-1.5 border-t border-surface-border/80 px-4 py-3">
-        <Button size="lg" className="w-full" disabled={busy} onClick={() => void state.runRoute()}>
-          {state.running ? <Loader2 className="animate-spin" /> : <Play />}
+        <Button
+          size="lg"
+          className="h-auto min-h-11 w-full whitespace-normal px-3 py-2 text-center leading-5"
+          disabled={busy || state.graphLoading || cta.action === null || cta.blockedReason !== null}
+          aria-describedby="single-run-cta-reason"
+          onClick={() => {
+            if (cta.action === "route") void state.runRoute();
+            if (cta.action === "atsp") void state.runMulti(state.tspMethod);
+          }}
+        >
+          {busy ? <Loader2 className="animate-spin" /> : <Play />}
           {state.running
-            ? state.routeProgress ? `Đang chạy chặng ${state.routeProgress.current}/${state.routeProgress.total}…` : "Đang chạy…"
-            : ctaLabel}
+            ? state.routeProgress ? `Đang chạy chặng ${state.routeProgress.current}/${state.routeProgress.total}…` : "Đang tìm đường…"
+            : state.multiRunning ? "Đang dựng ma trận và tối ưu…"
+              : state.comparing ? "Đang so sánh…"
+                : ctaLabel}
         </Button>
-        {!state.graphLoading && (
-          <p className="min-h-5 text-center text-xs leading-5 text-ink-dim">
-            {state.problemMode === "multi_point"
-              ? !state.start ? "Còn thiếu điểm Đi." : MULTI_ROUTE_ACTIVE_MESSAGE
-              : !state.start || !state.goal
-                ? !state.start && !state.goal ? "Chọn điểm Đi và Đến ở mục Hành trình trước." : !state.start ? "Còn thiếu điểm Đi." : "Còn thiếu điểm Đến."
-                : ""}
-          </p>
-        )}
+        {!state.graphLoading && <p id="single-run-cta-reason" className="min-h-5 text-center text-xs leading-5 text-ink-dim">{cta.blockedReason ?? ""}</p>}
         {state.graphLoading && <Skeleton className="h-5 w-full" />}
       </div>
     </aside>

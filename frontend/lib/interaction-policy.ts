@@ -147,6 +147,14 @@ export function isStopOptionAllowed(
   return nodeId !== start && nodeId !== goal && !stops.includes(nodeId);
 }
 
+/** An inactive two-point Goal draft must not leak onto a multi-point map. */
+export function shouldShowGoalMarker(
+  problemMode: ProblemMode,
+  showingFinalAtspRoute: boolean,
+): boolean {
+  return problemMode === "two_point" && !showingFinalAtspRoute;
+}
+
 export function effectiveTraceSteps(
   trace: Pick<Trace, "trace"> | null,
   _graph: GraphLevel,

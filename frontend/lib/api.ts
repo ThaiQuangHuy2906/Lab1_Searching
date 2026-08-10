@@ -9,7 +9,11 @@ import {
   ApiContractError, parseMultirouteResponse, parseTraceResponse,
 } from "./contract-guards";
 
-const BASE = process.env.NEXT_PUBLIC_API_BASE ?? "http://localhost:8000";
+// By default, the browser talks to Next.js on the same origin. Next proxies
+// /api/* to FastAPI, so the UI also works when opened through a LAN address.
+// NEXT_PUBLIC_API_BASE remains available for deployments that call FastAPI
+// directly from the browser.
+const BASE = process.env.NEXT_PUBLIC_API_BASE ?? "";
 
 export class BackendError extends Error {
   code: string;
@@ -51,7 +55,7 @@ async function call<T>(
     if (isAbort(error)) throw new RequestAbortedError();
     throw new BackendError(
       "OFFLINE",
-      "Không gọi được backend (localhost:8000) — hãy chạy uvicorn rồi thử lại.",
+      "Không gọi được backend — hãy chạy uvicorn rồi thử lại.",
     );
   }
   if (!res.ok) {

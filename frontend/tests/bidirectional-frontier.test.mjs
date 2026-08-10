@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { presentBidirectionalFrontiers } from "../lib/bidirectional-frontier-policy.ts";
+import { formatBidirectionalCost, presentBidirectionalFrontiers } from "../lib/bidirectional-frontier-policy.ts";
 
 test("v2 two-side presentation preserves overlap with two independent g values", () => {
   const step = {
@@ -30,7 +30,10 @@ test("v2 two-side presentation preserves overlap with two independent g values",
   });
   assert.equal(view.legacyUnion.find((row) => row.node === "n0002").g, 2);
   assert.equal(view.unit, "m");
+  assert.equal(view.activeSide, "forward");
   assert.match(view.backwardLabel, /node→Goal/);
+  assert.equal(formatBidirectionalCost(view.bestPathCost, "distance"), "0,009 km");
+  assert.equal(formatBidirectionalCost(90, "balanced"), "1,5 phút quy đổi");
 });
 
 test("legacy union fallback stays one table and never fabricates sides or μ", () => {
@@ -42,6 +45,7 @@ test("legacy union fallback stays one table and never fabricates sides or μ", (
   assert.equal(view.forward, null);
   assert.equal(view.backward, null);
   assert.equal(view.bestPathCost, null);
+  assert.equal(view.activeSide, null);
   assert.deepEqual(view.legacyUnion, [{ node: "n0002", g: 4, overlap: false }]);
   assert.equal(view.unit, "s");
   assert.match(view.compatibilityLabel, /union\/min-g/);

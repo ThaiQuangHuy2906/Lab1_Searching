@@ -11,9 +11,16 @@ import {
   journeyNodePickRadius,
   routeRunBlockReason,
   routeTraceRequestFlag,
+  shouldShowGoalMarker,
   slotChangePatch,
 } from "../lib/interaction-policy.ts";
 import { describeAtspSavings } from "../lib/atsp-savings.ts";
+
+test("inactive Goal draft never appears as a multi-point map marker", () => {
+  assert.equal(shouldShowGoalMarker("two_point", false), true);
+  assert.equal(shouldShowGoalMarker("multi_point", false), false);
+  assert.equal(shouldShowGoalMarker("two_point", true), false);
+});
 
 test("same slot is a no-op and a real slot change clears dependent state", () => {
   assert.equal(slotChangePatch("07:30", "07:30"), null);

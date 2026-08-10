@@ -67,6 +67,17 @@ export function isOptimizationFinalEvent(kind: string | null | undefined): boole
   return kind !== undefined && kind !== null && FINAL_OPTIMIZATION_EVENT_KINDS.has(kind);
 }
 
+/** Closing Start remains a route endpoint, never a numbered delivery marker. */
+export function deliveryMarkerOrder(
+  order: readonly string[],
+  start: string | null,
+  returnToStart: boolean,
+): string[] {
+  const deliveries = order.slice(1);
+  if (returnToStart && deliveries.at(-1) === start) deliveries.pop();
+  return deliveries;
+}
+
 /** The active Held–Karp subset is a node-state cue, separate from its DP arrow. */
 export function heldKarpHighlightIds(event: OptimizationEvent | null): string[] {
   return event?.kind === "held_karp_update" ? event.subset : [];

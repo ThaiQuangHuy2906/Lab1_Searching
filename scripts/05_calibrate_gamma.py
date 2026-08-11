@@ -77,7 +77,8 @@ def main() -> None:
 
     OUT_CSV.parent.mkdir(exist_ok=True)
     with OUT_CSV.open("w", encoding="utf-8", newline="") as fh:
-        w = csv.writer(fh)
+        # Match the repository-wide ``eol=lf`` rule on every platform.
+        w = csv.writer(fh, lineterminator="\n")
         w.writerow(["level", "n_points", "mean_speed_ratio", "mean_inflation",
                     "implied_gamma"])
         print(f"{'level':>5} {'n':>6} {'ratio':>7} {'f_obs':>7} {'gamma':>7}")

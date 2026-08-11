@@ -74,10 +74,19 @@ def sample_pairs(store: GraphStore, n: int = N_PAIRS,
 def write_csv(name: str, header: list[str], rows: list[list]) -> None:
     path = RESULTS / name
     with path.open("w", encoding="utf-8", newline="") as fh:
-        w = csv.writer(fh)
+        # Keep generated artifacts byte-stable across platforms and aligned
+        # with the repository-wide ``eol=lf`` Git attribute.
+        w = csv.writer(fh, lineterminator="\n")
         w.writerow(header)
         w.writerows(rows)
     print(f"  wrote {path.relative_to(ROOT)} ({len(rows)} rows)")
+
+
+def write_text_lf(path: Path, content: str) -> None:
+    """Write a UTF-8 text artifact without platform newline translation."""
+
+    with path.open("w", encoding="utf-8", newline="\n") as fh:
+        fh.write(content)
 
 
 def nx_digraph(store: GraphStore, mode: str, slot: str) -> "nx.DiGraph":
@@ -296,8 +305,10 @@ def exp4(store: GraphStore, pairs: list[tuple[str, str]]) -> str:
         geo = {"type": "FeatureCollection",
                "properties": {"start": src, "goal": dst},
                "features": [line(t1, "07:30"), line(t2, "22:00")]}
-        (ex_dir / f"pair_{i:03d}.geojson").write_text(
-            json.dumps(geo, ensure_ascii=False, indent=2), encoding="utf-8")
+        write_text_lf(
+            ex_dir / f"pair_{i:03d}.geojson",
+            json.dumps(geo, ensure_ascii=False, indent=2),
+        )
     return f"exp4: {len(changed_pairs)}/{len(pairs)} cặp đổi tuyến ({pct:.1f}%) giữa 07:30 và 22:00"
 
 
@@ -384,8 +395,10 @@ def exp6() -> str:
                            "distance_m": round(t.metrics.total_distance_m, 1)},
             "geometry": {"type": "LineString", "coordinates": coords},
         }]}
-        (routes_dir / f"route_{idx}.geojson").write_text(
-            json.dumps(geo, ensure_ascii=False, indent=2), encoding="utf-8")
+        write_text_lf(
+            routes_dir / f"route_{idx}.geojson",
+            json.dumps(geo, ensure_ascii=False, indent=2),
+        )
 
         fig, ax = plt.subplots(figsize=(6, 6))
         for e in demo.graph.edges:
@@ -416,8 +429,10 @@ def exp6() -> str:
             "png": f"results/exp6_routes/route_{idx}.png",
             "note_vi": "Nhóm mở google_maps_url lúc ~07:30, chụp màn hình đặt cạnh PNG này trong báo cáo.",
         })
-    (RESULTS / "exp6_pairs.json").write_text(
-        json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
+    write_text_lf(
+        RESULTS / "exp6_pairs.json",
+        json.dumps(manifest, ensure_ascii=False, indent=2),
+    )
     print(f"  wrote results/exp6_pairs.json (5 pairs)")
     return "exp6: 5 tuyến demo xuất PNG + GeoJSON + link Google Maps để nhóm đối chứng"
 

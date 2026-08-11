@@ -5,8 +5,10 @@
 > toán** của báo cáo. Test
 > `test_costs.py::test_heuristic_consistent_on_every_edge` kiểm mọi cạnh với các
 > goal đại diện; phần chứng minh bên dưới mới là cơ sở tổng quát cho mọi goal.
-> `results/exp2_*` hiện là kết quả tạm của lượt benchmark cũ, không dùng làm bằng
-> chứng hiện hành trước khi chạy lại trọn pipeline cuối.
+> `results/exp2_*` đã được tái sinh chính thức ngày 2026-08-11: 0 vi phạm trên
+> 21.170 điểm và `max(h/h*) = 0,8886`. Đây vẫn chỉ là empirical check trên 10
+> goal; proof bên dưới mới là cơ sở guarantee tổng quát. Không diễn giải giá trị
+> max như mean hoặc toàn bộ phân bố.
 
 ## 1. Ký hiệu và mô hình
 

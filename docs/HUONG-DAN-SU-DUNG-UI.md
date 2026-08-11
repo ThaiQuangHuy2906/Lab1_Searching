@@ -1,10 +1,10 @@
 # Hướng dẫn sử dụng giao diện
 
-> Cập nhật: 2026-08-10 — UI & Explanation v2 qua Phase 6.
+> Cập nhật audit: 2026-08-11 — UI & Explanation v2 qua Phase 8.
 >
 > Phạm vi hiện hành: chạy một route, route comparison 2–4, hành trình nhiều
-> điểm theo thứ tự đã chọn và chạy một phương pháp ATSP. So sánh 2–3 phương pháp
-> ATSP thuộc Phase 7 và chưa có trong UI.
+> điểm theo thứ tự đã chọn, chạy một phương pháp ATSP và so sánh 2–3 phương pháp
+> ATSP trên cùng immutable snapshot.
 
 ## 1. Bố cục
 
@@ -13,7 +13,7 @@ Giao diện chính có ba vùng:
 1. **Panel trái — Thiết lập:** graph, khung giờ, tiêu chí, loại bài toán, điểm
    Đi/Đến hoặc danh sách điểm giao, chế độ chạy và thuật toán.
 2. **Ở giữa — Bản đồ:** graph, timeline và tuyến. Chạy một dùng một map lớn;
-   So sánh nhiều dùng 2–4 map nhỏ bằng nhau.
+   So sánh route dùng 2–4 map; so sánh ATSP dùng 2–3 map final-only.
 3. **Drawer phải — Kết quả:** `Số liệu`, `Giải thích`, `So sánh`, `Thử nghiệm`.
    Trên desktop có thể kéo separator ở mép trái drawer để đổi độ rộng; nhấn đúp
    để về 400 px.
@@ -74,7 +74,7 @@ Tab này giải thích đúng result đang được chọn:
 1. Giữ cùng input Đi/Đến hoặc cùng chuỗi điểm giao.
 2. Trong `Chế độ chạy`, chọn `So sánh nhiều`.
 3. Thêm từ 2 đến 4 thuật toán. Khi đủ 4, bỏ một thuật toán trước khi thêm cái mới.
-4. Bấm `Chạy so sánh`.
+4. Bấm `So sánh N thuật toán` (N là số thuật toán đã chọn).
 
 Quy tắc đọc comparison:
 
@@ -99,10 +99,15 @@ Có thể dùng `Chạy một` hoặc so sánh 2–4 thuật toán trên cùng c
 
 ### Tối ưu thứ tự ATSP
 
-Chọn `Tối ưu thứ tự giao hàng`, sau đó chọn Held–Karp, NN + 2-opt/Or-opt hoặc
-Simulated Annealing. UI hiện chạy một phương pháp và đối chiếu thứ tự nhập với
-thứ tự sau tối ưu. Không gọi NN/SA là tối ưu toàn cục; comparison nhiều phương
-pháp ATSP chưa thuộc runtime Phase 6.
+Chọn `Tối ưu thứ tự ATSP`, sau đó chọn Held–Karp, NN + 2-opt/Or-opt hoặc
+Simulated Annealing. Ở `Chạy một`, UI đối chiếu thứ tự nhập với thứ tự sau tối
+ưu. Ở `So sánh nhiều`, chọn 2–3 phương pháp rồi bấm
+`So sánh N phương pháp ATSP`; app chạy tuần
+tự trên cùng stops/order/open-closed/mode/slot/scenario. N phương pháp tạo đúng N
+map, còn baseline thứ tự nhập chỉ xuất hiện một lần trong bảng và không tạo map
+giả. Partial success được giữ; card lỗi/hủy có thể retry bằng snapshot cũ. Exact
+gap/ranking chỉ xuất hiện khi Held–Karp exact cùng snapshot thành công. Không gọi
+NN/SA là tối ưu toàn cục dù một lần chạy trùng nghiệm Held–Karp.
 
 ## 7. Thử nghiệm trọng số
 
@@ -110,24 +115,26 @@ Tab `Thử nghiệm` chỉ chỉnh scenario của request hiện tại, không s
 gốc. Dùng `Chọn nhanh` hoặc `Chỉnh chi tiết`, chạy lại và đọc bảng Gốc/Đang thử.
 Compare mode khóa editor để mọi thuật toán dùng cùng immutable snapshot.
 
-## 8. Known issue và xử lý nhanh
+## 8. Xử lý nhanh và giới hạn hiện hành
 
-- **IDA\* có thể trả HTTP 500 với ε mặc định ở một số cặp điểm.** Thuật toán đã
-  tìm được nghiệm trong biên ε, nhưng validator hiện có thể nhầm kết quả này với
-  exact và bác exact reference tốt hơn. Đây là known issue backend, không phải
-  bằng chứng graph vô đường. Trước khi fix, có thể thử ε nhỏ hơn hoặc dùng A*/UCS;
-  workaround không thay thế regression cần thiết.
+- Known issue IDA* cũ đã được sửa: exact reference tốt hơn vẫn hợp lệ khi gap
+  không âm và không vượt ε; API có regression cho trường hợp này.
 - Backend không gọi được: chạy uvicorn ở cổng 8000 rồi restart frontend.
 - Graph cũ: dừng process cũ, restart backend, hard-refresh và xác nhận G_demo
   hiện có 51 node/298 cạnh.
 - Map nền trống: kiểm mạng hoặc bật Offline; thuật toán vẫn dùng snapshot local.
+- Trang `/benchmark` chỉ đọc bộ exp1–exp7 chính thức ngày 2026-08-11 và hiện nhãn
+  `KẾT QUẢ CHÍNH THỨC`; provenance/checksum nằm tại `results/README.md`. Trang
+  không tự chạy benchmark hoặc ghi vào `results/`.
 
 ## 9. Checklist trước demo
 
 1. Restart backend và frontend; hard-refresh.
 2. Kiểm `/api/health` và `/api/graph?level=demo&view=full`.
 3. Chạy một route A* và mở đủ Số liệu/Giải thích.
-4. Chạy comparison N=2, N=3 và N=4; thử zoom riêng từng map.
-5. Kiểm drawer resize, table scroll và không chỉnh được scenario trong compare.
-6. Kiểm console không có React/deck.gl/WebGL error ở độ phân giải trình chiếu.
-
+4. Chạy route comparison N=2, N=3, N=4 và ATSP comparison N=2, N=3; thử zoom
+   riêng từng map.
+5. Kiểm partial/cancel/retry, drawer resize, table scroll và scenario không sửa
+   được trong compare.
+6. Kiểm console không có React/deck.gl/WebGL error ở Chrome maximized trên đúng
+   độ phân giải máy demo. Nếu kiểm trên máy khác, lặp lại preflight trên máy demo.

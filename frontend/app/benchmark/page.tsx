@@ -1,7 +1,7 @@
 "use client";
 
 // /benchmark chỉ đọc các artifact đã lưu qua POST /api/benchmark.
-// Trang không chạy benchmark, không diễn giải dữ liệu stale như kết quả hiện hành.
+// Trang không chạy benchmark; provenance của lượt chính thức nằm ở results/README.md.
 
 import * as React from "react";
 import Link from "next/link";
@@ -310,23 +310,23 @@ export default function BenchmarkPage() {
         {state === "ready" ? (
           <section
             aria-labelledby="benchmark-provenance-title"
-            className="rounded-lg border border-algo-path/35 bg-algo-path/10 p-3"
+            className="rounded-lg border border-start/35 bg-start/10 p-3"
           >
             <div className="flex items-start gap-3">
-              <span className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-lg border border-algo-path/30 bg-surface-panel text-algo-path">
+              <span className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-lg border border-start/30 bg-surface-panel text-start">
                 <Database className="size-4" aria-hidden="true" />
               </span>
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
-                  <Badge variant="warn">SỐ TẠM</Badge>
+                  <Badge variant="ok">KẾT QUẢ CHÍNH THỨC</Badge>
                   {isPartial && <Badge>Dữ liệu chưa đủ biểu đồ</Badge>}
                   <h2 id="benchmark-provenance-title" className="text-sm font-bold text-ink">
-                    Dữ liệu benchmark đã lưu
+                    Dữ liệu benchmark hiện hành
                   </h2>
                 </div>
                 <p className="mt-1 text-xs leading-5 text-ink-dim sm:text-sm">
-                  Trang đang đọc artifact trong <code className="font-mono text-ink">results/</code>. Bộ này cũ hơn graph hiện hành,
-                  chỉ dùng để minh họa giao diện hoặc tham khảo lịch sử và không phải kết quả chính thức của bộ dữ liệu đang dùng.
+                  Trang đang đọc bộ exp1–exp7 được tái sinh ngày 11/08/2026 từ graph/profile hiện hành,
+                  seed 42 và đã qua kiểm tra artifact độc lập. Chi tiết nguồn, môi trường và checksum nằm tại <code className="font-mono text-ink">results/README.md</code>.
                 </p>
               </div>
             </div>
@@ -384,7 +384,7 @@ export default function BenchmarkPage() {
                 {byAlgorithm.length ? (
                   <>
                     <p id="expanded-chart-desc" className="sr-only">
-                      Biểu đồ cột so sánh số điểm đã duyệt trung bình của các thuật toán trên trục log. Dữ liệu là artifact lịch sử đã lưu.
+                      Biểu đồ cột so sánh số điểm đã duyệt trung bình của các thuật toán trên trục log. Dữ liệu thuộc lượt benchmark chính thức đã lưu.
                     </p>
                     <div role="img" aria-labelledby="expanded-chart-title" aria-describedby="expanded-chart-desc" className="h-72 min-w-0">
                       <div aria-hidden="true" className="size-full">
@@ -431,7 +431,7 @@ export default function BenchmarkPage() {
                 {byAlgorithm.length ? (
                   <>
                     <p id="runtime-chart-desc" className="sr-only">
-                      Biểu đồ cột so sánh thời gian xử lý trung bình tính bằng mili giây trên trục log. Dữ liệu là artifact lịch sử đã lưu.
+                      Biểu đồ cột so sánh thời gian xử lý trung bình tính bằng mili giây trên trục log. Dữ liệu thuộc lượt benchmark chính thức đã lưu.
                     </p>
                     <div role="img" aria-labelledby="runtime-chart-title" aria-describedby="runtime-chart-desc" className="h-72 min-w-0">
                       <div aria-hidden="true" className="size-full">
@@ -478,7 +478,7 @@ export default function BenchmarkPage() {
                 {gamma.length ? (
                   <>
                     <p id="gamma-chart-desc" className="sr-only">
-                      Biểu đồ đường thể hiện thời gian trung bình tính bằng giây và quãng đường trung bình tính bằng ki-lô-mét theo trọng số gamma. Dữ liệu là artifact lịch sử đã lưu.
+                      Biểu đồ đường thể hiện thời gian trung bình tính bằng giây và quãng đường trung bình tính bằng ki-lô-mét theo trọng số gamma. Dữ liệu thuộc lượt benchmark chính thức đã lưu.
                     </p>
                     <div role="img" aria-labelledby="gamma-chart-title" aria-describedby="gamma-chart-desc" className="h-72 min-w-0">
                       <div aria-hidden="true" className="size-full">

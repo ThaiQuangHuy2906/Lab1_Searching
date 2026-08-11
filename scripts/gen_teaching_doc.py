@@ -9,7 +9,8 @@ the search code on this induced graph. They must not be claimed to match a
 full-graph GUI; parity is meaningful only when the GUI selects the same
 verified `teach_7` view and request settings.
 
-Re-run after any data rebuild:  python scripts/gen_teaching_doc.py
+After any data rebuild, re-run the full validated benchmark/calibration chain
+before regenerating this document:  python scripts/gen_teaching_doc.py
 """
 
 from __future__ import annotations
@@ -201,6 +202,63 @@ def main() -> None:
     d = runs  # alias
     N = load_benchmark_numbers()
 
+    bfs_gap = d["bfs"].metrics.total_cost - d["ucs"].metrics.total_cost
+    bfs_matches_optimal = abs(bfs_gap) <= 0.5
+    greedy_gap = d["greedy"].metrics.total_cost - d["astar"].metrics.total_cost
+    greedy_matches_optimal = abs(greedy_gap) <= 0.5
+
+    if bfs_matches_optimal and greedy_matches_optimal:
+        pair_story = (
+            "Trên profile hiện tại, BFS và Greedy đều tình cờ trùng tuyến tối ưu của "
+            "UCS/A*. Đây chỉ là kết quả của instance này, không thay đổi guarantee: "
+            "BFS bỏ qua trọng số còn Greedy bỏ qua chi phí đã đi g."
+        )
+    elif bfs_matches_optimal:
+        pair_story = (
+            "Trên profile hiện tại, BFS tình cờ trùng tuyến tối ưu của UCS/A*, còn "
+            "Greedy bị heuristic h dẫn vào tuyến đắt hơn. Cặp này minh họa rằng cùng "
+            "một kết quả đúng ở một instance không biến BFS thành thuật toán tối ưu "
+            "trên đồ thị có trọng số."
+        )
+    elif greedy_matches_optimal:
+        pair_story = (
+            "Trên profile hiện tại, Greedy tình cờ trùng tuyến tối ưu của UCS/A*, còn "
+            "BFS chọn tuyến ít cạnh nhưng đắt hơn. Kết quả theo instance không thay "
+            "đổi guarantee của hai thuật toán."
+        )
+    else:
+        pair_story = (
+            "Trên profile hiện tại, tuyến ít cạnh của BFS và lựa chọn chỉ theo h của "
+            "Greedy đều đắt hơn tuyến UCS/A*. Hai thuật toán sai vì hai lý do khác "
+            "nhau: BFS bỏ qua trọng số, Greedy bỏ qua chi phí đã đi g."
+        )
+
+    if bfs_matches_optimal:
+        bfs_video = (
+            f"**Nói trong video:** BFS chọn `{tour(d['bfs'].path)}` vì ít cạnh nhất "
+            f"và trên instance hiện tại **tình cờ trùng** tuyến tối ưu của UCS "
+            f"(**{d['ucs'].metrics.total_cost:.0f} s**). Không được suy rộng thành "
+            "guarantee: BFS vẫn chỉ tối ưu số cạnh và không đọc trọng số."
+        )
+    else:
+        bfs_video = (
+            f"**Nói trong video:** BFS chọn `{tour(d['bfs'].path)}` vì ít cạnh nhất, "
+            f"nhưng tuyến tối ưu là `{tour(d['ucs'].path)}` "
+            f"(**{d['ucs'].metrics.total_cost:.0f} s**). BFS đắt hơn "
+            f"**+{bfs_gap:.0f} s (+{100 * bfs_gap / d['ucs'].metrics.total_cost:.0f}%)** "
+            "— ít cạnh nhất không phải rẻ nhất."
+        )
+
+    if bfs_matches_optimal:
+        greedy_relation = (
+            "Khác BFS (lần này tình cờ trùng tối ưu), Greedy chỉ tin h và quên g đã trả."
+        )
+    else:
+        greedy_relation = (
+            "Cùng cho kết quả đắt hơn BFS nhưng với lý do khác: BFS đếm cạnh, "
+            "Greedy chỉ tin h và quên g đã trả."
+        )
+
     doc = f"""# GIẢI THÍCH THUẬT TOÁN — tài liệu ôn tập & quay video
 
 > **Cách dùng:** đây là kịch bản để MỖI THÀNH VIÊN tự giảng lại thuật toán trong video
@@ -211,14 +269,14 @@ def main() -> None:
 > xác nhận GUI parity khi GUI chọn đúng backend view `teach_7` đã được test và
 > cùng cấu hình request.
 > **Đừng đọc nguyên văn** — hiểu bảng, tự nói bằng lời của mình.
-> ⚠️ **SỐ TẠM (chưa regen theo profile `tomtom+synthetic`):** MỌI con số ở đây
-> vẫn thuộc lượt cũ và sẽ đổi ở lượt generator cuối —
-> KỂ CẢ các bảng chạy tay và số ví dụ (chi phí BFS/A*, ma trận ATSP mini… đều phụ
-> thuộc congestion của profiles) chứ không riêng số benchmark. Data refresh đã
-> hoàn tất; phần còn lại phải chạy MỘT lượt: benchmark → hiệu chuẩn γ → **chạy
-> lại script này** (số exp3/exp7 bên dưới đọc tự động từ `results/*.csv`) → đồng
-> bộ các số ví dụ đã chép sang Slide/Video/BaoCao theo Phụ lục A của
-> `docs/KIEMTOAN.md`.
+> ✅ **KẾT QUẢ THÍ NGHIỆM CHÍNH THỨC (2026-08-11):** tài liệu này được tái sinh
+> sau chuỗi đã duyệt `validate → benchmark exp1–exp7 → calibrate γ → generator`,
+> dùng graph/profile hiện hành (`tomtom+synthetic`) và seed benchmark 42. Các bảng
+> chạy tay lấy trực tiếp từ view `teach_7`; số tổng hợp G_real/ATSP đọc tự động từ
+> `results/exp3_benchmark.csv` và `results/exp7_tsp.csv` của cùng lượt chạy. Không
+> hand-edit phần số; provenance và checksum input/output nằm trong
+> `results/README.md`. Nếu graph, profile hoặc implementation thay đổi, phải chạy
+> lại trọn chuỗi và cập nhật ngày/provenance trước khi tiếp tục gọi là chính thức.
 
 ## 0. Đồ thị ví dụ dùng xuyên suốt (trích từ G_demo, khu Chợ Bến Thành)
 
@@ -227,14 +285,12 @@ def main() -> None:
 | Viết tắt | Địa danh |
 |---|---|
 """ + "\n".join(
-    f"| **{label[node.id]}** | {node.name} |" for node in store.graph.nodes
+        f"| **{lab[node.id]}** | {node.name} |" for node in store.graph.nodes
 ) + f"""
 
 **Bài toán xuyên suốt: đi từ `BT` (Chợ Bến Thành) đến `BX` (Bitexco).**
 Điểm thú vị của cặp này: có đường trực tiếp BX→BT nhưng đó là đường **MỘT CHIỀU** —
-chiều đi BT→BX không được phép, shipper phải vòng; và trên các tuyến vòng đó,
-tuyến ÍT CẠNH NHẤT lại dính đoạn kẹt nặng — cả BFS lẫn Greedy đều sập bẫy,
-chỉ nhóm thuật toán xét chi phí (UCS/A*…) đi đúng.
+chiều đi BT→BX không được phép, shipper phải vòng. {pair_story}
 
 Trọng số cạnh = `t_free × f_cong + penalty` (SCHEMA §D, γ=1,5):
 
@@ -274,12 +330,7 @@ BFS(start, goal):
 {trace_table(d['bfs'], lab)}
 
 {result_line(d['bfs'], lab)}
-**Nói trong video:** BFS chọn `{" → ".join(lab[n] for n in d['bfs'].path)}` vì ít cạnh
-nhất — nhưng tuyến tối ưu là `{" → ".join(lab[n] for n in d['ucs'].path)}`
-(**{d['ucs'].metrics.total_cost:.0f} s**). BFS đắt hơn
-**+{d['bfs'].metrics.total_cost - d['ucs'].metrics.total_cost:.0f} s
-(+{100 * (d['bfs'].metrics.total_cost - d['ucs'].metrics.total_cost) / d['ucs'].metrics.total_cost:.0f}%)**
-— "ít cạnh nhất" không phải "rẻ nhất".
+{bfs_video}
 
 ---
 
@@ -355,8 +406,7 @@ Complete ✔ (có visited) · Tối ưu ✘.
 
 {result_line(d['greedy'], lab)}
 **Nói trong video:** Greedy {"đắt hơn tối ưu **+" + format(d['greedy'].metrics.total_cost - d['astar'].metrics.total_cost, '.0f') + " s (+" + format(100 * (d['greedy'].metrics.total_cost - d['astar'].metrics.total_cost) / d['astar'].metrics.total_cost, '.0f') + "%)**" if d['greedy'].metrics.total_cost > d['astar'].metrics.total_cost + 0.5 else "lần này may mắn trùng tuyến tối ưu"}
-trên cùng cặp BT→BX. Cùng sập bẫy với BFS nhưng LÝ DO SAI khác nhau: BFS đếm cạnh,
-Greedy tin "linh cảm" h (node nào nhìn gần BX là lao tới) mà quên sạch g đã trả.
+trên cùng cặp BT→BX. {greedy_relation}
 A* cũng dùng h nhưng CÓ g nên không bị.
 
 ---
@@ -466,7 +516,10 @@ mỗi vòng gọi `sorted(left)` trước khi chọn min. Mỗi pass 2-opt/Or-op
 | Held-Karp | — | ✔ | duyệt đủ 2^n trạng thái |
 | NN + 2-opt / SA | — | ✘ (xấp xỉ) | heuristic cục bộ / ngẫu nhiên |
 """
-    OUT.write_text(doc, encoding="utf-8")
+    # Avoid Windows newline translation so the generated artifact remains
+    # byte-identical before and after Git applies the repository's eol=lf rule.
+    with OUT.open("w", encoding="utf-8", newline="\n") as fh:
+        fh.write(doc)
     print(f"wrote {OUT.relative_to(ROOT)} ({len(doc.splitlines())} lines)")
     print(f"subgraph: {len(store.graph.nodes)} nodes / {len(store.graph.edges)} edges; "
           f"BT->BX astar={d['astar'].metrics.total_cost:.0f}s "

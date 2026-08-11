@@ -1,11 +1,11 @@
 # UI & Explanation v2 — Phase 1 Readiness
 
 > Checkpoint lịch sử của Phase 1. Current-state và gate còn mở xem
-> `docs/UI-V2-PHASE6-READINESS.md`; số test phía dưới là evidence tại thời điểm
+> `docs/UI-V2-PHASE8-READINESS.md`; số test phía dưới là evidence tại thời điểm
 > Phase 1, không phải tổng hiện hành.
 
-Ngày kiểm chứng: 2026-08-09  
-Repository: `C:\Users\Admin\Desktop\Lab01_Searching`  
+Ngày kiểm chứng: 2026-08-09
+Repository: `<repository-root>`
 Baseline bắt đầu: `main...origin/main`, HEAD
 `66a6f97d5b9c8f9a31a1b1686c64c7302ad1b6c5`, worktree sạch.
 
@@ -201,7 +201,7 @@ Bằng chứng lịch sử phía trên được giữ nguyên. Regression audit 
 `11ca5721c4d3fdf79f7df51dcd8dea5b2bb5a211`, đã có regression API/model và được
 sửa theo SCHEMA §F.3 mà không đổi thuật toán/cost/heuristic.
 
-Full backend hiện PASS 231/231; live API→F2 matrix PASS 540 broad route cases,
+Tại checkpoint regression này, full backend PASS 233/233; live API→F2 matrix PASS 540 broad route cases,
 9 trace-on, 9 trivial và 8 IDA* positive-gap cases. Chi tiết, các lệnh và blind
 spot nằm tại [UI-V2-PHASE1-2-REGRESSION-AUDIT.md](UI-V2-PHASE1-2-REGRESSION-AUDIT.md).
 

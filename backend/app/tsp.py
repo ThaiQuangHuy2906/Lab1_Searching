@@ -25,6 +25,7 @@ from __future__ import annotations
 
 import heapq
 import itertools
+import logging
 import math
 import random
 import statistics
@@ -43,6 +44,7 @@ from .optimization_trace import (
 )
 
 MAX_POINTS = 16
+logger = logging.getLogger(__name__)
 HELD_KARP_MAX = 15
 HELD_KARP_WARN = 13
 SA_SEEDS = range(5)
@@ -168,7 +170,7 @@ def held_karp(
         raise ValueError(
             f"held_karp supports at most {HELD_KARP_MAX} points, got {n}")
     if n >= HELD_KARP_WARN:
-        print(f"held_karp: n={n} — expect a few seconds of DP")
+        logger.warning("held_karp: n=%s — expect a few seconds of DP", n)
     c = [[0.0] * n for _ in range(n)]
     for i, a in enumerate(points):
         for j, b in enumerate(points):

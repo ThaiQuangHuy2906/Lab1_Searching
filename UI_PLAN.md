@@ -7,8 +7,9 @@
 > **Phân biệt hệ phase:** “Phase 5/6” trong file này thuộc lượt **UI Clarity
 > lịch sử** (ATSP trace/scenario editor), không phải Phase 5 map extraction và
 > Phase 6 route comparison 2–4 của `UI_caithien.md`. Trạng thái UI & Explanation
-> v2 hiện hành xem `docs/UI-V2-PHASE5-READINESS.md`,
-> `docs/UI-V2-PHASE6-READINESS.md` và `docs/DESIGN.md` §13. Các mô tả compare
+> v2 hiện hành xem các readiness Phase 5–8, đặc biệt
+> `docs/UI-V2-PHASE7-READINESS.md`, `docs/UI-V2-PHASE8-READINESS.md` và
+> `docs/DESIGN.md` §13. Các mô tả compare
 > A/B trong thân file được giữ làm bằng chứng lịch sử, không phải UX hiện hành.
 >
 > **Mốc lập kế hoạch:** 2026-08-07 (Asia/Saigon), sau checkpoint đã push
@@ -788,7 +789,7 @@ Files:
 
 - `frontend/components/drawer/explain-tab.tsx`
 - `frontend/components/drawer/compare-tab.tsx`
-- `frontend/components/atsp/atsp-explanation.tsx`
+- `frontend/components/explanation/atsp-explanation.tsx`
 - `frontend/components/atsp/atsp-compare.tsx`
 - `frontend/lib/atsp-savings.ts`
 - `frontend/lib/algorithm-policy.ts`.

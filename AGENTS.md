@@ -78,8 +78,10 @@ results over schema prose, generated docs, and historical logs.
   unless the user explicitly authorizes the complete dependency chain.
 - Regenerate `docs/GIAI-THICH-THUAT-TOAN.md` through
   `scripts/gen_teaching_doc.py`; do not hand-edit generated numerical sections.
-- Existing `results/` are stale relative to current graph data. Never cite them
-  as current official results.
+- Current `results/` were regenerated coherently on 2026-08-11 and are official
+  only while the graph/profile/source checksums in `results/README.md` still
+  match. If any input or algorithm changes, immediately downgrade the claims and
+  rerun the complete authorized dependency chain before citing them as current.
 
 ## Baseline commands
 
@@ -170,10 +172,10 @@ npm run dev
 
 ## Pre-submission warnings
 
-- `results/` predates the current 2026-08-03 graph/profile refresh and is
-  explicitly marked `SỐ TẠM`.
-- Keep every `SỐ TẠM` banner until one coherent final data/validation/benchmark
-  refresh has completed and all five banner locations have been synchronized.
+- The coherent test/validation/benchmark/gamma/generator chain completed on
+  2026-08-11. `results/README.md` records the official provenance, checksums,
+  environment, validation and headline results; all five temporary-result
+  banners were synchronized away in the same closeout.
 - Current profiles are `tomtom+synthetic`; raw TomTom snapshots exist for all
   four slots 07:30, 12:00, 17:30, and 22:00. TomTom supplies sampled main-road
   congestion while uncovered edges still use the deterministic synthetic
@@ -182,17 +184,18 @@ npm run dev
   four TomTom JSON snapshots, and OSMnx cache are currently Git-tracked under
   `data/raw/`; keep them in the final Data ZIP as provenance artifacts.
 - The final data chain `03b real -> 04 -> 03b demo -> validate_data` completed on
-  2026-08-03. Do not rerun profiles/graphs or start the benchmark/gamma
-  calibration/generator chain unless the user explicitly authorizes that next
-  write-producing stage.
+  2026-08-03, followed by the authorized result chain on 2026-08-11. Do not rerun
+  profiles/graphs/benchmark/gamma/generator unless the user explicitly
+  authorizes a new complete write-producing chain and all consumers are resynced.
 - All eight manual risk `source_url` values were independently reviewed and
   integrated on 2026-08-08. They support historical route/area context only;
   they do not verify current incidents, exact centers/radii, or penalties.
-- Report, slide, video, screenshots, remaining role assignments, and submission
-  ZIP remain manual deliverables.
+- Report PDF, slide deck, video/link, report/Google Maps screenshots, remaining
+  role assignments, Data package and submission ZIP remain manual deliverables.
 - Before every demo or capture, stop old services, restart backend/frontend,
   hard-refresh the browser, and verify `/api/graph?level=demo` reports the
   current on-disk graph (currently 51 nodes, 298 directed edges, including 60
   one-way edges).
 - Never run `npm run build` while a Next dev server is active.
-- Re-run browser checks at 1366x768 or the actual projector resolution.
+- Re-run Chrome maximized on the actual demo laptop at its native resolution
+  before recording or presenting; do not substitute mobile/tablet/narrow QA.

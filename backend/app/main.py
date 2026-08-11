@@ -12,7 +12,6 @@ import csv
 import json
 import logging
 import platform
-import sys
 from pathlib import Path
 
 from fastapi import FastAPI, Request
@@ -263,9 +262,8 @@ def post_benchmark(req: BenchmarkRequest) -> BenchmarkResponse:
         if csv_path.suffix == ".csv":
             with csv_path.open(encoding="utf-8", newline="") as fh:
                 rows = list(csv.DictReader(fh))
-            # The committed benchmark artifacts are intentionally stale until
-            # the final authorized rerun. Keep the current API/UI contract free
-            # of algorithms removed after that historical run.
+            # Keep cached artifacts aligned with the current public catalog,
+            # including when a user points RESULTS_DIR at an older result set.
             if exp_id in (1, 3):
                 rows = [row for row in rows if row.get("algorithm") in ALL_ALGORITHMS]
         elif csv_path.suffix == ".json":

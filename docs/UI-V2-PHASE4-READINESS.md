@@ -1,10 +1,10 @@
 # UI & Explanation v2 — Phase 4 Readiness
 
 > Checkpoint lịch sử của Phase 4. Current-state và gate còn mở xem
-> `docs/UI-V2-PHASE6-READINESS.md`.
+> `docs/UI-V2-PHASE8-READINESS.md`.
 
 Ngày kiểm chứng: 2026-08-10  
-Repository: `C:\Python\CSTTNT\Lab1_Searching`  
+Repository: `<repository-root>`
 Branch/HEAD khi handoff: `main` / `97ec24fa7218e10bdbb1d17fd2c15f7c5fbd9994`
 
 ## 1. Kết luận nhanh

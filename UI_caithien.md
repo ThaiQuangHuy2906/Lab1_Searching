@@ -1,7 +1,8 @@
 # Kế hoạch triển khai cải thiện UI tìm đường và đa điểm
 
-> Trạng thái 2026-08-10: **Phase 0–6 đã hoàn tất; Phase 6 đã qua manual browser
-> QA do người dùng xác nhận; Phase 7–8 chưa triển khai**
+> Trạng thái audit 2026-08-11: **Phase 0–6 đã hoàn tất; Phase 7 ATSP comparison
+> 2–3 READY; Phase 8 READY WITH KNOWN ISSUES trong phạm vi Desktop. Automated
+> gates và Chrome 151 Desktop maximized full-view đều đạt.**
 >
 > Ngày khảo sát: **2026-08-09**
 >
@@ -43,9 +44,9 @@ Tài liệu dùng ba nhãn bằng chứng:
 - **Đích đã duyệt**: bắt buộc phải triển khai, nhưng chưa được nói là đang chạy.
 - **Đã kiểm chứng**: chỉ dùng sau khi phase tương ứng qua test/gate/browser QA.
 
-Contract/type/payload của Phase 1–6 dưới đây hiện đã có trong runtime. Các phần
-chỉ dành cho Phase 7–8 vẫn là **đích đã duyệt**, không phải claim hành vi hiện
-hành. Mỗi claim current phải trỏ tới readiness tương ứng và kết quả test mới chạy.
+Contract/type/payload của Phase 1–8 dưới đây hiện đã có trong runtime. Mỗi claim
+current phải trỏ tới readiness tương ứng và kết quả test/runtime mới chạy; automated
+gate không tự thay thế Chrome Desktop QA.
 
 ### 0.2. Một nguồn quy định cho mỗi khái niệm trong file
 
@@ -96,12 +97,14 @@ Mười dòng này là index đóng review, không lặp lại semantics chi ti�
 - **Phase 6: READY.** Route comparison 2–4 đã nối end-to-end và manual browser
   QA do người dùng xác nhận đã đạt; evidence và phạm vi kiểm tra nằm ở
   `docs/UI-V2-PHASE6-READINESS.md`.
-- **Phase 7–8: chưa triển khai.** Không suy ATSP comparison hoặc hardening cuối
-  từ việc route comparison Phase 6 đã tồn tại.
-- Known issue hiện hành: validator `Trace` đang xem `optimal_guarantee=true` của
-  IDA* như exact, nên có thể trả 500 khi exact reference tốt hơn nhưng gap vẫn
-  nằm trong ε. Contract đúng được chốt ở `docs/SCHEMA.md` §F.3; backend cần một
-  regression riêng trước khi đóng browser/demo gate.
+- **Phase 7: READY.** ATSP comparison 2–3 đã nối end-to-end và pass Chrome
+  Desktop N=2/N=3; evidence tại `docs/UI-V2-PHASE7-READINESS.md`.
+- **Phase 8: READY WITH KNOWN ISSUES — DESKTOP QA PASSED.** Hardening,
+  persistent retry, a11y semantics, reduced motion và comparison performance
+  policy đã pass code/test/runtime; NVDA/FPS/heap và preflight trên máy demo cuối
+  (nếu khác máy audit) vẫn được ghi riêng tại `docs/UI-V2-PHASE8-READINESS.md`.
+- Known issue IDA* nêu trong bản cũ đã được sửa: validator cho phép exact reference
+  tốt hơn trong `0 ≤ gap ≤ ε`, và có regression API tương ứng.
 
 ---
 
@@ -130,7 +133,7 @@ UI có ba lớp lựa chọn:
    - Nhiều điểm.
 2. **Cách xử lý** — chỉ xuất hiện trong bài toán nhiều điểm
    - Đi theo thứ tự đã chọn.
-   - Tối ưu thứ tự giao hàng (ATSP).
+   - Tối ưu thứ tự ATSP.
 3. **Chế độ chạy**
    - Chạy một.
    - So sánh nhiều.
@@ -304,7 +307,7 @@ Quyết định thiết kế và contract chi tiết nằm ở mục 30. Đây l
 | Hai điểm | Một Start và một Goal, chạy một search algorithm |
 | Nhiều điểm | Một Start và danh sách delivery stops |
 | Đi theo thứ tự đã chọn | Chạy cùng search algorithm tuần tự qua `[start, ...stops]` |
-| Tối ưu thứ tự giao hàng | Dùng một ATSP method để sắp thứ tự stops |
+| Tối ưu thứ tự ATSP | Dùng một ATSP method để sắp thứ tự stops |
 | Hành trình mở | Kết thúc tại stop cuối, `returnToStart=false` |
 | Vòng kín | Có closing leg từ stop cuối về Start, `returnToStart=true` |
 | Chi phí mục tiêu | `total_cost` theo `mode` hiện tại |
@@ -470,7 +473,7 @@ Thứ tự section đề xuất:
    - Nhiều điểm: Đi, danh sách stops, thêm/xóa/sắp thứ tự, return-to-start.
 4. **Cách xử lý** — chỉ trong nhiều điểm
    - Đi theo thứ tự đã chọn.
-   - Tối ưu thứ tự giao hàng.
+   - Tối ưu thứ tự ATSP.
 5. **Chế độ chạy**
    - Chạy một.
    - So sánh nhiều.
@@ -1713,7 +1716,7 @@ Khuyến nghị: lựa chọn algorithms/methods và CTA nằm ở panel trái; 
 | File | Thay đổi |
 |---|---|
 | `frontend/components/atsp/atsp-result.tsx` | Open/closed copy, outcome/effort sections, per-leg table, SA details |
-| `frontend/components/atsp/atsp-explanation.tsx` | Copy return-aware, không hard-code kết thúc ở stop cuối |
+| `frontend/components/explanation/atsp-explanation.tsx` | Copy return-aware theo immutable run snapshot, không hard-code kết thúc ở stop cuối |
 | `frontend/components/atsp/atsp-compare.tsx` | Giữ vai trò baseline-vs-one-method trong single result; không giả làm cross-method compare |
 | Mới: `frontend/components/atsp/atsp-method-compare.tsx` | Bảng/panes so sánh 2–3 methods |
 
@@ -1764,7 +1767,7 @@ Không vừa thay interaction chính vừa đưa vào N-map grid trong một pat
 - ordered multi per-leg explanation;
 - loading/error/no-path/trivial states.
 
-`frontend/components/atsp/atsp-explanation.tsx` phải dùng facts của lần chạy, open/closed và method stats; narrative optimization event được tái dùng trong “Bước đang xem”. `frontend/components/map-view.tsx` nhận overlay tham chiếu/factor/leg qua props với pattern/legend/textual equivalent. Chi tiết file và contract nằm ở mục 30.
+`frontend/components/explanation/atsp-explanation.tsx` phải dùng facts của lần chạy, open/closed và method stats; narrative optimization event được tái dùng trong “Bước đang xem”. `frontend/components/map-view.tsx` nhận overlay tham chiếu/factor/leg qua props với pattern/legend/textual equivalent. Chi tiết file và contract nằm ở mục 30.
 
 ---
 
@@ -1909,8 +1912,8 @@ Gate hoàn tất:
 Trạng thái: **READY 2026-08-10**. Evidence:
 `docs/UI-V2-PHASE6-READINESS.md`. Code/test/typecheck đã đạt; người dùng xác nhận
 manual browser QA cho 2/3/4 pane, camera độc lập, thêm/bỏ thuật toán, compare
-read-only, bảng so sánh và resize panel đã pass. IDA* ε là known issue backend
-được theo dõi riêng, không phải browser gate của Phase 6.
+read-only, bảng so sánh và resize panel đã pass. Known issue IDA* ε cũ đã được
+sửa ở backend và có regression; không còn là cảnh báo hiện hành của Phase 6.
 
 Việc làm:
 
@@ -1934,7 +1937,9 @@ Gate hoàn tất:
 
 ### Phase 7 — ATSP metrics và comparison 2–3
 
-Trạng thái: **CHƯA TRIỂN KHAI**. Không nằm trong phạm vi Phase 5–6 hiện tại.
+Trạng thái: **READY (2026-08-11)**. Code/tests/automated gates và Chrome Desktop
+QA đã đạt cho N=2/N=3, camera độc lập, partial/cancel/retry/stale guard; evidence
+nằm tại `docs/UI-V2-PHASE7-READINESS.md`.
 
 Việc làm:
 
@@ -1958,7 +1963,10 @@ Gate hoàn tất:
 
 ### Phase 8 — Hardening
 
-Trạng thái: **CHƯA TRIỂN KHAI**.
+Trạng thái: **READY WITH KNOWN ISSUES — DESKTOP QA PASSED (2026-08-11)**.
+Evidence code/test/runtime nằm tại `docs/UI-V2-PHASE8-READINESS.md`; lượt audit
+cuối chỉ chấm Chrome Desktop maximized, không dùng mobile/tablet/narrow viewport
+làm gate. NVDA/FPS/heap và preflight máy demo cuối được giữ thành caveat riêng.
 
 Việc làm:
 
@@ -3877,7 +3885,7 @@ Components:
 - `frontend/components/drawer/explain-tab.tsx` → thin router.
 - `frontend/components/drawer/metrics-tab.tsx` → outcome/effort; link step explanation.
 - `frontend/components/ghf-table.tsx` → reusable inside step section.
-- `frontend/components/atsp/atsp-explanation.tsx` → run-specific.
+- `frontend/components/explanation/atsp-explanation.tsx` → run-specific.
 - `frontend/components/atsp/atsp-trace.tsx` → reusable step presenter, raw JSON secondary.
 - `frontend/components/drawer/compare-tab.tsx` → không link mơ hồ.
 - `frontend/components/map-view.tsx` → overlay/factor layers.

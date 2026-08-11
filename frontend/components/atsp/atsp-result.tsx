@@ -78,6 +78,10 @@ export function AtspResult({ multi, graphData }: { multi: MultirouteResponse; gr
   if (!multi.totals || !multi.original_order_totals) return <AtspFailure multi={multi} incomplete />;
 
   const nameOf = (nodeId: string) => graphData?.nodes.find((node) => node.id === nodeId)?.name ?? nodeId;
+  const isClosed = multi.contract_version === 2 && multi.return_to_start;
+  const displayOrder = isClosed && multi.order[0]
+    ? [...multi.order, multi.order[0]]
+    : multi.order;
   const savings = describeAtspSavings(multi.savings_pct);
   const savingsTone = savings.kind === "positive" ? "border-start/35 bg-start/5" : savings.kind === "negative" ? "border-goal/35 bg-goal/10" : "border-surface-border bg-surface-control";
   const savingsText = savings.kind === "positive" ? "text-start" : savings.kind === "negative" ? "text-goal" : "text-ink";
@@ -110,19 +114,24 @@ export function AtspResult({ multi, graphData }: { multi: MultirouteResponse; gr
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="flex items-center gap-2"><ListOrdered className="size-4 text-algo-path" /> Thứ tự ghé sau tối ưu</CardTitle>
-          <p className="text-xs leading-5 text-ink-dim">Bắt đầu tại điểm Đi, kết thúc ở điểm giao cuối.</p>
+          <p className="text-xs leading-5 text-ink-dim">
+            {isClosed
+              ? "Vòng kín: bắt đầu tại điểm Đi và quay về điểm Đi sau điểm giao cuối."
+              : "Hành trình mở: bắt đầu tại điểm Đi và kết thúc ở điểm giao cuối."}
+          </p>
         </CardHeader>
         <CardContent>
           <ol aria-label="Thứ tự ghé sau tối ưu">
-            {multi.order.map((nodeId, index) => {
+            {displayOrder.map((nodeId, index) => {
               const name = nameOf(nodeId);
               const isStart = index === 0;
+              const isReturn = isClosed && index === displayOrder.length - 1;
               return (
                 <li key={`${nodeId}-${index}`} className="relative flex gap-2.5 pb-3 last:pb-0">
-                  {index < multi.order.length - 1 && <span aria-hidden="true" className="absolute bottom-0 left-[13px] top-7 w-px bg-surface-strong" />}
-                  <span className={`relative z-10 flex size-7 shrink-0 items-center justify-center rounded-full font-mono text-[11px] font-bold ${isStart ? "bg-start text-white" : "bg-algo-path text-zinc-950"}`}>{isStart ? "Đi" : index}</span>
+                  {index < displayOrder.length - 1 && <span aria-hidden="true" className="absolute bottom-0 left-[13px] top-7 w-px bg-surface-strong" />}
+                  <span className={`relative z-10 flex size-7 shrink-0 items-center justify-center rounded-full font-mono text-[11px] font-bold ${isStart || isReturn ? "bg-start text-white" : "bg-algo-path text-zinc-950"}`}>{isStart ? "Đi" : isReturn ? "Về" : index}</span>
                   <div className="min-w-0 pt-0.5">
-                    <p className="text-xs font-bold text-ink-faint">{isStart ? "Điểm Đi" : `Điểm giao ${index}`}</p>
+                    <p className="text-xs font-bold text-ink-faint">{isStart ? "Điểm Đi" : isReturn ? "Quay về điểm Đi" : `Điểm giao ${index}`}</p>
                     <p className="break-words text-sm font-medium leading-5 text-ink" title={name}>{name}</p>
                   </div>
                 </li>

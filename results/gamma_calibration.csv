@@ -1,0 +1,6 @@
+level,n_points,mean_speed_ratio,mean_inflation,implied_gamma
+1,48,0.986,1.016,
+2,57,0.765,1.311,1.244
+3,44,0.639,1.570,1.141
+4,11,0.488,2.056,1.408
+all,160,,,1.238

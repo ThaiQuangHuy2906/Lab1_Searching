@@ -1,11 +1,14 @@
 # DATA.md — Nguồn dữ liệu, luật xây dựng và giả định
 
-> **Trạng thái kiểm lại 2026-08-08:** `G_real` được build ngày 2026-07-27 từ
+> **Trạng thái kiểm lại 2026-08-11:** final audit chạy fresh
+> `scripts/validate_data.py` và nhận `ALL DATA VALID` mà không rebuild artifact.
+> `G_real` được build ngày 2026-07-27 từ
 > GraphML OSMnx có `created_date=2026-07-26 18:47:01`; raw TomTom đã
 > đủ bốn slot 07:30, 12:00, 17:30 và 22:00. Chuỗi `03b real → 04 → 03b demo →
 > validate_data` đã hoàn tất; hai profile hiện là `tomtom+synthetic` và `G_demo`
-> đã rebuild theo profile cuối. Benchmark/hiệu chuẩn γ/generator vẫn chưa chạy
-> lại. `data/raw/graph_raw.graphml`, bốn TomTom JSON và OSMnx cache hiện diện
+> đã rebuild theo profile cuối. Chuỗi kết quả chính thức hoàn tất ngày 2026-08-11
+> mà không rebuild data: exp1–exp7, γ̂ = 1,238 từ 160 mẫu/4 slot và generated
+> teaching doc đã được kiểm; xem `results/README.md`. `data/raw/graph_raw.graphml`, bốn TomTom JSON và OSMnx cache hiện diện
 > trong workspace và đều được Git track. Schema chi tiết: `docs/SCHEMA.md`.
 > Lượt provenance 2026-08-08 chỉ cập nhật `source_url`, mô tả và ghi chú của
 > `manual_risks.json`; không crawl, rebuild hoặc sửa graph/profile/risk flags.
@@ -229,4 +232,4 @@ phạm vi request, tính lại field derived/weight/v_max rồi bỏ đi sau res
 - fingerprint response ghi nhận base graph/profile/view/override **effective** để
   benchmark/report sau này phân biệt đúng provenance;
 - raw GraphML/TomTom/cache hiện được Git track và vẫn phải đi trong Data ZIP
-  cuối; tám URL risk vẫn là manual task trước final submission.
+  cuối; tám URL risk đã tích hợp, còn lượt mở link ẩn danh trên máy nộp bài.

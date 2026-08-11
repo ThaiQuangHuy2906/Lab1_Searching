@@ -43,8 +43,8 @@ def greedy(store: GraphStore, start: str, goal: str, mode: Mode = "balanced",
            **params) -> Trace:
     """Greedy Best-First: expand the open node with the smallest h only.
 
-    g is tracked internally purely to reconstruct/report path metrics —
-    per SCHEMA §B.3 the trace exposes h alone (g and f stay null).
+    Parent links reconstruct the path; _finish computes its metrics afterward.
+    Per SCHEMA §B.3 the trace exposes h alone (g and f stay null).
     """
     _check_endpoints(store, start, goal)
     t0 = time.perf_counter()

@@ -15,6 +15,13 @@
 > bên dưới là evidence tại thời điểm audit và không được dùng làm current state.
 > Không sửa lại các entry lịch sử phía dưới để mang số hiện tại.
 >
+> **Closeout kết quả chính thức 2026-08-11:** sau khi được ủy quyền riêng, chuỗi
+> `benchmark → gamma calibration → teaching generator` đã chạy đúng một lượt
+> trên graph/profile hiện hành. Artifact đã qua đối chiếu oracle, shape,
+> aggregate, ảnh và SHA-256; `results/README.md` là ledger provenance hiện hành.
+> Vì vậy mọi cảnh báo “benchmark chưa chạy”, `SỐ TẠM`, số synthetic và checklist
+> Appendix A phía dưới chỉ còn là evidence lịch sử của audit 2026-07-27.
+>
 > **Ngày kiểm:** 2026-07-27 · **Commit kiểm:** `9598141` (git sạch, đồng bộ origin/main)
 > **Phương pháp:** Lượt 0 (mốc chân lý) chạy trước; 6 lượt kiểm toán độc lập chạy **song song**
 > (14 agent, ~24 phút máy, ~390 lệnh/tool); mọi phát hiện BLOCKER/MAJOR (tối đa 3/lượt) bị một

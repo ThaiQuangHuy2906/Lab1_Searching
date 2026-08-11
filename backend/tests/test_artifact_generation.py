@@ -12,6 +12,17 @@ from app import benchmark
 from scripts import gen_teaching_doc
 
 
+def test_benchmark_text_writers_use_lf(monkeypatch, tmp_path):
+    monkeypatch.setattr(benchmark, "ROOT", tmp_path)
+    monkeypatch.setattr(benchmark, "RESULTS", tmp_path)
+
+    benchmark.write_csv("sample.csv", ["name", "value"], [["a", 1]])
+    benchmark.write_text_lf(tmp_path / "sample.json", "{\n  \"value\": 1\n}\n")
+
+    assert (tmp_path / "sample.csv").read_bytes() == b"name,value\na,1\n"
+    assert b"\r\n" not in (tmp_path / "sample.json").read_bytes()
+
+
 def test_exp5_avg_time_uses_time_mode_cost(monkeypatch, tmp_path):
     """avg_time_s is travel time, not balanced cost with risk penalties."""
 
@@ -77,3 +88,36 @@ def test_teaching_claim_reports_positive_gap_from_optimal_ratio(
         "NN+2-opt cách nghiệm Held-Karp +11,1%, "
         "SA đạt đúng nghiệm Held-Karp"
     )
+
+
+def test_teaching_generator_main_writes_landmark_table(monkeypatch, tmp_path):
+    """The real generator must execute, not only its CSV-number helper."""
+
+    results = tmp_path / "results"
+    results.mkdir()
+    (results / "exp3_benchmark.csv").write_text(
+        "algorithm,nodes_expanded\n"
+        "astar,80\n"
+        "ucs,100\n",
+        encoding="utf-8",
+    )
+    (results / "exp7_tsp.csv").write_text(
+        "method,total_cost_s,savings_vs_original_pct,runtime_ms,ratio_optimal\n"
+        "held_karp,90,10,1,1\n"
+        "nn_2opt,100,0,1,0.9\n"
+        "sa_best_of_5_seeds,90,10,1,1\n"
+        "sa_mean±std,95±5,,,\n",
+        encoding="utf-8",
+    )
+    output = tmp_path / "GIAI-THICH-THUAT-TOAN.md"
+    monkeypatch.setattr(gen_teaching_doc, "ROOT", tmp_path)
+    monkeypatch.setattr(gen_teaching_doc, "OUT", output)
+
+    gen_teaching_doc.main()
+
+    document = output.read_text(encoding="utf-8")
+    assert b"\r\n" not in output.read_bytes()
+    assert "| **BT** | Chợ Bến Thành |" in document
+    assert "results/exp3_benchmark.csv" in document
+    assert "BFS đắt hơn\n**+0 s" not in document
+    assert "BFS tình cờ trùng tuyến tối ưu" in document

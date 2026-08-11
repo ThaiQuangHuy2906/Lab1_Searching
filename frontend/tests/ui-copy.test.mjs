@@ -85,6 +85,29 @@ test("Explain UI identifies post-run references without forbidden claims", () =>
   assert.match(source, /Đường đỏ trên bản đồ.*ùn tắc mức 4–5.*không phải đường thuật toán/);
 });
 
+test("ATSP result presents open and closed tours from the echoed topology", () => {
+  const source = readFileSync(
+    new URL("../components/atsp/atsp-result.tsx", import.meta.url),
+    "utf8",
+  );
+  assert.match(source, /multi\.contract_version === 2 && multi\.return_to_start/);
+  assert.match(source, /\[\.\.\.multi\.order, multi\.order\[0\]\]/);
+  assert.match(source, /Vòng kín: bắt đầu tại điểm Đi và quay về điểm Đi/);
+  assert.match(source, /Hành trình mở: bắt đầu tại điểm Đi và kết thúc ở điểm giao cuối/);
+  assert.match(source, /Quay về điểm Đi/);
+});
+
+test("benchmark page presents the validated official artifact provenance", () => {
+  const source = readFileSync(
+    new URL("../app/benchmark/page.tsx", import.meta.url),
+    "utf8",
+  );
+  assert.match(source, /KẾT QUẢ CHÍNH THỨC/);
+  assert.match(source, /results\/README\.md/);
+  assert.doesNotMatch(source, /SỐ TẠM/);
+  assert.doesNotMatch(source, /artifact lịch sử/);
+});
+
 test("every optimization event has a Vietnamese presentation separate from raw fields", () => {
   const events = [
     { kind: "held_karp_update", ordinal: 1, subset: ["a", "b"], endpoint: "b", predecessor: "a", candidate_cost: 4, previous_cost: null, new_cost: 4 },

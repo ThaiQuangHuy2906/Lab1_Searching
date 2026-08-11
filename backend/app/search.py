@@ -35,13 +35,6 @@ from .models import (
 MAX_TRACE_STEPS = 5_000
 IDDFS_MAX_DEPTH = 100  # safety bound; practical only on G_demo (see report)
 
-EMPTY_EXPLANATION = Explanation(summary_vi="", congested_segments=[], alternatives=[])
-
-OPTIMAL_GUARANTEE = {  # SCHEMA §B.5 — theoretical, on THIS weighted graph
-    "bfs": False, "dfs": False, "iddfs": False,
-    "ucs": True, "astar": True,
-}
-
 
 class _Recorder:
     """Collects trace steps with the 5000-step cap; no-op when disabled."""
@@ -190,7 +183,10 @@ def _finish(algorithm: str, store: GraphStore, mode: Mode, slot: TimeSlot,
                         max_frontier=max_frontier, runtime_ms=runtime_ms,
                         optimal_guarantee=optimal,
                         trace_truncated=rec.truncated),
-        trace=rec.steps, explanation=EMPTY_EXPLANATION,
+        trace=rec.steps,
+        explanation=Explanation(
+            summary_vi="", congested_segments=[], alternatives=[],
+        ),
         termination=termination)
 
 

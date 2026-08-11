@@ -9,7 +9,7 @@
       "type": "Feature",
       "properties": {
         "slot": "07:30",
-        "time_s": 879.0,
+        "time_s": 678.7,
         "distance_m": 4770.8
       },
       "geometry": {
@@ -210,7 +210,7 @@
       "type": "Feature",
       "properties": {
         "slot": "22:00",
-        "time_s": 483.2,
+        "time_s": 464.6,
         "distance_m": 4781.0
       },
       "geometry": {

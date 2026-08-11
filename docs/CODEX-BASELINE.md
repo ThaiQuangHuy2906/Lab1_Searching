@@ -10,6 +10,14 @@ Baseline date: 2026-07-27 (Asia/Saigon).
 > all 8 manual-risk URLs are now reviewed and integrated with historical-context
 > caveats.
 
+> **Superseding official-result closeout (2026-08-11):** with explicit user
+> authorization, the current 2026-08-03 graph/profile chain was followed by one
+> isolated benchmark run, gamma calibration and teaching-document generation.
+> The artifact set passed independent oracle, shape, aggregate, image and
+> checksum checks; `results/README.md` is the current provenance ledger. Thus
+> the stale/synthetic-result findings and “NOT RUN” table below remain useful
+> only as evidence of this 2026-07-27 baseline, not as present status.
+
 This file began as a read-only onboarding except for the three permitted
 context files. Subsequent user-authorized repair batches on the same date fixed
 B-3, B-4, and B-5 plus the verified Beam, IDA*, Pydantic-error, keyboard, and
@@ -21,7 +29,7 @@ artifacts, dependencies, branch, commit, and remote state were not changed.
 
 | Item | Value |
 |---|---|
-| Repository root | `D:\TAI_LIEU_HCMUS_K24\Năm 2 - Kì 3\Cơ sở Trí tuệ nhân tạo\Project01` |
+| Repository root | `<repository-root>` (historical Windows checkout) |
 | Branch | `main` tracking `origin/main` |
 | HEAD | `aedcf7255c4beadd1de0be69e5638f146bae89ed` |
 | Initial modified tracked file | `.gitignore` |

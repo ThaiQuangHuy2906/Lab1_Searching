@@ -13,11 +13,14 @@
 > đổi graph, công thức cost, heuristic, tie-break, đường đi/kết quả thuật toán,
 > seed, dữ liệu hay benchmark. Việc triển khai phải backend-first, giữ reader cũ
 > hoạt động trong giai đoạn chuyển tiếp và qua các gate trong `UI_caithien.md`.
-> **Cập nhật 2026-08-10:** Phase 0–6 đã hoàn tất; Phase 6 route comparison 2–4
-> đã READY sau manual browser QA do người dùng xác nhận. Known issue validator
-> IDA* được theo dõi riêng ở backend. Contract/UI Explanation v2 hiện đã chạy runtime. Phase 7 ATSP comparison
-> và Phase 8 hardening chưa triển khai. Bằng chứng mới nhất nằm tại
-> `docs/UI-V2-PHASE6-READINESS.md`.
+> **Cập nhật audit 2026-08-11:** Phase 0–6 đã hoàn tất; Phase 7 ATSP comparison
+> 2–3 và Phase 8 hardening đã được triển khai end-to-end. Contract/UI Explanation
+> v2 hiện phát và đọc payload version 2. Regression IDA* từng bị validator bác
+> nhầm nghiệm hợp lệ trong biên ε đã được sửa và có test. Fresh automated gates
+> của audit cuối: backend 235/235, frontend 137/137, TypeScript, production build
+> và data validator đều đạt. Chrome Desktop full-view ngày 2026-08-11 đã pass
+> route single/compare 2–4, ordered multi-point và ATSP single/compare 2–3; nếu
+> audit machine không phải máy demo cuối thì `FINAL DEMO-MACHINE PREFLIGHT REQUIRED`.
 
 ## 1. Kịch bản và phạm vi
 
@@ -146,9 +149,13 @@ lý theo contract, không tự chọn im lặng.
 | 6 | 5 cặp đối chứng Google Maps định tính | `exp6_pairs.json` + routes |
 | 7 | 3 ATSP trên kịch bản 10 điểm | `exp7_tsp.csv` + map |
 
-> `results/` hiện là lượt synthetic ngày 2026-07-26 và cũ hơn graph hiện hành.
-> Không chép headline từ đó vào bản nộp. Chạy lại đúng một lượt sau quyết định
-> dữ liệu cuối.
+> `results/` đã được tái sinh chính thức ngày 2026-08-11 từ graph/profile
+> `tomtom+synthetic` hiện hành, sau pre-gate test + validator và trong một lượt
+> benchmark cô lập seed 42. Chuỗi tiếp tục với hiệu chuẩn γ và teaching generator;
+> headline, môi trường và checksum input/source/output nằm tại
+> [`results/README.md`](../results/README.md). Nếu graph, profile hoặc source
+> algorithm/producer đổi, phải hạ trạng thái bộ kết quả và chạy lại trọn chuỗi
+> trước khi trích vào bản nộp.
 
 ## 8. Thông tin nhóm và phân công đã xác nhận
 
@@ -191,19 +198,23 @@ cấp; report, slide, video link và data package cuối vẫn chưa tồn tại
 - Genetic Algorithm/Ant Colony;
 - cloud deployment.
 
-Mobile/responsive, offline, accessibility và projector resolution vẫn là phạm
-vi QA trước bảo vệ, dù không mở rộng thành một thiết kế mobile riêng.
+Offline, accessibility desktop và đúng độ phân giải máy demo vẫn là phạm vi QA
+trước bảo vệ. Mobile/tablet/narrow responsive không thuộc lượt final audit
+Desktop-only ngày 2026-08-11; các claim lịch sử về chúng không được dùng thay cho
+preflight trên máy demo cuối.
 
 ## 11. Việc còn lại theo thứ tự
 
 1. ✅ Raw TomTom đủ bốn slot đại diện; nhóm chấp nhận bộ đo trên hai ngày thứ
    Hai và phải công bố giới hạn này trong deliverable.
 2. ✅ Chốt profile `tomtom+synthetic`; chuỗi data `03b real → 04 → 03b demo →
-   validate_data` đã hoàn tất. Benchmark/hiệu chuẩn γ/generator vẫn chờ lượt
-   cuối riêng.
+   validate_data` đã hoàn tất; chuỗi benchmark/hiệu chuẩn γ/generator chính thức
+   hoàn tất ngày 2026-08-11 mà không rebuild data.
 3. ✅ Đã review và tích hợp 8 `source_url`; metadata risk dùng wording nguồn
    lịch sử, không xác nhận real-time/tọa độ/bán kính/penalty. Vẫn mở lại link
    bằng tab ẩn danh trên máy nộp bài trong final QA.
-4. ⬜ Đồng bộ 5 banner/số liệu sau benchmark + generator cuối.
+4. ✅ Đã đồng bộ/gỡ năm banner tạm và số liệu sau benchmark + generator cuối;
+   provenance/checksum nằm tại `results/README.md`.
 5. ⬜ Điền danh tính/nội dung, chụp ảnh, tạo report/slide/video/data description.
-6. ⬜ Restart service, QA browser/máy chiếu, kiểm link ẩn danh và đóng ZIP.
+6. ⬜ Clean restart service, Chrome maximized trên máy demo, kiểm link ẩn danh và
+   đóng ZIP. Nếu audit chạy trên máy khác, vẫn phải làm preflight trên máy demo.

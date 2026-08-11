@@ -1,16 +1,17 @@
 # UI & Explanation v2 — Phase 7 Readiness
 
 Ngày kiểm chứng: 2026-08-11  
-Branch/HEAD nền: `main` / `b3218b5c7d47`
+Branch/HEAD nền: `main` / `821e77d38b41bb98e473be620b17c76e09a000d8`
 
 ## 1. Kết luận
 
-**Verdict: IMPLEMENTED — MANUAL BROWSER QA REQUIRED**
+**Verdict: READY — CHROME DESKTOP FULL-VIEW QA PASSED**
 
 Phase 7 ATSP comparison 2–3 đã được nối end-to-end và qua automated gates.
-Chưa ghi READY vì controlled browser của phiên này chặn `127.0.0.1` với
-`ERR_BLOCKED_BY_CLIENT`; các viewport và tương tác thực tế vẫn phải được người
-dùng kiểm trên trình duyệt đang chạy dự án.
+Chrome 151 thật đã được clean restart + hard refresh và maximize trên màn hình
+laptop vật lý 2560×1440, Windows scale 150% (viewport CSS 1707×825, DPR 1,5).
+ATSP N=2/N=3, partial failure, retry, cancel/stale guard, camera độc lập, bảng và
+console đều đạt. Mobile/tablet/narrow viewport nằm ngoài phạm vi audit này.
 
 ## 2. Hành vi đã triển khai
 
@@ -42,29 +43,37 @@ dùng kiểm trên trình duyệt đang chạy dự án.
 
 | Gate | Kết quả |
 |---|---|
-| `npm test` | PASS — 130/130 |
+| `npm test` | PASS — 136/136 |
 | `npx tsc --noEmit --incremental false` | PASS |
 | `NEXT_TELEMETRY_DISABLED=1 npm run build` | PASS — 6/6 static pages |
-| Targeted backend API/contract/scenario tests | PASS — 115, 1 health test deselected |
+| Full backend suite | PASS — 233/233, 1 dependency warning |
+| `scripts/validate_data.py` | PASS — `ALL DATA VALID` |
 | `git diff --check` | PASS |
-| Controlled browser QA | BLOCKED — cloud browser không truy cập được localhost |
-| Manual browser QA | PENDING |
+| Chrome 151 maximized | PASS — physical 2560×1440; CSS 1707×825; DPR 1,5 |
+| ATSP compare N=2/N=3 | PASS — 2/3 response 200, đúng 2/3 map, baseline 0 map |
+| Clean browser console | PASS — 0 error, 0 warning |
 
-Backend targeted suite dùng Python 3.12 của môi trường tạm; test health yêu cầu
-runtime Python 3.14 nên được deselect. Không có backend/schema/data/algorithm nào
-được sửa trong Phase 7 này.
+Ba method N=3 phát theo thứ tự quan sát được
+`request:held_karp → response:held_karp → request:nn_2opt → response:nn_2opt → request:sa → response:sa`.
+Mọi response dùng cùng scenario fingerprint và `optimization_trace=null`.
 
-## 4. Manual browser gate còn mở
+## 4. Chrome Desktop gate
 
-- [ ] 1366×768: chạy ATSP N=2 và N=3, đủ pane, không che toolbar/drawer.
-- [ ] 1024×768: panel/drawer mở đóng, bảng cuộn được, map vẫn có vùng tương tác.
-- [ ] 390×844 và 320 px: một cột, không có page-level horizontal scroll.
-- [ ] Open và closed: mọi pane/bảng/giải thích cùng semantics quay về Đi.
-- [ ] Pan/zoom/Home của một pane không thay đổi camera pane khác.
-- [ ] Partial failure giữ result thành công; retry card lỗi dùng đúng snapshot.
-- [ ] Cancel không khởi chạy method queued tiếp theo; result cũ/stale không nhập session.
-- [ ] Matrix incomplete ghi đúng `A → B` và không gợi ý đổi optimizer.
-- [ ] Keyboard/focus/live region/reduced motion hoạt động; console không có error.
+- [x] N=2 và N=3 có đúng N pane/map; baseline chỉ là mốc bảng, không có map giả.
+- [x] Open và closed dùng cùng topology echo; single-result closed tour hiển thị
+  rõ chặng quay về Đi, open tour kết thúc ở stop cuối.
+- [x] Zoom pane Held-Karp làm ảnh pane Held-Karp đổi nhưng ảnh pane
+  NN + 2-opt/Or-opt giữ nguyên từng byte; camera ATSP không bị dùng chung.
+- [x] Một method HTTP 503 giữ hai partial success; retry phát đúng một request
+  cho card lỗi và hoàn tất session.
+- [x] Cancel khi request bị trì hoãn đánh dấu mọi method `Đã hủy`; response cũ
+  tới sau không ghi đè session.
+- [x] Exact gap/ranking, heuristic disclaimer, immutable fingerprint và
+  `include_trace=false` đều được kiểm từ response/UI thật.
+- [x] Table cuộn ngang trong drawer, page không tràn ngang; console sạch có 0
+  error/warning ở lượt run không tiêm lỗi.
+- [x] Contract/tests giữ directed-pair failure copy và không gợi ý đổi optimizer
+  khi ma trận bất đối xứng không đầy đủ.
 
-Chỉ đổi verdict thành READY sau khi các mục trên được kiểm trên browser thật và
-ghi lại viewport/kịch bản đã dùng.
+Không đưa Mobile/Tablet/Narrow QA vào verdict theo phạm vi final audit. Nếu máy
+audit không phải máy demo cuối: **FINAL DEMO-MACHINE PREFLIGHT REQUIRED**.

@@ -1,19 +1,16 @@
 # KỊCH BẢN VIDEO DEMO — 18–25 phút (bám đề mục 4.10)
 
-> ⚠️ **SỐ TẠM (2026-07-27):** mọi con số exp1–exp7 trong tài liệu này lấy từ lượt chạy
-> congestion **synthetic** — và CẢ CÁC SỐ VÍ DỤ CHẠY TAY (446/341/+31%/+104 s/ma trận
-> 304/120/beam 415…) cũng đổi theo profiles, không riêng số benchmark. Sau khi có
-> TomTom, phần data đã được làm mới theo `03b real → 04 → 03b demo → validate_data`;
-> benchmark, hiệu chuẩn γ và `scripts/gen_teaching_doc.py` vẫn chờ lượt cuối.
-> Chỉ thay số theo Phụ lục A của `docs/KIEMTOAN.md` sau lượt đó rồi mới nộp.
-> Contract route ngày 2026-08-08 đã loại `dijkstra` độc lập; kịch bản hiện theo 9
-> thuật toán và vẫn giữ Bidirectional Dijkstra. CSV/biểu đồ cũ còn series legacy.
+> ✅ **KẾT QUẢ THÍ NGHIỆM CHÍNH THỨC (2026-08-11):** các số exp1–exp7, γ̂ và
+> ví dụ `teach_7` trong kịch bản đã đồng bộ từ cùng lượt graph/profile
+> `tomtom+synthetic`, seed 42. Artifact/generator đã qua kiểm tra độc lập;
+> provenance/SHA-256 nằm tại `results/README.md`. Catalog có 9 thuật toán route
+> và không còn series `dijkstra` độc lập.
 >
 > **Tiến độ:** raw TomTom đủ 4/4 snapshot đại diện trên hai ngày thứ Hai;
 > profile hiện là `tomtom+synthetic`, `G_demo` là 51/298; raw GraphML/TomTom/cache
 > hiện được Git track dưới `data/raw/`. Đây là kịch bản, chưa
-> có video hoặc file link nộp. Chỉ quay sau benchmark/generator cuối, restart
-> service và QA trình duyệt ở đúng độ phân giải quay.
+> có video hoặc file link nộp. Trước khi quay vẫn phải clean restart, hard refresh
+> và preflight Chrome maximized ở đúng laptop/độ phân giải quay.
 
 > **Chuẩn bị trước khi quay:** backend + frontend chạy sẵn (localhost:8000/3000, chế độ
 > TỐI); mở sẵn `docs/GIAI-THICH-THUAT-TOAN.md` để dẫn bảng; OBS quay 1920×1080; mic rõ.
@@ -49,18 +46,19 @@
   BX→BT (Công trường Quách Thị Trang) + bảng h (haversine/v_max). Nêu bài toán chính
   BT → BX: "có đường trực tiếp nhưng chỉ chiều VỀ — chiều đi phải vòng".
 - (3:00) **BFS**: dùng bảng 7 node BT→BX; chạy GUI bước-một trên đúng
-  `teach_7` và cùng request settings sau pre-flight parity. BFS chọn tuyến ít cạnh
-  nhưng đắt (446 s) vs tối ưu (341 s) — đắt hơn +31%; chốt "ít cạnh ≠ rẻ".
+  `teach_7` và cùng request settings sau pre-flight parity. BFS chọn
+  `BT→MT→BX` 300 s và **tình cờ trùng** UCS; chốt rõ đây là kết quả instance,
+  không phải guarantee tối ưu weighted-cost của BFS.
 - (4:00) **DFS + IDDFS**: DFS lao sâu (chỉ thứ tự expand); IDDFS cột
   "giới hạn d" tăng dần, số expand CỘNG DỒN — cái giá của chạy lại; chỉ complete
   nếu lời giải không sâu hơn cap 100.
 - (5:00) **UCS**: chỉ cột g tăng dần theo hàng đợi ưu tiên; goal-test khi POP.
 - (5:45) **A\***: chỉ vào cột f — node hướng về đích có f nhỏ được
   ưu tiên; nêu luật tie-break khi hai node cùng f (chọn h nhỏ hơn); so số expand A*
-  với UCS bằng exp3 sau lượt benchmark cuối.
+  với UCS bằng exp3 chính thức.
   Nói 1 câu về admissible: "h là thời gian bay thẳng ở tốc độ lớn nhất của đồ thị (45 km/h) — không bao giờ đoán quá."
-- (7:00) **Greedy**: cùng cặp BT→BX — lao theo h "nhìn gần đích" nên sập
-  cùng bẫy với BFS (+104 s, +31%); đối chiếu với A* cũng dùng h nhưng CÓ g nên không bị.
+- (7:00) **Greedy**: cùng cặp BT→BX — chọn `BT→SC→BX` 427 s, đắt hơn A*/UCS
+  **+127 s (+42%)**; khác BFS lần này tình cờ đúng, Greedy sai vì dùng h mà bỏ g.
 - (7:45) **Dijkstra hai chiều**: GUI 2 màu lan từ 2 phía (cột "Phía" trong
   bảng); nêu chiều ngược chạy trên đồ thị ĐẢO CẠNH vì một chiều; luật dừng
   top_xuôi + top_ngược ≥ μ.
@@ -69,7 +67,7 @@
   implementation hiện hành là O(bd): nó giữ `best_g`, `parent`, `h_of` và
   explicit stack đang chờ (O(V+Q)).
 - (9:30) **Beam**: chạy k=2 rồi k=5 trên GUI; nói "incomplete" +
-  số benchmark: k=50 vẫn lỡ 1,5% ca trên G_real.
+  số benchmark: k=50 vẫn lỡ 4/400 = 1,0% ca trên G_real.
 - (10:15) **Ba thuật toán ATSP mini**: chỉ tính bất đối xứng trên
   ma trận 4×4, rồi phân biệt Held–Karp tối ưu tuyệt đối, NN + 2-opt/Or-opt là
   local-search heuristic và SA là metaheuristic có seed; hẹn demo 10 điểm ở phần sau.
@@ -81,7 +79,7 @@
 - (12:00) **Route 2 điểm — test case 1** (07:30, Cân bằng, A*): ĐH KHTN → Thảo Cầm Viên.
   Play → pause giữa chừng chỉ frontier/expanded → tuyến + Số liệu (badge "Đảm bảo tối ưu").
 - (13:30) **Đổi khung giờ — test case 2**: cùng OD lúc 22:00 → TUYẾN ĐỔI (nhắc exp4:
-  83,5% cặp đổi tuyến). Đọc to phần Giải thích: breakdown ùn tắc và trade-off với
+  149/200 = 74,5% cặp đổi tuyến). Đọc to phần Giải thích: breakdown ùn tắc và trade-off với
   tuyến tham chiếu UCS hậu kiểm; không nói thuật toán chính đã xét/bị loại full route.
 - (15:00) **Đổi tiêu chí — test case 3**: cùng OD "Ngắn nhất" vs "Cân bằng" — objective
   đổi giữa quãng đường và chi phí cân bằng; UI luôn trình bày km/phút, không đọc raw mét/giây.
@@ -93,7 +91,7 @@
   để chứng minh thay đổi chỉ có hiệu lực trong phiên/request hiện tại.
 - (17:00) **G_real**: đổi đồ thị, click chọn 2 điểm trên bản đồ 2 118 nút, chạy
   Dijkstra hai chiều → nói "2 118 nút" và ĐỌC ĐÚNG runtime đang hiện trên màn
-  hình; không đọc số từ CSV benchmark cũ.
+  hình; không đọc `runtime_ms` thuộc máy benchmark vì runtime live phụ thuộc máy/phiên.
 - (17:45) **Multiroute 9 điểm**: thêm 9 điểm giao (chế độ chọn trên bản đồ
   GIỮ NGUYÊN sau mỗi click — bấm liên tục 9 nút giao, banner đếm n/15; app tự BỎ điểm
   Đến kèm toast khi thêm điểm đầu tiên — đó là hành vi đúng, cứ nói "tour chỉ cần điểm
@@ -105,21 +103,22 @@
 
 ## 20:00 – 23:00 · Benchmark & phân tích
 
-- (20:00) Trang /benchmark: 2 biểu đồ cột (log) — đọc: nhóm tối ưu ~1 200 expand,
-  A*/BiDijkstra ~750, IDA*/IDDFS hàng trăm nghìn (cái giá tiết kiệm bộ nhớ);
+- (20:00) Trang /benchmark: 2 biểu đồ cột (log) — đọc: UCS 1 227 expand,
+  A*/BiDijkstra 721/739, IDA*/IDDFS 290 427/109 612 (cái giá của lặp threshold/depth);
   số nói to phải khớp số trên màn hình cùng khung hình.
 - (21:00) Chiếu `admissibility_scatter.png` (0 vi phạm/21 170 điểm) + kể bài học
   làm tròn 3 cm suýt phá admissible (test tự bắt được).
 - (22:00) `exp5_gamma_curves.png`: PHÂN TÍCH ĐỘ NHẠY γ — nói rõ "γ=1,5 là hằng số
-  thiết kế; đường cong cho thấy kết quả chênh cả dải γ∈[0;3] chỉ ~2,6%, tức kết luận
+  thiết kế; đường cong cho thấy kết quả chênh cả dải γ∈[0;3] là 5,4%, tức kết luận
   ít nhạy với lựa chọn γ" (KHÔNG nói "chọn 1,5 vì cực tiểu tại 1,5" — thước đo exp5
   tự dùng γ=1,5, lập luận đó là vòng); 1 câu về exp1
-  (UCS/A* khớp NetworkX; điền số từ exp1 mới, mục tiêu 800 ca).
+  (UCS/A* khớp NetworkX **800/800**) và γ̂ độc lập = 1,238 từ 160 mẫu/4 slot.
 
 ## 23:00 – 25:00 · Hạn chế & kết
 
 - (23:00) 3 hạn chế trung thực (TomTom chỉ phủ mẫu và còn synthetic fallback;
-  heuristic lỏng h/h*≈0,57; chưa turn-penalty) + 2 hướng phát triển (TomTom
+  heuristic chỉ là haversine/v_max, `max(h/h*)=0,8886` không phải trung bình;
+  chưa turn-penalty) + 2 hướng phát triển (TomTom
   real-time, ALT).
 - (24:00) Chốt: 9 thuật toán một hợp đồng trace, 3 phương pháp TSP, topology
   G_real dẫn xuất từ OSM và 51 POI G_demo do nhóm curate rồi snap; profile traffic

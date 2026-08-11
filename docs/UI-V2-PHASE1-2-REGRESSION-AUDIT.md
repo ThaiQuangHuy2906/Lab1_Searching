@@ -2,9 +2,14 @@
 
 Ngày audit: 2026-08-11 (Asia/Saigon)
 
+> **Checkpoint lịch sử:** baseline, test count và cảnh báo `results/` phía dưới
+> chỉ đúng tại lượt regression Phase 1–2. Current-state qua Phase 8 xem
+> `docs/UI-V2-PHASE8-READINESS.md`; provenance kết quả thí nghiệm chính thức xem
+> `results/README.md`. Không dùng các dòng lịch sử bên dưới làm claim hiện hành.
+
 ## 1. Baseline, phạm vi và lịch sử commit
 
-Audit bắt đầu tại repository `C:\Users\Admin\Desktop\Lab01_Searching` với
+Audit bắt đầu tại một checkout Windows của repository (`<repository-root>`) với
 `git status --short --branch` trả `main...origin/main`, worktree sạch. Baseline:
 
 - HEAD: `1b933de0428e6487e9b6e1a9c8273e2c6acc7bf8` — `add route comparison with a referenced route`.
@@ -169,7 +174,7 @@ implementation.
 | `git log`, `git show`, `git diff`, `git blame` | PASS — lịch sử/commit gây lỗi như §1–2 |
 | `.venv\Scripts\python.exe -m pytest backend\tests\test_ui_v2_phase1_contract.py -q -p no:cacheprovider` | PASS — 42 tests, 1 dependency warning |
 | Targeted Node contract/journey/comparison tests | PASS — 31 tests |
-| `.venv\Scripts\python.exe -m pytest backend\tests\ -q -p no:cacheprovider` | PASS — 231 tests, 1 warning, 38.73 s |
+| `.venv\Scripts\python.exe -m pytest backend\tests\ -q -p no:cacheprovider` | PASS — 233 tests, 1 dependency warning |
 | `npm test` trong `frontend/` | PASS — 128/128 |
 | `npx tsc --noEmit --incremental false` trong `frontend/` | PASS — exit 0, 41.4 s |
 | `npm run build` trong `frontend/` | PASS — Next 15.5.22, compile/type/static 6/6, 172.6 s |

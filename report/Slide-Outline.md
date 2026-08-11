@@ -1,19 +1,16 @@
 # OUTLINE SLIDE THUYẾT TRÌNH — 14 slide (map thẳng vào rubric)
 
-> ⚠️ **SỐ TẠM (2026-07-27):** mọi con số exp1–exp7 trong tài liệu này lấy từ lượt chạy
-> congestion **synthetic** — và CẢ CÁC SỐ VÍ DỤ CHẠY TAY (446/341/+31%/+104 s/ma trận
-> 304/120/beam 415…) cũng đổi theo profiles, không riêng số benchmark. Sau khi có
-> TomTom, phần data đã được làm mới theo `03b real → 04 → 03b demo → validate_data`;
-> benchmark, hiệu chuẩn γ và `scripts/gen_teaching_doc.py` vẫn chờ lượt cuối.
-> Chỉ thay số theo Phụ lục A của `docs/KIEMTOAN.md` sau lượt đó rồi mới nộp.
-> Contract route ngày 2026-08-08 đã loại `dijkstra` độc lập; outline hiện theo 9
-> thuật toán và vẫn giữ Bidirectional Dijkstra. Biểu đồ/CSV cũ còn series legacy.
+> ✅ **KẾT QUẢ THÍ NGHIỆM CHÍNH THỨC (2026-08-11):** các số exp1–exp7, γ̂ và
+> ví dụ chạy tay dưới đây đã đồng bộ từ cùng lượt graph/profile
+> `tomtom+synthetic`, seed 42. Exp1–exp7, gamma CSV và generated guide đã qua
+> kiểm tra độc lập; provenance/SHA-256 nằm tại `results/README.md`. Catalog có 9
+> thuật toán route và không còn series `dijkstra` độc lập.
 >
 > **Tiến độ:** raw TomTom đủ 4/4 snapshot đại diện trên hai ngày thứ Hai;
 > profile hiện là `tomtom+synthetic`, `G_demo` là 51/298; raw GraphML/TomTom/cache
 > hiện được Git track dưới `data/raw/`. Đây vẫn là outline,
-> chưa phải file PPTX/PDF. Phải thay số, điền danh tính và chèn hình/screenshot
-> thật trước khi xuất bản nộp.
+> chưa phải file PPTX/PDF. Phải chèn hình/screenshot thật và render/QA deck trước
+> khi xuất bản nộp.
 
 > Mỗi slide: tối đa 3 bullet nội dung + ghi chú **"Nói gì trong 45–60 s"**.
 > Quy ước hình: screenshot GUI ở chế độ TỐI (DESIGN.md §1); biểu đồ lấy từ `results/figs/`.
@@ -31,12 +28,13 @@
 - Shipper TP.HCM: ùn tắc theo giờ, 1 433/4 699 cạnh MỘT CHIỀU, ngập + lô cốt
 - 2 bài toán đề yêu cầu: tìm đường 2 điểm + tối ưu thứ tự nhiều điểm giao
 - Vì sao chọn kịch bản shipper: chứa cả hai bài toán một cách tự nhiên
-> 🗣 60s: kể 1 tình huống cụ thể (đơn Chợ Bến Thành → Bitexco: có đường trực tiếp nhưng MỘT CHIỀU ngược — chiều đi phải vòng, tuyến vòng ít cạnh nhất lại kẹt).
+> 🗣 60s: kể 1 tình huống cụ thể (Chợ Bến Thành → Bitexco: cạnh trực tiếp chỉ có
+> chiều ngược; ở profile hiện tại BFS tình cờ trùng UCS, còn Greedy chọn tuyến đắt hơn).
 
 **Slide 3 — Mô hình hoá + hàm chi phí** *(rubric: modeling 15đ)*
 - Đồ thị CÓ HƯỚNG; cạnh mang length/speed/congestion(4 khung giờ)/risk 0-1
 - `w = t_free·f_cong + penalty` — QUY HẾT VỀ GIÂY (điểm khác công thức mẫu của đề)
-- γ=1,5 là HẰNG SỐ THIẾT KẾ (kẹt cứng mức 5 ⇒ thời gian ×2,5 lúc thoáng); exp5 là PHÂN TÍCH ĐỘ NHẠY — chênh cả dải γ∈[0;3] chỉ ~2,6% ⇒ kết luận ít nhạy với lựa chọn γ
+- γ=1,5 là HẰNG SỐ THIẾT KẾ (kẹt cứng mức 5 ⇒ thời gian ×2,5 lúc thoáng); exp5 là PHÂN TÍCH ĐỘ NHẠY — chênh cả dải γ∈[0;3] là 5,4%; γ̂ độc lập từ 160 mẫu/4 slot = 1,238
 > 🗣 60s: nhấn lý do "cùng đơn vị mới cộng có nghĩa"; mỗi lượt băng qua vùng ngập = +60 s
 > (flag tại cạnh ĐI VÀO vùng — trả một lần mỗi lượt, không cộng dồn theo đoạn OSM).
 
@@ -49,9 +47,9 @@
 
 **Slide 5 — Thuật toán vô hướng: BFS/DFS/IDDFS + UCS** *(rubric: 4 bắt buộc 20đ)*
 - Bảng chạy tay BFS trên đồ thị 7 node thật (GIAI-THICH-THUAT-TOAN §1)
-- BẪY ngay bài chính BT→BX: BFS chọn tuyến ít cạnh ĐẮT (446 s) thay vì tuyến tối ưu (341 s) — +31%
-- UCS: lan theo CHI PHÍ → tối ưu (đối chứng UCS/A* với NetworkX; điền số exp1 sau lượt tái sinh cuối)
-> 🗣 60s: đứng ở phản ví dụ — "ít cạnh nhất ≠ rẻ nhất" là lý do cần thuật toán có trọng số.
+- BT→BX hiện tại: BFS chọn `BT→MT→BX` 300 s và **tình cờ trùng** UCS; đây không phải guarantee
+- UCS: lan theo CHI PHÍ → tối ưu; UCS/A* khớp NetworkX **800/800** trong exp1
+> 🗣 60s: dùng đúng bài học — kết quả đúng ở một instance không biến BFS thành thuật toán tối ưu weighted-cost.
 
 **Slide 6 — A\* và heuristic** *(rubric: 20đ + heuristic design)*
 - h = haversine/v_max — CHỨNG MINH admissible + consistent (Bổ đề đường-chim-bay)
@@ -68,14 +66,14 @@
 **Slide 8 — Thuật toán bổ sung** *(rubric: additional 10đ)*
 - Nhóm làm 5 (đề cần ≥2): IDDFS, Greedy, BiDijkstra, IDA* (ε=5 m ở distance,
   5 s ở time/balanced; UI đổi tương ứng sang km/phút; guarantee chỉ khi chưa chạm cap 1.000 vòng), Beam
-- Greedy: expand ít nhất (62) nhưng gap 60,9% — "linh cảm" phản chủ
-- Beam k=50: nhanh nhưng 1,5% ca KHÔNG tìm thấy — incomplete bằng số
+- Greedy: expand ít nhất (62) nhưng gap 33,7% — "linh cảm" phản chủ
+- Beam k=50: nhanh nhưng 4/400 = 1,0% ca KHÔNG tìm thấy — incomplete bằng số
 > 🗣 60s: mỗi thuật toán một câu "đánh đổi cái gì lấy cái gì".
 
 **Slide 9 — TSP đa điểm** *(rubric: multi-location 10đ)*
-- ATSP vì ma trận BẤT đối xứng (một chiều): BT→SC 304 s nhưng SC→BT 120 s
+- ATSP vì ma trận BẤT đối xứng (một chiều): BT→SC 304 s nhưng SC→BT 99 s
 - Held-Karp = tối ưu tuyệt đối (≤15 điểm); NN+2-opt, SA = xấp xỉ
-- Kịch bản 10 điểm: tiết kiệm **53,6%** so thứ tự nhập; hình `exp7_tsp_map.png`
+- Kịch bản 10 điểm: Held-Karp tiết kiệm **42,2%**; NN gap +1,6%; SA best chạm HK nhưng không có guarantee; hình `exp7_tsp_map.png`
 > 🗣 60s: nói rõ cái nào đảm bảo tối ưu, cái nào không — đề yêu cầu tuyên bố điều này.
 
 **Slide 10 — Kiến trúc hệ thống**
@@ -91,18 +89,18 @@
 
 **Slide 12 — Benchmark** *(rubric: comparison trong 20đ + report 10đ)*
 - 9 thuật toán × 200 cặp × 2 khung giờ trên G_real (biểu đồ expand + runtime, thang log)
-- A* và BiDijkstra so với UCS; đọc tỷ lệ tiết kiệm từ exp3 sau lượt tái sinh cuối
-- Đúng đắn: UCS/A* khớp NetworkX sai số ≤ 1e-6; điền số từ exp1 mới (mục tiêu 800 ca)
+- A*/BiDijkstra giảm **41,3%/39,7%** expand so UCS; runtime là wall-clock theo máy
+- Đúng đắn: UCS/A* khớp NetworkX **800/800**, sai số ≤ 1e-6
 > 🗣 60s: đọc biểu đồ log — "cột cao nhất là cái giá của tiết kiệm bộ nhớ (IDA*/IDDFS)".
 
 **Slide 13 — Ùn tắc đổi tuyến + giải thích lộ trình** *(rubric: explanation 10đ)*
-- 83,5% cặp đổi tuyến giữa 07:30 và 22:00 (exp4)
+- 149/200 = **74,5%** cặp đổi tuyến giữa 07:30 và 22:00 (exp4)
 - [SCREENSHOT: tab Giải thích — breakdown + tuyến tham chiếu hậu kiểm + trade-off đúng objective]
 - Đối chứng Google Maps: 5 cặp (exp6) — trùng/khác và lý do
 > 🗣 60s: đọc to 1 câu giải thích thật của app — cho giảng viên thấy máy "nói được tiếng người".
 
 **Slide 14 — Hạn chế & hướng phát triển**
-- Trung thực: heuristic lỏng (h/h*≈0,57), TomTom chỉ phủ mẫu và còn synthetic fallback, chưa turn-penalty; GUI đã QA responsive ở 1366×768, 1024×768, 390×844 nhưng chưa là chứng nhận screen-reader/GPU đa thiết bị
+- Trung thực: heuristic chỉ dùng haversine/v_max (`max(h/h*)=0,8886`, không phải trung bình), TomTom chỉ phủ mẫu và còn synthetic fallback, chưa turn-penalty; final QA chỉ chứng minh Chrome Desktop maximized trên laptop audit, chưa là chứng nhận screen-reader/GPU đa thiết bị
 - Hướng phát triển: TomTom real-time, landmark ALT, VRP nhiều shipper
 - Cảm ơn + Q&A
 > 🗣 30s + để thời gian cho hỏi đáp.

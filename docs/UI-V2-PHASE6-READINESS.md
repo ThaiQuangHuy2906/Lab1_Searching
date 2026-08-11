@@ -1,7 +1,11 @@
 # UI & Explanation v2 — Phase 6 Readiness
 
+> Checkpoint của route comparison Phase 6. Current-state tổng thể qua Phase 8
+> xem `docs/UI-V2-PHASE8-READINESS.md`; count trong bảng Phase 6 là evidence tại
+> thời điểm checkpoint.
+
 Ngày kiểm chứng: 2026-08-10  
-Repository: `C:\HCMUS\AI\Lab1_Searching`  
+Repository: workspace local của `Lab1_Searching`
 Branch/HEAD nền: `main` / `94eb7e3d77e01e2a44b7847d7af2b491981b415b`
 
 ## 1. Kết luận
@@ -17,9 +21,9 @@ Người dùng đã kiểm trực tiếp trên browser và xác nhận luồng c
 2/3/4 map, camera độc lập, thêm/bỏ thuật toán, compare mode read-only, bảng số
 liệu và resize panel. Phiên agent không tự chạy controlled browser nên bằng
 chứng này được ghi rõ là user-reported manual QA. Không có hạng mục ATSP
-comparison Phase 7 nào được thêm vào UI. API IDA* còn một known issue backend:
-nghiệm hợp lệ trong biên ε có thể bị validator xem nhầm là mâu thuẫn với exact
-reference và trả HTTP 500.
+comparison Phase 7 nào được thêm vào UI trong chính phase này. Cảnh báo IDA* ε
+ghi ở bản cũ đã được backend sửa sau đó và có regression; không còn là known
+issue hiện hành.
 
 ## 2. Hành vi đã triển khai
 

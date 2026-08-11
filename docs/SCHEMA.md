@@ -1,25 +1,17 @@
 # SCHEMA.md — Các hợp đồng dữ liệu và API
 
-> **Trạng thái kiểm lại 2026-08-09:** Phase 0 của UI & Explanation v2 đã
-> hoàn tất contract-readiness review; biên bản gate nằm tại
-> `docs/UI-V2-PHASE0-READINESS.md`. §A–§D mô tả contract base đang chạy. §E khóa phần
-> mở rộng đã được người dùng duyệt: GraphView dạy học, scenario edge-override
-> request-scoped, `AppliedScenario`/fingerprint và ATSP optimization trace.
-> **Milestone 2 đã triển khai** GraphView, graph/traffic response echo và
-> `AppliedScenario`/fingerprint cho scenario không override. **Milestone 3 đã triển khai** ATSP optimization trace:
-> `include_trace`, event union, sampler deterministic, `optimizer_stats` và player
-> frontend. **Milestone 4 đã triển khai** `EdgeOverride` request-scoped với
-> validation finite/physical, canonical no-op, clone private bất biến, recompute
-> derived cost/`v_max`, fingerprint server-authoritative và editor frontend.
-> Không được tự coi code cũ là authority để bỏ hoặc đổi các semantics đã khóa ở §E.
-> Dữ liệu benchmark trong `results/` là artifact cũ và không thay đổi contract này.
-> UI Clarity Phase 2026-08-07 không đổi API/schema: backend/store tiếp tục dùng
-> mét/giây; frontend chỉ chuyển sang km/phút ở tầng presentation theo
-> `docs/DESIGN.md` §12. **Phase UI & Explanation v2 được người dùng duyệt
-> 2026-08-09** có contract đích additive tại §F. §F hiện là đặc tả migration đã
-> duyệt nhưng **chưa phải bằng chứng code đang triển khai**; trước khi Phase 1
-> hoàn tất, §A–§E vẫn là contract executable v1. Không được sửa frontend theo §F
-> trước producer/backend và compatibility tests tương ứng.
+> **Trạng thái kiểm lại 2026-08-11:** §A–§F là contract hiện hành. GraphView,
+> scenario edge-override request-scoped, `AppliedScenario`/fingerprint, ATSP
+> optimization trace và toàn bộ contract additive UI & Explanation v2 tại §F đã
+> được triển khai trong model, producer, API, frontend guards/consumers và tests.
+> `/api/route` hiện phát `contract_version=2`; từng variant bắt buộc phải có đủ
+> termination/decision/explanation evidence theo §F, không còn trạng thái rollout
+> v1→v2. Biên bản lịch sử của từng gate nằm tại
+> `docs/UI-V2-PHASE0-READINESS.md` … `docs/UI-V2-PHASE8-READINESS.md`.
+> Dữ liệu benchmark trong `results/` đã được tái sinh chính thức ngày 2026-08-11
+> từ contract này; provenance/checksum nằm tại `results/README.md`. Việc refresh
+> artifact không đổi API contract. UI chỉ đổi mét/giây sang km/phút ở tầng presentation theo
+> `docs/DESIGN.md` §12; API/store vẫn dùng đơn vị raw đã khóa tại §B–§D.
 > **Thay đổi được nhóm duyệt 2026-08-08:** loại lựa chọn route `dijkstra` độc lập
 > vì implementation một-cặp trùng với UCS. Contract còn 9 thuật toán route;
 > `bidijkstra` vẫn được giữ vì là tìm kiếm hai chiều trên graph có hướng.
@@ -27,14 +19,13 @@
 > **Quy tắc vàng của nhóm:** không ai code trước khi 3 hợp đồng này được duyệt.
 > Sau khi duyệt, **mọi** thay đổi schema phải cập nhật file này và báo rõ trong tóm tắt phase (PROMPT-MASTER luật 2).
 >
-> Hiện thân executable của §A–§E là `backend/app/models.py` (Pydantic v2) — test
-> `backend/tests/test_schema.py` bảo đảm mock data khớp schema. Nếu §A–§E và
-> `models.py` lệch nhau → `models.py` sai. Với migration §F, việc model v1 chưa có
-> field mới là trạng thái chuyển tiếp đã ghi rõ; ngay khi producer phát
-> `contract_version=2`, models/code/tests phải khớp toàn bộ variant §F, không được
-> viện lý do “đang rollout” cho payload version 2 thiếu field.
+> Hiện thân executable của §A–§F là `backend/app/models.py` (Pydantic v2) — test
+> `backend/tests/test_schema.py` bảo đảm mock data khớp schema. Nếu §A–§F và
+> `models.py` lệch nhau → phải truy về requirement và đồng bộ, không tự chọn một
+> phía. Vì producer đã phát `contract_version=2`, models/code/tests phải khớp toàn
+> bộ variant §F; payload nửa v1/nửa v2 là contract error.
 
-**Phạm vi:** §A định dạng dữ liệu đồ thị + hồ sơ ùn tắc · §B cấu trúc `trace` mọi thuật toán trả về · §C REST API · §D công thức cost & heuristic (tham chiếu chung cho §B, §C) · §E contract mở rộng đang chạy · §F contract migration đích cho UI & Explanation v2.
+**Phạm vi:** §A định dạng dữ liệu đồ thị + hồ sơ ùn tắc · §B cấu trúc `trace` mọi thuật toán trả về · §C REST API · §D công thức cost & heuristic (tham chiếu chung cho §B, §C) · §E GraphView/scenario/optimization trace · §F contract hiện hành của UI & Explanation v2.
 
 **Các enum dùng chung toàn dự án:**
 

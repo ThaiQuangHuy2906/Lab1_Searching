@@ -1,16 +1,25 @@
 # UI & Explanation v2 — Phase 8 Readiness
 
 Ngày kiểm chứng: 2026-08-11  
-Branch/HEAD nền: `main` / `b3218b5c7d47`
+Branch/HEAD nền: `main` / `821e77d38b41bb98e473be620b17c76e09a000d8`
 
 ## 1. Kết luận
 
-**Verdict: IMPLEMENTED — RUNTIME QA REQUIRED**
+**Verdict: READY WITH KNOWN ISSUES — CHROME DESKTOP QA PASSED**
 
 Phase 8 hardening, accessibility và performance đã được audit và vá trên nền
-Phase 7. Automated gates đều đạt trong phạm vi dependency sẵn có. Chưa ghi READY
-vì browser matrix, NVDA smoke và đo FPS/heap phải thực hiện trên máy Windows và
-GPU dùng để demo; controlled browser của phiên này không truy cập được localhost.
+Phase 7. Automated gates và Chrome 151 maximized trên màn hình laptop vật lý
+2560×1440, scale 150% (viewport CSS 1707×825, DPR 1,5) đều đạt trong phạm vi
+Desktop-only của final audit. Known issues còn lại là chưa chạy NVDA và chưa đo
+FPS/interaction-p95/heap bằng profiler; chúng không được suy là đã pass.
+
+**Artifact closeout sau readiness:** ngày 2026-08-11, chuỗi benchmark exp1–exp7,
+gamma calibration và teaching generator đã hoàn tất trên graph/profile hiện hành;
+trang `/benchmark` chuyển từ provenance tạm sang kết quả chính thức. Đây là sync
+artifact/copy, không thay đổi verdict hành vi Phase 8 ở trên. Closeout gate đạt
+backend 235/235, frontend 137/137, validator/TypeScript/build; Chrome 151 native
+full-view cũng xác nhận trang hiện đủ ba chart, keyboard/reduced-motion, không
+overflow ngang và console 0 error/warning.
 
 ## 2. Hardening đã hoàn tất bằng code/test
 
@@ -38,8 +47,9 @@ GPU dùng để demo; controlled browser của phiên này không truy cập đ�
   camera fly/zoom transition; nội dung tĩnh vẫn đầy đủ.
 - [x] Control chính có accessible name; timeline slider, drawer separator và map
   controls hỗ trợ keyboard.
-- [ ] NVDA + Chrome smoke trên Windows — cần runtime thực.
-- [ ] 320 px, 200% zoom và các palette — cần browser inspection thực.
+- [ ] NVDA + Chrome smoke — chưa chạy, giữ là known issue.
+- [ ] 200% zoom và audit đủ bảy palette — chưa chạy trong final Desktop audit.
+- Mobile/tablet/narrow viewport chủ động không test theo phạm vi người dùng chốt.
 
 ## 4. Performance đã hoàn tất bằng code/audit
 
@@ -49,39 +59,47 @@ GPU dùng để demo; controlled browser của phiên này không truy cập đ�
 - [x] Comparison pane được `React.memo`; pane không đổi không render lại theo mỗi
   progress update của phương pháp khác.
 - [x] Route-flow animation bị tắt trong comparison và reduced-motion.
-- [x] Production build hoàn tất; trang chính 58,6 kB, first-load JS 242 kB.
-- [ ] FPS, interaction p95, WebGL context và heap ba vòng — phải đo trên GPU máy demo.
+- [x] Production build hoàn tất; trang chính 58,7 kB, first-load JS 242 kB.
+- [x] Clean session chạy route N=1/2/3/4, ordered multi-point và ATSP N=1/2/3
+  không có console error/warning hay page horizontal overflow.
+- [ ] FPS, interaction p95 và heap ba vòng — chưa instrument; giữ là known issue.
 
 ## 5. Evidence đã chạy
 
 | Gate | Kết quả |
 |---|---|
-| `npm test` | PASS — 135/135 |
+| `npm test` | PASS — 136/136 |
 | `npx tsc --noEmit --incremental false` | PASS |
 | `NEXT_TELEMETRY_DISABLED=1 npm run build` | PASS — 6/6 static pages |
-| Backend core suite | PASS — 228, 1 health test deselected |
+| Full backend suite | PASS — 233/233, 1 dependency warning |
 | `scripts/validate_data.py` | PASS — `ALL DATA VALID` |
 | `git diff --check` | PASS |
-| Controlled browser | BLOCKED — localhost bị chặn |
-| Manual browser/NVDA/GPU | PENDING |
+| Chrome 151 maximized | PASS — physical 2560×1440; CSS 1707×825; DPR 1,5 |
+| Clean runtime flows | PASS — route 1/2/3/4, ordered multi, ATSP 1/2/3; all API 200 |
+| Clean console | PASS — 0 error, 0 warning |
+| NVDA / FPS / p95 / heap | NOT RUN — known issues, không claim PASS |
 
-Backend suite dùng Python 3.12 tạm và bỏ test health yêu cầu đúng Python 3.14.
-`test_artifact_generation.py` chưa collect được vì môi trường thiếu `matplotlib`;
-network cài dependency bị chặn. Phase 8 không sửa backend/schema/data/algorithm.
+Runtime failure injection được chạy riêng: route/ATSP HTTP 503 giữ alert/partial
+success và retry đúng item; backend offline phục hồi qua retry; graph 503 hiện
+alert + `Thử lại`; basemap failure hướng bật offline. Console sạch được đo ở
+profile mới không tiêm lỗi, nên các 503 chủ động không bị lẫn vào verdict console.
 
-## 6. QA cuối em cần chạy trên máy thật
+## 6. Desktop runtime evidence và việc còn mở
 
-- [ ] 1366×768: route comparison 2/3/4 và ATSP comparison 2/3.
-- [ ] 1024×768: panel/drawer, focus return và grid reflow.
-- [ ] 390×844, 320×568 và zoom 200%: không page-level horizontal scroll.
-- [ ] Keyboard: Tab/Shift+Tab, radio arrow, Enter/Space, Escape sheets.
-- [ ] Bật Windows `Reduce motion`: timeline không autoplay, camera không bay.
-- [ ] Tắt backend: alert bền + Chạy lại; bật lại backend rồi retry thành công.
-- [ ] Bật offline map: graph/tuyến vẫn đọc được, không phụ thuộc basemap.
-- [ ] Cancel/retry comparison và đổi input lúc request đang chạy không nhận result cũ.
-- [ ] NVDA đọc tên group, progress, per-card error, caption bảng và expanded state.
-- [ ] G_demo 4 route maps, G_real 2 maps, ATSP 3 maps; ba vòng run → clear → run,
-  không console error hoặc WebGL context loss.
+- [x] Route single/compare 2/3/4; ordered multi; ATSP single/compare 2/3.
+- [x] Drawer separator keyboard 400→424→400→720→360→400 px; close/open trả focus
+  về trigger/heading; control panel close trả focus về trigger.
+- [x] Reduced motion: loader có computed `animation-name: none`, kết quả và
+  timeline vẫn hiện đầy đủ.
+- [x] Backend offline: alert bền + `Chạy lại`; restart rồi retry nhận HTTP 200.
+- [x] Graph 503: vùng map thành `role=alert`, có `Thử lại`, tải lại đúng 51/298/60.
+- [x] Basemap failure: warning hướng bật offline; offline giữ DeckGL canvas và bỏ
+  phụ thuộc/attribution basemap; bật online lại khôi phục MapLibre.
+- [x] Cancel/retry/stale response và invalidation khi đổi slot/objective/đích,
+  problem/run mode, graph, open/closed và scenario đều đạt.
+- [x] Clean Chrome profile: 0 console error/warning, mọi request demo trả 200,
+  document width bằng viewport width.
+- [ ] NVDA và profiler FPS/p95/heap chưa chạy; không claim PASS.
 
-Chỉ đổi verdict thành READY sau khi hoàn tất các mục runtime trên và ghi lại bằng
-chứng viewport/browser/GPU đã dùng. Dùng `[x]` để đánh dấu, không gạch nội dung.
+Không test Mobile/Tablet/Narrow theo yêu cầu final audit. Nếu máy audit không
+phải máy demo cuối: **FINAL DEMO-MACHINE PREFLIGHT REQUIRED**.

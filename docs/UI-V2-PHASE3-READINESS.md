@@ -1,11 +1,11 @@
 # UI & Explanation v2 — Phase 3 Readiness
 
 > Checkpoint lịch sử của Phase 3. Current-state và gate còn mở xem
-> `docs/UI-V2-PHASE6-READINESS.md`; các câu về N-pane chưa triển khai chỉ mô tả
+> `docs/UI-V2-PHASE8-READINESS.md`; các câu về N-pane chưa triển khai chỉ mô tả
 > ranh giới tại thời điểm Phase 3.
 
 Ngày kiểm chứng: 2026-08-10  
-Repository: `C:\Python\CSTTNT\Lab1_Searching`  
+Repository: `<repository-root>`
 Branch/HEAD khi handoff: `main` / `97ec24fa7218e10bdbb1d17fd2c15f7c5fbd9994`
 
 ## 1. Kết luận nhanh
@@ -169,9 +169,8 @@ dependency nằm trong thư mục tạm ngoài repository.
 
 1. B1/F2 compatibility vẫn được chứng minh bằng fixture/guard tests, không phải
    runtime deployment riêng; đây không phải blocker Phase 3.
-2. Readiness doc Phase 1–2 ghi repository cũ dưới
-   `C:\Users\Admin\Desktop\Lab01_Searching`; tài liệu này ghi đúng workspace hiện
-   tại. Không dùng đường dẫn cũ làm runtime evidence.
+2. Readiness doc Phase 1–2 dùng placeholder `<repository-root>`; đường dẫn máy
+   cá nhân không phải runtime evidence và không được đưa vào artifact nộp.
 
 ## 8. Checklist READY đã hoàn tất
 

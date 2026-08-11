@@ -1,31 +1,37 @@
 # MUST TODO — Công việc còn lại trước khi nộp Lab 01
 
-> Trạng thái rà soát: 2026-08-08. Base UI Clarity đã có trên `origin/main`, nhưng
-> thay đổi contract 9 thuật toán, thông tin nhóm và `2 - SC.txt` trong worktree
-> hiện tại **chưa commit/push**. Chỉ yêu cầu thành viên khác pull sau khi lượt này
-> được review và đẩy lên remote; không dùng một hash cũ trong tài liệu làm release
-> marker.
+> **Final-audit refresh 2026-08-11:** baseline `main` / HEAD
+> `821e77d38b41bb98e473be620b17c76e09a000d8`, initial tracked worktree clean.
+> UI & Explanation v2 đã triển khai qua Phase 8; official-result closeout đạt
+> backend 235/235, frontend 137/137, TypeScript, production build và
+> `ALL DATA VALID`. Chrome
+> Desktop full-view và hai ảnh README đã pass/capture lại trong lượt audit; nếu
+> máy audit khác máy demo cuối: `FINAL DEMO-MACHINE PREFLIGHT REQUIRED`.
 >
-> File này lưu backlog tổng trước khi nộp. **UI Clarity Phase đã freeze** và hai
-> ảnh README đã được cập nhật; bộ screenshot/report/slide/video nộp cuối vẫn chưa
-> hoàn tất. Benchmark cuối chưa chạy và mọi banner `SỐ TẠM` vẫn phải được giữ.
+> File này lưu backlog tổng trước khi nộp. Bộ screenshot/report/slide/video nộp
+> cuối vẫn chưa hoàn tất. Chuỗi benchmark/gamma/generator chính thức đã hoàn tất
+> ngày 2026-08-11 và năm banner `SỐ TẠM` đã được đồng bộ/gỡ đúng cùng lượt. Các
+> checkpoint/count 2026-08-08 ở §3.1 là lịch sử, không thay cho evidence closeout
+> phía trên.
 >
-> Bằng chứng UI hiện hành được ghi tại §2, §3.1 và `UI_PLAN.md`.
-> Benchmark/gamma/generator, bộ ảnh nộp cuối, video và các banner `SỐ TẠM` vẫn
-> chưa được thực hiện/thay đổi.
+> Bằng chứng UI hiện hành được ghi tại §2, §3.1 và `UI_PLAN.md`; provenance số
+> chính thức nằm tại `results/README.md`. Bộ ảnh nộp cuối, report PDF, slide thật,
+> video và submission ZIP vẫn là việc thủ công chưa hoàn tất.
 >
 > **Cập nhật contract 2026-08-08:** nhóm loại lựa chọn `dijkstra` độc lập vì
 > trùng UCS; sản phẩm còn 9 thuật toán route và vẫn giữ Bidirectional Dijkstra.
-> Raw benchmark/teaching artifact cũ chỉ được thay trong chuỗi cuối có ủy quyền.
+> Benchmark/teaching artifact hiện hành là output của chuỗi có ủy quyền ngày
+> 2026-08-11; nếu input fingerprint đổi thì phải hạ trạng thái về stale.
 >
 > **Cập nhật provenance 2026-08-08:** 8/8 `source_url` manual risk đã được
 > review/tích hợp và data validator đạt. Nguồn chỉ hỗ trợ bối cảnh lịch sử ở cấp
 > tuyến/khu vực; lượt mở tab ẩn danh trên máy nộp bài vẫn thuộc final link QA.
 
-> **Ưu tiên giao việc ngay:** (1) chốt vai trò còn lại và chia 11 khối report;
-> (2) chuẩn bị prose không phụ thuộc benchmark; (3) mở lại các link nguồn bằng
-> tab ẩn danh trong final link QA. Không ai tự chạy benchmark/gamma/generator
-> trước khi các điều kiện freeze và ủy quyền ở §6 đều đạt.
+> **Ưu tiên giao việc ngay:** (1) chốt vai trò còn lại, chia 10 mục a–j và xử lý
+> 23 marker nội dung report;
+> (2) hoàn thiện/chốt report, slide, screenshot và video từ số chính thức;
+> (3) mở lại các link nguồn bằng tab ẩn danh trong final link QA. Không tự rerun
+> benchmark/gamma/generator nếu input chưa đổi và chưa có ủy quyền mới.
 
 ## 1. Phân biệt hai file MUST DO
 
@@ -39,33 +45,33 @@ Trạng thái `source_url`:
 - ✅ nội dung, ngày đăng và URL trực tiếp đã được review;
 - ✅ `data/manual_risks.json` có 8 URL HTTPS, 0 `TODO`;
 - ✅ data validator trả `ALL DATA VALID` sau tích hợp;
-- ⬜ mở lại bằng tab ẩn danh trên máy/mạng nộp bài — giữ trong final link QA,
-  vì browser automation hiện lỗi tương thích CLI/Node.
+- ⬜ mở lại bằng tab ẩn danh trên máy/mạng nộp bài — giữ trong final link QA.
 
 ## 2. Trạng thái kỹ thuật hiện hành
 
-Sau thay đổi contract 9 thuật toán, chưa phát hiện blocker bắt buộc nào trong
-core backend/frontend/data ở các gate tự động:
+Sau final audit, chưa phát hiện blocker bắt buộc nào trong core
+backend/frontend/data ở các gate tự động:
 
-- backend: `177 passed`, 1 warning sau thay đổi contract 9 thuật toán;
+- backend: `235 passed`, 1 Starlette/httpx dependency warning;
 - data validator: `ALL DATA VALID`;
-- frontend tests: `41/41` passed sau khi thêm regression catalog 9 thuật toán;
-- TypeScript: passed;
-- production build: passed;
-- browser QA bằng UI thật ở 1366×768, 1024×768, 390×844 và 320×568 thuộc lượt
-  UI Clarity ngay trước thay đổi catalog; catalog 9 thuật toán mới đã có regression
-  tự động và production build, nhưng chưa chạy lại một phiên browser thủ công;
-- keyboard/focus/Escape/focus trap, reduced motion, loading/error/empty/offline,
-  console và network đã được kiểm trong lượt UI Clarity đó;
-- contrast checker: passed đủ bảy theme;
+- frontend tests: `137/137` passed;
+- TypeScript: `npx tsc --noEmit --incremental false` passed;
+- production build: Next.js 15.5.22 compile/type/static generation 6/6;
+- Chrome Desktop runtime đã pass ở màn hình vật lý 2560×1440, scale 150%,
+  viewport CSS 1707×825/DPR 1,5: console sạch, keyboard/focus, reduced motion,
+  loading/error/retry/cancel/stale guard và screenshot đều được kiểm;
+- contrast checker: checkpoint UI Clarity 2026-08-08 đã pass đủ bảy theme; final
+  audit 2026-08-11 không rerun vì không đổi token/màu;
 - active frontend là `frontend/`;
 - current `G_demo`: 51 node, 298 directed edge, gồm 60 one-way edge;
 - current `G_real`: 2.118 node, 4.699 directed edge;
 - profile hiện tại là `tomtom+synthetic`, đủ bốn slot `07:30`, `12:00`,
   `17:30`, `22:00`.
 
-Đây là bằng chứng đã chạy cho phiên bản UI freeze ngày 2026-08-08, không phải
-lời hứa thay thế verification cuối sau benchmark và trước khi đóng gói.
+`results/` và generated teaching document là bộ chính thức ngày 2026-08-11.
+Chúng được đối chiếu độc lập với input hiện hành; checksum/provenance và headline
+nằm tại `results/README.md`. Runtime benchmark phụ thuộc máy, còn oracle/shape,
+aggregate và fingerprint là bằng chứng ổn định.
 
 ## 3. Phase cải thiện UI đã hoàn thành
 
@@ -129,6 +135,20 @@ ngay trước thay đổi catalog, không dùng checkpoint trước phase làm b
 Các bước delivery còn lại của file này vẫn giữ nguyên. Phase UI freeze chỉ mở
 đường cho các bước đó khi nhóm có đủ người phụ trách và ủy quyền tương ứng.
 
+### 3.2. UI & Explanation v2 Phase 0–8 — final audit 2026-08-11
+
+- Phase 0–6: hoàn tất; route comparison hỗ trợ 2–4 thuật toán.
+- Phase 7: **READY** — ATSP comparison 2–3 đã triển khai với immutable snapshot, sequential
+  run, partial success, cancel/retry, stale/fingerprint guards, N map và baseline
+  không tạo map giả.
+- Phase 8: **READY WITH KNOWN ISSUES** — persistent single-run error/retry, invalidation, backend/basemap/offline
+  handling, reduced motion, Desktop a11y semantics và final-only comparison maps
+  đã có code/test.
+- Known issue IDA* cũ đã được sửa và có regression; không còn workaround trong
+  README/hướng dẫn hiện hành.
+- Hai ảnh README đã được chụp lại ngày 2026-08-11 từ Chrome Desktop runtime thật;
+  ảnh ATSP hiện minh hoạ comparison ba phương pháp và không có baseline map giả.
+
 ## 4. Đồng bộ Git để nhóm có đầy đủ context
 
 Base UI Clarity đã được đồng bộ; thay đổi hiện tại vẫn là worktree local. Checklist
@@ -149,9 +169,10 @@ Không tự reset/revert những thay đổi chưa commit của thành viên kh�
 
 ## 5. Hoàn thành báo cáo kỹ thuật
 
-`report/BaoCao-Khung.md` hiện vẫn là scaffold. Có 13 lần xuất hiện `[ĐIỀN...]`;
-loại hai lần chỉ nhắc/giải thích quy ước còn **11 ô/khối nội dung thực tế** phải
-hoàn thành.
+`report/BaoCao-Khung.md` hiện vẫn là scaffold. Fresh scan có 25 lần xuất hiện
+`[ĐIỀN…]`; loại hai lần chỉ nhắc/giải thích quy ước còn **23 marker nội dung thực
+tế** phải hoàn thành. Ngoài ra còn 13 occurrence marker screenshot và 8 entry
+phụ trách thực tế `CHƯA CHỐT`.
 
 ### 5.1. Thông tin nhóm
 
@@ -186,43 +207,54 @@ hoàn thành.
 phần e/h và video, nhưng thành viên cần viết lại bằng lời hiểu của mình, kiểm
 đúng implementation hiện tại và không chép máy móc.
 
-### 5.3. Nguyên tắc viết trong lúc benchmark chưa refresh
+### 5.3. Nguyên tắc viết sau official-result closeout
 
-- Có thể hoàn thành prose không phụ thuộc benchmark ngay trong phase UI.
-- Không gọi số trong `results/` là kết quả hiện tại/chính thức.
-- Không chép headline exp1–exp7 cũ vào kết luận cuối.
-- Giữ nguyên các cảnh báo `SỐ TẠM`.
-- Để phần nhận xét phụ thuộc số liệu chờ chuỗi benchmark cuối.
+- Chỉ dùng headline có thể truy về CSV/JSON chính thức hoặc generated document.
+- Nêu runtime là số đo trên môi trường benchmark, không phải hằng số tái lập.
+- Giữ đúng caveat: exp2 là kiểm tra thực nghiệm trên mẫu; heuristic không có
+  guarantee thì không gọi là optimal; dữ liệu TomTom là snapshot đại diện.
+- Nếu bất kỳ input fingerprint nào trong `results/README.md` đổi, hạ toàn bộ số
+  phụ thuộc về stale cho tới khi có một coherent rerun được ủy quyền.
+- Không hand-edit numerical section của generated teaching document.
 
-## 6. Chuỗi validation/benchmark/generated-document cuối
+## 6. Chuỗi validation/benchmark/generated-document cuối — ĐÃ HOÀN TẤT
 
-`results/` hiện thuộc lượt `synthetic` ngày 2026-07-26 và cũ hơn data refresh
-`tomtom+synthetic` ngày 2026-08-03. Chỉ chạy chuỗi dưới đây sau khi:
+Ngày 2026-08-11, sau explicit authorization, chuỗi này đã chạy cô lập trên data
+`tomtom+synthetic` 2026-08-03. Không crawl/rebuild graph/profile. Backup trước
+run được giữ ngoài repository; input hash được kiểm trước/sau.
 
-- phase UI hoàn tất;
-- code/data/schema đã freeze;
-- đầu việc `source_url` đã được tích hợp — **đã đạt 2026-08-08**;
-- nhóm có người theo dõi toàn bộ output và documentation bị ảnh hưởng;
-- có ủy quyền rõ ràng cho các command ghi lại `results/` và generated Markdown.
+Evidence chính:
+
+- exp1: 800/800 hàng khớp NetworkX trong sai số `1e-6`;
+- exp2: 0 vi phạm trên 21.170 điểm, `max(h/h*) = 0,8886`;
+- exp3: đúng 3.600 hàng duy nhất, 9 thuật toán × 200 cặp × 2 slot;
+- exp4: recompute độc lập khớp 200/200 hàng, 149/200 đổi tuyến;
+- exp5: 7 mốc gamma; exp6: 5 route; exp7: 5 hàng/method-run hợp lệ;
+- gamma calibration: 160 điểm, `γ̂ = 1,238`;
+- 11 PNG đọc được; không orphan exp4; generator chạy lại byte-identical;
+- checksum input/output và môi trường nằm tại `results/README.md`.
 
 ### 6.1. Thứ tự bắt buộc
 
-1. Chạy full backend tests và data validation.
-2. Từ `backend/`, chạy đủ benchmark exp1–exp7 đúng một lượt.
-3. Từ repo root, chạy `scripts/05_calibrate_gamma.py`.
-4. Chạy `scripts/gen_teaching_doc.py`.
-5. Inspect toàn bộ CSV/JSON/PNG/generated Markdown mới.
-6. Đối chiếu con số giữa results, report, slide, video script và README liên
+1. ✅ Chạy full backend tests và data validation.
+2. ✅ Từ `backend/`, chạy đủ benchmark exp1–exp7 đúng một lượt.
+3. ✅ Từ repo root, chạy `scripts/05_calibrate_gamma.py`.
+4. ✅ Chạy `scripts/gen_teaching_doc.py`.
+5. ✅ Inspect và validate toàn bộ CSV/JSON/PNG/generated Markdown mới.
+6. ✅ Đối chiếu con số giữa results, report, slide, video script và README liên
    quan.
-7. Chỉ khi tất cả khớp mới gỡ đủ năm banner `SỐ TẠM`.
+7. ✅ Sau khi tất cả khớp, đồng bộ/gỡ đủ năm banner `SỐ TẠM`.
 
-### 6.2. Năm vị trí phải đồng bộ cùng lượt
+### 6.2. Năm vị trí đã đồng bộ cùng lượt
 
 - `results/README.md`
 - `report/BaoCao-Khung.md`
 - `report/Slide-Outline.md`
 - `report/Video-KichBan.md`
 - `docs/GIAI-THICH-THUAT-TOAN.md`
+
+Ngoài năm vị trí này, current-state/provenance cũng đã sync vào README, schema,
+design, data docs, codebase map, readiness và trang `/benchmark`.
 
 Không hand-edit numerical section của
 `docs/GIAI-THICH-THUAT-TOAN.md`; phải thay nguồn/generator thích hợp rồi
@@ -262,15 +294,17 @@ Chỉ chụp sau khi UI được freeze.
 - [ ] Chụp 5 ảnh Google Maps cho năm cặp exp6.
 - [ ] Ghi rõ đối chứng là định tính và khác thời điểm/traffic model nếu có.
 - [ ] Chèn preview `G_demo` cần thiết.
+- [x] Sinh và kiểm tra 6 figure benchmark + 5 route PNG từ lượt chính thức.
+- [x] Đối chiếu structure/headline của figure với CSV/JSON tương ứng.
 - [ ] Chèn các figure benchmark được sinh từ lượt cuối.
-- [ ] Đối chiếu từng figure với CSV tương ứng trước khi đưa vào report/slide.
+- [ ] Khi chèn vào report/slide, kiểm lại caption và độ đọc được ở kích thước xuất.
 - [ ] Không tái sử dụng ảnh cũ nếu UI hoặc con số hiển thị đã thay đổi.
 
 ## 8. Hoàn thành slide
 
 - [ ] Dựng slide thật từ `report/Slide-Outline.md`.
 - [ ] Đưa GroupID 2 và danh sách thành viên đã xác nhận vào slide thật.
-- [ ] Thay mọi số benchmark bằng số của lượt cuối.
+- [x] Đồng bộ số chính thức vào source `report/Slide-Outline.md`.
 - [ ] Chèn ảnh UI và figure rõ, đọc được trên máy chiếu.
 - [ ] Không nhồi toàn bộ prose report lên slide.
 - [ ] Kiểm font, dấu tiếng Việt, contrast và kích thước chữ.
@@ -287,8 +321,7 @@ Chỉ chụp sau khi UI được freeze.
 - [ ] Trình diễn multiroute/ATSP.
 - [ ] Chạy nhiều điều kiện giao thông và so sánh hành vi thuật toán.
 - [ ] Giải thích vì sao tuyến được chọn và guarantee/giới hạn tương ứng.
-- [ ] Đọc số theo artifact/màn hình của phiên bản cuối, không đọc số
-      `SỐ TẠM`.
+- [ ] Đọc số theo artifact/màn hình chính thức và đối chiếu lại trong rehearsal.
 - [ ] Kiểm âm thanh, độ phân giải, con trỏ và nội dung nhạy cảm trên màn hình.
 - [ ] Upload video và thử link bằng tab ẩn danh.
 - [ ] Tạo `2 - Video.txt` chứa link cuối.
@@ -411,8 +444,9 @@ ghi `NOT RUN` cùng lý do.
 - [ ] Scenario/edge override không làm thay base graph ngoài request.
 - [ ] Dark/light/theme cuối không có lỗi tương phản rõ ràng.
 - [ ] Không có console error hoặc API request thất bại ngoài expected case.
-- [ ] Kiểm ở 1366×768 hoặc đúng độ phân giải máy chiếu.
-- [ ] Kiểm responsive/mobile mức nhóm cam kết.
+- [ ] Kiểm Google Chrome maximized ở độ phân giải native của laptop demo cuối.
+- [ ] Không thay mục trên bằng Mobile/Tablet/Narrow QA; nếu khác máy audit thì
+      ghi `FINAL DEMO-MACHINE PREFLIGHT REQUIRED` cho tới khi chạy thật.
 - [ ] Kiểm reduced motion/offline behavior nếu report tuyên bố hỗ trợ.
 
 ### 11.4. Repository/documentation QA
@@ -447,12 +481,12 @@ thành deliverable, trừ khi nhóm đưa ra claim mạnh tương ứng:
 - kiểm hardware GPU thực trên nhiều máy;
 - cải thiện sâu offline-first;
 - thêm test unreachable multistop riêng;
-- thêm fingerprint graph/profile vào benchmark artifact;
+- mở rộng fingerprint ledger tự động nếu về sau có thêm producer/input;
 - thêm time/cancel budget cho các thuật toán có iteration/depth cap;
 - polish UI không gắn với lỗi usability hoặc rubric cụ thể.
 
-Sau phase UI đang dự kiến, nên ngừng mở thêm feature mới và ưu tiên benchmark,
-report, slide, video, packaging và rehearsal.
+Sau UI/result freeze, nên ngừng mở thêm feature mới và ưu tiên report, slide,
+video, packaging và rehearsal.
 
 ## 14. Về việc gửi email giảng viên
 
@@ -470,18 +504,15 @@ TP.HCM đã nằm trong danh sách kịch bản được cho phép. Vì vậy:
    chủ; người đại diện nộp đã chốt là Thái Quang Huy.
 2. ✅ Đã review, tích hợp tám `source_url` theo `mustdo.md`, chạy data validation
    và giữ nguyên graph/profile/risk counts.
-3. Hoàn thành prose report không phụ thuộc benchmark.
-4. Khi có ủy quyền ghi artifact, chạy full test + data
-   validation rồi chạy đúng một chuỗi benchmark → gamma calibration → teaching
-   generator.
-5. Inspect artifact, đồng bộ mọi con số và chỉ sau đó gỡ đủ năm banner
-   `SỐ TẠM`.
-6. Hoàn thành 11 khối report và mọi vai trò/phân công còn lại.
-7. Chụp chín screenshot UI cuối và năm ảnh Google Maps; đối chiếu với artifact
+3. ✅ Chuỗi benchmark → gamma calibration → teaching generator đã chạy; artifact,
+   prose số liệu và năm former banner đã được kiểm/sync.
+4. Hoàn thành 23 marker nội dung report và mọi vai trò/phân công còn lại.
+5. Chụp chín screenshot UI cuối và năm ảnh Google Maps; đối chiếu với artifact
    cuối.
-8. Dựng slide, quay/upload video và thử mọi link bằng tab ẩn danh.
-9. Xuất Report PDF, tạo SC/Video/Data artifact và chạy full final QA.
-10. Đóng, giải nén thử và kiểm `2.zip` trước khi nộp.
+6. Dựng slide, quay/upload video và thử mọi link bằng tab ẩn danh.
+7. Chạy `FINAL DEMO-MACHINE PREFLIGHT REQUIRED` trên laptop demo thật.
+8. Xuất Report PDF, tạo SC/Video/Data artifact và chạy full final QA.
+9. Đóng, giải nén thử và kiểm `2.zip` trước khi nộp.
 
 ## Definition of Done
 
@@ -490,9 +521,10 @@ Lab 01 chỉ được coi là sẵn sàng nộp khi:
 - phase UI đã freeze và verification mới đạt;
 - ✅ 8 manual risk đã được xử lý trung thực; final QA còn mở link ẩn danh trên
   máy nộp bài;
-- results được tái sinh từ graph/profile hiện hành;
-- generated teaching document và mọi số liệu deliverable đã đồng bộ;
-- không còn banner `SỐ TẠM` không còn đúng hoặc marker nội dung chưa điền;
+- ✅ results được tái sinh từ graph/profile hiện hành;
+- ✅ generated teaching document và source số liệu deliverable đã đồng bộ;
+- ✅ không còn banner `SỐ TẠM` sai trạng thái; các marker nội dung thủ công vẫn
+  phải được điền trước khi xuất report;
 - report, slide, video, source link và data package đều tồn tại;
 - tất cả link mở được ở tab ẩn danh;
 - final ZIP đúng tên, đủ file, giải nén/mở được;

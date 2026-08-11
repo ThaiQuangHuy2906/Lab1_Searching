@@ -11,6 +11,7 @@ import random
 import networkx as nx
 import pytest
 
+import app.search as search_module
 from app.graph_store import MODES, GraphStore
 from app.models import TIME_SLOTS, GraphFile, TrafficProfiles, Trace
 from app.search import ALGORITHMS, astar, bfs, dfs, iddfs, ucs
@@ -190,6 +191,37 @@ def test_include_trace_false_gives_empty_trace(demo: GraphStore):
     t = astar(demo, "n0001", "n0020", include_trace=False)
     assert t.trace == [] and not t.metrics.trace_truncated
     assert t.found and t.metrics.nodes_expanded > 0
+
+
+def test_search_results_do_not_share_mutable_explanation(demo: GraphStore):
+    first = bfs(demo, "n0001", "n0002", include_trace=False)
+    second = dfs(demo, "n0001", "n0002", include_trace=False)
+
+    first.explanation.summary_vi = "chỉ thuộc kết quả đầu"
+
+    assert first.explanation is not second.explanation
+    assert second.explanation.summary_vi == ""
+
+
+def test_trace_cap_only_limits_payload(
+    demo: GraphStore, monkeypatch: pytest.MonkeyPatch,
+):
+    baseline = astar(demo, "n0002", "n0047", include_trace=False)
+    monkeypatch.setattr(search_module, "MAX_TRACE_STEPS", 2)
+
+    capped = astar(demo, "n0002", "n0047", include_trace=True)
+
+    assert len(capped.trace) == 2
+    assert capped.metrics.trace_truncated
+    assert capped.found == baseline.found
+    assert capped.path == baseline.path
+    assert capped.metrics.total_cost == pytest.approx(baseline.metrics.total_cost)
+    assert capped.metrics.total_distance_m == pytest.approx(
+        baseline.metrics.total_distance_m,
+    )
+    assert capped.metrics.total_time_s == pytest.approx(baseline.metrics.total_time_s)
+    assert capped.metrics.nodes_expanded == baseline.metrics.nodes_expanded
+    assert capped.metrics.max_frontier == baseline.metrics.max_frontier
 
 
 def test_start_equals_goal(demo: GraphStore):

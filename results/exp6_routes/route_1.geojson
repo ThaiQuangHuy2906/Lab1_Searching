@@ -6,8 +6,8 @@
       "properties": {
         "from": "Bưu điện Thành phố",
         "to": "Chợ Bến Thành",
-        "time_s": 472.0,
-        "distance_m": 1514.8
+        "time_s": 341.3,
+        "distance_m": 1174.7
       },
       "geometry": {
         "type": "LineString",
@@ -19,10 +19,6 @@
           [
             106.6990461,
             10.7758208
-          ],
-          [
-            106.7002992,
-            10.7729233
           ],
           [
             106.6975561,

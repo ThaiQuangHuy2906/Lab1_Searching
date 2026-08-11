@@ -29,6 +29,19 @@
 > file này để ghi đè Phase 0–8, numeric semantics, compatibility matrix hoặc
 > acceptance/DoD của brief mới.
 >
+> **Bổ sung final audit 2026-08-11:** đoạn “Phase 7–8 chưa triển khai” ngay trên
+> là checkpoint lịch sử ngày 2026-08-10 và đã bị supersede. Phase 7 hiện READY;
+> Phase 8 hiện READY WITH KNOWN ISSUES trong phạm vi Chrome Desktop maximized.
+> Current evidence nằm tại `docs/UI-V2-PHASE7-READINESS.md`,
+> `docs/UI-V2-PHASE8-READINESS.md`, `README.md` và fresh gates; không dùng phần
+> thân kế hoạch này làm proof runtime hiện hành.
+>
+> **Bổ sung closeout kết quả chính thức 2026-08-11:** chuỗi được ủy quyền
+> `benchmark → gamma calibration → teaching generator` đã hoàn tất và artifact
+> hiện hành đã qua kiểm tra oracle/shape/aggregate/image/checksum. Mọi dòng
+> “benchmark vẫn chờ”, `SỐ TẠM` hoặc “bước tiếp theo” trong thân file là trạng
+> thái lịch sử của kế hoạch; current provenance nằm tại `results/README.md`.
+>
 > **Ngày audit:** 2026-08-04.
 
 ## 1. Tóm tắt baseline trước triển khai
@@ -570,9 +583,10 @@ generator vẫn cần ủy quyền riêng.
 | 2 | Nơi giữ edge override | **ĐÃ DUYỆT · ĐÃ TRIỂN KHAI M4** | Frontend memory + `scenario` optional request-scoped; backend rollout trước, duplicate/non-finite/out-of-view reject, base bất biến | Payload lớn hơn chút, đổi lại stateless, refresh reset và không cần backend session |
 | 3 | ATSP trace policy | **ĐÃ DUYỆT · ĐÃ TRIỂN KHAI M3** | Cap HK/NN/SA = **2.000/2.000/1.500**, SA periodic mỗi 20 iteration; priority/stride deterministic, reserve final, cap không dừng optimizer | Payload có sampling với bài lớn, nhưng kết quả và final summary vẫn đầy đủ |
 | 4 | Provenance scenario trong response | **ĐÃ DUYỆT · ĐÃ TRIỂN KHAI M2/M4** | Additive `AppliedScenario` + server-generated `scenario-v1` SHA-256 fingerprint trong route và multiroute | Contract rộng hơn, nhưng chứng minh được UI và backend chạy cùng scenario |
-| 5 | Dữ liệu TomTom cuối | **ĐÃ CHỐT** | Giữ 4/4 snapshot đại diện trên hai ngày thứ Hai; profile `tomtom+synthetic`, `G_demo` 51/298 đã validate; benchmark/hiệu chuẩn γ/generator vẫn hoãn đến khi code ổn định | Không còn là quyết định mở; phải công bố giới hạn và đóng gói raw trong Data ZIP |
+| 5 | Dữ liệu TomTom cuối | **ĐÃ CHỐT · CLOSEOUT KẾT QUẢ ĐÃ XONG 2026-08-11** | Giữ 4/4 snapshot đại diện trên hai ngày thứ Hai; profile `tomtom+synthetic`, `G_demo` 51/298 đã validate; benchmark/hiệu chuẩn γ/generator đã chạy cô lập và được kiểm tra độc lập | Không còn là quyết định mở; tiếp tục công bố giới hạn và đóng gói raw trong Data ZIP |
 
 Các quyết định trên đã được duyệt và triển khai theo thứ tự schema → backend →
-frontend; riêng quyết định 1 đã được mở rộng như ghi ở bảng. Milestone 5 đã hoàn tất integration/runtime QA ở checkpoint 2026-08-05; bước tiếp theo
-là chuẩn bị submission và chỉ chạy benchmark/hiệu chuẩn γ/generator trong một
-lượt riêng có ủy quyền.
+frontend; riêng quyết định 1 đã được mở rộng như ghi ở bảng. Milestone 5 đã hoàn
+tất integration/runtime QA ở checkpoint 2026-08-05 và closeout kết quả chính
+thức ở checkpoint 2026-08-11. Bước tiếp theo chỉ còn hoàn thiện các artifact
+nộp thủ công và preflight máy demo.

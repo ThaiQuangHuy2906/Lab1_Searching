@@ -10,8 +10,10 @@
 > dưới `data/raw/`; Data ZIP cuối vẫn phải chứa chúng để giữ provenance.
 >
 > **Không chạy lại §0–§2.** Các lệnh ở đó chỉ được giữ như nhật ký tái lập.
-> Benchmark, gamma calibration và teaching generator trong §3–§5 vẫn được hoãn
-> có chủ đích; chỉ chạy sau khi code ổn định và có ủy quyền riêng.
+> Benchmark, gamma calibration và teaching generator trong §3–§5 đã được người
+> dùng ủy quyền và hoàn tất đúng một lượt ngày 2026-08-11. Không rerun nếu input
+> chưa đổi và chưa có ủy quyền mới; provenance/checksum nằm tại
+> `results/README.md`.
 > Tám manual-risk URL đã được review/tích hợp ngày 2026-08-08; lượt đó chỉ sửa
 > metadata/provenance và không chạy lại bất kỳ bước crawl/build/benchmark nào.
 
@@ -76,7 +78,7 @@ trên profiles real. Kết quả hiện hành:
   đích** kèm thông điệp bảo cập nhật `EXPECTED_RISK_EDGES` (trong
   `scripts/validate_data.py`) + DATA.md §7 — đó là tripwire, không phải bug.
 
-## 3. Benchmark cuối — DEFERRED, cần ủy quyền riêng
+## 3. Benchmark cuối — ĐÃ HOÀN TẤT 2026-08-11
 
 Tắt dev server + uvicorn trước (runtime_ms cần máy rảnh — TIENDO Phase 6f):
 
@@ -86,30 +88,28 @@ cd backend
 cd ..
 ```
 
-Ghi đè trọn `results/exp1–7 + figs/` (`results/README.md` không bị đụng).
-Hình exp5 giờ tự mang tiêu đề trung tính đã sửa (KIEMTOAN C9).
+Lượt cô lập đã ghi trọn `results/exp1–7 + figs/`; input hash trước/sau không đổi.
+Artifact qua oracle/shape/aggregate/image checks và không có orphan exp4.
+Headline/checksum hiện hành nằm tại `results/README.md`.
 
-## 4. Hiệu chuẩn γ — DEFERRED sau benchmark cuối
+## 4. Hiệu chuẩn γ — ĐÃ HOÀN TẤT 2026-08-11
 
 ```powershell
 .venv\Scripts\python.exe scripts\05_calibrate_gamma.py
 ```
 
-In bảng inflation theo mức + **γ̂** và độ lệch so 1,5; ghi
-`results/gamma_calibration.csv`. Dán γ̂ vào chỗ chờ sẵn ở **BaoCao mục c**
-(dòng "γ̂ ước lượng từ raw TomTom local… = [SỐ LIỆU →
-results/gamma_calibration.csv]").
+Output `results/gamma_calibration.csv` có 160 điểm, **γ̂ = 1,238**, lệch 17,5%
+so với hằng số thiết kế 1,5. Báo cáo mục c đã được đồng bộ từ artifact này.
 
-## 5. Regen tài liệu giảng — DEFERRED sau benchmark/gamma
+## 5. Regen tài liệu giảng — ĐÃ HOÀN TẤT 2026-08-11
 
 ```powershell
 .venv\Scripts\python.exe scripts\gen_teaching_doc.py
 ```
 
-Tự làm mới: mọi bảng chạy tay (theo profiles demo mới) **và** số exp3/exp7
-(đọc từ CSV mới — đã hết hardcode). Đọc lướt §1/§10/§11 của
-`docs/GIAI-THICH-THUAT-TOAN.md` để lấy bộ số ví dụ mới (chi phí BFS vs A*,
-+%, beam k=5, ma trận mini, HK%).
+Generator đã tự làm mới mọi bảng chạy tay và số exp3/exp7; chạy lại cho SHA-256
+giống hệt. Regression mới bảo vệ entry point thật và câu chuyện BFS hiện hành,
+tránh tái xuất hiện prose hardcode trái dữ liệu.
 
 ## 6. Thay số theo Phụ lục A (`docs/KIEMTOAN.md`)
 
@@ -117,28 +117,25 @@ Cách dùng sổ: đi từng dòng bảng **A.1–A.4**, chỉ những dòng c�
 **"ĐỔI"**, mở nguồn (CSV / GIAI-THICH mới) chép giá trị mới vào đúng file:dòng.
 Nặng nhất và dễ sót:
 
-- [ ] BaoCao **bảng g** (40 số exp3) + 9 số exp7 + 83,5% exp4 + h/h* 0,565
-      + beam 1,5% + "tiết kiệm ~37%".
-- [ ] Câu độ nhạy γ: con số **~2,6%** (chênh cả dải γ∈[0;3]) phải TÍNH LẠI từ
-      exp5 mới — xuất hiện ở BaoCao c, Slide 3, Video 22:00.
-- [ ] Số chạy tay từ GIAI-THICH mới → Slide 5/9, Video 3:00/7:15/10:30,
-      BaoCao mục h (hiện là 446/341/+31%/+104 s/304/120/415).
+- [x] BaoCao bảng g, exp2/3/4/7, Beam và expansion savings đã đồng bộ từ artifact
+      chính thức.
+- [x] Câu độ nhạy γ đã tính lại: chênh tối đa dải `γ∈[0;3]` là 5,4%; γ̂ = 1,238.
+- [x] Số chạy tay từ generated document đã sync vào Slide/Video/BaoCao: BFS
+      300 s tình cờ trùng UCS/A*, Greedy 427 s (+127 s/+42%), ma trận mini
+      304/99 s, original/HK 460/386 s (tiết kiệm 16%).
 - [x] Đồng bộ số hiện hành G_demo 298/60 và mô tả risk vào tài liệu current-state.
 
 ## 7. Chốt
 
 ```powershell
-.venv\Scripts\python.exe -m pytest backend\tests\ -q     # mốc 2026-08-04: 111 passed
+.venv\Scripts\python.exe -m pytest backend\tests\ -q     # closeout: 235 passed
 .venv\Scripts\python.exe scripts\validate_data.py         # ALL DATA VALID
-# Chỉ sau khi được phép chạy generator cuối:
-.venv\Scripts\python.exe scripts\gen_teaching_doc.py      # chạy lần 2 -> output ổn định
+.venv\Scripts\python.exe scripts\gen_teaching_doc.py      # lần 2 -> byte-identical
 ```
 
-- [ ] **Đổi banner "SỐ TẠM"** ở đủ 5 vị trí: `results/README.md`, BaoCao,
-      Slide, Video và header trong template `scripts/gen_teaching_doc.py` rồi
-      regen; thay bằng ghi chú chính thức
-      kiểu *"Số liệu lượt TomTom ngày …, seed 42"* — nộp bài mà còn chữ TẠM là
-      mất điểm oan.
+- [x] **Đã đồng bộ/gỡ banner "SỐ TẠM"** ở đủ 5 vị trí: `results/README.md`,
+      BaoCao, Slide, Video và template/generated teaching document; thay bằng
+      provenance chính thức ngày 2026-08-11, seed 42.
 - [ ] Chỉ commit/push khi người dùng yêu cầu và sau khi toàn bộ artifact cuối đã
       được kiểm chứng.
 - [ ] Việc tay còn lại sau lượt số: xem checklist mục 7 của `docs/KIEMTOAN.md`

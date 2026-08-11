@@ -11,6 +11,13 @@
 > manual-risk URL đã được review/tích hợp ngày 2026-08-08; mọi dòng TODO lịch sử
 > bên dưới không còn là current state.
 >
+> **Closeout kết quả chính thức 2026-08-11:** chuỗi được ủy quyền
+> `benchmark → gamma calibration → teaching generator` đã hoàn tất trên dữ liệu
+> hiện hành. Kết quả gồm exp1 800/800, exp2 0/21.170 vi phạm, exp3 3.600 dòng cho
+> 9 thuật toán, exp4 149/200 tuyến đổi; provenance/checksum đầy đủ nằm tại
+> `results/README.md`. Các dòng Phase 6–7 cũ bên dưới vẫn được giữ nguyên như
+> nhật ký lịch sử, không phải số chính thức hiện hành.
+>
 > Cập nhật cuối mỗi phase (PROMPT-MASTER luật 1). Trạng thái: ⬜ chưa làm · 🔄 đang làm · ✅ xong.
 
 | Phase | Nội dung | Trạng thái | Ghi chú | Commit |
@@ -38,6 +45,13 @@
 
 ## Nhật ký quyết định
 
+- **2026-08-11 (official result closeout):** sau explicit authorization, dừng
+  service cũ và chạy cô lập một lượt `backend/app/benchmark.py` trên graph/profile
+  2026-08-03, tiếp theo là `scripts/05_calibrate_gamma.py` và
+  `scripts/gen_teaching_doc.py`. Đối chiếu độc lập xác nhận đủ exp1–exp7, không
+  orphan exp4, 11 PNG đọc được, γ̂ = 1,238 từ 160 điểm và generator byte-idempotent.
+  Số liệu được đồng bộ vào README, report/slide/video, tài liệu data/schema/design,
+  trang `/benchmark` và generated teaching document; không rebuild data/crawl.
 - **2026-08-08 (UI Clarity Phase + polish sau freeze):** triển khai đầy đủ
   `UI_PLAN.md` trong frontend active duy nhất `frontend/`. Shell responsive,
   keyboard/focus/reduced-motion, bốn tab kết quả, scenario editor một authority,

@@ -24,15 +24,37 @@ automated tests/build, not by a new manual browser session. Dated
 onboarding/FINAL-01 sections below remain historical evidence; the exact
 projector/browser used for recording still needs its own pre-flight.
 
-**UI & Explanation v2 refresh — 2026-08-11:** Phase 0–6 đã hoàn tất và Phase 7
+**UI & Explanation v2 implementation snapshot — earlier 2026-08-11:** Phase 0–6 đã hoàn tất và Phase 7
 ATSP comparison 2–3 đã triển khai end-to-end trong worktree. Runtime hiện có typed
 termination/decision/explanation, subject binding, single-route reference
 comparison, prop-driven map canvas, route comparison 2–4 và ATSP comparison 2–3
 với N map final-only. Phase 8 bổ sung persistent single-run retry, disclosure
 semantics, reduced-motion camera/loading và memoized comparison panes. Fresh gates
 là 135 frontend tests, TypeScript/build pass, 228 backend core tests và
-`ALL DATA VALID`. Phase 7–8 còn chờ manual browser/NVDA/performance QA nên chưa
-nhận verdict READY.
+`ALL DATA VALID`. Ở checkpoint lịch sử này Phase 7–8 còn chờ browser QA; final
+audit refresh ngay dưới supersedes count và verdict đó.
+
+**Final repository audit refresh — 2026-08-11:** baseline `main` / HEAD
+`821e77d38b41bb98e473be620b17c76e09a000d8`, initial tracked worktree clean.
+Fresh gates trên code hiện hành: backend 235/235 (1 dependency warning), frontend
+137/137, TypeScript pass, Next production build 6/6 và data validator `ALL DATA
+VALID`. Known issue validator IDA* cũ không còn tái lập và đã có regression cho
+exact reference tốt hơn trong biên ε. Một bug shared mutable empty `Explanation`
+đã được tái lập, sửa bằng instance riêng cho mỗi `Trace` và test chống nhiễm chéo.
+Chrome 151 Desktop maximized trên màn hình vật lý 2560×1440 (viewport CSS
+1707×825, DPR 1,5) đã pass toàn bộ flow route/ordered/ATSP, failure/retry/cancel,
+stale guard, independent camera, offline/reduced-motion và clean console. Hai ảnh
+README đã được chụp lại từ runtime này; browser count cũ phía dưới là historical.
+
+**Official-result closeout — later 2026-08-11:** with explicit authorization,
+the repository completed one isolated `benchmark.py` run, gamma calibration and
+teaching-document generation against the current 2026-08-03 graph/profile chain.
+Independent checks confirmed 800/800 exp1 oracle rows, zero exp2 violations over
+21,170 points, exactly 3,600 exp3 rows for nine algorithms, 149/200 exp4 route
+changes, seven exp5 gamma rows, five exp6 routes and a five-row exp7 manifest.
+`results/README.md` records input/output SHA-256 fingerprints. The generated
+teaching document was regenerated twice byte-identically. Counts later in this
+map that predate this closeout remain historical rather than current evidence.
 
 **Route-contract delta — 2026-08-08:** the group removed the standalone
 `dijkstra` choice because it duplicated UCS. The current product exposes nine
@@ -130,7 +152,7 @@ caches:
 │   ├── lib/                          Zustand, API, types, formatting, colors
 │   └── package.json                  Next 15 / React 19 / TypeScript
 ├── report/                           report frame, slide outline, video script
-├── results/                          stale CSV/JSON/PNG benchmark artifacts
+├── results/                          official 2026-08-11 benchmark artifacts
 ├── scripts/                          data, validation, generator, contrast tools
 └── hdcrawl.md                        final TomTom/refresh run-book
 ```
@@ -149,8 +171,8 @@ TypeScript/TSX files. The only pre-existing unignored changes were modified
 | Current backend behavior | Current `backend/app/*.py` | Fresh tests/live calls | `TIENDO.md`, old audit claims |
 | Current data | Current JSON metadata/content | `scripts/validate_data.py` | Old result prose and old graph counts |
 | UI behavior | `docs/DESIGN.md` for intent | Current TS/TSX plus browser QA | Screenshots/audit prose |
-| Benchmark definition | `backend/app/benchmark.py` | A coherent fresh run | Current `results/` are stale |
-| Generated teaching doc | `scripts/gen_teaching_doc.py` plus current inputs | Regenerated output | Existing output may reflect stale inputs |
+| Benchmark definition | `backend/app/benchmark.py` | Official 2026-08-11 run plus independent artifact checks | Older benchmark prose is historical |
+| Generated teaching doc | `scripts/gen_teaching_doc.py` plus current inputs | Official regenerated output; byte-idempotence checked | Older generated examples are historical |
 | Progress/audit history | None for current behavior | Re-check code/data/tests | `TIENDO.md`, `KIEMTOAN.md`, audit/run-book |
 
 For current-behavior disputes, use:
@@ -499,39 +521,34 @@ wall-clock and therefore not byte-reproducible.
 | 6 | qualitative routes | five G_demo POI pairs | fixed | JSON + PNG/GeoJSON | Google Maps captures |
 | 7 | ATSP comparison | one ten-point scenario | SA seeds 0-4 | CSV + map | report/video |
 
-Current results are from 2026-07-26; the current graph/profile chain was
-refreshed on 2026-08-03.
-`results/README.md` explicitly marks them `SỐ TẠM`. Do not quote existing
-headline values as current.
-
-`results/README.md` records the new target shape: exp1 compares UCS/A* against
-NetworkX and exp3 runs nine algorithms. Its raw CSV/PNG remain the stale legacy
-ten-algorithm artifacts until the separately authorized final rerun; API/UI
-filter the removed `dijkstra` rows meanwhile.
+The official 2026-08-11 run consumes the current 2026-08-03 graph/profile
+chain. It produced 800/800 passing NetworkX comparisons, zero empirical
+admissibility violations over 21,170 points (maximum sampled `h/h* = 0.8886`),
+3,600 exp3 rows for nine algorithms, 149/200 changed routes between 07:30 and
+22:00, and current exp5–exp7 outputs. Runtime columns are environment-dependent;
+the structural, oracle, aggregate and checksum evidence is the reproducible
+part. Full provenance and SHA-256 fingerprints are in `results/README.md`.
 
 ## 16. Generated artifacts
 
 | Artifact | Source/owner | Current status |
 |---|---|---|
-| `docs/GIAI-THICH-THUAT-TOAN.md` | `scripts/gen_teaching_doc.py` + data/traces + exp3/exp7 | generated and deliberately left provisional until the final benchmark/generator pass |
-| `results/*.csv`, figures, routes | `backend/app/benchmark.py` | generated and stale |
+| `docs/GIAI-THICH-THUAT-TOAN.md` | `scripts/gen_teaching_doc.py` + data/traces + exp3/exp7 | official 2026-08-11 generated output; repeated generation was byte-identical |
+| `results/*.csv`, figures, routes | `backend/app/benchmark.py` | official 2026-08-11 coherent run; verified against current inputs |
 | `data/graph_*.json`, profiles, preview | pipeline scripts | generated snapshot; current and validated |
 | `report/BaoCao-Khung.md` | manual frame with data/result references | incomplete |
 | `report/Slide-Outline.md` | manual | outline only |
 | `report/Video-KichBan.md` | manual | script only, video absent |
 
-Five explicit `SỐ TẠM` locations:
+The five former `SỐ TẠM` locations (`results/README.md`, the three report
+sources and the generated teaching document) were synchronized in the same
+official-result closeout. Historical audit ledgers may still quote the former
+banner as dated evidence; they do not describe the current artifacts.
 
-1. `results/README.md`
-2. `report/BaoCao-Khung.md`
-3. `report/Slide-Outline.md`
-4. `report/Video-KichBan.md`
-5. `docs/GIAI-THICH-THUAT-TOAN.md`
-
-`BaoCao-Khung.md` contains 13 fill-marker occurrences in total and 11 actionable
-content markers after excluding two instructional mentions, nine requested GUI screenshots,
-and five Google Maps comparison captures. The audit's older "31 placeholders"
-count is stale.
+`BaoCao-Khung.md` now contains 25 `[ĐIỀN…]` occurrences and 23 actionable
+content markers after excluding two instructional/self-referential mentions.
+There are also 13 screenshot-marker occurrences and eight actionable unassigned
+responsibility entries. Earlier 13/11 and 31/25 counts are historical.
 
 ## 17. Frontend architecture
 
@@ -565,8 +582,8 @@ entry/return.
 
 The separate `/benchmark` page loads cached experiment results and renders
 Recharts. `frontend/package.json` defines the repository test runner as
-`npm test`; the current suite contains 40 deterministic Node tests. TypeScript
-checking and browser/runtime QA remain separate gates.
+`npm test`; the current suite contains 137 deterministic Node test cases.
+TypeScript checking and browser/runtime QA remain separate gates.
 
 ## 18. Zustand state and invalidation
 
@@ -592,8 +609,9 @@ the same endpoint or passing an equal ordered stops array preserves results;
 real-map and demo-picker paths prevent endpoint/stop duplication. Tour mode
 disables the Goal picker and two-endpoint swap, and the route action is blocked
 while any stop exists. Route/graph/traffic responses use request-snapshot or
-latest-request guards. Shared `finally` flags still have an unverified overlap
-race if a later request starts before an earlier stale request finishes.
+latest-request guards. Every async `finally` checks the current request/run token
+before clearing a busy flag, so an older completion cannot end the state of a
+newer run.
 
 ## 19. Visualization and timeline
 
@@ -663,22 +681,25 @@ The map route retained root body overflow ownership.
 
 ## 20. Test architecture
 
-The latest full gate produced **230 passing backend tests** (one dependency
-warning). Frontend has a separate **124-test** Node suite plus a passing
-TypeScript check. The suites now also cover v2 termination/decision/explanation,
-comparison sessions, map isolation, drawer resize and reference-route
-presentation. The production build was not rerun after Phase 6 because the Next
-dev server was active; browser N-map QA remains pending.
+The official-result closeout gate produced **235 passing backend tests** (one
+dependency warning). Frontend has a separate **137-test** Node suite plus a passing
+TypeScript check. The suites cover v2 termination/decision/explanation,
+comparison sessions, map isolation, drawer resize, reference-route presentation,
+per-result explanation isolation, ATSP open/closed presentation and
+trace-cap/full-metrics parity. The clean
+Next 15.5.22 production build completed compile/type/static generation 6/6;
+Chrome Desktop N-map QA also passed in a clean session with 0 console
+error/warning.
 
 | Test file | Module/type | Main invariant/oracle | Dataset | Important gap |
 |---|---|---|---|---|
 | `test_schema.py` | model/contract | graph, trace, bidi, multiroute validators | mock | several cross-field semantic invariants |
 | `test_costs.py` | math | hand cost, lower bound, consistency | demo/real | all-goal proof wording |
-| `test_search.py` | core search | NetworkX weighted/hop oracles; IDDFS post-expand trace | demo + sampled real | cap semantics, repeated determinism |
+| `test_search.py` | core search | NetworkX weighted/hop oracles; IDDFS post-expand trace; cap-only payload; result isolation | demo + sampled real | repeated determinism |
 | `test_search_advanced.py` | advanced search | UCS comparison, epsilon bounds, Bidijkstra ownership, IDA* trace/cap, Beam top-k trace | demo + sampled real + tiny controlled stores | broader termination/property coverage |
 | `test_tsp.py` | ATSP | brute force, asymmetry, determinism | demo | unreachable multistop and fuller API method coverage |
 | `test_api.py` | FastAPI | endpoint shapes/errors; three-mode units; internal-error secrecy/logging | current stores/results-dependent | broader injected internal failures |
-| `test_artifact_generation.py` | generator/benchmark semantics | exp5 cost mode and generated ATSP gap wording | synthetic fixtures | full generated artifact refresh intentionally not run |
+| `test_artifact_generation.py` | generator/benchmark semantics | exp5 cost mode, ATSP gap wording, executable generator entry point and current BFS narrative | synthetic fixtures + current generated artifact | benchmark runtime itself is checked by the independent artifact ledger rather than pytest |
 | `test_data.py` | built data | Pydantic load, size/regression | current demo/real | benchmark/data provenance fingerprint |
 | `test_optimization_trace.py` | ATSP recorder | strict event union, caps/sampling, trace-on/off equality | demo + controlled cases | dedicated frontend render test |
 | `test_scenario.py` | GraphView/scenario | dynamic 3…50 views, SCC, preset/generator parity, fingerprint | current demo/real | browser parity after final generator run |
@@ -705,7 +726,9 @@ Completed semantic regressions:
     sign-aware ATSP savings, dynamic GraphView, theme behavior and presentation
     copy/unit rules plus the exact nine-algorithm catalog in the frontend 42-test suite;
 12. Phase 0 golden parity cho Bidi overlap/μ và ba ATSP methods ở open/closed,
-    cùng regression provenance/objective của copy Giải thích.
+    cùng regression provenance/objective của copy Giải thích;
+13. trace cap chỉ cắt payload, không đổi path/full metrics, và mỗi `Trace` sở hữu
+    một `Explanation` rỗng riêng.
 
 Priority semantic tests still missing:
 
@@ -760,7 +783,8 @@ validation commands.
 - Directed/ATSP semantics are preserved.
 - Data/results are not regenerated piecemeal.
 - Generated teaching content is regenerated through its script.
-- Stale benchmark numbers are never promoted to official current values.
+- Benchmark numbers are official only when their recorded input/output
+  fingerprints still match the current files; otherwise downgrade them to stale.
 
 ## 23. Audit verification matrix
 
@@ -770,8 +794,8 @@ Statuses use the onboarding vocabulary requested by the handoff.
 
 | ID | Status | Current file/function | Root cause/evidence | Existing test | Missing verification/test |
 |---|---|---|---|---|---|
-| B-1 | `CONFIRMED` | current data vs `results/*` | graph/profile closeout dated 03/08; results dated 26/07 and explicitly marked `SỐ TẠM` | validator checks data, not benchmark provenance | coherent rerun after code stabilizes and separate authorization |
-| B-2 | `CONFIRMED` | `report/*`, repository root | no final report PDF, deck, video link, ZIP; 11 actionable fill markers out of 13 total occurrences after excluding two instructional mentions; final URL QA/screenshots absent | none appropriate | manual artifact review/package check |
+| B-1 | `RESOLVED` | current data vs `results/*` | isolated 11/08 run consumed the 03/08 graph/profile chain; independent oracle/shape/aggregate/image checks and SHA-256 ledger passed | generator regression plus artifact validation ledger | downgrade to stale if a recorded input fingerprint changes |
+| B-2 | `CONFIRMED` | `report/*`, repository root | no final report PDF, deck, video link, ZIP; 23 actionable fill markers out of 25 occurrences after excluding two instructional mentions; final URL QA/screenshots absent | none appropriate | manual artifact review/package check |
 | B-3 | `RESOLVED` | `iddfs`, `idastar`, `bidijkstra` | snapshots moved post-generation; g restricted to active side(s) | red-before/green-after semantic tests | full 111-item suite passed |
 | B-4 | `RESOLVED` | `explain.py::build_explanation` | mode-derived `m`/`s` suffix | epsilon and gap tested in all 3 modes | full 111-item suite passed |
 | B-5 | `RESOLVED` | benchmark page scroll owner | reproduced before patch; `main` now independently scrolls 28 px | headless Chrome 1366×768 | recheck on actual projector before recording |
@@ -789,7 +813,7 @@ Statuses use the onboarding vocabulary requested by the handoff.
 | P-06 offline mode/Google font | `PARTIALLY_CONFIRMED` | offline not persisted; `next/font/google` present; online production build passes | disconnected build not run |
 | P-07 same-value invalidation / stale traffic | `RESOLVED` | semantic slot comparison precedes invalidation; real slot changes clear traffic and guard graph/slot/request identity | automated regression; latest browser interaction is unverified |
 | P-08 manual risk description | `RESOLVED` | metadata now states `u` outside/`v` inside and the start-inside limitation | JSON/prose inspection |
-| P-09 result README/run-book defects | `RESOLVED` | README names the UCS/A* and nine-algorithm targets and flags legacy Dijkstra rows; run-book lists all five banners | final coherent refresh still pending |
+| P-09 result README/run-book defects | `RESOLVED` | official README records nine-algorithm shape, full provenance, checksums and verification; all five former banners are synchronized | none for the current frozen inputs |
 | P-10 Pydantic `ValidationError` | `RESOLVED` | exact handler returns generic/logged 500; request errors remain 422 | endpoint response/log regression |
 | P-11 endpoint/stop conflict and route–multiroute overlap | `RESOLVED` | pickers reject duplicates; route action is blocked while stops exist; tour Goal/swap controls are disabled | automated policy regression; latest browser interaction is unverified |
 | P-12 README Git Bash paths | `RESOLVED` | PowerShell and Bash path conventions are now separated | execute on non-Windows only if that platform becomes supported |
@@ -809,14 +833,15 @@ Statuses use the onboarding vocabulary requested by the handoff.
 
 ## 24. Known stale information
 
-- All current exp1-exp7 outputs and every headline copied from them.
-- The 83.5% route-change and 0.565 heuristic-ratio examples in report/run-book
-  material.
+- The old 83.5% route-change, 0.565 heuristic-ratio, ten-algorithm and synthetic
+  benchmark examples survive only in dated historical ledgers; current artifacts
+  are the official 2026-08-11 set.
 - Old graph counts such as 141/253/402 edges in history.
 - `TIENDO.md` phase rows; later entries are newer but still historical.
 - `KIEMTOAN.md` and the Claude audit are claim collections, not current truth.
-- Earlier audit placeholder counts 31/25 are stale; current count is 13 total
-  occurrences and 11 actionable markers after excluding two instructional mentions.
+- Earlier audit placeholder counts 31/25 and 13/11 are stale; current count is
+  25 occurrences and 23 actionable markers after excluding two instructional
+  mentions.
 
 ## 25. Safe change workflow
 
@@ -837,17 +862,16 @@ Statuses use the onboarding vocabulary requested by the handoff.
 The authorized data closeout and GraphView/ATSP-trace/sandbox implementation
 are complete. Remaining safe order:
 
-1. After code stabilizes and only with separate authorization, run one isolated
-   benchmark, gamma calibration and teaching-generator pass; then synchronize
-   all five banners/numbers.
+1. Freeze the graph/profile/benchmark/generator inputs whose fingerprints are
+   recorded in `results/README.md`; if any changes, explicitly downgrade the
+   official-result claim until a coherent authorized rerun.
 2. Restart services, verify live graph metadata, and redo browser QA at the
    actual capture/projector resolution before recording.
-3. Complete risk URLs, remaining role/report assignments, report PDF, slides,
-   video, data package, links, and final ZIP.
+3. Complete final anonymous-link QA, remaining role/report assignments, report
+   PDF, slides, video, data package, links, and final ZIP.
 
 ## 27. Unresolved questions
 
-- Who supplies/verifies the eight real risk citations?
 - Who owns the remaining roles/report sections, and who reconfirms Thái Quang
   Huy as the final submitter?
 - Can/should the Google fonts be localized before an offline defense?

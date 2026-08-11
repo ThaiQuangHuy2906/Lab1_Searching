@@ -1,21 +1,20 @@
 # KHUNG BÁO CÁO KỸ THUẬT — Lab 1: Search Algorithms for Vietnamese Traffic
 
-> ⚠️ **SỐ TẠM (2026-07-27):** mọi con số exp1–exp7 trong tài liệu này lấy từ lượt chạy
-> congestion **synthetic** — và CẢ CÁC SỐ VÍ DỤ CHẠY TAY (446/341/+31%/+104 s/ma trận
-> 304/120/beam 415…) cũng đổi theo profiles, không riêng số benchmark. Sau khi có
-> TomTom, phần data đã được làm mới theo `03b real → 04 → 03b demo → validate_data`.
-> Benchmark, hiệu chuẩn γ và `scripts/gen_teaching_doc.py` vẫn chưa chạy lại;
-> chỉ thay số theo Phụ lục A của `docs/KIEMTOAN.md` sau lượt cuối đó rồi mới nộp.
-> Contract route ngày 2026-08-08 đã loại lựa chọn `dijkstra` độc lập vì trùng
-> UCS; sản phẩm hiện có 9 thuật toán route và vẫn giữ Bidirectional Dijkstra.
-> CSV/PNG cũ còn series Dijkstra legacy, nên phải tái sinh trước khi dùng.
+> ✅ **KẾT QUẢ THÍ NGHIỆM CHÍNH THỨC (2026-08-11):** exp1–exp7 đã được chạy
+> một lượt cô lập trên graph/profile `tomtom+synthetic` hiện hành (seed 42), sau
+> backend `235 passed` và `ALL DATA VALID`. Artifact validator độc lập xác nhận
+> đúng row/key/method/count/công thức, tái tính exp4, mở được 11 PNG; γ̂ được tính
+> lại từ 160 mẫu/4 slot và generator cho output byte-identical. Provenance và
+> SHA-256 nằm tại `results/README.md`. Contract có 9 thuật toán route; không còn
+> series `dijkstra` độc lập trong CSV mới.
 >
 > **Tiến độ dữ liệu:** raw TomTom đã đủ 4/4 snapshot đại diện lấy trên hai ngày
 > thứ Hai; profile hiện là `tomtom+synthetic`; `G_demo` đã rebuild 51/298 và
 > validator đạt. Raw GraphML/TomTom/cache hiện được Git track dưới `data/raw/`.
-> **Tiến độ nội dung:** đây vẫn là khung Markdown, còn 11 marker nội dung cần
-> điền (13 occurrence tổng, không tính hai lần nhắc marker trong phần hướng dẫn), cùng các marker
-> screenshot/hình. Chưa phải report PDF để nộp.
+> **Tiến độ nội dung (fresh scan 2026-08-11):** đây vẫn là khung Markdown, còn
+> 23 marker nội dung cần điền (25 occurrence tổng, loại hai lần chỉ nhắc quy ước),
+> 13 occurrence marker screenshot và 8 entry phụ trách còn `CHƯA CHỐT` sau khi
+> loại các dòng tự mô tả/giải thích. Chưa phải report PDF để nộp.
 
 > **Đích:** hoàn thiện thành PDF 35–50 trang, đủ 10 mục a–j đúng đề. Khung này điền sẵn
 > mọi thứ máy làm được (công thức, bảng, số liệu benchmark, hình); phần lập luận để
@@ -37,8 +36,9 @@
 
 > ✍️ Phụ trách: **CHƯA CHỐT**
 > 💡 Gợi ý: trung thực về mức hoàn thành; rubric 100 điểm bên dưới là thứ giảng viên
-> dò từng dòng — tự chấm trước sẽ ghi điểm thiện chí. Browser QA responsive hiện
-> đã đạt ở 1366×768, 1024×768 và 390×844; chỉ nêu các giới hạn còn thật sự tồn tại.
+> dò từng dòng — tự chấm trước sẽ ghi điểm thiện chí. Final audit hiện chỉ chứng
+> minh Google Chrome Desktop maximized trên laptop 2560×1440; không suy claim
+> mobile/tablet/narrow hoặc máy demo khác từ evidence này.
 
 - **GroupID:** 2
 - **Người đại diện nộp chính thức:** Thái Quang Huy
@@ -60,10 +60,10 @@
 |---|---|---|---|
 | Bối cảnh giao thông VN thực tế | 10 | [ĐIỀN] | kịch bản shipper TP.HCM, dữ liệu OSM khu trung tâm |
 | Mô hình đồ thị, dataset, hàm chi phí | 15 | [ĐIỀN] | 2 tầng G_demo/G_real; cost quy về giây |
-| Cài đúng 4 thuật toán bắt buộc | 20 | [ĐIỀN] | đối chứng UCS/A* với NetworkX; số cuối chờ tái sinh exp1 |
+| Cài đúng 4 thuật toán bắt buộc | 20 | [ĐIỀN] | đối chứng UCS/A* với NetworkX đạt 800/800 ở exp1 chính thức |
 | Thuật toán bổ sung (≥2) | 10 | [ĐIỀN] | nhóm làm 5: IDDFS, Greedy, BiDijkstra, IDA*, Beam |
 | Tối ưu đa điểm | 10 | [ĐIỀN] | Held-Karp + NN+2-opt + SA (3 phương pháp) |
-| GUI + visualize quá trình tìm kiếm | 10 | [ĐIỀN] | animation từng bước, bảng g/h/f, 7 theme; browser QA responsive ở 1366×768, 1024×768, 390×844, keyboard/focus và reduced motion đã đạt |
+| GUI + visualize quá trình tìm kiếm | 10 | [ĐIỀN] | animation từng bước, bảng g/h/f, 7 theme; Chrome Desktop maximized 2560×1440 đã đạt keyboard/focus và reduced motion |
 | Giải thích tuyến + so sánh phương án | 10 | [ĐIỀN] | explanation tiếng Việt + ≥1 alternative |
 | Chất lượng báo cáo | 10 | [ĐIỀN] | |
 | Chất lượng video | 5 | [ĐIỀN] | |
@@ -140,13 +140,14 @@ xem DATA.md §4); (3) heuristic admissible chứng minh
 nên cực tiểu tại 1,5 là hệ quả toán học của thước, không phải bằng chứng (đổi thước
 sang γ=0 thì "cực tiểu" nhảy về 0). Trình bày exp5 đúng vai PHÂN TÍCH ĐỘ NHẠY: trỏ
 [HÌNH → results/figs/exp5_gamma_curves.png] — thời gian tuyến chênh trên CẢ DẢI γ∈[0;3]
-chỉ ~2,6% [SỐ LIỆU → results/exp5_gamma.csv: 790,8 s tại γ=1,5 vs 811,8 s tại γ=0]
-⇒ kết luận của hệ ít nhạy với lựa chọn γ. Sau lượt crawl TomTom bổ sung thêm một câu:
-γ̂ ước lượng riêng từ raw TomTom local (scripts/05_calibrate_gamma.py — fit
-f = 1 + γ(c−1)/4 trên inflation freeFlow/current của từng điểm đo) =
-[SỐ LIỆU → results/gamma_calibration.csv] — đối chiếu với hằng số 1,5.]
+**5,4%** [SỐ LIỆU → results/exp5_gamma.csv: 607,4 s tại γ=0; 580,1 s tại γ=1,5;
+574,4 s tại γ=3] ⇒ lựa chọn tuyến có thay đổi nhưng kết luận tổng thể không quá nhạy
+trong dải khảo sát. γ̂ ước lượng độc lập từ raw TomTom local
+(`scripts/05_calibrate_gamma.py` — fit `f = 1 + γ(c−1)/4` trên inflation
+freeFlow/current) là **1,238** từ **160 điểm đo/4 khung giờ**, thấp hơn hằng số
+thiết kế 1,5 khoảng **17,5%** [SỐ LIỆU → results/gamma_calibration.csv].]
 
-[ĐIỀN: ùn tắc đổi tuyến thế nào — trỏ exp4: 83,5% cặp OD đổi tuyến giữa 07:30 và 22:00.]
+[ĐIỀN: ùn tắc đổi tuyến thế nào — trỏ exp4: 149/200 = 74,5% cặp OD đổi tuyến giữa 07:30 và 22:00.]
 
 **Ghi chú scenario dạy học/thử nghiệm (không thay dataset gốc):** bản triển khai
 mở rộng dùng graph view induced `full` hoặc `teach_3`…`teach_50` (UI nhận 3…51,
@@ -224,8 +225,8 @@ xuất có thể tái kiểm, không tuyên bố ground truth ngoài đời hay 
 > 💡 Gợi ý: mục ăn điểm "Correct implementation" (20đ) + "Additional" (10đ). Mỗi thuật
 > toán 1 tiểu mục theo KHUNG: ý tưởng ngắn → pseudocode → ví dụ minh hoạ → complete/
 > optimal. Ví dụ minh hoạ: `[ĐIỀN — VIẾT LẠI BẰNG LỜI CỦA BẠN từ docs/GIAI-THICH-THUAT-TOAN.md
-> — bảng từng bước hiện còn được sinh từ graph/profile synthetic cũ; phải
-> regenerate sau lượt dữ liệu cuối; được phép chèn bảng, cấm chép nguyên văn lời giảng]`.
+> — bảng từng bước đã được tái sinh chính thức từ graph/profile hiện hành ngày
+> 2026-08-11; được phép chèn bảng, cấm chép nguyên văn lời giảng]`.
 
 Danh sách tiểu mục (theo thứ tự): BFS · DFS · IDDFS · UCS · A* · Greedy Best-First ·
 Bidirectional Dijkstra (đồ thị đảo cạnh, luật dừng μ) ·
@@ -245,17 +246,18 @@ không được quảng cáo tốt hơn UCS trong worst case vô điều kiện.
 **Ranh giới của khung này:** 15 mục trên là cấu trúc bắt buộc đã khóa cho cả 12
 tiểu mục, không phải tuyên bố rằng prose, pseudocode diễn giải bằng lời nhóm,
 ví dụ chạy tay, hình và report PDF đã hoàn tất. Các phần đó vẫn là việc tay trước
-khi nộp; giữ marker `[ĐIỀN]` và không thay số `SỐ TẠM` bằng số benchmark mới khi
-chưa được phép chạy chuỗi benchmark/generator cuối.
+khi nộp; giữ marker `[ĐIỀN]` cho tới khi nhóm viết/review nội dung, nhưng mọi số
+benchmark trong khung phải tiếp tục khớp bộ chính thức ngày 2026-08-11.
 
 **Tiểu mục heuristic** *(chèn sẵn)*: toàn bộ chứng minh admissible + consistent lấy từ
 `docs/HEURISTIC-PROOF.md` (Bổ đề 1–3, Định lý 1–3, mục 6b về làm tròn số — bài học hay
 nên kể). Kèm [HÌNH → results/figs/admissibility_scatter.png] và
-[SỐ LIỆU → results/exp2_admissibility.csv: 0 vi phạm trên 21 170 điểm; h/h* lớn nhất ≈ 0,565].
+[SỐ LIỆU → results/exp2_admissibility.csv: 0 vi phạm trên 21 170 điểm; h/h* lớn nhất = 0,8886].
 
-[ĐIỀN: nhận xét h/h* ≈ 0,565 nghĩa là heuristic "lỏng" — vì sao (đường vòng + ùn tắc
-làm chi phí thật lớn hơn nhiều thời gian bay thẳng ở v_max = 45 km/h) và hệ quả (A* vẫn đúng
-nhưng tiết kiệm expand có giới hạn: so sánh A* với UCS theo exp3 sau lượt tái sinh cuối).]
+[ĐIỀN: nhận xét đúng về scatter — `0,8886` là **giá trị lớn nhất**, không phải
+trung bình, nên không dùng riêng nó để gọi heuristic “lỏng” hay “chặt”. Giải thích
+vì sao haversine/v_max vẫn có slack (đường vòng, một chiều, congestion/penalty) và
+đối chiếu hiệu quả thực nghiệm: A* giảm 41,3% expand so UCS trong exp3.]
 
 ---
 
@@ -331,21 +333,21 @@ error envelope), frontend store/timeline đồng bộ 2 chiều.]
 **Bảng thực nghiệm** *(điền sẵn từ [SỐ LIỆU → results/exp3_benchmark.csv] — trung bình
 200 cặp × 2 khung giờ trên G_real)*:
 
-> Các số dưới đây vẫn là `SỐ TẠM`; dòng Dijkstra độc lập legacy đã được bỏ khỏi
-> khung, nhưng toàn bộ bảng và hình phải được thay từ exp3 chín thuật toán sau
-> lượt benchmark cuối.
+> Bảng dưới là số chính thức ngày 2026-08-11 từ đúng 400 dòng/thuật toán. Runtime
+> là wall-clock trên máy Ryzen 7 6800H và phụ thuộc môi trường; path/cost/gap/count
+> mới là các đại lượng deterministic với cùng input/code/seed.
 
 | Thuật toán | expand TB | runtime TB (ms) | gap % TB | found % |
 |---|---|---|---|---|
-| bfs | 1 242 | 0,9 | 39,3 | 100 |
-| dfs | 1 036 | 19,0 | 1 631,3* | 100 |
-| iddfs | 109 612 | 299,2 | 39,3 | 100 |
-| ucs | 1 226 | 2,8 | 0 | 100 |
-| astar | 771 | 2,8 | 0 | 100 |
-| greedy | 62 | 0,2 | 60,9 | 100 |
-| bidijkstra | 751 | 2,7 | 0 | 100 |
-| idastar | 630 225 | 649,5 | 0,1 (≤ ε) | 100 |
-| beam (k=50) | 1 075 | 3,0 | 22,4 | 98,5 |
+| bfs | 1 242 | 1,2 | 26,2 | 100 |
+| dfs | 1 036 | 41,0 | 1 192,7* | 100 |
+| iddfs | 109 612 | 855,3 | 26,2 | 100 |
+| ucs | 1 227 | 3,9 | 0 | 100 |
+| astar | 721 | 3,7 | 0 | 100 |
+| greedy | 62 | 0,3 | 33,7 | 100 |
+| bidijkstra | 739 | 3,9 | 0 | 100 |
+| idastar | 290 427 | 385,9 | 0,2 (≤ ε) | 100 |
+| beam (k=50) | 1 051 | 3,4 | 20,1 | 99,0 |
 
 *\*DFS gap trung bình cực lớn vì vài ca lượn gần hết đồ thị — nêu thêm median nếu nhóm muốn công bằng hơn.*
 *(Số tổng hợp từ 400 dòng/thuật toán trong CSV — làm tròn để đọc; đối chiếu file khi cần chính xác.)*
@@ -353,16 +355,16 @@ error envelope), frontend store/timeline đồng bộ 2 chiều.]
 [HÌNH → results/figs/exp3_expanded_bar.png] · [HÌNH → results/figs/exp3_runtime_bar.png]
 · [HÌNH → results/figs/exp3_gap.png]
 
-[ĐIỀN: phân tích — (1) A*/BiDijkstra tiết kiệm expand so UCS; đối chiếu lại tỷ lệ
-sau lượt benchmark cuối và giải thích bằng heuristic/tìm hai phía; (2) Greedy expand ít nhất (62) nhưng gap trung bình 60,9%
+[ĐIỀN: phân tích — (1) A*/BiDijkstra tiết kiệm lần lượt **41,3%/39,7%** expand
+so UCS; giải thích bằng heuristic/tìm hai phía; (2) Greedy expand ít nhất (62) nhưng gap trung bình 33,7%
 — cái giá của việc bỏ qua g, đắt hơn cả BFS; (3) IDDFS/IDA* expand khủng (hàng trăm
 nghìn) do chạy lại từng vòng; implementation IDA* hiện vẫn giữ các map theo node
 và explicit stack nên không được quảng cáo là `O(bd)`. IDA* chỉ giữ guarantee
 gap ≤ ε khi chưa chạm cap, còn IDDFS không tối ưu weighted cost; (4) Beam k=50
-lỡ 1,5% ca không tìm thấy
+lỡ **4/400 = 1,0%** ca không tìm thấy
 — minh hoạ incomplete bằng số; (5) DFS gap 4 chữ số: vô nghĩa cho định tuyến.]
 
-**Ảnh hưởng ùn tắc** [SỐ LIỆU → results/exp4_congestion.csv]: **167/200 cặp (83,5%)**
+**Ảnh hưởng ùn tắc** [SỐ LIỆU → results/exp4_congestion.csv]: **149/200 cặp (74,5%)**
 đổi tuyến giữa 07:30 và 22:00. [ĐIỀN: bình luận + lấy 1 ví dụ GeoJSON trong
 results/exp4_examples/ mô tả cụ thể đổi thế nào.]
 
@@ -371,11 +373,12 @@ results/exp4_examples/ mô tả cụ thể đổi thế nào.]
 `results/exp6_routes/route_i.png`; nhận xét trùng/khác và VÌ SAO (Google có dữ liệu
 real-time, ta dùng snapshot 4 khung giờ)].
 
-**Mẫu provenance cho mọi số benchmark sau lượt cuối** (điền cạnh bảng/hình, không
-chỉ nêu một headline): graph `name/created`, profile `created/source`, GraphView và
-scenario fingerprint, mode/slot, OD hoặc stop set, algorithm/params, seed, command,
-commit và đường dẫn artifact. Trước khi có một lượt benchmark coherent mới, giữ mọi
-con số hiện hữu dưới banner **SỐ TẠM** và không gọi chúng là kết quả current.
+**Provenance của lượt chính thức:** `G_real` created 2026-07-27, 2.118/4.699;
+`G_demo` created 2026-08-03, 51/298; profile created 2026-08-03, source
+`tomtom+synthetic`; base/full graph, không scenario override; mode balanced; slot
+theo từng exp; OD seed 42; command `python -m app.benchmark`; HEAD nền `821e77d`
+và current worktree được định danh bằng checksum source. Chi tiết SHA-256, máy
+chạy và từng artifact: `results/README.md`.
 
 ---
 
@@ -383,7 +386,7 @@ con số hiện hữu dưới banner **SỐ TẠM** và không gọi chúng là 
 
 > ✍️ Phụ trách: **Thái Quang Huy** (3 thuật toán ATSP)
 > 💡 Gợi ý: mục ăn điểm "Multi-location" (10đ). Nhấn: vì sao ATSP (bất đối xứng do
-> một chiều — ví dụ ở mục TSP §10 sau lượt tái sinh tài liệu: BT→SC và SC→BT có thể khác nhau);
+> một chiều — ví dụ hiện hành ở tài liệu generated §10: BT→SC và SC→BT khác nhau);
 > Held-Karp là ground truth ≤15 điểm; tuyên bố rõ cái nào TỐI ƯU cái nào XẤP XỈ.
 
 **Phát biểu bài toán** [ĐIỀN: shipper từ kho (Bưu điện TP), thăm k điểm giao đúng 1 lần,
@@ -402,15 +405,16 @@ graph đường phố.
 
 | Phương pháp | Tổng chi phí (s) | Tiết kiệm vs thứ tự nhập | Runtime (ms) | Tối ưu? |
 |---|---|---|---|---|
-| Thứ tự nhập | 7 662,1 | — | — | — |
-| Held-Karp | 3 557,5 | **53,6%** | 2,8 | ✔ tuyệt đối |
-| NN + 2-opt | 3 557,5 | 53,6% | 0,7 | ✘ (lần này đạt 100% tối ưu) |
-| SA (best/5 seed) | 3 557,5 | 53,6% | 29,3 | ✘ (mean 3 564,6 ± 9,7) |
+| Thứ tự nhập | 4 320,1 | — | — | — |
+| Held-Karp | 2 494,9 | **42,2%** | 3,9 | ✔ tuyệt đối |
+| NN + 2-opt/Or-opt | 2 534,2 | 41,3% | 1,5 | ✘ (gap +1,6% so Held-Karp) |
+| SA (best/5 seed) | 2 494,9 | 42,2% | 40,5 | ✘ (mean 2 584,6 ± 66,0) |
 
 [HÌNH → results/figs/exp7_tsp_map.png]
 
-[ĐIỀN: thảo luận — NN+2-opt và SA đều chạm nghiệm tối ưu trên instance 10 điểm này
-(không gian nhỏ); độ lệch SA giữa seed (±9,7 s) minh hoạ tính ngẫu nhiên; với k lớn
+[ĐIỀN: thảo luận — NN+2-opt/Or-opt cách Held-Karp +1,6%; SA best chạm nghiệm
+Held-Karp trên instance 10 điểm này nhưng mean 5 seed là 2 584,6 ± 66,0 s, minh
+hoạ tính ngẫu nhiên; với k lớn
 hơn 15 chỉ còn heuristic. Nêu giới hạn Held-Karp O(n²·2ⁿ); Nearest Neighbour hiện
 là O(n² log n) vì sort ở mỗi vòng; local 2-opt/Or-opt là O(Pn³) vì Θ(n²)
 candidate/pass × Θ(n) full re-cost; SA là O(S·I·n) với S=5 seed, I=2 000
@@ -447,9 +451,10 @@ thành công, retry theo item. `Xem giải thích` mở đúng result đã chọ
 tuyến tham chiếu chỉ có ở Chạy một.
 
 **Luồng nhiều điểm:** chọn `Nhiều điểm`. `Đi theo thứ tự đã chọn` chạy search cho
-từng chặng và hỗ trợ comparison 2–4. `Tối ưu thứ tự giao hàng` hiện chạy một
-phương pháp Held–Karp/NN+local-search/SA và đối chiếu trước/sau; comparison nhiều
-phương pháp ATSP thuộc Phase 7, chưa tuyên bố trong sản phẩm hiện hành.
+từng chặng và hỗ trợ comparison 2–4. `Tối ưu thứ tự ATSP` hiện chạy một
+phương pháp Held–Karp/NN+local-search/SA và đối chiếu trước/sau, hoặc so sánh 2–3
+phương pháp trên cùng immutable snapshot. Đúng N phương pháp tạo N map; baseline
+thứ tự nhập chỉ xuất hiện một lần trong bảng, không tạo map giả.
 
 **Danh sách 9 screenshot cần chụp** *(chế độ Tối)*:
 1. [SCREENSHOT: toàn cảnh trang chính G_demo + lớp ùn tắc 07:30]
@@ -458,7 +463,7 @@ phương pháp ATSP thuộc Phase 7, chưa tuyên bố trong sản phẩm hiện
 4. [SCREENSHOT: Chạy một — bảng tuyến kết quả/tham chiếu + overlay nét đứt + chú thích đường đỏ ùn tắc]
 5. [SCREENSHOT: Dijkstra hai chiều — 2 màu 2 phía]
 6. [SCREENSHOT: So sánh 3 thuật toán — 3 map độc lập, cùng kích thước + bảng N-way]
-7. [SCREENSHOT: multiroute 9 điểm — số thứ tự + tiết kiệm %]
+7. [SCREENSHOT: ATSP comparison 3 phương pháp — 3 map + baseline duy nhất + bảng N-way]
 8. [SCREENSHOT: tab Thử nghiệm — bảng Thông số/Gốc/Đang thử và cạnh đang chọn]
 9. [SCREENSHOT: trang /benchmark với 3 biểu đồ]
 
@@ -476,7 +481,8 @@ trace hàng nghìn bước vào báo cáo; đơn vị và invariant giải thíc
 
 **Điền sẵn từ phương án §10 + phát sinh thực tế:**
 - Chưa mô hình turn penalty / cấm rẽ trái (cần edge-based graph) — Future Work.
-- Heuristic còn "lỏng" (h/h* ≈ 0,565) — có thể nâng bằng landmark ALT.
+- Heuristic chỉ dùng haversine/v_max; exp2 có `max(h/h*) = 0,8886` nhưng max không
+  đại diện phân bố. Có thể nghiên cứu landmark ALT để tăng độ định hướng.
 - Profile congestion hiện là `tomtom+synthetic`: TomTom 4/4 chỉ phủ các cạnh
   trục chính được gán, phần còn lại fallback; 4 khung giờ tĩnh, không real-time.
 - Tám vùng flood/construction là circle thủ công. Nguồn ngoài chỉ chứng minh
@@ -488,8 +494,9 @@ trace hàng nghìn bước vào báo cáo; đơn vị và invariant giải thíc
   rộng thành mô hình rủi ro thực tế.
 - `narrow_alley` hiếm vì network drive loại hẻm (DATA.md §8) — cần network_type="all".
 - VRP nhiều shipper, GA/ACO: ngoài phạm vi, đã chừa kiến trúc.
-- QA responsive browser đã đạt ở 1366×768, 1024×768 và 390×844; không suy diễn
-  kết quả này thành chứng nhận screen-reader hoặc GPU trên mọi thiết bị.
+- Final audit chỉ chấp nhận Chrome Desktop maximized trên laptop vật lý
+  2560×1440 (viewport CSS 1707×825, DPR 1,5); chưa có chứng nhận screen-reader
+  hoặc GPU trên mọi thiết bị, và máy demo cuối vẫn cần preflight nếu khác máy audit.
 - [ĐIỀN: khó khăn thực tế nhóm gặp — gợi ý kể chuyện THẬT: lỗi làm tròn phá admissible
   bị test bắt được (HEURISTIC-PROOF §6b); chữ Ð của OSM khác Đ tiếng Việt; npm build
   đè .next của dev server. Kể được bug mình tự bắt là điểm cộng trưởng thành kỹ thuật.]

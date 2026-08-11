@@ -1,11 +1,11 @@
 # DESIGN.md — Hợp đồng thiết kế giao diện
 
 > **Trạng thái kiểm lại 2026-08-11:** đây là nguồn chuẩn về ý đồ, token và hành
-> vi UI. UI & Explanation v2 đã triển khai code qua Phase 7. Phase 5 map
+> vi UI. UI & Explanation v2 đã triển khai code qua Phase 8. Phase 5 map
 > extraction và Phase 6 route comparison 2–4 đều READY; Phase 7 ATSP comparison
-> 2–3 đã pass frontend test/typecheck/build và targeted backend contract tests.
-> Phase 8 hardening đã triển khai code và qua automated gates; Phase 7–8 còn chờ
-> manual browser/NVDA/performance QA trước khi nhận verdict READY. Evidence nằm ở
+> 2–3 và Phase 8 hardening đã pass frontend 137/137, TypeScript, production build
+> và backend 235/235 sau official-result closeout. Final audit chỉ dùng Chrome Desktop maximized làm runtime
+> gate; mobile/tablet/narrow QA không thuộc phạm vi lượt này. Evidence nằm ở
 > `docs/UI-V2-PHASE7-READINESS.md` và `docs/UI-V2-PHASE8-READINESS.md`.
 >
 > **Luật:** mọi màu/font/hiệu ứng trên UI phải tra được về token trong file này và
@@ -446,9 +446,9 @@ Trang là bề mặt **chỉ đọc** cho `POST /api/benchmark`; không chạy l
 không ghi `results/` và không đưa lệnh rebuild/rerun vào UI. Thứ tự thông tin:
 header gọn → tiêu đề/ngữ cảnh → provenance → các chart card → bảng dữ liệu chi tiết.
 
-- Ready/partial hiện provenance với badge **SỐ TẠM**. Copy phải nói rõ artifact trong
-  `results/` cũ hơn graph hiện hành, chỉ dùng minh họa giao diện hoặc tham khảo lịch sử
-  và không phải kết quả benchmark chính thức của dữ liệu đang dùng. Loading dùng
+- Ready/partial hiện provenance với badge **KẾT QUẢ CHÍNH THỨC**. Copy phải nói rõ
+  artifact exp1–exp7 được tái sinh ngày 2026-08-11 từ graph/profile hiện hành,
+  seed 42, và trỏ tới `results/README.md` để xem checksum. Loading dùng
   skeleton; empty/error chỉ giữ ghi chú nguồn gọn để không giả trạng thái ready.
 - Ready có ba slot ổn định: node expand (exp3), runtime (exp3), độ nhạy γ (exp5).
   Thiếu nguồn nào thì slot đó hiện placeholder riêng; không làm phần còn lại biến mất.
@@ -690,8 +690,8 @@ mới cùng số liệu của thuật toán cũ.
 `prefers-reduced-motion: reduce` dừng autoplay, route-flow loop và chart motion,
 nhưng giữ route/static ring/state. Không có motion truyền thông tin duy nhất.
 Loading, empty và error giữ vùng riêng, dùng status/alert hợp lý và không bịa phần
-trăm tiến độ. `/benchmark` vẫn read-only, giữ `SỐ TẠM` trước chart và không kêu gọi
-người dùng chạy benchmark.
+trăm tiến độ. `/benchmark` vẫn read-only, giữ provenance chính thức trước chart
+và không kêu gọi người dùng chạy benchmark.
 
 Evidence bắt buộc của phase là browser Chromium ở 1366×768, 1024×768, 390×844 và
 320 px hoặc 200% zoom equivalent; cần kiểm mouse/keyboard/focus, reduced motion,
@@ -729,21 +729,20 @@ dựa vào số benchmark hay artifact sinh mới:
   kiểm tra ≥ 4.5:1 trên panel và Carto basemap thật. Backdrop node/cạnh không thăm
   vẫn là ngoại lệ thị giác đã ghi rõ ở §10.
 
-Sau các kiểm chứng trên, ảnh README tại `artifacts/readme/dark-route-result.png`
-và `artifacts/readme/light-atsp-result.png` được chụp lại ở 1366×768, inspect ở độ
-phân giải gốc và chỉ cập nhật sau clean restart, hard refresh, API graph 51/298,
-route/ATSP 200 và console 0 errors.
-
-Bổ sung ngày 2026-08-08, hai ảnh này được chụp lại sau khi contract
-`Thử nghiệm` và marker Đi/Đến ở §12.3–§12.4 ổn định; session runtime clean xác
-nhận graph/traffic/route/multiroute 200, console 0 errors và không tràn ngang.
+Hai ảnh README tại `artifacts/readme/dark-route-result.png` và
+`artifacts/readme/light-atsp-result.png` được chụp lại ngày 2026-08-11 sau clean
+restart + hard refresh bằng Chrome 151 maximized trên màn hình vật lý 2560×1440,
+scale 150% (viewport CSS 1707×825, DPR 1,5). Ảnh Đen là A* single có trace;
+ảnh Trắng là ATSP comparison ba phương pháp/ba map, baseline không tạo map giả.
+Session sạch xác nhận graph 51/298/60, route/multiroute 200, console 0
+error/warning và không tràn ngang. Lượt ảnh 2026-08-08 được thay thế.
 
 ## 13. UI & Explanation v2 — thiết kế và trạng thái triển khai
 
-> **Trạng thái 2026-08-11:** contract/runtime v2 đã triển khai code qua Phase 7.
+> **Trạng thái 2026-08-11:** contract/runtime v2 đã triển khai code qua Phase 8.
 > Phase 5 map extraction và Phase 6 route comparison 2–4 đều READY. Phase 7 ATSP
-> comparison và Phase 8 hardening đã qua automated gates nhưng còn chờ manual
-> browser/NVDA/performance QA. Evidence hiện hành nằm ở
+> comparison đã READY; Phase 8 READY WITH KNOWN ISSUES trong phạm vi Desktop sau
+> fresh automated gates và Chrome Desktop full-view. Evidence hiện hành nằm ở
 > `docs/UI-V2-PHASE5-READINESS.md`, `docs/UI-V2-PHASE6-READINESS.md` và
 > `docs/UI-V2-PHASE7-READINESS.md`, `docs/UI-V2-PHASE8-READINESS.md`; contract
 > nằm ở `docs/SCHEMA.md` §F.

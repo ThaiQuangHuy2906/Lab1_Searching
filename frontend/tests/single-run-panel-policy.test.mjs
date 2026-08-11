@@ -27,7 +27,7 @@ test("panel renders only controls for the explicit mode, strategy and run kind",
   );
   assert.equal(
     activePanelControls("multi_point", "atsp", "compare").selection,
-    "comparison_pending",
+    "atsp_comparison",
   );
   assert.equal(
     activePanelControls("two_point", "ordered_search", "compare").selection,
@@ -101,6 +101,37 @@ test("comparison selection cannot dispatch a single-run action", () => {
     comparisonAlgorithms: ["astar"],
     method: "held_karp",
   }).blockedReason ?? "", /ít nhất 2/);
+});
+
+test("ATSP comparison CTA validates 2-3 methods and Held-Karp eligibility", () => {
+  const base = {
+    problemMode: "multi_point",
+    multiStrategy: "atsp",
+    runKind: "compare",
+    start: "A",
+    goal: null,
+    stops: ["B", "C"],
+    algorithm: "astar",
+    comparisonAlgorithms: ["astar", "ucs"],
+    method: "held_karp",
+  };
+  assert.deepEqual(singleRunCta({
+    ...base,
+    atspComparisonMethods: ["held_karp", "sa"],
+  }), {
+    label: "So sánh 2 phương pháp ATSP",
+    action: "compare_atsp",
+    blockedReason: null,
+  });
+  assert.match(singleRunCta({
+    ...base,
+    atspComparisonMethods: ["sa"],
+  }).blockedReason ?? "", /ít nhất 2/);
+  assert.match(singleRunCta({
+    ...base,
+    stops: Array.from({ length: 15 }, (_, index) => `S${index}`),
+    atspComparisonMethods: ["held_karp", "sa"],
+  }).blockedReason ?? "", /Held–Karp.*16 điểm.*15/);
 });
 
 test("stop reorder respects boundaries and announces the moved item once", () => {

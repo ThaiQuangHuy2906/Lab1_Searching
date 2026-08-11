@@ -34,6 +34,12 @@ const RouteComparisonWorkspace = dynamic(
   { ssr: false },
 );
 
+const AtspComparisonWorkspace = dynamic(
+  () => import("@/components/comparison/atsp-comparison-workspace")
+    .then((module) => module.AtspComparisonWorkspace),
+  { ssr: false },
+);
+
 type MobilePanel = "controls" | "results" | null;
 
 export default function Home() {
@@ -48,6 +54,8 @@ export default function Home() {
   const wasMobilePanelOpen = React.useRef(false);
   const routeComparisonMode = runKind === "compare"
     && (problemMode === "two_point" || multiStrategy === "ordered_search");
+  const atspComparisonMode = runKind === "compare"
+    && problemMode === "multi_point" && multiStrategy === "atsp";
 
   React.useEffect(() => {
     void loadGraph("demo");
@@ -85,7 +93,9 @@ export default function Home() {
           onDesktopOpenChange={setControlsOpen}
         />
         <div className="map-frame relative z-0 min-w-0 flex-1 overflow-hidden rounded-xl border border-surface-border/80 max-[959px]:h-[100dvh] max-[959px]:rounded-none max-[959px]:border-0">
-          {routeComparisonMode ? <RouteComparisonWorkspace /> : <MapView />}
+          {atspComparisonMode
+            ? <AtspComparisonWorkspace />
+            : routeComparisonMode ? <RouteComparisonWorkspace /> : <MapView />}
           <div
             aria-label="Công cụ ứng dụng"
             role="toolbar"

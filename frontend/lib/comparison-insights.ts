@@ -140,6 +140,19 @@ export function atspComparisonInsights(
       resultIds: exact.map((result) => result.id),
     }];
   }
+  if (exact.length === 1) {
+    const exactCost = exact[0].response.totals?.total_cost as number;
+    const impossible = successful.filter((result) => (
+      result.id !== exact[0].id
+      && (result.response.totals?.total_cost as number) < exactCost
+      && !equivalent(result.response.totals?.total_cost as number, exactCost)
+    ));
+    if (impossible.length > 0) return [{
+      kind: "contract_integrity", severity: "error",
+      message: "Có heuristic thấp hơn exact reference ngoài raw tolerance; dừng xếp hạng và exact gap.",
+      resultIds: [exact[0].id, ...impossible.map((result) => result.id)],
+    }];
+  }
   const best = successful.reduce((current, candidate) => (
     (candidate.response.totals?.total_cost as number)
       < (current.response.totals?.total_cost as number) ? candidate : current

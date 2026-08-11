@@ -33,15 +33,15 @@ function statusVariant(status: CompareRunStatus): "default" | "ok" | "warn" | "d
 interface ComparisonMapPaneProps {
   algorithm: Algorithm;
   run: CompareRun<RouteResultEnvelope> | null;
-  model: RouteMapModel;
+  baseModel: RouteMapModel;
   geometry: ReturnType<typeof buildRouteMapGeometry> | null;
   className?: string;
 }
 
-function ComparisonMapPane({
+const ComparisonMapPane = React.memo(function ComparisonMapPane({
   algorithm,
   run,
-  model,
+  baseModel,
   geometry,
   className = "",
 }: ComparisonMapPaneProps) {
@@ -52,6 +52,10 @@ function ComparisonMapPane({
   const result = run?.result?.response ?? null;
   const canRetry = status === "error" || status === "cancelled";
   const statusText = run === null ? "Chưa chạy" : STATUS_COPY[status];
+  const model = React.useMemo<RouteMapModel>(
+    () => ({ ...baseModel, trace: result }),
+    [baseModel, result],
+  );
 
   return (
     <section
@@ -62,7 +66,7 @@ function ComparisonMapPane({
         <h3 id={`comparison-map-${algorithm}`} className="min-w-0 flex-1 truncate text-sm font-bold text-ink">
           {ALGO_LABEL[algorithm]}
         </h3>
-        {status === "running" && <Loader2 className="size-3.5 animate-spin text-algo-frontier" />}
+        {status === "running" && <Loader2 className="size-3.5 animate-spin text-algo-frontier motion-reduce:animate-none" />}
         <Badge variant={statusVariant(status)} className="shrink-0">{statusText}</Badge>
       </div>
       <div className="relative min-h-0 flex-1 bg-surface-map">
@@ -78,10 +82,12 @@ function ComparisonMapPane({
           <div className="pointer-events-none absolute inset-x-3 top-3 z-20 flex justify-center">
             <div
               role={status === "error" ? "alert" : "status"}
+              aria-live="polite"
+              aria-busy={status === "running" || undefined}
               className="floating-chrome pointer-events-auto max-w-[min(300px,calc(100%-1rem))] rounded-lg border border-surface-strong/80 px-3 py-2 text-center shadow-float"
             >
               <p className="flex items-center justify-center gap-1.5 text-xs font-semibold text-ink">
-                {status === "running" && <Loader2 className="size-3.5 animate-spin text-algo-frontier" />}
+                {status === "running" && <Loader2 className="size-3.5 animate-spin text-algo-frontier motion-reduce:animate-none" />}
                 {status === "error" && <AlertTriangle className="size-3.5 text-goal" />}
                 {status === "queued" && run === null ? "Sẵn sàng chạy trên cùng hành trình" : STATUS_COPY[status]}
               </p>
@@ -107,7 +113,7 @@ function ComparisonMapPane({
       </div>
     </section>
   );
-}
+});
 
 export function RouteComparisonWorkspace() {
   const state = useApp();
@@ -169,14 +175,12 @@ export function RouteComparisonWorkspace() {
       <div className={`grid min-h-0 flex-1 gap-2 p-2 ${gridShape} max-[959px]:grid-cols-1 max-[959px]:grid-rows-none max-[959px]:auto-rows-[minmax(360px,70dvh)] max-[959px]:overflow-y-auto`}>
         {algorithms.map((algorithm, index) => {
           const run = session?.runs.find((candidate) => candidate.id === algorithm) ?? null;
-          const trace = run?.result?.response ?? null;
-          const model = { ...liveModel, trace };
           return (
             <ComparisonMapPane
               key={algorithm}
               algorithm={algorithm}
               run={run}
-              model={model}
+              baseModel={liveModel}
               geometry={geometry}
               className={shape === "balanced_three"
                 ? `col-span-2 ${index === 2 ? "col-start-2" : ""} max-[959px]:col-span-1 max-[959px]:col-start-auto`

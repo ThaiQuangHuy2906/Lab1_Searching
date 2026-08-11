@@ -138,21 +138,25 @@ function Section({ title, tip, children, defaultOpen = true }: {
   title: string; tip?: string; children: React.ReactNode; defaultOpen?: boolean;
 }) {
   const [open, setOpen] = React.useState(defaultOpen);
+  const contentId = React.useId();
   return (
     <section className="app-card flex shrink-0 flex-col gap-2.5 rounded-lg border border-surface-border/80 p-3">
       <div className="flex items-center gap-2">
-        <button
-          type="button"
-          aria-expanded={open}
-          onClick={() => setOpen((value) => !value)}
-          className="-m-1 flex min-h-10 min-w-0 flex-1 items-center gap-2 rounded-lg px-1 text-sm font-bold text-ink transition-colors hover:bg-surface-control"
-        >
-          <span className="truncate">{title}</span>
-          <ChevronDown className={`ml-auto size-4 shrink-0 text-ink-dim transition-transform ${open ? "" : "-rotate-90"}`} />
-        </button>
+        <h2 className="min-w-0 flex-1 text-sm font-bold">
+          <button
+            type="button"
+            aria-expanded={open}
+            aria-controls={contentId}
+            onClick={() => setOpen((value) => !value)}
+            className="-m-1 flex min-h-10 w-[calc(100%+0.5rem)] min-w-0 items-center gap-2 rounded-lg px-1 text-left text-ink transition-colors hover:bg-surface-control motion-reduce:transition-none"
+          >
+            <span className="truncate">{title}</span>
+            <ChevronDown className={`ml-auto size-4 shrink-0 text-ink-dim transition-transform motion-reduce:transition-none ${open ? "" : "-rotate-90"}`} />
+          </button>
+        </h2>
         {tip && <InfoTip text={tip} />}
       </div>
-      {open && children}
+      {open && <div id={contentId} className="contents">{children}</div>}
     </section>
   );
 }
@@ -314,7 +318,7 @@ function GraphNodeCountInput({ isDemo, busy }: { isDemo: boolean; busy: boolean 
           <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-ink-faint">điểm</span>
         </div>
         <Button type="button" size="sm" className="h-10 px-3" disabled={!isDemo || busy || graphLoading || invalid || unchanged} onClick={apply}>
-          {graphLoading ? <Loader2 className="animate-spin" /> : "Áp dụng"}
+          {graphLoading ? <Loader2 className="animate-spin motion-reduce:animate-none" /> : "Áp dụng"}
         </Button>
       </div>
       {invalid && (
@@ -378,6 +382,68 @@ function RouteComparisonSelector({ busy }: { busy: boolean }) {
   );
 }
 
+function AtspComparisonSelector({ busy }: { busy: boolean }) {
+  const selected = useApp((state) => state.atspCompareMethods);
+  const setSelected = useApp((state) => state.setAtspCompareMethods);
+  const start = useApp((state) => state.start);
+  const stops = useApp((state) => state.stops);
+  const atMaximum = selected.length >= 3;
+  const heldKarpEligible = (start ? 1 : 0) + stops.length <= 15;
+
+  return (
+    <div className="flex flex-col gap-2">
+      <div
+        role="group"
+        aria-label="Chọn từ hai đến ba phương pháp ATSP để so sánh"
+        className="grid grid-cols-1 gap-1.5"
+      >
+        {(Object.keys(METHOD_DETAILS) as TspMethod[]).map((method) => {
+          const checked = selected.includes(method);
+          const cannotRemove = checked && selected.length <= 2;
+          const ineligible = method === "held_karp" && !heldKarpEligible;
+          return (
+            <button
+              key={method}
+              type="button"
+              aria-pressed={checked}
+              aria-describedby={ineligible ? "held-karp-comparison-limit" : undefined}
+              disabled={busy || cannotRemove || (!checked && (atMaximum || ineligible))}
+              onClick={() => setSelected(checked
+                ? selected.filter((item) => item !== method)
+                : [...selected, method])}
+              className={`flex min-h-11 items-center gap-2 rounded-lg border px-2.5 text-left text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-algo-frontier disabled:cursor-not-allowed disabled:opacity-45 ${
+                checked
+                  ? "border-algo-frontier/55 bg-algo-frontier/10 text-ink"
+                  : "border-surface-border bg-surface-control text-ink-dim hover:border-surface-strong hover:text-ink"
+              }`}
+            >
+              <span className={`flex size-4 shrink-0 items-center justify-center rounded border ${
+                checked ? "border-algo-frontier bg-algo-frontier text-zinc-950" : "border-surface-strong"
+              }`}>
+                {checked && <Check className="size-3" />}
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block break-words text-ink">{METHOD_DETAILS[method].label}</span>
+                <span className="mt-0.5 block break-words font-normal leading-4 text-ink-dim">
+                  {METHOD_DETAILS[method].description}
+                </span>
+              </span>
+            </button>
+          );
+        })}
+      </div>
+      <p className="text-xs leading-5 text-ink-dim">
+        Đã chọn <b className="font-mono text-ink">{selected.length}/3</b>. Các phương pháp chạy tuần tự trên cùng snapshot và không tải optimization trace.
+      </p>
+      {!heldKarpEligible && (
+        <p id="held-karp-comparison-limit" className="text-xs leading-5 text-algo-frontier">
+          Held–Karp chỉ nhận tối đa 15 điểm tính cả điểm Đi. Hãy bỏ Held–Karp hoặc giảm số điểm.
+        </p>
+      )}
+    </div>
+  );
+}
+
 type ControlPanelProps = {
   mobileOpen?: boolean;
   onMobileClose?: () => void;
@@ -418,6 +484,7 @@ export function ControlPanel({
     stops: state.stops,
     algorithm: state.algorithm,
     comparisonAlgorithms: state.routeCompareAlgorithms,
+    atspComparisonMethods: state.atspCompareMethods,
     method: state.tspMethod,
   });
   const overrideCount = Object.keys(state.edgeOverrides).length;
@@ -595,7 +662,9 @@ export function ControlPanel({
           />
           {state.runKind === "compare" && (
             <p className="rounded-lg border border-algo-path/35 bg-algo-path/10 px-2.5 py-2 text-xs leading-5 text-ink">
-              Chọn 2–4 thuật toán bên dưới. Mỗi thuật toán có một bản đồ riêng; chỉnh trọng số bị khóa trong chế độ này.
+              {state.problemMode === "multi_point" && state.multiStrategy === "atsp"
+                ? "Chọn 2–3 phương pháp ATSP bên dưới. Mỗi phương pháp có một bản đồ riêng và dùng cùng dữ liệu."
+                : "Chọn 2–4 thuật toán bên dưới. Mỗi thuật toán có một bản đồ riêng; chỉnh trọng số bị khóa trong chế độ này."}
             </p>
           )}
         </Section>
@@ -670,10 +739,13 @@ export function ControlPanel({
           </Section>
         )}
 
-        {visibleControls.selection === "comparison_pending" && (
-          <p className="rounded-lg border border-surface-border bg-surface-control/70 px-3 py-2.5 text-xs leading-5 text-ink-dim">
-            So sánh nhiều hiện áp dụng cho thuật toán tìm đường. Hãy chọn “Đi theo thứ tự đã chọn” để tiếp tục.
-          </p>
+        {visibleControls.selection === "atsp_comparison" && (
+          <Section
+            title="Phương pháp ATSP so sánh"
+            tip="Chọn 2–3 phương pháp. Baseline thứ tự nhập chỉ nằm trong bảng, không tạo thêm bản đồ giả."
+          >
+            <AtspComparisonSelector busy={busy} />
+          </Section>
         )}
 
         {visibleControls.selection === "atsp_method" && (
@@ -735,9 +807,10 @@ export function ControlPanel({
             if (cta.action === "route") void state.runRoute();
             if (cta.action === "compare_route") void state.runRouteComparison(state.routeCompareAlgorithms);
             if (cta.action === "atsp") void state.runMulti(state.tspMethod);
+            if (cta.action === "compare_atsp") void state.runAtspComparison(state.atspCompareMethods);
           }}
         >
-          {state.comparing ? <X /> : busy ? <Loader2 className="animate-spin" /> : <Play />}
+          {state.comparing ? <X /> : busy ? <Loader2 className="animate-spin motion-reduce:animate-none" /> : <Play />}
           {state.comparing
             ? "Hủy so sánh"
             : state.running
@@ -745,7 +818,7 @@ export function ControlPanel({
             : state.multiRunning ? "Đang dựng ma trận và tối ưu…"
               : ctaLabel}
         </Button>
-        {!state.graphLoading && <p id="single-run-cta-reason" className="min-h-5 text-center text-xs leading-5 text-ink-dim">{cta.blockedReason ?? ""}</p>}
+        {!state.graphLoading && <p id="single-run-cta-reason" aria-live="polite" className="min-h-5 text-center text-xs leading-5 text-ink-dim">{cta.blockedReason ?? ""}</p>}
         {state.graphLoading && <Skeleton className="h-5 w-full" />}
       </div>
     </aside>

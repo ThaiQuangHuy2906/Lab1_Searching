@@ -1,181 +1,87 @@
 # UI & Explanation v2 — Phase 8 Readiness
 
-Ngày rà soát: 2026-08-11
-
-Repository: `ThaiQuangHuy2906/Lab1_Searching`
-
-Branch/HEAD được đối chiếu: `main` / `b3218b5c7d4777c3c998d3bbc36b7b5e4d0e2ae3`
+Ngày kiểm chứng: 2026-08-11  
+Branch/HEAD nền: `main` / `b3218b5c7d47`
 
 ## 1. Kết luận
 
-**Verdict: NOT READY — BLOCKED BY PHASE 7 VÀ FINAL QA CHƯA ĐỦ EVIDENCE**
+**Verdict: IMPLEMENTED — RUNTIME QA REQUIRED**
 
-Phạm vi Phase 8 em chọn là đúng: correctness hardening, resilience,
-accessibility, responsive, performance và QA cuối. Thứ tự Phase 7 rồi Phase 8
-cũng đúng với kế hoạch của nhóm vì final QA chỉ có ý nghĩa sau khi ATSP
-comparison đã được nối end-to-end.
+Phase 8 hardening, accessibility và performance đã được audit và vá trên nền
+Phase 7. Automated gates đều đạt trong phạm vi dependency sẵn có. Chưa ghi READY
+vì browser matrix, NVDA smoke và đo FPS/heap phải thực hiện trên máy Windows và
+GPU dùng để demo; controlled browser của phiên này không truy cập được localhost.
 
-File cũ có một thông tin đã lỗi thời: blocker validator IDA* epsilon hiện đã
-được sửa trên `main`. Tuy nhiên Phase 8 vẫn chưa thể READY vì Phase 7 chưa
-reachable từ UI, ATSP closed-tour còn copy sai, accessibility chưa được nhóm
-kiểm và chưa có evidence performance/final browser matrix gắn với commit hiện
-tại.
+## 2. Hardening đã hoàn tất bằng code/test
 
-## 2. Thay đổi quan trọng so với file cũ
+- [x] `found=false` tiếp tục là typed result, không bị biến thành HTTP error.
+- [x] Ordered N-point open/closed và comparison giữ regression coverage.
+- [x] Comparison giữ partial success, cancel, retry riêng, stale run guard và
+  write-once scenario fingerprint/capability.
+- [x] Single route/ATSP backend error trở thành alert bền trong drawer và có nút
+  `Chạy lại`; toast chỉ còn là thông báo bổ sung.
+- [x] Đổi input/mode/slot/graph/scenario xóa result/error phụ thuộc và hủy run cũ.
+- [x] Backend offline có copy rõ; graph load failure có trạng thái retry; basemap
+  failure hướng dẫn bật chế độ offline.
+- [x] Không còn `comparison_pending`, scalar A/B source-of-truth, `console.log`,
+  `console.debug` hoặc `debugger` trong frontend source.
 
-### IDA* epsilon blocker đã đóng
+## 3. Accessibility đã hoàn tất bằng code/audit
 
-`backend/app/models.py` hiện phân biệt `solution_quality="exact"` với
-`solution_quality="epsilon_bounded"`:
+- [x] Disclosure panel có heading thật, `aria-expanded`, `aria-controls` và vùng
+  nội dung có ID ổn định.
+- [x] Mobile sheet giữ focus, đóng bằng Escape và trả focus về trigger.
+- [x] Progress/error comparison dùng `status`/`alert`, `aria-live` và `aria-busy`.
+- [x] Bảng comparison/baseline/reference nằm trong named focusable scroll region.
+- [x] Stop reorder có nút Lên/Xuống, focus return và polite announcement.
+- [x] Reduced motion dừng autoplay, spinner/skeleton animation, button scale và
+  camera fly/zoom transition; nội dung tĩnh vẫn đầy đủ.
+- [x] Control chính có accessible name; timeline slider, drawer separator và map
+  controls hỗ trợ keyboard.
+- [ ] NVDA + Chrome smoke trên Windows — cần runtime thực.
+- [ ] 320 px, 200% zoom và các palette — cần browser inspection thực.
 
-- exact chỉ chấp nhận optimality gap bằng 0 trong tolerance;
-- epsilon-bounded chấp nhận gap không vượt `epsilon_bound` trong tolerance;
-- frontend contract guard có regression “accept within epsilon, reject bound
-  violation”.
+## 4. Performance đã hoàn tất bằng code/audit
 
-Do đó không còn đúng nếu tiếp tục ghi `P8-BLOCK-01` là blocker đang mở. Đây là
-correction quan trọng nhất của Phase 8.
+- [x] Comparison chỉ render final route, không tải/đồng bộ trace.
+- [x] Route và ATSP comparison dùng shared graph geometry.
+- [x] Mỗi map giữ camera riêng; collapse chỉ phát resize, không tự refit.
+- [x] Comparison pane được `React.memo`; pane không đổi không render lại theo mỗi
+  progress update của phương pháp khác.
+- [x] Route-flow animation bị tắt trong comparison và reduced-motion.
+- [x] Production build hoàn tất; trang chính 58,6 kB, first-load JS 242 kB.
+- [ ] FPS, interaction p95, WebGL context và heap ba vòng — phải đo trên GPU máy demo.
 
-### Phase 7 vẫn là blocker
-
-ATSP comparison session đã có trong store nhưng panel vẫn trả
-`comparison_pending`; CTA, workspace N-pane, cross-method table và retry ATSP
-chưa được nối. Phase 8 không thể ký final functional/a11y/performance gate cho
-một flow người dùng chưa chạy được.
-
-## 3. Hiện trạng hardening trên `main`
-
-| Hạng mục | Hiện trạng |
-|---|---|
-| IDA* exact/epsilon contract | Đã sửa ở model/guard; có regression hiện hành. |
-| Route comparison 2–4 | Phase 6 READY theo user-reported manual browser QA. |
-| ATSP comparison 2–3 | Chưa triển khai UI end-to-end. |
-| Stale response/cancel/integrity policy | Có pure/store tests; chưa có final browser evidence cho ATSP UI. |
-| Open/closed ATSP | Snapshot/response guard có; `atsp-result.tsx` vẫn có câu copy chỉ đúng cho open tour. |
-| Backend/basemap offline | Có các cơ chế nền; chưa có final evidence matrix Phase 8. |
-| Keyboard/screen reader | Một số control cũ đã được test ở Phase 3; ATSP comparison và NVDA final smoke chưa có. |
-| Reduced motion/contrast/reflow | Có baseline từ phase trước; chưa chạy lại cho UI Phase 7–8. |
-| Performance/GPU/memory | Nhóm đã tự đánh dấu đã kiểm, nhưng file chưa ghi environment/trace/snapshot để tái kiểm. |
-
-## 4. Gate correctness và resilience
-
-Phase 8 phải giữ các quy tắc sau:
-
-- dùng structured fields, không parse prose để tạo guarantee, ranking, gap hay
-  runtime;
-- so sánh bằng raw values, chỉ round ở bước hiển thị;
-- distance dùng km, travel time dùng phút, computation runtime dùng ms;
-- `found=false`, HTTP error, matrix incomplete và closing-leg no-path là các
-  trạng thái khác nhau;
-- partial failure giữ các kết quả đã hoàn tất;
-- response cũ sau đổi input/cancel không được ghi vào session mới;
-- fingerprint/capability mismatch dừng ranking và hủy các slot còn lại;
-- backend offline không treo progress; basemap offline không làm mất graph,
-  route hoặc bảng;
-- retry dùng lại immutable snapshot và không reset identity guards.
-
-## 5. Gate accessibility và responsive
-
-Các gate này chưa được tick vì nhóm xác nhận chưa test trên điện thoại và chưa
-kiểm cho người dùng khuyết tật:
-
-- [ ] Tab/Shift+Tab toàn app không focus trap; Escape và focus return đúng.
-- [ ] Checkbox/button/disclosure chạy bằng Space/Enter; radio hỗ trợ arrow keys.
-- [ ] Progress `run 2/3`, success/no-path/error/cancelled được đọc bằng live region
-  vừa đủ, không spam.
-- [ ] NVDA + Chrome đọc được group, status, error, table caption và expanded state.
-- [ ] `prefers-reduced-motion` tắt autoplay/chuyển động không cần thiết.
-- [ ] Contrast, focus ring, selected/error state và target size đạt yêu cầu.
-- [ ] 1366×768, 1024×768, 390×844, 320×568 và 200% zoom không mất chức năng.
-
-Automated accessibility scan chỉ hỗ trợ; nó không thay keyboard và screen-reader
-manual QA.
-
-## 6. Gate performance
-
-Môi trường đo phải ghi OS, CPU, RAM, GPU, browser version, build mode, viewport
-và device scale factor. Kịch bản tối thiểu gồm route comparison 4 thuật toán,
-ATSP comparison 3 method, ba vòng `run → clear → run`, pan/zoom, mở drawer và
-resize.
-
-| Chỉ số | Mục tiêu Phase 8 |
-|---|---:|
-| WebGL/context | 0 context loss, 0 console GPU error |
-| Pan/zoom median | ≥ 30 FPS |
-| UI interaction p95 | < 100 ms cho action không phụ thuộc network |
-| Grid render | ≤ 1 s sau response cuối |
-| Heap growth | Không tăng bền vững > 10% sau ba vòng và cơ hội GC |
-
-Các dấu tick performance trong file nhóm gửi được ghi nhận ở mục 8, nhưng chưa
-được nâng thành evidence cuối vì thiếu môi trường và trace đi kèm.
-
-## 7. Evidence rà soát lần này
+## 5. Evidence đã chạy
 
 | Gate | Kết quả |
 |---|---|
-| `git rev-parse HEAD` | PASS — `b3218b5c7d4777c3c998d3bbc36b7b5e4d0e2ae3` |
-| `npm test` trong `frontend/` | PASS — 128/128 |
-| IDA* epsilon guard trong frontend test | PASS trong full `npm test` |
-| `python3 scripts/validate_data.py` | PASS — `ALL DATA VALID`; G_real 2118/4699, G_demo 51/298 |
+| `npm test` | PASS — 135/135 |
+| `npx tsc --noEmit --incremental false` | PASS |
+| `NEXT_TELEMETRY_DISABLED=1 npm run build` | PASS — 6/6 static pages |
+| Backend core suite | PASS — 228, 1 health test deselected |
+| `scripts/validate_data.py` | PASS — `ALL DATA VALID` |
 | `git diff --check` | PASS |
-| Backend full pytest bằng Python 3.14 | NOT RUN trong phiên rà soát này |
-| TypeScript check / production build | NOT RUN trong phiên rà soát này |
-| Functional browser QA P8-F01..F18 | Chưa có evidence ledger gắn với HEAD hiện tại |
-| Accessibility QA P8-A01..A12 | NOT RUN theo xác nhận của nhóm |
-| Performance trace | Chưa có environment/trace để tái kiểm |
+| Controlled browser | BLOCKED — localhost bị chặn |
+| Manual browser/NVDA/GPU | PENDING |
 
-Không được đổi các dòng NOT RUN thành PASS chỉ từ baseline `128/128`, vì unit
-test không đo browser layout, screen reader, FPS, WebGL context hoặc heap.
+Backend suite dùng Python 3.12 tạm và bỏ test health yêu cầu đúng Python 3.14.
+`test_artifact_generation.py` chưa collect được vì môi trường thiếu `matplotlib`;
+network cài dependency bị chặn. Phase 8 không sửa backend/schema/data/algorithm.
 
-## 8. Checklist nhóm đã tự kiểm
+## 6. QA cuối em cần chạy trên máy thật
 
-Giữ nguyên tinh thần các dấu tick cuối file nhóm gửi. Đây là **user-reported
-manual QA**, chưa phải final evidence của đúng commit:
+- [ ] 1366×768: route comparison 2/3/4 và ATSP comparison 2/3.
+- [ ] 1024×768: panel/drawer, focus return và grid reflow.
+- [ ] 390×844, 320×568 và zoom 200%: không page-level horizontal scroll.
+- [ ] Keyboard: Tab/Shift+Tab, radio arrow, Enter/Space, Escape sheets.
+- [ ] Bật Windows `Reduce motion`: timeline không autoplay, camera không bay.
+- [ ] Tắt backend: alert bền + Chạy lại; bật lại backend rồi retry thành công.
+- [ ] Bật offline map: graph/tuyến vẫn đọc được, không phụ thuộc basemap.
+- [ ] Cancel/retry comparison và đổi input lúc request đang chạy không nhận result cũ.
+- [ ] NVDA đọc tên group, progress, per-card error, caption bảng và expanded state.
+- [ ] G_demo 4 route maps, G_real 2 maps, ATSP 3 maps; ba vòng run → clear → run,
+  không console error hoặc WebGL context loss.
 
-### Correctness và functional
-
-- ☑ Nhóm đã kiểm objective, unit, guarantee, savings, gap và runtime.
-- ☑ Nhóm đã kiểm open/closed, no-path, partial failure, stale response và retry
-  ở các lớp hiện có.
-- ☑ Nhóm đã kiểm không parse prose để tạo fact định lượng.
-- ☑ Nhóm đã kiểm backend pytest, validator, frontend tests/build trên máy nhóm.
-- ☑ Nhóm đã kiểm không còn Critical/High issue trong phạm vi đã chạy.
-- ☑ Nhóm đã kiểm repository hygiene và `git diff --check`.
-
-### Performance do nhóm xác nhận đã chạy
-
-- ☑ Không thấy WebGL context loss hoặc console GPU error.
-- ☑ Pan/zoom đạt mức nhóm chấp nhận.
-- ☑ Tương tác UI không phụ thuộc network đạt mức nhóm chấp nhận.
-- ☑ Grid ổn định sau response cuối.
-- ☑ Không thấy heap tăng bền vững qua protocol nhóm đã chạy.
-- ☑ Renderer vẫn giữ đủ N pane trong kịch bản nhóm kiểm.
-
-### Gate nhóm chưa kiểm
-
-- [ ] Keyboard/focus matrix đầy đủ.
-- [ ] NVDA/screen-reader smoke.
-- [ ] Reduced motion, contrast và target size đầy đủ.
-- [ ] Mobile 390×844, 320×568 và 200% zoom.
-- [ ] Evidence ledger cho toàn bộ functional/accessibility/performance matrix.
-
-## 9. Việc cần làm trước khi ký READY
-
-1. Hoàn tất và ký READY Phase 7 trên đúng commit.
-2. Sửa copy open/closed trong kết quả ATSP và thêm regression.
-3. Chạy backend full suite bằng Python 3.14, typecheck và production build.
-4. Chạy browser QA cho single route, route comparison, ATSP single và ATSP
-   comparison; ghi expected/actual, viewport, request và console/network.
-5. Chạy keyboard, NVDA, reduced-motion, contrast, mobile/reflow và 200% zoom.
-6. Ghi environment + trace/snapshot cho các số performance nhóm đã kiểm.
-7. Cập nhật `docs/SCHEMA.md` và `docs/CODEX-CODEBASE-MAP.md` nếu implementation
-   Phase 7–8 làm đổi public contract hoặc thêm component/store/test mới.
-
-## 10. Verdict
-
-**PHASE 8: NOT READY.**
-
-Luồng công việc của file cũ đúng, nhưng trạng thái IDA* đã lỗi thời và các dấu
-tick performance/verification chưa được tách khỏi bằng chứng có thể tái kiểm.
-Bản này sửa lại theo cùng form Phase 5–6, giữ rõ những gì nhóm đã test, những gì
-audit hiện tại xác nhận và những gate accessibility/mobile còn mở.
+Chỉ đổi verdict thành READY sau khi hoàn tất các mục runtime trên và ghi lại bằng
+chứng viewport/browser/GPU đã dùng. Dùng `[x]` để đánh dấu, không gạch nội dung.

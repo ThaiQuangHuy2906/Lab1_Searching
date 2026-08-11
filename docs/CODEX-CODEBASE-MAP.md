@@ -24,14 +24,15 @@ automated tests/build, not by a new manual browser session. Dated
 onboarding/FINAL-01 sections below remain historical evidence; the exact
 projector/browser used for recording still needs its own pre-flight.
 
-**UI & Explanation v2 refresh — 2026-08-10:** Phase 0–5 đã hoàn tất và Phase 6
-route comparison 2–4 đã triển khai end-to-end. Runtime hiện có typed
+**UI & Explanation v2 refresh — 2026-08-11:** Phase 0–6 đã hoàn tất và Phase 7
+ATSP comparison 2–3 đã triển khai end-to-end trong worktree. Runtime hiện có typed
 termination/decision/explanation, subject binding, single-route reference
-comparison, prop-driven map canvas và N map final-only với camera độc lập. Fresh
-gates gần nhất là 230 backend tests, 124 frontend tests, `ALL DATA VALID`,
-TypeScript pass và manual browser QA Phase 6 do người dùng xác nhận. Phase 6 đã
-READY; validator IDA* còn known issue với
-exact reference tốt hơn nhưng gap vẫn trong ε. Phase 7–8 chưa triển khai.
+comparison, prop-driven map canvas, route comparison 2–4 và ATSP comparison 2–3
+với N map final-only. Phase 8 bổ sung persistent single-run retry, disclosure
+semantics, reduced-motion camera/loading và memoized comparison panes. Fresh gates
+là 135 frontend tests, TypeScript/build pass, 228 backend core tests và
+`ALL DATA VALID`. Phase 7–8 còn chờ manual browser/NVDA/performance QA nên chưa
+nhận verdict READY.
 
 **Route-contract delta — 2026-08-08:** the group removed the standalone
 `dijkstra` choice because it duplicated UCS. The current product exposes nine
@@ -633,9 +634,10 @@ Verified/current findings:
   a dashed, 4 px offset route. Congestion levels 4–5 on the selected final route
   are highlighted red only as result evidence; panel copy says this is not the
   algorithm's current timeline path.
-- Drawer Explanation recognizes ordered multi per-leg evidence. Current ATSP
-  comparison still means input order versus one optimized order; cross-method
-  ATSP comparison belongs to Phase 7 and is not claimed.
+- Drawer Explanation recognizes ordered multi per-leg evidence. ATSP compare
+  mode now selects 2–3 methods, runs them sequentially on one immutable snapshot,
+  keeps partial results/retry, renders one final-only map per method and presents
+  baseline legs, outcome/effort, exact gap and per-result explanation in one table.
 - FINAL-01 functional route-flow QA passed G_demo/G_real, compare, trace,
   clear/invalidation and reduced-motion states. G_real measured only about
   16 FPS under Chromium SwiftShader; a hardware-GPU run was not reproduced.

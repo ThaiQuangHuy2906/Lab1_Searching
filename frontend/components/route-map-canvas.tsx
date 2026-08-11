@@ -805,7 +805,7 @@ export function RouteMapCanvas({
         className="flex h-full flex-col items-center justify-center gap-3 bg-surface-map text-ink-dim">
         {graphLoading ? (
           <span className="flex items-center gap-2 text-sm">
-            <Loader2 className="size-4 animate-spin text-algo-frontier" />
+            <Loader2 className="size-4 animate-spin text-algo-frontier motion-reduce:animate-none" />
             Đang tải đồ thị…
           </span>
         ) : (
@@ -868,9 +868,9 @@ export function RouteMapCanvas({
         )}
       </DeckGL>
       {graphLoading && (
-        <div role="status" className="pointer-events-none absolute inset-0 z-30 flex items-center justify-center bg-surface-map/65">
+        <div role="status" aria-live="polite" aria-busy="true" className="pointer-events-none absolute inset-0 z-30 flex items-center justify-center bg-surface-map/65">
           <span className="floating-chrome flex h-11 items-center gap-2 rounded-lg border border-surface-strong/80 px-3 text-sm font-medium">
-            <Loader2 className="size-4 animate-spin text-algo-frontier" />
+            <Loader2 className="size-4 animate-spin text-algo-frontier motion-reduce:animate-none" />
             Đang tải đồ thị…
           </span>
         </div>
@@ -883,11 +883,11 @@ export function RouteMapCanvas({
       {/* map controls (DESIGN 6, v6): zoom +/- and fly-home */}
       <div className={`floating-chrome absolute right-3 z-10 flex flex-col gap-1 rounded-lg border border-surface-strong/80 p-1 max-[639px]:bottom-[8.5rem] ${mapControlsBottomClass(timelineVisible)}`}>
         <Button variant="ghost" size="iconSm" aria-label="Phóng to"
-          onClick={() => viewState && setCamera({ ...viewState, zoom: (viewState.zoom ?? 0) + 0.7, transitionDuration: 250 })}>
+          onClick={() => viewState && setCamera({ ...viewState, zoom: (viewState.zoom ?? 0) + 0.7, transitionDuration: reducedMotion ? 0 : 250 })}>
           <Plus />
         </Button>
         <Button variant="ghost" size="iconSm" aria-label="Thu nhỏ"
-          onClick={() => viewState && setCamera({ ...viewState, zoom: (viewState.zoom ?? 0) - 0.7, transitionDuration: 250 })}>
+          onClick={() => viewState && setCamera({ ...viewState, zoom: (viewState.zoom ?? 0) - 0.7, transitionDuration: reducedMotion ? 0 : 250 })}>
           <Minus />
         </Button>
         <Button variant="ghost" size="iconSm" aria-label="Về toàn cảnh"
@@ -899,8 +899,8 @@ export function RouteMapCanvas({
             homeView.current = home;
             setCamera({
               ...home,
-              transitionDuration: 500,
-              transitionInterpolator: new FlyToInterpolator(),
+              transitionDuration: reducedMotion ? 0 : 500,
+              ...(reducedMotion ? {} : { transitionInterpolator: new FlyToInterpolator() }),
             });
           }}>
           <Home />

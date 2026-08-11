@@ -212,7 +212,7 @@ function StateCard({
         </div>
         <div className="flex flex-wrap justify-center gap-2">
           <Button type="button" variant="secondary" onClick={onRetry} disabled={retrying}>
-            <RefreshCw className={retrying ? "animate-spin" : undefined} aria-hidden="true" />
+            <RefreshCw className={retrying ? "animate-spin motion-reduce:animate-none" : undefined} aria-hidden="true" />
             {retrying ? "Đang thử lại…" : "Thử lại"}
           </Button>
           <Button asChild variant="ghost">

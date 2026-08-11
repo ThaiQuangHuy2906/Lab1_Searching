@@ -10,11 +10,19 @@ function routeComparisonSelectionError(selected: readonly Algorithm[]): string |
   return null;
 }
 
+function atspComparisonSelectionError(selected: readonly TspMethod[]): string | null {
+  if (selected.length < 2) return "Cần chọn ít nhất 2 phương pháp ATSP để so sánh.";
+  if (selected.length > 3) return "Chỉ được chọn tối đa 3 phương pháp ATSP để so sánh.";
+  if (new Set(selected).size !== selected.length)
+    return "Các phương pháp ATSP so sánh không được trùng nhau.";
+  return null;
+}
+
 export interface ActivePanelControls {
   showGoal: boolean;
   showStops: boolean;
   showStrategy: boolean;
-  selection: "route_algorithm" | "route_comparison" | "atsp_method" | "comparison_pending";
+  selection: "route_algorithm" | "route_comparison" | "atsp_method" | "atsp_comparison";
 }
 
 export function activePanelControls(
@@ -28,7 +36,7 @@ export function activePanelControls(
     showStops: problemMode === "multi_point",
     showStrategy: problemMode === "multi_point",
     selection: runKind === "compare"
-      ? routeFlow ? "route_comparison" : "comparison_pending"
+      ? routeFlow ? "route_comparison" : "atsp_comparison"
       : routeFlow ? "route_algorithm" : "atsp_method",
   };
 }
@@ -60,22 +68,36 @@ export interface SingleRunCtaInput {
   stops: readonly string[];
   algorithm: Algorithm;
   comparisonAlgorithms?: readonly Algorithm[];
+  atspComparisonMethods?: readonly TspMethod[];
   method: TspMethod;
 }
 
 export interface SingleRunCta {
   label: string;
-  action: "route" | "compare_route" | "atsp" | null;
+  action: "route" | "compare_route" | "atsp" | "compare_atsp" | null;
   blockedReason: string | null;
 }
 
 export function singleRunCta(input: SingleRunCtaInput): SingleRunCta {
   if (input.runKind === "compare") {
     if (input.problemMode === "multi_point" && input.multiStrategy === "atsp") {
+      const selected = input.atspComparisonMethods ?? [];
+      const pointCount = input.stops.length + (input.start ? 1 : 0);
+      const journeyError = !input.start
+        ? "Hãy chọn điểm Đi."
+        : input.stops.length === 0
+          ? "Hãy thêm ít nhất một điểm giao."
+          : new Set([input.start, ...input.stops]).size !== input.stops.length + 1
+            ? "Điểm Đi và các điểm giao phải khác nhau."
+            : pointCount > 16
+              ? "ATSP hỗ trợ tối đa 16 điểm tính cả điểm Đi."
+              : selected.includes("held_karp") && pointCount > 15
+                ? `Held–Karp không nhận ${pointCount} điểm; giới hạn là 15.`
+                : null;
       return {
-        label: "So sánh nhiều",
-        action: null,
-        blockedReason: "So sánh nhiều hiện áp dụng cho tìm đường; hãy chọn Đi theo thứ tự đã chọn.",
+        label: `So sánh ${selected.length} phương pháp ATSP`,
+        action: "compare_atsp",
+        blockedReason: journeyError ?? atspComparisonSelectionError(selected),
       };
     }
     const selected = input.comparisonAlgorithms ?? [];

@@ -4,6 +4,7 @@ import { AlertTriangle, GitCompareArrows, Loader2, RefreshCw } from "lucide-reac
 
 import { AtspCompare } from "../atsp/atsp-compare";
 import { AtspLoading } from "../atsp/atsp-result";
+import { AtspComparisonTable } from "../comparison/atsp-comparison-table";
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 import { routeGuaranteeLabel } from "@/lib/algorithm-policy";
@@ -135,6 +136,10 @@ export function CompareTab() {
   const session = state.routeComparisonSession;
   const routeCompareMode = state.runKind === "compare"
     && (state.problemMode === "two_point" || state.multiStrategy === "ordered_search");
+  const atspCompareMode = state.runKind === "compare"
+    && state.problemMode === "multi_point" && state.multiStrategy === "atsp";
+
+  if (atspCompareMode) return <AtspComparisonTable />;
 
   if (state.multiRunning) return <AtspLoading />;
   if (state.multi) return <AtspCompare multi={state.multi} />;
@@ -174,8 +179,8 @@ export function CompareTab() {
   return (
     <div className="flex flex-col gap-3">
       {state.comparing && state.comparisonProgress && (
-        <div role="status" className="flex items-center gap-2 rounded-lg border border-algo-frontier/35 bg-algo-frontier/10 px-3 py-2 text-xs text-ink">
-          <Loader2 className="size-4 animate-spin text-algo-frontier" />
+        <div role="status" aria-live="polite" aria-busy="true" className="flex items-center gap-2 rounded-lg border border-algo-frontier/35 bg-algo-frontier/10 px-3 py-2 text-xs text-ink">
+          <Loader2 className="size-4 animate-spin text-algo-frontier motion-reduce:animate-none" />
           Đang chạy thuật toán {state.comparisonProgress.currentItem}/{state.comparisonProgress.totalItems}
           {state.comparisonProgress.totalLegs > 1
             ? ` · chặng ${state.comparisonProgress.currentLeg}/${state.comparisonProgress.totalLegs}`

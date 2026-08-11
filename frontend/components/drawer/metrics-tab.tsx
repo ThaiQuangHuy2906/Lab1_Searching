@@ -1,11 +1,12 @@
 "use client";
 
 import {
-  BadgeCheck, Clock, Gauge, Layers, MousePointerClick, Network,
-  Route as RouteIcon, Sigma, Timer,
+  AlertTriangle, BadgeCheck, Clock, Gauge, Layers, MousePointerClick, Network,
+  RefreshCw, Route as RouteIcon, Sigma, Timer,
 } from "lucide-react";
 import { AppliedScenarioDetails } from "../applied-scenario-details";
 import { Badge } from "../ui/badge";
+import { Button } from "../ui/button";
 import { InfoTip } from "../ui/info-tip";
 import { GhfTable } from "../ghf-table";
 import { AtspLoading, AtspResult } from "../atsp/atsp-result";
@@ -88,8 +89,36 @@ export function MetricsTab() {
   const graphData = useApp((state) => state.graphData);
   const stops = useApp((state) => state.stops);
   const problemMode = useApp((state) => state.problemMode);
+  const singleRunError = useApp((state) => state.singleRunError);
+  const runRoute = useApp((state) => state.runRoute);
+  const runMulti = useApp((state) => state.runMulti);
+  const tspMethod = useApp((state) => state.tspMethod);
 
   if (multiRunning) return <AtspLoading />;
+  if (singleRunError) {
+    return (
+      <div role="alert" aria-live="assertive" className="rounded-lg border border-goal/40 bg-goal/10 p-3">
+        <div className="flex items-start gap-2.5">
+          <AlertTriangle className="mt-0.5 size-4 shrink-0 text-goal" />
+          <div className="min-w-0 flex-1">
+            <h3 className="text-sm font-semibold text-ink">
+              {singleRunError.kind === "atsp" ? "Không thể tối ưu thứ tự" : "Không thể chạy tìm đường"}
+            </h3>
+            <p className="mt-1 break-words text-xs leading-5 text-ink-dim">{singleRunError.message}</p>
+            <Button
+              variant="secondary"
+              size="sm"
+              className="mt-2"
+              onClick={() => singleRunError.kind === "atsp"
+                ? void runMulti(tspMethod) : void runRoute()}
+            >
+              <RefreshCw /> Chạy lại
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
   if (multi) return <AtspResult multi={multi} graphData={graphData} />;
 
   if (!trace) {

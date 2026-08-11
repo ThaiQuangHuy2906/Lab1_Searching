@@ -80,6 +80,8 @@ export const ALGO_LABEL: Record<Algorithm, string> = {
   beam: "Beam Search",
 };
 
+const ATSP_METHOD_ORDER: readonly TspMethod[] = ["held_karp", "nn_2opt", "sa"];
+
 export type DrawerTab = "metrics" | "explain" | "compare" | "scenario";
 export type { Theme } from "./theme";
 const graphRequests = createLatestRequestGuard();
@@ -115,6 +117,7 @@ interface AppState {
   returnToStart: boolean;
   algorithm: Algorithm;
   routeCompareAlgorithms: Algorithm[];
+  atspCompareMethods: TspMethod[];
   // Transitional projections for Phase-1 components. `journeyDrafts` and the
   // explicit mode fields above are the business source of truth.
   start: string | null;
@@ -149,6 +152,7 @@ interface AppState {
   comparing: boolean;
   multi: MultirouteResponse | null;
   multiRunning: boolean;
+  singleRunError: { kind: "route" | "atsp"; message: string } | null;
   optimizationTrace: OptimizationTrace | null;
   runId: number;
   activeSnapshot: RunSnapshot | null;
@@ -185,6 +189,8 @@ interface AppState {
   retryRouteComparisonRun: (algorithm: Algorithm) => Promise<void>;
   runMulti: (method: TspMethod) => Promise<void>;
   runAtspComparison: (methods: readonly TspMethod[]) => Promise<void>;
+  setAtspCompareMethods: (methods: readonly TspMethod[]) => void;
+  retryAtspComparisonRun: (method: TspMethod) => Promise<void>;
   setProblemMode: (mode: ProblemMode) => void;
   setMultiStrategy: (strategy: MultiStrategy) => void;
   setRunKind: (kind: RunKind) => void;
@@ -223,6 +229,7 @@ export const useApp = create<AppState>((set, get) => ({
   returnToStart: false,
   algorithm: "astar",
   routeCompareAlgorithms: ["astar", "ucs"],
+  atspCompareMethods: ["held_karp", "nn_2opt", "sa"],
   start: null,
   goal: null,
   stops: [],
@@ -249,6 +256,7 @@ export const useApp = create<AppState>((set, get) => ({
   comparing: false,
   multi: null,
   multiRunning: false,
+  singleRunError: null,
   optimizationTrace: null,
   runId: 0,
   activeSnapshot: null,
@@ -347,6 +355,7 @@ export const useApp = create<AppState>((set, get) => ({
         extra.activeSnapshot = null;
         extra.singleRouteResult = null;
         extra.singleAtspResult = null;
+        extra.singleRunError = null;
         extra.routeComparisonSession = null;
         extra.atspComparisonSession = null;
         extra.explanationSubject = null;
@@ -447,6 +456,38 @@ export const useApp = create<AppState>((set, get) => ({
     });
   },
 
+  setAtspCompareMethods: (methods) => {
+    const state = get();
+    if (state.running || state.comparing || state.multiRunning) return;
+    const normalized = [...new Set(methods)].filter((method): method is TspMethod =>
+      ATSP_METHOD_ORDER.includes(method as TspMethod),
+    );
+    if (normalized.length < 2 || normalized.length > 3) {
+      toast.error("Hãy giữ từ 2 đến 3 phương pháp ATSP để so sánh.");
+      return;
+    }
+    if (normalized.length === state.atspCompareMethods.length
+        && normalized.every((method, index) => method === state.atspCompareMethods[index]))
+      return;
+    const runId = runLifecycle.invalidate();
+    set({
+      atspCompareMethods: normalized,
+      atspComparisonSession: null,
+      activeSnapshot: null,
+      explanationSubject: null,
+      explanationOverlay: null,
+      explanationOverlayVisible: false,
+      comparisonProgress: null,
+      comparing: false,
+      multi: null,
+      optimizationTrace: null,
+      timelineSource: null,
+      stepIdx: 0,
+      playing: false,
+      runId,
+    });
+  },
+
   setReturnToStart: (enabled) => get().set({ returnToStart: enabled }),
 
   setExplanationSubject: (subject) => {
@@ -528,6 +569,7 @@ export const useApp = create<AppState>((set, get) => ({
           returnToStart: false, activeSnapshot: null,
           comparisonProgress: null,
           singleRouteResult: null, singleAtspResult: null,
+          singleRunError: null,
           routeComparisonSession: null, atspComparisonSession: null,
           explanationSubject: null, explanationOverlay: null,
           explanationOverlayVisible: false, runId,
@@ -552,6 +594,7 @@ export const useApp = create<AppState>((set, get) => ({
       returnToStart: false, activeSnapshot: null,
       comparisonProgress: null,
       singleRouteResult: null, singleAtspResult: null,
+      singleRunError: null,
       routeComparisonSession: null, atspComparisonSession: null,
       explanationSubject: null, explanationOverlay: null,
       explanationOverlayVisible: false, runId,
@@ -734,6 +777,7 @@ export const useApp = create<AppState>((set, get) => ({
       comparisonProgress: null,
       trace: null, sequentialRoute: null, playing: false, multi: null,
       singleRouteResult: null, singleAtspResult: null,
+      singleRunError: null,
       routeComparisonSession: null, atspComparisonSession: null,
       explanationSubject: null, explanationOverlay: null,
       explanationOverlayVisible: false,
@@ -809,7 +853,13 @@ export const useApp = create<AppState>((set, get) => ({
       }
     } catch (e) {
       if (e instanceof RequestAbortedError || !runLifecycle.isCurrent(handle.runId)) return;
-      toast.error(e instanceof Error ? e.message : "Chạy thuật toán thất bại.");
+      const message = e instanceof Error ? e.message : "Chạy thuật toán thất bại.";
+      set({
+        singleRunError: { kind: "route", message },
+        drawerOpen: true,
+        drawerTab: "metrics",
+      });
+      toast.error(message);
     } finally {
       if (runLifecycle.isCurrent(handle.runId)) set({ running: false, routeProgress: null });
     }
@@ -1150,6 +1200,7 @@ export const useApp = create<AppState>((set, get) => ({
       comparisonProgress: null,
       playing: false,
       singleRouteResult: null, singleAtspResult: null,
+      singleRunError: null,
       routeComparisonSession: null, atspComparisonSession: null,
       explanationSubject: null, explanationOverlay: null,
       explanationOverlayVisible: false,
@@ -1200,7 +1251,13 @@ export const useApp = create<AppState>((set, get) => ({
       }
     } catch (e) {
       if (e instanceof RequestAbortedError || !runLifecycle.isCurrent(handle.runId)) return;
-      toast.error(e instanceof BackendError ? e.message : "Tối ưu thứ tự thất bại.");
+      const message = e instanceof Error ? e.message : "Tối ưu thứ tự thất bại.";
+      set({
+        singleRunError: { kind: "atsp", message },
+        drawerOpen: true,
+        drawerTab: "metrics",
+      });
+      toast.error(message);
     } finally {
       if (runLifecycle.isCurrent(handle.runId)) set({ multiRunning: false });
     }
@@ -1256,6 +1313,12 @@ export const useApp = create<AppState>((set, get) => ({
       },
       atspComparisonSession: session,
       routeComparisonSession: null,
+      multi: null,
+      singleAtspResult: null,
+      optimizationTrace: null,
+      timelineSource: null,
+      stepIdx: 0,
+      playing: false,
       explanationSubject: null,
       explanationOverlay: null,
       explanationOverlayVisible: false,
@@ -1317,8 +1380,101 @@ export const useApp = create<AppState>((set, get) => ({
       }
     }
     if (runLifecycle.isCurrent(handle.runId)) {
-      set({ comparing: false, comparisonProgress: null, drawerTab: "compare" });
+      set({
+        comparing: false,
+        comparisonProgress: null,
+        drawerOpen: true,
+        drawerTab: "compare",
+      });
       toast.success(`Đã hoàn tất ${methods.length} phương pháp ATSP theo cùng snapshot.`);
+    }
+  },
+
+  retryAtspComparisonRun: async (method) => {
+    const state = get();
+    const existing = state.atspComparisonSession;
+    const run = existing?.runs.find((candidate) => candidate.id === method);
+    if (!existing || existing.kind !== "atsp" || state.running || state.comparing
+        || state.multiRunning || !run || !["error", "cancelled"].includes(run.status))
+      return;
+
+    const snapshot = existing.snapshot;
+    const handle = runLifecycle.begin();
+    let session = retryComparisonRuns(existing, [method]) as CompareSession<AtspResultEnvelope>;
+    session = markComparisonRunRunning(session, method);
+    const itemIndex = Math.max(0, session.selectedIds.indexOf(method));
+    set({
+      runId: handle.runId,
+      activeSnapshot: snapshot,
+      comparing: true,
+      atspComparisonSession: session,
+      comparisonProgress: {
+        currentItem: itemIndex + 1,
+        totalItems: session.selectedIds.length,
+        currentLeg: 1,
+        totalLegs: 1,
+      },
+    });
+
+    try {
+      const response = await api.multiroute(
+        multirouteRequestFromSnapshot(snapshot, method),
+        { signal: handle.signal },
+      );
+      if (!runLifecycle.isCurrent(handle.runId)) return;
+      if (response.contract_version === 2
+          && response.return_to_start !== snapshot.returnToStart)
+        throw new BackendError(
+          "CONTRACT_ERROR", "ATSP comparison echo open/closed không khớp snapshot.",
+        );
+      const envelope = createAtspResultEnvelope(method, handle.runId, snapshot, response);
+      const attached = attachComparisonResult(session, envelope, Date.now());
+      session = attached.session;
+      if (!attached.accepted) {
+        runLifecycle.cancel();
+        set({
+          runId: runLifecycle.currentRunId(),
+          atspComparisonSession: session,
+          comparing: false,
+          comparisonProgress: null,
+        });
+        toast.error(attached.contractError ?? "ATSP comparison contract error.");
+        return;
+      }
+      set({ atspComparisonSession: session });
+      toast.success("Đã chạy lại phương pháp ATSP.");
+    } catch (error) {
+      if (error instanceof RequestAbortedError || !runLifecycle.isCurrent(handle.runId)) return;
+      session = failComparisonRun(
+        session,
+        method,
+        error instanceof Error ? error.message : "ATSP comparison item thất bại.",
+        Date.now(),
+      );
+      if (isFatalContractError(error)) {
+        session = cancelComparisonSession(session, Date.now());
+        const nextRunId = runLifecycle.cancel();
+        set({
+          runId: nextRunId,
+          atspComparisonSession: session,
+          comparing: false,
+          comparisonProgress: null,
+          drawerOpen: true,
+          drawerTab: "compare",
+        });
+        toast.error(error.message);
+      } else {
+        set({ atspComparisonSession: session });
+      }
+    } finally {
+      if (runLifecycle.isCurrent(handle.runId)) {
+        set({
+          comparing: false,
+          comparisonProgress: null,
+          drawerOpen: true,
+          drawerTab: "compare",
+        });
+      }
     }
   },
 

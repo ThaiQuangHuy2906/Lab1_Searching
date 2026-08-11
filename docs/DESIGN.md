@@ -1,12 +1,12 @@
 # DESIGN.md — Hợp đồng thiết kế giao diện
 
-> **Trạng thái kiểm lại 2026-08-10:** đây là nguồn chuẩn về ý đồ, token và hành
-> vi UI. UI & Explanation v2 đã triển khai qua Phase 6: Phase 5 map extraction
-> và Phase 6 route comparison 2–4 đều READY. Evidence gần nhất là backend 230
-> test, frontend 124 test, `ALL DATA VALID`, TypeScript pass và manual browser QA
-> Phase 6 do người dùng xác nhận. Validator IDA* vẫn có known issue backend riêng.
-> Trước khi quay vẫn phải pre-flight trên đúng trình duyệt/độ phân giải sử dụng.
-> Phase 7 ATSP comparison và Phase 8 hardening chưa triển khai.
+> **Trạng thái kiểm lại 2026-08-11:** đây là nguồn chuẩn về ý đồ, token và hành
+> vi UI. UI & Explanation v2 đã triển khai code qua Phase 7. Phase 5 map
+> extraction và Phase 6 route comparison 2–4 đều READY; Phase 7 ATSP comparison
+> 2–3 đã pass frontend test/typecheck/build và targeted backend contract tests.
+> Phase 8 hardening đã triển khai code và qua automated gates; Phase 7–8 còn chờ
+> manual browser/NVDA/performance QA trước khi nhận verdict READY. Evidence nằm ở
+> `docs/UI-V2-PHASE7-READINESS.md` và `docs/UI-V2-PHASE8-READINESS.md`.
 >
 > **Luật:** mọi màu/font/hiệu ứng trên UI phải tra được về token trong file này và
 > `frontend/tailwind.config.ts`. Không tự thêm hiệu ứng ngoài đặc tả. Nếu cần token
@@ -330,7 +330,7 @@ không bày method/action bị vô hiệu. Khi có stop, status strip “Chế �
 ghi rõ điểm Đi, số điểm giao và việc điểm Đến không tham gia; danh sách giữ đúng
 thứ tự `stops`, mỗi hàng có badge amber chữ zinc-950 và nút xoá 36 px. Control thêm
 điểm nằm sau danh sách, khoá và hiện caption khi đạt 15 stop. Method block phân biệt
-“Tối ưu tuyệt đối” với “Nghiệm xấp xỉ”; Held-Karp chỉ cho tối đa 14 stop + điểm Đi,
+“Exact trong cấu hình này” với “Heuristic, chưa chứng minh tối ưu”; Held-Karp chỉ cho tối đa 14 stop + điểm Đi,
 không tự đổi method hoặc xoá stop khi vượt giới hạn. Khi chạy, panel hiển thị spinner
 và drawer ưu tiên skeleton ATSP hơn result cũ, không có phần trăm giả.
 
@@ -342,11 +342,12 @@ guarantee badge theo `optimal_guarantee`, card thay đổi chi phí diễn giả
 có state riêng, không rơi về empty state của route hai điểm. Toàn bộ dùng token và
 năm vai trò surface của UI-01; không thêm màu, dependency hay interaction mới.
 
-Hai tab còn lại cũng nhận biết ATSP mà không đổi API/state: **Giải thích** diễn giải
+Hai tab còn lại cũng nhận biết ATSP: **Giải thích** diễn giải
 phương pháp, guarantee, tiêu chí, tính bất đối xứng và tác động thời gian/quãng đường
-từ chính `MultirouteResponse`; **So sánh** đối chiếu "Thứ tự nhập" với "Sau tối ưu"
-cho cost/time/distance. Đây không phải so sánh đồng thời hai phương pháp ATSP vì store
-chỉ giữ một `multi`; UI phải nói rõ giới hạn đó thay vì giả lập thêm kết quả.
+từ chính `MultirouteResponse`. Ở Chạy một, **So sánh** đối chiếu "Thứ tự nhập" với
+"Sau tối ưu" cho cost/time/distance. Ở So sánh nhiều, store giữ một immutable
+ATSP comparison session 2–3 method, mỗi method có result/map riêng và baseline
+thứ tự nhập xuất hiện đúng một lần trong bảng thay vì thành method/map giả.
 
 ## 5. SIGNATURE — Timeline trình phát
 
@@ -739,12 +740,13 @@ nhận graph/traffic/route/multiroute 200, console 0 errors và không tràn nga
 
 ## 13. UI & Explanation v2 — thiết kế và trạng thái triển khai
 
-> **Trạng thái 2026-08-10:** contract/runtime v2 đã triển khai qua Phase 6.
-> Phase 5 map extraction và Phase 6 route comparison 2–4 đều READY; Phase 6 đã
-> qua test/typecheck và manual browser QA do người dùng xác nhận. Phase 7 ATSP
-> comparison và Phase 8 hardening chưa triển khai. Evidence
-> hiện hành nằm ở `docs/UI-V2-PHASE5-READINESS.md` và
-> `docs/UI-V2-PHASE6-READINESS.md`; contract nằm ở `docs/SCHEMA.md` §F.
+> **Trạng thái 2026-08-11:** contract/runtime v2 đã triển khai code qua Phase 7.
+> Phase 5 map extraction và Phase 6 route comparison 2–4 đều READY. Phase 7 ATSP
+> comparison và Phase 8 hardening đã qua automated gates nhưng còn chờ manual
+> browser/NVDA/performance QA. Evidence hiện hành nằm ở
+> `docs/UI-V2-PHASE5-READINESS.md`, `docs/UI-V2-PHASE6-READINESS.md` và
+> `docs/UI-V2-PHASE7-READINESS.md`, `docs/UI-V2-PHASE8-READINESS.md`; contract
+> nằm ở `docs/SCHEMA.md` §F.
 
 Thiết kế mới tách rõ ba lớp: **Hai điểm/Nhiều điểm**; với Nhiều điểm là **Đi theo
 thứ tự đã chọn/Tối ưu thứ tự ATSP**; sau cùng là **Chạy một/So sánh nhiều**.

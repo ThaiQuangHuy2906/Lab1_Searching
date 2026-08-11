@@ -1,145 +1,70 @@
 # UI & Explanation v2 — Phase 7 Readiness
 
-Ngày rà soát: 2026-08-11
-
-Repository: `ThaiQuangHuy2906/Lab1_Searching`
-
-Branch/HEAD được đối chiếu: `main` / `b3218b5c7d4777c3c998d3bbc36b7b5e4d0e2ae3`
+Ngày kiểm chứng: 2026-08-11  
+Branch/HEAD nền: `main` / `b3218b5c7d47`
 
 ## 1. Kết luận
 
-**Verdict: NOT READY — ATSP COMPARISON UI CHƯA ĐƯỢC NỐI END-TO-END**
+**Verdict: IMPLEMENTED — MANUAL BROWSER QA REQUIRED**
 
-Phạm vi em chọn cho Phase 7 là đúng và nối tiếp hợp lý sau Phase 6: so sánh
-2–3 phương pháp ATSP trên cùng bài toán nhiều điểm, sau đó trình bày thứ tự ghé,
-chất lượng nghiệm, mức tiết kiệm, thời gian tính toán và giải thích exact so với
-heuristic.
+Phase 7 ATSP comparison 2–3 đã được nối end-to-end và qua automated gates.
+Chưa ghi READY vì controlled browser của phiên này chặn `127.0.0.1` với
+`ERR_BLOCKED_BY_CLIENT`; các viewport và tương tác thực tế vẫn phải được người
+dùng kiểm trên trình duyệt đang chạy dự án.
 
-Repo hiện đã có phần lớn contract, policy và state nền cho Phase 7. Tuy nhiên,
-nhánh `main` vẫn chủ động chặn `multi_point + atsp + compare`; người dùng chưa
-thể chọn nhiều phương pháp ATSP, CTA chưa gọi comparison và trang chính chưa có
-workspace nhiều pane cho ATSP. Vì vậy chưa thể ghi Phase 7 là READY chỉ dựa vào
-unit test hoặc các dấu tick manual.
+## 2. Hành vi đã triển khai
 
-## 2. Mức độ phù hợp với đề Lab 1
+- Panel trái cho chọn 2–3 phương pháp unique; giữ selection hiện hữu và chặn CTA
+  khi Held–Karp vượt 15 điểm tính cả Đi.
+- Mỗi phương pháp chạy tuần tự qua `/api/multiroute` với cùng immutable snapshot,
+  cùng stops/order/return/mode/slot/scenario và `include_trace=false`.
+- Progress hiển thị phương pháp hiện tại; cancel giữ result đã xong và đánh dấu
+  queued/running là cancelled; lỗi thường không làm mất partial success.
+- Retry chỉ chạy lại card error/cancelled bằng snapshot cũ; response stale,
+  fingerprint/capability mismatch và topology echo sai đều bị loại.
+- N phương pháp tạo đúng N pane final-only. N=2 dùng hai cột; N=3 dùng layout cân
+  bằng; mobile reflow một cột. Baseline không tạo map giả.
+- Mỗi pane có method, status, guarantee, open/closed, objective, savings và route
+  cuối. Map comparison không cho picking/edit/clear/timeline/autoplay.
+- Bảng chung có status, rank, visiting order, outcome theo mode, matrix effort,
+  optimizer/backend runtime, savings, guarantee và method stats; SA có best,
+  mean, sample standard deviation, seed và move count.
+- Baseline thứ tự nhập xuất hiện đúng một lần, có objective và disclosure bảng
+  từng chặng; savings luôn ghi là so với baseline.
+- Exact gap chỉ xuất hiện khi Held–Karp cùng snapshot thành công. Heuristic thấp
+  hơn exact ngoài raw tolerance tạo integrity error và dừng rank/gap.
+- Matrix incomplete nêu đúng directed pair và hướng người dùng đổi tập điểm hoặc
+  scenario, không khuyên đổi optimizer.
+- Nút `Giải thích` của từng card bind đúng ATSP result trong session; failure B
+  không fallback sang explanation của A.
 
-Phase 7 đáp ứng trực tiếp các yêu cầu của đề:
-
-- tối ưu lộ trình nhiều địa điểm;
-- so sánh thứ tự nhập ban đầu với thứ tự đã tối ưu;
-- phân biệt nghiệm tối ưu của Held–Karp với nghiệm xấp xỉ của NN và SA;
-- hiển thị visiting order, tổng quãng đường, thời gian di chuyển, tổng chi phí
-  và processing time;
-- giải thích vì sao một kết quả tốt hơn trong cùng graph, objective, khung giờ
-  và scenario.
-
-Ba phương pháp dự án đã chốt là Held–Karp, Nearest Neighbor + 2-opt/Or-opt và
-Simulated Annealing. Đây là phạm vi mạnh hơn mức tối thiểu “ít nhất một phương
-pháp” của đề nhưng vẫn đúng hướng đồ án.
-
-## 3. Phần nền đã có trong repo
-
-| Khối | Hiện trạng đã kiểm tra |
-|---|---|
-| Backend `/api/multiroute` | Có response v2 cho matrix, runtime, method stats, legs, totals, baseline, savings, guarantee và fingerprint. |
-| `frontend/lib/types.ts` | Có `AtspResultEnvelope`, `CompareSession` và explanation subject `atsp_comparison`. |
-| `frontend/lib/comparison-policy.ts` | Có giới hạn 2–3 phương pháp, stable order, eligibility và lifecycle queued/running/success/error/cancelled. |
-| `frontend/lib/run-orchestrator.ts` | Tạo request từ immutable snapshot và tắt trace khi comparison. |
-| `frontend/lib/store.ts` | Có `atspComparisonSession` và `runAtspComparison(methods)`; các request chạy tuần tự và giữ partial success. |
-| Presenter/policy tests | Có kiểm tra savings/gap, raw tolerance, runtime, immutable snapshot, partial failure, cancel và integrity mismatch. |
-
-Các phần trên là nền hợp lệ để tiếp tục Phase 7, nhưng chưa tự tạo thành một
-tính năng người dùng có thể chạy trên giao diện.
-
-## 4. Khoảng trống được xác nhận bằng mã nguồn
-
-| ID | Bằng chứng trên `main` | Tác động |
-|---|---|---|
-| P7-01 | `activePanelControls(...)` trả `comparison_pending` cho ATSP compare. | Không có selector 2–3 phương pháp ATSP trên panel. |
-| P7-02 | CTA chỉ có action `route`, `compare_route`, `atsp`; không có `compare_atsp`. | `runAtspComparison(...)` không được dispatch từ UI. |
-| P7-03 | `control-panel.tsx` hiển thị thông báo so sánh nhiều chỉ áp dụng cho tìm đường. | Người dùng bị chặn ngay ở luồng chính. |
-| P7-04 | `app/page.tsx` chỉ mount `RouteComparisonWorkspace`; ATSP compare vẫn rơi về `MapView`. | Không có N pane ATSP final-only. |
-| P7-05 | `CompareTab` chỉ render route comparison session hoặc một kết quả ATSP đơn. | Không có bảng so sánh chéo Held–Karp/NN/SA. |
-| P7-06 | `AtspCompare` ghi rõ ứng dụng chưa giữ đồng thời hai kết quả ATSP. | UI hiện chỉ so sánh “thứ tự nhập” với một method. |
-| P7-07 | Store chỉ expose `retryRouteComparisonRun`; chưa có retry ATSP theo method. | Không thể retry riêng slot ATSP lỗi/cancelled. |
-| P7-08 | `atsp-result.tsx` luôn ghi kết thúc ở điểm giao cuối. | Copy sai khi `return_to_start=true`. |
-
-Các mục P7-01 đến P7-06 là blocker cốt lõi. Chúng cũng khớp với tài liệu nguồn
-`docs/Lab1-ChotPhuongAn.md`, `docs/DESIGN.md` và `UI_caithien.md`, hiện đều ghi
-Phase 7 chưa triển khai.
-
-## 5. Contract hiển thị phải giữ khi triển khai
-
-- Mọi method trong một session dùng đúng một immutable snapshot: graph/view,
-  Start, stops, objective, profile, departure, return flag và scenario.
-- Chọn tối thiểu 2, tối đa 3 method duy nhất; giữ nguyên thứ tự người dùng chọn.
-- Held–Karp hợp lệ với tổng số điểm `k <= 15`; NN và SA hợp lệ với `k <= 16`.
-- Chạy tuần tự, tắt trace, giữ slot khi loading/error/no-path/cancelled.
-- Open tour không có closing leg; closed tour có đúng một closing leg về Start.
-- Baseline savings và exact optimality gap là hai khái niệm khác nhau.
-- Travel time dùng phút; matrix/optimizer/total runtime dùng mili-giây.
-- Chỉ gọi Held–Karp là exact reference khi cùng fingerprint/capability và run
-  thành công; nếu không, chỉ nói “tốt nhất trong các kết quả đang hiển thị”.
-- Ranking dùng số thô và tolerance trước khi làm tròn để hiển thị.
-- Comparison map là final-only và view-only; không chỉnh node, edge hay scenario.
-
-## 6. File cần thay đổi để đóng Phase 7
-
-- `frontend/lib/single-run-panel-policy.ts`
-- `frontend/components/control-panel.tsx`
-- `frontend/lib/store.ts`
-- `frontend/app/page.tsx`
-- `frontend/components/drawer/compare-tab.tsx`
-- `frontend/components/atsp/atsp-compare.tsx`
-- `frontend/components/atsp/atsp-result.tsx`
-- một workspace ATSP comparison mới dưới `frontend/components/comparison/`
-- test policy/store/presenter/component tương ứng trong `frontend/tests/`
-
-## 7. Evidence rà soát lần này
+## 3. Evidence đã chạy
 
 | Gate | Kết quả |
 |---|---|
-| `git rev-parse HEAD` | PASS — `b3218b5c7d4777c3c998d3bbc36b7b5e4d0e2ae3` |
-| `npm test` trong `frontend/` | PASS — 128/128 |
-| `python3 scripts/validate_data.py` | PASS — `ALL DATA VALID`; G_real 2118/4699, G_demo 51/298 |
+| `npm test` | PASS — 130/130 |
+| `npx tsc --noEmit --incremental false` | PASS |
+| `NEXT_TELEMETRY_DISABLED=1 npm run build` | PASS — 6/6 static pages |
+| Targeted backend API/contract/scenario tests | PASS — 115, 1 health test deselected |
 | `git diff --check` | PASS |
-| Backend pytest bằng Python 3.14 | NOT RUN trong phiên rà soát này |
-| TypeScript check / production build | NOT RUN trong phiên rà soát này |
-| Controlled browser QA Phase 7 | NOT RUN — UI ATSP comparison chưa reachable trên `main` |
+| Controlled browser QA | BLOCKED — cloud browser không truy cập được localhost |
+| Manual browser QA | PENDING |
 
-`npm test` chứng minh các helper/policy hiện có không regression; nó không chứng
-minh control, CTA, N-pane và cross-method table đã được triển khai.
+Backend targeted suite dùng Python 3.12 của môi trường tạm; test health yêu cầu
+runtime Python 3.14 nên được deselect. Không có backend/schema/data/algorithm nào
+được sửa trong Phase 7 này.
 
-## 8. Checklist từ nhóm và cách hiểu đúng
+## 4. Manual browser gate còn mở
 
-Các dấu tick dưới đây được giữ theo xác nhận manual của nhóm trong file đã gửi.
-Chúng là **user-reported QA**, không thay thế static evidence của đúng commit.
-Nếu nhóm đã test trên một branch/local diff khác, cần ghi lại commit đó trước
-khi dùng các tick này làm verdict cho `main`.
+- [ ] 1366×768: chạy ATSP N=2 và N=3, đủ pane, không che toolbar/drawer.
+- [ ] 1024×768: panel/drawer mở đóng, bảng cuộn được, map vẫn có vùng tương tác.
+- [ ] 390×844 và 320 px: một cột, không có page-level horizontal scroll.
+- [ ] Open và closed: mọi pane/bảng/giải thích cùng semantics quay về Đi.
+- [ ] Pan/zoom/Home của một pane không thay đổi camera pane khác.
+- [ ] Partial failure giữ result thành công; retry card lỗi dùng đúng snapshot.
+- [ ] Cancel không khởi chạy method queued tiếp theo; result cũ/stale không nhập session.
+- [ ] Matrix incomplete ghi đúng `A → B` và không gợi ý đổi optimizer.
+- [ ] Keyboard/focus/live region/reduced motion hoạt động; console không có error.
 
-- ☑ Nhóm đã kiểm policy chọn 2–3 method, uniqueness và stable order.
-- ☑ Nhóm đã kiểm giới hạn Held–Karp/NN/SA.
-- ☑ Nhóm đã kiểm immutable snapshot và request tuần tự.
-- ☑ Nhóm đã kiểm open/closed, partial failure, cancel và integrity policy.
-- ☑ Nhóm đã kiểm outcome/runtime, savings/gap và exact-reference math.
-- ☑ Nhóm đã kiểm final-only/view-only policy và các automated test hiện có.
-- [ ] Layout desktop/mobile của ATSP comparison chưa có evidence gắn với `main`.
-- [ ] Accessible name, keyboard activation và live progress chưa có evidence gắn với `main`.
-
-Các mục sau vẫn phải hoàn thành trên nhánh được nộp:
-
-- [ ] Selector ATSP 2–3 method được mount trong panel.
-- [ ] CTA `compare_atsp` gọi đúng `runAtspComparison(...)`.
-- [ ] N method tạo đúng N pane và bảng so sánh chéo.
-- [ ] Retry ATSP theo từng method hoạt động từ UI.
-- [ ] Copy open/closed của kết quả ATSP đúng topology.
-- [ ] Browser QA được chạy lại trên đúng commit sau khi nối UI.
-
-## 9. Verdict
-
-**PHASE 7: NOT READY.**
-
-Luồng và nội dung chuyên môn của file cũ đúng hướng, nhưng file đó quá dài so
-với readiness Phase 5–6 và có mâu thuẫn giữa `NOT READY`, các bảng “Chưa chạy”
-và checklist gần như đã tick hết. Bản này đã rút gọn theo cùng cấu trúc với các
-phase trước, giữ phần nhóm tự kiểm nhưng tách khỏi kết luận dựa trên code.
+Chỉ đổi verdict thành READY sau khi các mục trên được kiểm trên browser thật và
+ghi lại viewport/kịch bản đã dùng.

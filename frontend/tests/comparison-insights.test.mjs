@@ -101,3 +101,12 @@ test("ATSP exact agreement and savings/gap vocabulary stay distinct", () => {
   assert.equal(withReference.kind, "best_displayed");
   assert.match(withReference.message, /savings.*không phải optimality gap/i);
 });
+
+test("ATSP stops ranking when a heuristic undercuts the exact reference", () => {
+  const insight = atspComparisonInsights([
+    atsp("held_karp", 10, true), atsp("sa", 9, false),
+  ])[0];
+  assert.equal(insight.kind, "contract_integrity");
+  assert.equal(insight.severity, "error");
+  assert.match(insight.message, /dừng xếp hạng.*exact gap/i);
+});

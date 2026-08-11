@@ -192,6 +192,43 @@ def test_route_api_only_emits_complete_v2_variants(client: TestClient):
         assert quiet.explanation.evidence is not None
 
 
+def test_idastar_api_accepts_a_better_exact_reference_within_epsilon(
+    client: TestClient,
+):
+    request = {
+        "start": "n0003",
+        "goal": "n0018",
+        "algorithm": "idastar",
+        "mode": "balanced",
+        "time_slot": "07:30",
+        "graph": "demo",
+        "include_trace": True,
+        "params": {"epsilon": 5.0},
+    }
+    response = client.post("/api/route", json=request)
+    assert response.status_code == 200
+    trace = Trace.model_validate(response.json())
+    objective = trace.explanation.evidence.objective
+    reference = trace.explanation.evidence.reference_routes[0]
+
+    assert trace.termination.solution_quality == "epsilon_bounded"
+    assert trace.metrics.optimal_guarantee is True
+    assert trace.metrics.epsilon_bound == 5.0
+    assert objective.optimality_gap is not None
+    assert 0 < objective.optimality_gap <= trace.metrics.epsilon_bound
+    assert reference.kind == "same_objective_optimum"
+    assert reference.relation_to_selected == "better"
+
+    beyond_bound = copy.deepcopy(response.json())
+    beyond_bound["metrics"]["epsilon_bound"] = objective.optimality_gap / 2
+    with pytest.raises(ValidationError, match="exceeds epsilon_bound"):
+        Trace.model_validate(beyond_bound)
+
+    invalid_request = copy.deepcopy(request)
+    invalid_request["params"]["epsilon"] = 0
+    assert client.post("/api/route", json=invalid_request).status_code == 422
+
+
 @pytest.mark.parametrize("algorithm", list(ALL))
 def test_all_algorithms_distinguish_trivial_and_proven_unreachable(algorithm: str):
     disconnected = _store(

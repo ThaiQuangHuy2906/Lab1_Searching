@@ -89,6 +89,43 @@ function v2Route() {
   };
 }
 
+function v2IdastarRoute() {
+  const payload = v2Route();
+  const referenceBreakdown = {
+    distance_m: 90, free_flow_time_s: 8, congestion_adjusted_time_s: 10,
+    congestion_delay_s: 2, penalty_flood_s: 0, penalty_construction_s: 0,
+    penalty_narrow_alley_s: 0, penalty_traffic_light_s: 0,
+    risk_penalty_total_s: 0, balanced_cost_s: 10,
+  };
+  payload.algorithm = "idastar";
+  payload.metrics.epsilon_bound = 5;
+  payload.trace[0].decision.rule = "f_bound_dfs";
+  payload.trace[0].decision.iteration = 1;
+  payload.trace[0].decision.bound = 12;
+  payload.termination.solution_quality = "epsilon_bounded";
+  payload.explanation.evidence.selection_rule = "f_bound_dfs";
+  payload.explanation.evidence.objective = {
+    mode: "balanced", selected_value: 12, exact_reference_value: 10,
+    optimality_gap: 2, optimality_gap_pct: 20,
+  };
+  payload.explanation.evidence.reference_routes = [{
+    id: "same-objective-ucs",
+    kind: "same_objective_optimum",
+    provenance: "posthoc_ucs",
+    generated_for_mode: "balanced",
+    excluded_edge: null,
+    path: ["n0001", "n0002"],
+    metrics: { total_cost: 10, total_distance_m: 90, total_time_s: 10 },
+    cost_breakdown: referenceBreakdown,
+    reference_minus_selected_cost: -2,
+    reference_minus_selected_pct: -2 / 12 * 100,
+    reference_minus_selected_distance_m: -10,
+    reference_minus_selected_balanced_cost_s: -2,
+    relation_to_selected: "better",
+  }];
+  return payload;
+}
+
 function legacyMultiroute() {
   return {
     method: "held_karp", mode: "balanced", time_slot: "07:30", graph: "demo",
@@ -232,6 +269,36 @@ test("v2 route guard rejects semantic drift inside structured evidence and decis
   const falseGuarantee = structuredClone(v2Route());
   falseGuarantee.metrics.optimal_guarantee = false;
   assert.throws(() => parseTraceResponse(falseGuarantee), /optimal_guarantee/);
+});
+
+test("IDA* v2 accepts an exact reference within epsilon and rejects a bound violation", () => {
+  const valid = v2IdastarRoute();
+  const parsed = parseTraceResponse(valid);
+  assert.equal(parsed.algorithm, "idastar");
+  assert.equal(parsed.termination.solution_quality, "epsilon_bounded");
+  assert.equal(parsed.explanation.evidence.reference_routes[0].relation_to_selected, "better");
+
+  const beyondBound = structuredClone(valid);
+  beyondBound.metrics.epsilon_bound = 1;
+  assert.throws(() => parseTraceResponse(beyondBound), /vượt epsilon_bound/);
+
+  const zeroBound = structuredClone(valid);
+  zeroBound.metrics.epsilon_bound = 0;
+  assert.throws(() => parseTraceResponse(zeroBound), /epsilon dương/);
+});
+
+test("complete v2 responses require a valid applied scenario and bounded graph view", () => {
+  const missingRouteScenario = structuredClone(v2Route());
+  missingRouteScenario.applied_scenario = null;
+  assert.throws(() => parseTraceResponse(missingRouteScenario), /applied_scenario/);
+
+  const missingAtspScenario = structuredClone(v2Multiroute());
+  missingAtspScenario.applied_scenario = null;
+  assert.throws(() => parseMultirouteResponse(missingAtspScenario), /applied_scenario/);
+
+  const invalidView = structuredClone(v2Route());
+  invalidView.applied_scenario.graph_view = "teach_51";
+  assert.throws(() => parseTraceResponse(invalidView), /graph_view/);
 });
 
 test("v2 multiroute guard rejects matrix, runtime and aggregate identity drift", () => {

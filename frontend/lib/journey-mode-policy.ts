@@ -239,8 +239,8 @@ function effectiveParams(
   }
   if (algorithm === "idastar") {
     const candidate = params.idastar?.epsilon ?? 5;
-    if (!Number.isFinite(candidate) || candidate < 0)
-      throw new Error("Epsilon phải là số hữu hạn không âm.");
+    if (!Number.isFinite(candidate) || candidate <= 0)
+      throw new Error("Epsilon phải là số hữu hạn dương.");
     return { epsilon: candidate };
   }
   return {};

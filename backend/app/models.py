@@ -733,6 +733,11 @@ class Trace(StrictModel):
                 raise ValueError("v2 trace requires termination")
             if self.explanation.evidence is None:
                 raise ValueError("v2 trace requires explanation.evidence")
+            if self.algorithm == "idastar" and (
+                self.metrics.epsilon_bound is None
+                or self.metrics.epsilon_bound <= 0
+            ):
+                raise ValueError("v2 idastar requires a positive epsilon_bound")
 
         if self.termination is not None:
             term = self.termination
@@ -810,6 +815,17 @@ class Trace(StrictModel):
                             evidence.objective.optimality_gap, 0.0,
                         ):
                     raise ValueError("exact result conflicts with exact UCS reference")
+                if self.termination is not None \
+                        and self.termination.solution_quality == "epsilon_bounded" \
+                        and evidence.objective.optimality_gap is not None:
+                    epsilon = self.metrics.epsilon_bound
+                    if epsilon is None or epsilon <= 0:
+                        raise ValueError("epsilon-bounded result requires positive epsilon_bound")
+                    if evidence.objective.optimality_gap > epsilon \
+                            and not comparison_equivalent(
+                                evidence.objective.optimality_gap, epsilon,
+                            ):
+                        raise ValueError("epsilon-bounded result exceeds epsilon_bound")
                 for reference in evidence.reference_routes:
                     expected_generated_mode = {
                         "same_objective_optimum": self.mode,
@@ -859,10 +875,11 @@ class Trace(StrictModel):
                     )
                     if reference.relation_to_selected != expected_relation:
                         raise ValueError("reference relation_to_selected is invalid")
-                    if self.metrics.optimal_guarantee \
+                    if self.termination is not None \
+                            and self.termination.solution_quality == "exact" \
                             and reference.kind == "same_objective_optimum" \
                             and expected_relation == "better":
-                        raise ValueError("guaranteed result conflicts with exact reference")
+                        raise ValueError("exact result conflicts with exact reference")
             else:
                 if evidence.objective.selected_value is not None \
                         or evidence.cost_breakdown is not None \

@@ -291,7 +291,7 @@ export interface TraceV1 extends TraceCommon {
 
 export interface TraceV2 extends TraceCommon {
   contract_version: 2;
-  applied_scenario: AppliedScenario | null;
+  applied_scenario: AppliedScenario;
   trace: TraceStepV2[];
   explanation: ExplanationV2;
   termination: RouteTermination;
@@ -546,7 +546,7 @@ export interface MultirouteV1 extends MultirouteCommon {
 
 interface MultirouteV2Common extends MultirouteCommon {
   contract_version: 2;
-  applied_scenario: AppliedScenario | null;
+  applied_scenario: AppliedScenario;
   optimization_trace: OptimizationTrace | null;
   optimizer_stats: SaOptimizerStats | null;
   return_to_start: boolean;

@@ -135,6 +135,50 @@ function fingerprint(response: Trace | MultirouteResponse): string {
   return value;
 }
 
+function expectedSelection(
+  selected: readonly string[],
+  id: string,
+  kind: "route" | "ATSP",
+): string {
+  if (selected.length === 1) return selected[0];
+  if (selected.includes(id)) return id;
+  throw new ComparisonContractError(`${kind} result ID không thuộc immutable request snapshot.`);
+}
+
+function assertCommonResponseContext(
+  response: Trace | MultirouteResponse,
+  snapshot: RunSnapshot,
+): void {
+  if (response.graph !== snapshot.graph
+      || response.mode !== snapshot.mode
+      || response.time_slot !== snapshot.slot)
+    throw new ComparisonContractError("Response context không khớp immutable request snapshot.");
+  if (response.applied_scenario?.graph_view !== snapshot.graphView)
+    throw new ComparisonContractError("Response graph view không khớp immutable request snapshot.");
+}
+
+function assertRouteResponseContext(
+  response: Trace,
+  snapshot: RunSnapshot,
+  expectedAlgorithm: string,
+): void {
+  assertCommonResponseContext(response, snapshot);
+  if (response.algorithm !== expectedAlgorithm)
+    throw new ComparisonContractError("Route algorithm không khớp immutable request snapshot.");
+}
+
+function assertAtspResponseContext(
+  response: MultirouteResponse,
+  snapshot: RunSnapshot,
+  expectedMethod: string,
+): void {
+  assertCommonResponseContext(response, snapshot);
+  if (response.method !== expectedMethod)
+    throw new ComparisonContractError("ATSP method không khớp immutable request snapshot.");
+  if (response.contract_version === 2 && response.return_to_start !== snapshot.returnToStart)
+    throw new ComparisonContractError("ATSP topology không khớp immutable request snapshot.");
+}
+
 export function createRouteResultEnvelope(
   id: string,
   runId: number,
@@ -144,9 +188,12 @@ export function createRouteResultEnvelope(
 ): RouteResultEnvelope {
   if (sourceResponses.length === 0)
     throw new ComparisonContractError("Route envelope thiếu source response từ backend.");
+  const expectedAlgorithm = expectedSelection(snapshot.algorithms, id, "route");
   const authoritativeFingerprint = fingerprint(sourceResponses[0]);
+  assertRouteResponseContext(response, snapshot, expectedAlgorithm);
   const authoritativeCapability = capability(sourceResponses[0]);
   for (const source of sourceResponses) {
+    assertRouteResponseContext(source, snapshot, expectedAlgorithm);
     if (fingerprint(source) !== authoritativeFingerprint)
       throw new ComparisonContractError("Fingerprint đổi giữa các source leg của route envelope.");
     if (capability(source) !== authoritativeCapability)
@@ -170,13 +217,16 @@ export function createAtspResultEnvelope(
   snapshot: RunSnapshot,
   response: MultirouteResponse,
 ): AtspResultEnvelope {
+  const expectedMethod = expectedSelection(snapshot.methods, id, "ATSP");
+  const authoritativeFingerprint = fingerprint(response);
+  assertAtspResponseContext(response, snapshot, expectedMethod);
   return deepFreeze({
     kind: "atsp",
     id,
     runId,
     snapshot,
     capability: capability(response),
-    scenarioFingerprint: fingerprint(response),
+    scenarioFingerprint: authoritativeFingerprint,
     response,
   });
 }

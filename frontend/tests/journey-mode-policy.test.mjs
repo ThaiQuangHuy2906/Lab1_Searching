@@ -175,3 +175,21 @@ test("snapshot rejects graph-view drift and duplicate override IDs before any re
     },
   }), /trùng ID/);
 });
+
+test("IDA* snapshot enforces the same positive epsilon boundary as the API", () => {
+  const base = {
+    graph: "demo", graphView: "full", slot: "07:30", mode: "balanced",
+    problemMode: "two_point", multiStrategy: "ordered_search", runKind: "single",
+    drafts: { start: "A", twoPointGoal: "B", multiStops: [], returnToStart: false },
+    algorithms: ["idastar"], methods: [], includeRouteTrace: true,
+    includeOptimizationTrace: false,
+  };
+  for (const epsilon of [0, -1, Number.NaN, Number.POSITIVE_INFINITY]) {
+    assert.throws(() => createRunSnapshot({
+      ...base, routeParamsByAlgorithm: { idastar: { epsilon } },
+    }), /hữu hạn dương/);
+  }
+  assert.equal(createRunSnapshot({
+    ...base, routeParamsByAlgorithm: { idastar: { epsilon: 0.001 } },
+  }).routeParamsByAlgorithm.idastar.epsilon, 0.001);
+});

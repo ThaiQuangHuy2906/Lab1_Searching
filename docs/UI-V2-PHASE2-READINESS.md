@@ -168,3 +168,20 @@ và bốn ô compatibility matrix có automated evidence.
 
 **Phase 3 được phép bắt đầu.** Verdict này không tuyên bố Phase 3–8, browser QA
 hoặc Definition of Done toàn UI v2 đã hoàn tất.
+
+## Addendum — revalidation Phase 1–2 ngày 2026-08-11
+
+Bằng chứng lịch sử phía trên được giữ nguyên. Regression audit trên HEAD
+`1b933de0428e6487e9b6e1a9c8273e2c6acc7bf8` xác định guard F2 Phase 2 đã lặp lại
+suy luận exact sai của backend và còn ba lỗ độc lập: B2 null
+`applied_scenario`/GraphView ngoài miền, epsilon 0 lệch API, và result envelope
+không đối chiếu đầy đủ response identity với immutable snapshot. Các lỗi được
+truy tới `97ec24fa7218e10bdbb1d17fd2c15f7c5fbd9994` và sửa trong types/guards/
+policies/state Phase 2; không rollback hoặc sửa tính năng Phase 5–6.
+
+Frontend hiện PASS 128/128, TypeScript PASS, production build PASS; live
+API→F2/session matrix PASS cả route comparison 4/4 và ATSP comparison 3/3.
+Chi tiết, các lệnh và blind spot nằm tại
+[UI-V2-PHASE1-2-REGRESSION-AUDIT.md](UI-V2-PHASE1-2-REGRESSION-AUDIT.md).
+
+Revalidation verdict: **READY**.

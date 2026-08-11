@@ -118,3 +118,10 @@ Phase 6.
 Implementation UI Phase 6 không thay backend/data/cost/algorithm và không triển
 khai ATSP comparison 2–3 của Phase 7. Contract correction cho IDA* ε đã được ghi
 ở SCHEMA trước; backend fix vẫn là known issue riêng cần hoàn tất.
+
+### Addendum ngày 2026-08-11
+
+Known issue IDA* phía trên đã được tái hiện, truy commit và sửa trong regression
+audit Phase 1–2; đoạn lịch sử được giữ nguyên để không che việc lỗi từng tồn tại.
+Live API→F2 và route comparison A*/UCS/IDA*/Beam hiện đều PASS. Xem
+[UI-V2-PHASE1-2-REGRESSION-AUDIT.md](UI-V2-PHASE1-2-REGRESSION-AUDIT.md).

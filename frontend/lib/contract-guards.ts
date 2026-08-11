@@ -132,10 +132,14 @@ function numberMap(value: unknown, path: string, nullable: boolean): void {
 
 function appliedScenario(value: unknown, path: string, required: boolean): AppliedScenario | null {
   if (value === undefined && !required) return null;
-  if (value === null) return null;
+  if (value === undefined || value === null) {
+    if (required) fail(path, "bắt buộc cho contract v2");
+    return null;
+  }
   const item = record(value, path);
   const view = string(item.graph_view, `${path}.graph_view`);
-  if (view !== "full" && !/^teach_\d+$/.test(view)) fail(`${path}.graph_view`, "graph view không hợp lệ");
+  if (view !== "full" && !/^teach_(?:[3-9]|[1-4]\d|50)$/.test(view))
+    fail(`${path}.graph_view`, "graph view không hợp lệ");
   integer(item.override_count, `${path}.override_count`);
   const fingerprint = string(item.fingerprint, `${path}.fingerprint`);
   if (!/^scenario-v1:[0-9a-f]{64}$/.test(fingerprint))
@@ -497,6 +501,9 @@ export function parseTraceResponse(value: unknown): Trace {
   const parsedMetrics = metrics(item.metrics, "route.metrics");
   if (parsedMetrics.epsilon_bound != null && algorithm !== "idastar")
     fail("route.metrics.epsilon_bound", "chỉ dành cho IDA*");
+  if (v2 && algorithm === "idastar"
+      && (parsedMetrics.epsilon_bound == null || parsedMetrics.epsilon_bound <= 0))
+    fail("route.metrics.epsilon_bound", "v2 IDA* cần epsilon dương");
   if (parsedMetrics.beam_width != null && algorithm !== "beam")
     fail("route.metrics.beam_width", "chỉ dành cho Beam");
   if (found && path.length === 0) fail("route.path", "found=true cần path khác rỗng");
@@ -601,6 +608,17 @@ export function parseTraceResponse(value: unknown): Trace {
           && objective.optimality_gap !== null
           && !equivalent(objective.optimality_gap, 0))
         fail("route.explanation.evidence.objective.optimality_gap", "exact result cần gap 0");
+      if (parsedTermination.solution_quality === "epsilon_bounded"
+          && objective.optimality_gap !== null) {
+        const epsilon = parsedMetrics.epsilon_bound;
+        if (epsilon === undefined || epsilon === null || epsilon <= 0)
+          fail("route.metrics.epsilon_bound", "epsilon-bounded result cần epsilon dương");
+        if (objective.optimality_gap > epsilon && !equivalent(objective.optimality_gap, epsilon))
+          fail(
+            "route.explanation.evidence.objective.optimality_gap",
+            "epsilon-bounded result vượt epsilon_bound",
+          );
+      }
       for (const [index, reference] of parsedEvidence.reference_routes.entries()) {
         const refPath = `route.explanation.evidence.reference_routes[${index}]`;
         const expectedGeneratedMode = {
@@ -647,9 +665,9 @@ export function parseTraceResponse(value: unknown): Trace {
           ? "equivalent" : signed < 0 ? "better" : "worse";
         if (reference.relation_to_selected !== expectedRelation)
           fail(`${refPath}.relation_to_selected`, "không khớp raw tolerance");
-        if (parsedMetrics.optimal_guarantee
+        if (parsedTermination.solution_quality === "exact"
             && reference.kind === "same_objective_optimum" && expectedRelation === "better")
-          fail(refPath, "guaranteed result mâu thuẫn exact reference");
+          fail(refPath, "exact result mâu thuẫn exact reference");
       }
     } else if (objective.selected_value !== null || parsedEvidence.cost_breakdown !== null
         || parsedEvidence.reference_routes.length > 0) {

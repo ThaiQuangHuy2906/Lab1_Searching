@@ -7,6 +7,7 @@ import {
   comparisonProgress,
   comparisonRankLabel,
   comparisonSelectionEligibility,
+  createAtspResultEnvelope,
   createCompareSession,
   createRouteResultEnvelope,
   failComparisonRun,
@@ -38,10 +39,12 @@ function snapshot({ kind = "route", selected = ["astar", "ucs"] } = {}) {
   });
 }
 
-function route(cost, { found = true, fingerprint = FINGERPRINT, version } = {}) {
+function route(cost, {
+  found = true, fingerprint = FINGERPRINT, version, algorithm = "astar",
+} = {}) {
   return {
     ...(version ? { contract_version: version } : {}),
-    algorithm: "astar", mode: "balanced", time_slot: "07:30", graph: "demo",
+    algorithm, mode: "balanced", time_slot: "07:30", graph: "demo",
     applied_scenario: {
       graph_view: "full", override_count: 0, fingerprint, provenance: "base",
     },
@@ -56,6 +59,24 @@ function route(cost, { found = true, fingerprint = FINGERPRINT, version } = {}) 
     },
     trace: [],
     explanation: { summary_vi: "", congested_segments: [], alternatives: [] },
+  };
+}
+
+function multiroute({
+  method = "held_karp", version, returnToStart = false,
+  mode = "balanced", graphView = "full",
+} = {}) {
+  return {
+    ...(version ? { contract_version: version, return_to_start: returnToStart } : {}),
+    method, mode, time_slot: "07:30", graph: "demo",
+    applied_scenario: {
+      graph_view: graphView, override_count: 0, fingerprint: FINGERPRINT, provenance: "base",
+    },
+    found: true,
+    order: ["n0001", "n0002", "n0003"],
+    legs: [], totals: {}, original_order_totals: {}, savings_pct: 0,
+    optimal_guarantee: method === "held_karp",
+    optimization_trace: null, optimizer_stats: null,
   };
 }
 
@@ -113,7 +134,9 @@ test("status lifecycle keeps partial success and lets later items continue after
   session = markComparisonRunRunning(session, "ucs");
   session = failComparisonRun(session, "ucs", "HTTP 500", 120);
   session = markComparisonRunRunning(session, "beam");
-  const noPath = createRouteResultEnvelope("beam", 7, source, route(0, { found: false }));
+  const noPath = createRouteResultEnvelope(
+    "beam", 7, source, route(0, { found: false, algorithm: "beam" }),
+  );
   session = attachComparisonResult(session, noPath, 130).session;
   assert.deepEqual(session.runs.map(({ status }) => status), ["success", "error", "no_path"]);
   assert.deepEqual(comparisonProgress(session), { completed: 3, total: 3, runningId: null });
@@ -167,7 +190,9 @@ test("fingerprint/capability mismatch rejects the result and cancels all outstan
   const mismatch = attachComparisonResult(
     session,
     createRouteResultEnvelope(
-      "ucs", 9, source, route(10, { fingerprint: `scenario-v1:${"c".repeat(64)}` }),
+      "ucs", 9, source, route(10, {
+        fingerprint: `scenario-v1:${"c".repeat(64)}`, algorithm: "ucs",
+      }),
     ),
     120,
   );
@@ -185,7 +210,7 @@ test("fingerprint/capability mismatch rejects the result and cancels all outstan
     createRouteResultEnvelope("astar", 10, source, route(10)),
     110,
   ).session;
-  const v2 = route(10, { version: 2 });
+  const v2 = route(10, { version: 2, algorithm: "ucs" });
   const changed = attachComparisonResult(
     markComparisonRunRunning(capabilitySession, "ucs"),
     createRouteResultEnvelope("ucs", 10, source, v2),
@@ -202,6 +227,41 @@ test("missing server fingerprint cannot create an envelope or enter ranking", ()
   assert.throws(
     () => createRouteResultEnvelope("astar", 1, source, response),
     /fingerprint/,
+  );
+});
+
+test("result envelopes reject response identity drift from the immutable snapshot", () => {
+  const routeSnapshot = snapshot();
+  assert.throws(
+    () => createRouteResultEnvelope(
+      "astar", 1, routeSnapshot, route(10, { algorithm: "ucs" }),
+    ),
+    /algorithm/,
+  );
+  const wrongSlot = route(10);
+  wrongSlot.time_slot = "12:00";
+  assert.throws(
+    () => createRouteResultEnvelope("astar", 1, routeSnapshot, wrongSlot),
+    /context/,
+  );
+  const wrongView = route(10);
+  wrongView.applied_scenario.graph_view = "teach_7";
+  assert.throws(
+    () => createRouteResultEnvelope("astar", 1, routeSnapshot, wrongView),
+    /graph view/,
+  );
+
+  const atspSnapshot = snapshot({ kind: "atsp", selected: ["held_karp", "sa"] });
+  assert.throws(
+    () => createAtspResultEnvelope("held_karp", 1, atspSnapshot, multiroute({ method: "sa" })),
+    /method/,
+  );
+  assert.throws(
+    () => createAtspResultEnvelope(
+      "held_karp", 1, atspSnapshot,
+      multiroute({ version: 2, returnToStart: true }),
+    ),
+    /topology/,
   );
 });
 
@@ -251,13 +311,15 @@ test("ranking excludes null/error/no-path and applies raw tolerance ties", () =>
   for (const [id, cost] of [["astar", 10], ["ucs", 10 + 5e-7]]) {
     session = attachComparisonResult(
       markComparisonRunRunning(session, id),
-      createRouteResultEnvelope(id, 1, source, route(cost)), 110,
+      createRouteResultEnvelope(id, 1, source, route(cost, { algorithm: id })), 110,
     ).session;
   }
   session = failComparisonRun(markComparisonRunRunning(session, "beam"), "beam", "offline", 120);
   session = attachComparisonResult(
     markComparisonRunRunning(session, "bfs"),
-    createRouteResultEnvelope("bfs", 1, source, route(0, { found: false })), 130,
+    createRouteResultEnvelope(
+      "bfs", 1, source, route(0, { found: false, algorithm: "bfs" }),
+    ), 130,
   ).session;
   assert.deepEqual(rankComparisonResults(session, (result) => result.response.metrics.total_cost), [
     { id: "astar", value: 10, rank: 1, tied: true },

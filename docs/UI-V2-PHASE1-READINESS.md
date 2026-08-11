@@ -191,3 +191,18 @@ non-regression.
 **Phase 2 — Frontend types, policies và state được phép bắt đầu.** Điều này không
 có nghĩa toàn bộ UI v2 hoặc Definition of Done Phase 8 đã hoàn tất; các blind spot
 Phase 2–8 ở trên vẫn là gate bắt buộc của các phase tương ứng.
+
+## Addendum — revalidation Phase 1–2 ngày 2026-08-11
+
+Bằng chứng lịch sử phía trên được giữ nguyên. Regression audit trên HEAD
+`1b933de0428e6487e9b6e1a9c8273e2c6acc7bf8` phát hiện validator Phase 1 đã suy
+`optimal_guarantee=true` của IDA* thành exact, khiến một số kết quả
+`epsilon_bounded` hợp lệ trả HTTP 500. Lỗi được truy tới commit Phase 1
+`11ca5721c4d3fdf79f7df51dcd8dea5b2bb5a211`, đã có regression API/model và được
+sửa theo SCHEMA §F.3 mà không đổi thuật toán/cost/heuristic.
+
+Full backend hiện PASS 231/231; live API→F2 matrix PASS 540 broad route cases,
+9 trace-on, 9 trivial và 8 IDA* positive-gap cases. Chi tiết, các lệnh và blind
+spot nằm tại [UI-V2-PHASE1-2-REGRESSION-AUDIT.md](UI-V2-PHASE1-2-REGRESSION-AUDIT.md).
+
+Revalidation verdict: **READY**.

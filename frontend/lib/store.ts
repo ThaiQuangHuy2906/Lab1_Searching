@@ -86,6 +86,17 @@ const graphRequests = createLatestRequestGuard();
 const trafficRequests = createLatestRequestGuard();
 const runLifecycle = createRunLifecycle();
 
+function createRunSnapshotSafely(
+  input: Parameters<typeof createRunSnapshot>[0],
+): RunSnapshot | null {
+  try {
+    return createRunSnapshot(input);
+  } catch (error) {
+    toast.error(error instanceof Error ? error.message : "Cấu hình chạy không hợp lệ.");
+    return null;
+  }
+}
+
 interface AppState {
   // ---- giao diện nhiều theme (DESIGN.md §1 — mặc định control room)
   theme: Theme;
@@ -691,7 +702,7 @@ export const useApp = create<AppState>((set, get) => ({
       ...(s.algorithm === "idastar" && s.epsilon !== ""
         ? { idastar: { epsilon: Number(s.epsilon) } } : {}),
     };
-    const snapshot = createRunSnapshot({
+    const snapshot = createRunSnapshotSafely({
       graph: s.graph,
       graphView: s.graphView,
       slot: s.slot,
@@ -707,6 +718,7 @@ export const useApp = create<AppState>((set, get) => ({
       includeRouteTrace: routeTraceRequestFlag(s.graph),
       includeOptimizationTrace: false,
     });
+    if (!snapshot) return;
     if (!snapshot.start) return;
     const waypoints = sequentialWaypoints(
       snapshot.problemMode, snapshot.start, snapshot.goal, snapshot.stops,
@@ -832,7 +844,7 @@ export const useApp = create<AppState>((set, get) => ({
         idastar: { epsilon: s.epsilon === "" ? undefined : Number(s.epsilon) },
       } : {}),
     };
-    const snapshot = createRunSnapshot({
+    const snapshot = createRunSnapshotSafely({
       graph: s.graph,
       graphView: s.graphView,
       slot: s.slot,
@@ -848,6 +860,7 @@ export const useApp = create<AppState>((set, get) => ({
       includeRouteTrace: false,
       includeOptimizationTrace: false,
     });
+    if (!snapshot) return;
     if (!snapshot.start) return;
     const waypoints = sequentialWaypoints(
       snapshot.problemMode, snapshot.start, snapshot.goal, snapshot.stops,
@@ -1112,7 +1125,7 @@ export const useApp = create<AppState>((set, get) => ({
       toast.error(eligibilityError);
       return;
     }
-    const snapshot = createRunSnapshot({
+    const snapshot = createRunSnapshotSafely({
       graph: s.graph,
       graphView: s.graphView,
       slot: s.slot,
@@ -1127,6 +1140,7 @@ export const useApp = create<AppState>((set, get) => ({
       includeRouteTrace: false,
       includeOptimizationTrace: s.includeOptimizationTrace,
     });
+    if (!snapshot) return;
     const handle = runLifecycle.begin();
     const resultId = `atsp-${handle.runId}`;
     set({
@@ -1206,7 +1220,7 @@ export const useApp = create<AppState>((set, get) => ({
       toast.error(eligibilityError);
       return;
     }
-    const snapshot = createRunSnapshot({
+    const snapshot = createRunSnapshotSafely({
       graph: s.graph,
       graphView: s.graphView,
       slot: s.slot,
@@ -1221,6 +1235,7 @@ export const useApp = create<AppState>((set, get) => ({
       includeRouteTrace: false,
       includeOptimizationTrace: false,
     });
+    if (!snapshot) return;
     const handle = runLifecycle.begin();
     const sessionId = `atsp-compare-${handle.runId}`;
     let session: CompareSession<AtspResultEnvelope>;

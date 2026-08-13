@@ -4,15 +4,18 @@
 > OSM/TomTom, traffic profiles, weights, cost, heuristic và dữ liệu mà từng
 > thuật toán Searching/ATSP thực sự sử dụng.
 >
-> **Audit checkpoint hiện hành:** 2026-08-08 (Asia/Saigon), HEAD
-> `91adfa9608fc5377ed5a786c33fd4850c9c94554`, commit
-> `feat: finalize nine-algorithm contract and provenance`. Trước khi cập nhật
-> tài liệu, `git status --short`, staged diff và unstaged diff đều rỗng.
+> **Audit checkpoint hiện hành:** 2026-08-13 (Asia/Saigon), HEAD
+> `da2bc084ad18b68e4b855bedcb4ebf2c6913d4af`, commit
+> `chore: complete pre-submission audit and result closeout`; local `main` khớp
+> `origin/main` tại checkpoint. Trước lần cập nhật này, tracked diff/staged diff
+> đều rỗng; `git status --short` chỉ có file submission `2 - Data.txt` chưa được
+> track từ trước lượt audit.
 >
-> **Fresh gates tại checkpoint:** backend `177 passed, 1 warning`; data validator
+> **Fresh gates tại checkpoint:** backend `235 passed, 1 warning`; data validator
 > trả `ALL DATA VALID`, xác nhận hai graph strongly connected và đủ bốn profile
-> slot trên toàn bộ edge. Audit đã tái dựng read-only OSM → G_real, TomTom +
-> fallback → profile_real và corridor/profile_real → G_demo/profile_demo.
+> slot trên toàn bộ edge. Audit đã đối chiếu read-only OSM → G_real, tái dựng
+> chính xác TomTom + fallback → profile_real và corridor/profile_real →
+> profile_demo, đồng thời kiểm trực tiếp current JSON/raw artifacts.
 >
 > **Verdict hiện hành:** tài liệu này là canonical source of truth cho phạm vi
 > data, graph modeling, weights và data usage của current 9-algorithm contract.
@@ -21,9 +24,10 @@
 > OSM/TomTom/POI/manual risks.
 >
 > **Ranh giới audit:** không crawl lại OSM/TomTom, không rebuild graph/profile,
-> không chạy benchmark, không hiệu chuẩn gamma và không chạy generator. Sự hiện
-> diện của provenance artifacts và khả năng tái dựng local không đồng nghĩa
-> external source đã được live re-query hoặc independently attested.
+> không chạy lại benchmark, không chạy lại hiệu chuẩn gamma và không chạy
+> generator. Các artifact kết quả hiện có được đọc/kiểm read-only. Sự hiện diện
+> của provenance artifacts và khả năng tái dựng local không đồng nghĩa external
+> source đã được live re-query hoặc independently attested.
 
 ## 0. Cách đọc, phạm vi khẳng định và thứ tự bằng chứng
 
@@ -50,16 +54,19 @@ khi các artifact đó có thể kiểm trực tiếp.
 - **Tracked Git repository:** toàn bộ source dùng để lập claim current trong tài
   liệu này đều được track: `backend/`, active `frontend/`, `scripts/`, `data/`
   (bao gồm sáu file dưới `data/raw/`), tests, schema và assignment/spec.
-- **Current local workspace trước lần sửa tài liệu này:** đúng HEAD nêu trên,
-  worktree sạch. Current executable route contract có chín thuật toán; không có
+- **Current local workspace trước lần sửa tài liệu này:** đúng HEAD nêu trên;
+  tracked worktree sạch và chỉ có `2 - Data.txt` là untracked file đã tồn tại.
+  Current executable route contract có chín thuật toán; không có
   graph/profile/result artifact nào được sửa để lập tài liệu.
 - **Ignored local runtime:** `.env`, `.venv/`, `frontend/node_modules/`,
   `frontend/.next/`, cache, log, `audit_tmp/`, `tmp/` và `.playwright-cli/` chỉ là
   secret/dependency/build/tool state. Tài liệu này **không dùng nội dung của các
   path đó làm bằng chứng**, nên không bỏ ignore chúng.
-- **Final Data ZIP:** chưa được đóng gói. Khi nộp phải chứa graph/profile hiện
-  hành, data description và raw provenance cần thiết theo yêu cầu đề; việc một
-  file đã được Git track không tự chứng minh ZIP cuối đã đầy đủ.
+- **Data deliverable:** assignment chấp nhận `[GroupID - Data].zip` **hoặc**
+  `[GroupID - Data].txt`. Repo chọn `2 - Data.txt` làm Data Description; nếu nhóm
+  đồng thời đóng Data ZIP thì nên giữ graph/profile, input manual và raw
+  provenance cần thiết. Việc file được Git track không tự chứng minh package
+  nộp cuối đã đầy đủ.
 
 Quy tắc duy trì: nếu một artifact local đang bị ignore trở thành bằng chứng cần
 thiết cho claim canonical, phải chuyển bản đã làm sạch secret vào một path
@@ -103,19 +110,22 @@ Evidence:
 - `git ls-files data/raw` và fresh read-only raw/provenance/profile reconstruction tại
   HEAD nêu trên.
 
-### 0.3. Fresh verification record — 2026-08-08
+### 0.3. Fresh verification record — 2026-08-13
 
 Các command sau được chạy lại trên đúng current worktree; đây là structural và
 behavioral evidence cục bộ, không phải external-source attestation:
 
 | Command | Kết quả thực tế |
 |---|---|
-| `.venv\Scripts\python.exe -B -m pytest backend\tests\ -v -p no:cacheprovider` | PASS — 177 passed, 1 warning |
+| `.venv\Scripts\python.exe -B -m pytest backend\tests\ -q -p no:cacheprovider` | PASS — 235 passed, 1 warning |
 | `.venv\Scripts\python.exe -B scripts\validate_data.py` | PASS — `ALL DATA VALID`; cả hai graph strongly connected, profile 4×100% |
+| Read-only reconstruction profile_real | PASS — mỗi slot 635 TomTom-assigned + 4.064 fallback; exact match 4/4 persisted mappings |
+| Read-only reconstruction profile_demo | PASS — 298/298 corridor non-empty (1–33 real edge); exact weighted-mean match 4/4 slots |
 
 Không crawl lại OSM/TomTom, không rebuild graph/profile, không rerun benchmark,
 không recalibrate γ và không regenerate teaching/benchmark Markdown trong lượt
-audit này. Frontend gates không được dùng làm evidence cho lần data/graph audit này.
+audit này. Frontend gates không được dùng làm evidence cho lần data/graph audit
+này. `results/` chỉ được kiểm read-only; giới hạn checksum hiện hành nằm ở §5.3.
 
 ---
 
@@ -359,6 +369,8 @@ RouteRequest
 
 ```text
 Trace/RouteResponse
+├── contract_version: 2
+├── algorithm, mode, time_slot, graph, found
 ├── path: NodeId[]
 ├── metrics
 │   ├── total_cost
@@ -372,9 +384,37 @@ Trace/RouteResponse
 │   ├── beam_width?
 │   └── trace_truncated
 ├── trace[]: expanded/frontier/g/h/f/depth_limit/side
+│   ├── decision: selection rule, selected/runner-up scores, frontier counters
+│   └── bidirectional_frontiers? (Bidirectional Dijkstra)
 ├── explanation
+│   └── evidence
+│       ├── objective: selected/exact-reference/gap
+│       ├── cost_breakdown: PathCostBreakdown?
+│       ├── factors[]
+│       └── reference_routes[]
+├── termination: reason/reachability/solution_quality/bidirectional_bound?
 └── applied_scenario
 ```
+
+```text
+PathCostBreakdown
+├── distance_m
+├── free_flow_time_s
+├── congestion_adjusted_time_s
+├── congestion_delay_s
+├── penalty_flood_s
+├── penalty_construction_s
+├── penalty_narrow_alley_s
+├── penalty_traffic_light_s
+├── risk_penalty_total_s
+└── balanced_cost_s
+```
+
+Executable schema kiểm ba identity:
+
+- `congestion_delay_s = congestion_adjusted_time_s - free_flow_time_s`;
+- tổng bốn penalty bằng `risk_penalty_total_s`;
+- `balanced_cost_s = congestion_adjusted_time_s + risk_penalty_total_s`.
 
 ```text
 ScenarioConfig (optional, request-scoped)
@@ -397,14 +437,22 @@ MultirouteRequest
 └── include_trace: false mặc định
 
 MultirouteResponse
+├── contract_version: 2
 ├── method, mode, time_slot, graph, applied_scenario
 ├── found, order[]
-├── legs[]: from_node, to_node, path[], LegMetrics
+├── return_to_start, original_order[]
+├── legs[] / original_order_legs[]
+│   └── from_node, to_node, path[], LegMetrics, PathCostBreakdown
 ├── totals: LegMetrics | null
 ├── original_order_totals: LegMetrics | null
+├── totals_breakdown / original_order_breakdown
 ├── savings_pct: float | null; optimal_guarantee
+├── matrix_evidence: directed-pair coverage + asymmetry evidence
+├── computation_metrics: matrix/optimizer/total runtime counters
+├── failure?: matrix_incomplete + ordered pair không tới được
+├── method_stats: Held–Karp | NN/local-search | SA
 ├── optimization_trace?
-└── optimizer_stats? (chỉ SA)
+└── optimizer_stats? (legacy-compatible, chỉ SA)
 ```
 
 `total_time_s` hiện được contract là **balanced-weight sum**, tức time + risk
@@ -678,7 +726,7 @@ geocoder/source manifest, claim “tọa độ POI chính xác ±100 m” vẫn 
 | `risk.narrow_alley` G_real | `CONFIG` + `BUILD-TIME-DERIVED` | Road class thuộc nhóm hẹp của pipeline | Không được khảo sát chiều rộng thực; raw width không được dùng |
 | `risk.narrow_alley` G_demo | `CONFIG` + `BUILD-TIME-DERIVED` | Trên 30% corridor length bị đánh dấu hẹp | Rule tổng hợp |
 | `risk.traffic_light` | `VERIFIED REAL-DERIVED` + `BUILD-TIME-DERIVED` | Destination node có OSM `highway=traffic_signals` | Penalty áp khi đi vào node signal |
-| Gamma/risk penalties/epsilon/beam width | `CONFIG` | Constants trong code | Không được fitted từ dataset thực |
+| Gamma/risk penalties/epsilon/beam width | `CONFIG` | Constants trong code | γ có post-hoc consistency estimate 1,238 nhưng product vẫn khóa 1,5; không constant nào ở đây được learned từ independent ground truth |
 | Final edge weight theo request | `RUNTIME-COMPUTED` | `costs.py`, profile slot và scenario | Không persist trong graph JSON |
 
 ## 2.4. OSM: pipeline và trạng thái bằng chứng hiện tại
@@ -951,7 +999,7 @@ chúng không phải verified/current incident-hazard observations.
 
 ## 2.10. Phân bố traffic profile hiện hành
 
-Fresh read-only audit trên JSON, tái xác nhận ngày 2026-08-08:
+Fresh read-only audit trên JSON, tái xác nhận ngày 2026-08-13:
 
 | Graph/slot | Min–max | Mean | L1 | L2 | L3 | L4 | L5 | Coverage | Missing/extra ID |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
@@ -1008,8 +1056,18 @@ committed graph/profile JSON
   → [search/search_advanced/tsp] route/ATSP result
   → [FastAPI] JSON response
   → [Next.js] visualization/explanation
+
+TomTom selected-field extracts
+  → [05_calibrate_gamma.py] ratio-to-level + least squares
+  → results/gamma_calibration.csv                     BUILD-TIME-DERIVED,
+                                                       analysis-only
+
+committed graph/profile + current algorithms
+  → [backend/app/benchmark.py] exp1..exp7             BUILD-TIME-DERIVED,
+                                                       non-runtime results
 ```
 
+Hai nhánh cuối không phải input của product runtime và không thay `GAMMA=1.5`.
 Không có bước runtime nào tự crawl, rebuild hoặc cập nhật traffic.
 
 ## 2.12. Mock/fixture data không phải dataset runtime
@@ -1071,7 +1129,7 @@ mọi edge lúc load store hoặc resolve request-scoped scenario.
 
 | Constant/weight | Giá trị | Đơn vị | Phân loại | Mục đích | Nơi dùng thật |
 |---|---:|---|---|---|---|
-| `GAMMA` | 1,5 | không đơn vị | `CONFIG` | Scale congestion level sang time multiplier | `costs.py`; product default, gamma override chỉ cho sensitivity benchmark |
+| `GAMMA` | 1,5 | không đơn vị | `CONFIG` | Scale congestion level sang time multiplier | `costs.py`; product default; gamma override chỉ cho sensitivity benchmark, còn γ̂=1,238 không tự ghi ngược vào runtime |
 | flood penalty | 60 | s/entry flag | `CONFIG` | Tránh route đi vào flood zone | Chỉ `balanced` |
 | construction penalty | 90 | s/entry flag | `CONFIG` | Tránh route đi vào construction zone | Chỉ `balanced` |
 | narrow-alley penalty | 30 | s/flag | `CONFIG` | Phản ánh bất tiện/hạn chế đường hẹp | Chỉ `balanced` |
@@ -1094,15 +1152,19 @@ mọi edge lúc load store hoặc resolve request-scoped scenario.
 | Benchmark sampling seed | 42 | seed | `CONFIG` reproducibility | Chọn OD/sample trong experiments | Chỉ `backend/app/benchmark.py`; không đổi product route weight |
 
 Không có evidence trong repo chứng minh gamma 1,5, penalty 60/90/30/25,
-epsilon hoặc beam width được learned/fitted từ ground-truth. Chúng phải được
-trình bày là project configuration/modeling choices.
+epsilon hoặc beam width được learned/fitted từ **independent ground truth**.
+Chúng phải được trình bày là project configuration/modeling choices.
 
-`scripts/05_calibrate_gamma.py` là bước phân tích tùy chọn để ước lượng
-`gamma_hat` từ TomTom selected-field records và so với `GAMMA_LOCKED=1.5`; nó
-không thay product constant lúc runtime. Các selected-field snapshots hiện có
-nhưng `results/` vẫn stale; task audit này
-không rerun calibration/benchmark, nên không có current calibration result
-report-safe.
+Current `results/gamma_calibration.csv` có post-hoc estimate `gamma_hat = 1,238`
+từ 160 selected-field TomTom records của bốn slot, lệch 17,5% so với constant
+1,5. Script tính `f_obs = freeFlowSpeed/currentSpeed`, nhưng congestion level
+`c` trong cùng phép fit lại được rời rạc hóa từ chính ratio nghịch đảo
+`currentSpeed/freeFlowSpeed`. Vì vậy đây là **within-snapshot consistency
+estimate** cho quy tắc ratio-to-level, không phải independent calibration bằng
+observed end-to-end travel time và không chứng minh γ=1,5 tối ưu. Script không
+thay product constant lúc runtime; penalties/free-speed table vẫn chưa có
+calibration artifact tương đương. Lượt audit này chỉ đọc artifact hiện hữu,
+không chạy lại script hoặc benchmark.
 
 ## 3.3. Congestion thay đổi route theo time slot như thế nào
 
@@ -1341,7 +1403,9 @@ simulated_annealing(), solve_multiroute()`; `backend/tests/test_tsp.py`.
 1. **Free-flow speed:** bảng 25–60 km/h theo road class là assumed speed, không
    phải speed limit hoặc measured speed của từng edge.
 2. **Linear congestion multiplier:** five-level ordinal scale và gamma 1,5 được
-   coi đủ để xấp xỉ traffic travel time.
+   coi đủ để xấp xỉ traffic travel time. Post-hoc γ̂=1,238 dùng cùng speed ratio
+   để tạo level nên không đổi trạng thái assumption này thành independently
+   calibrated.
 3. **Fixed risk delay:** 60/90/30/25 giây được coi là proxy hợp lý cho flood,
    construction, narrow alley và traffic light; chưa có calibration evidence.
 4. **Risk circles:** 5 vùng ngập và 3 vùng thi công do nhóm đặt thủ công; entry
@@ -1450,9 +1514,10 @@ live re-query TomTom.
 
 ## 5.3. Cost/algorithm/benchmark limitations
 
-1. Speed, gamma và penalties là config chưa calibrated với observed end-to-end
-   travel times; `balanced` là preference score có đơn vị giây, không phải ETA
-   đã được validated.
+1. Free speed và penalties là config chưa calibrated với observed end-to-end
+   travel times. γ có post-hoc within-snapshot estimate 1,238 nhưng không phải
+   independent ground-truth calibration; product vẫn dùng config 1,5.
+   `balanced` là preference score có đơn vị giây, không phải ETA đã validated.
 2. Greedy/BFS/DFS/IDDFS có thể trả route rất kém theo requested cost vì không
    dùng weights trong selection. Beam có thể fail do pruning; NN/SA chỉ heuristic.
 3. IDDFS depth 100 và IDA* 1.000-round safety cap là operational limits;
@@ -1461,10 +1526,28 @@ live re-query TomTom.
    theo thời gian shipper đã di chuyển.
 5. ATSP hiện không model demand, vehicle capacity, delivery time windows,
    service time, multiple depots hoặc multiple shippers; chưa phải VRP đầy đủ.
-6. `results/` cũ hơn graph/profile refresh hiện tại và được đánh dấu `SỐ TẠM`;
-   không được dùng để báo current benchmark, gamma calibration hoặc performance.
+6. `results/` đã được regenerate thành một coherent artifact set ngày 2026-08-11
+   từ graph/profile hiện hành, nên claim “predates current data/SỐ TẠM” đã stale.
+   Tuy nhiên bốn SHA-256 graph/profile trong `results/README.md` khớp byte stream
+   **CRLF**, còn current worktree và `.gitattributes` dùng **LF**; SHA-256 trực
+   tiếp của bốn current files vì vậy không khớp ledger. Nội dung JSON/metadata
+   không có semantic mismatch được phát hiện, nhưng theo strict repository rule
+   không được gọi bộ kết quả là checksum-clean/official cho tới khi quy ước EOL
+   và ledger được reconcile trong một lượt được phép.
 7. Trace cap bảo vệ payload nhưng không tự bảo vệ runtime worst-case của các
    thuật toán exponential; full work vẫn chạy sau khi trace bị cap.
+
+Fresh direct-byte audit tại checkpoint (uppercase/lowercase không ảnh hưởng):
+
+| Input | SHA-256 current LF bytes | SHA-256 ghi trong `results/README.md` |
+|---|---|---|
+| `data/graph_real.json` | `4523025300556255591d2061d95072b26568e0d5a05307bdb2049d6c36c6f722` | `4920FCCCAC83C7646A6DA6FA90EF19A9810ECA12B6B9E1E4794FF3DAF8C5EA83` |
+| `data/graph_demo.json` | `1f0977478512c4da39e405fd494537469ca0fda38d0fcaa4630f02eac2f0d8fd` | `79066A8105BD7A6B42B918BC9FDFE2B56AEFD4DE34FF5A68A37E4122F80EF892` |
+| `data/traffic_profiles_real.json` | `7ea4840ad6e5878375742691ac1e03436c0e1e501bdb4f23763d0898e6e77c1e` | `C231F1FB64C560ADF84BB3658ECD79D37FF9FAA187D678AE3F9E353668F93910` |
+| `data/traffic_profiles_demo.json` | `31d5f10560f9b7f19dd1e4e1cd7292e94cc550bf32ad8f3d475e09e54421ad75` | `093567C5AE17B0E7309FCC74C56CD5D40F4AF20770D355BF753688497C045373` |
+
+Đổi bốn current LF byte streams sang CRLF cho đúng bốn hash trong ledger; đây
+là bằng chứng EOL-serialization mismatch, không phải bằng chứng JSON khác nội dung.
 
 ## 5.4. API/data-quality limitations
 
@@ -1483,9 +1566,9 @@ live re-query TomTom.
 
 ## 5.5. Future work phù hợp với implementation hiện tại
 
-1. **Khép kín provenance package:** giữ OSM Overpass cache, derived GraphML và
-   đủ bốn TomTom selected-field snapshots hiện đã được Git track trong final
-   Data ZIP; thêm manifest
+1. **Khép kín provenance package:** nếu nộp Data ZIP, giữ OSM Overpass cache,
+   derived GraphML và đủ bốn TomTom selected-field snapshots hiện đã được Git
+   track; với Data TXT vẫn nên thêm manifest tham chiếu
    SHA-256, source URL/API endpoint, query timestamp/timezone, bbox,
    tool/version, parameters và license note.
 2. **Per-edge lineage:** lưu `traffic_source`, sample/segment ID,
@@ -1500,8 +1583,10 @@ live re-query TomTom.
    route theo centerline thật; giữ raw OSM IDs để audit.
 6. **Richer directed model:** giữ parallel edges hoặc explicit edge key; thêm
    turn restrictions, turn penalties, access rules, closures và signal timing.
-7. **Calibrate cost:** dùng observed travel times/incidents để estimate free
-   speed, gamma và penalties; báo error/confidence thay vì gọi balanced cost ETA.
+7. **Calibrate cost độc lập:** dùng observed end-to-end travel times/incidents
+   tách biệt với rule tạo congestion level để estimate free speed, gamma và
+   penalties; báo error/confidence thay vì gọi balanced cost ETA. Giữ γ̂=1,238
+   hiện tại đúng vai trò post-hoc consistency estimate, không ground truth.
 8. **Risk provenance:** nâng từ một URL lịch sử/record thành source manifest có
    ngày sự kiện, validity interval và confidence; dùng nguồn active/authoritative
    khi có, model polygon/severity/time dependence và phân biệt observation với
@@ -1510,9 +1595,11 @@ live re-query TomTom.
    review evidence; hỗ trợ delivery entrance thay vì POI centroid.
 10. **Routing scope:** mở rộng bbox/coverage; thêm nhiều shipper, capacity,
     service time, time windows, multiple depot và giải VRP/VRPTW.
-11. **Coherent final refresh:** chỉ khi được phê duyệt, chạy toàn chuỗi raw →
-    profiles → G_demo → validator → gamma/benchmark → generated teaching docs;
-    đồng bộ mọi banner `SỐ TẠM` và không trộn artifacts khác thế hệ.
+11. **Checksum/provenance hardening:** quy định rõ hash tính trên Git blob hay
+    worktree bytes, normalize EOL nhất quán và sửa ledger CRLF/LF hiện tại. Nếu
+    input/algorithm thay đổi, chỉ khi được phê duyệt mới chạy lại toàn chuỗi raw
+    → profiles → G_demo → validator → gamma/benchmark → generated docs; không
+    trộn artifact giữa các thế hệ.
 
 ---
 
@@ -1530,6 +1617,9 @@ live re-query TomTom.
   length, configured speed, slot congestion và optional risk penalties.
 - Công thức/đơn vị chính xác là mục 3.1; gamma 1,5 và penalties
   60/90/30/25 giây là config trong `backend/app/costs.py`.
+- Artifact phân tích hiện có γ̂=1,238 từ 160 selected-field records/4 slot;
+  report chỉ được gọi đây là post-hoc within-snapshot consistency estimate,
+  không phải independent travel-time calibration và không thay runtime γ=1,5.
 - BFS/DFS/IDDFS bỏ qua weights khi chọn path; Greedy dùng heuristic-only; bảng
   mục 3.7 là mapping implementation của cả chín thuật toán.
 - Cost matrix multi-stop chứa shortest selected-cost cho mọi ordered pair; ba
@@ -1552,6 +1642,9 @@ live re-query TomTom.
   recorded history và representative snapshots, không phải same-day series.
 - Gọi `free_speed_kmh`, gamma/risk penalty và synthetic traffic là modeling
   assumptions/config, không phải ground-truth measurements.
+- Nếu dùng benchmark hiện hành, nói artifact set được tạo coherent ngày
+  2026-08-11 trên current graph/profile, đồng thời giữ caveat SHA ledger đang
+  khác current LF worktree do CRLF/LF; không gọi nó checksum-clean/official.
 - Gọi risk flags manual/rule-derived; tám URL chỉ hỗ trợ bối cảnh lịch sử ở cấp
   tuyến/khu vực, không xác nhận circle hoặc tình trạng hiện tại.
 - Nói heuristic admissible/consistent **dưới các invariants được code/validator
@@ -1568,8 +1661,9 @@ live re-query TomTom.
 - “Flood/construction/narrow/signal risk đã được authoritative verified”.
 - “Map line là geometry đường thật”.
 - “G_demo edge tương ứng đúng một road segment thực”.
-- “Current benchmark chứng minh thuật toán X nhanh/tốt hơn” dựa trên `results/`
-  stale hoặc số `SỐ TẠM`.
+- “SHA-256 ledger hiện khớp nguyên trạng current checkout” hoặc “benchmark hiện
+  là checksum-clean official” trước khi reconcile CRLF/LF. Cũng không suy rộng
+  runtime wall-clock của một máy thành ưu thế tuyệt đối ngoài benchmark protocol.
 - “NN/2-opt/SA tối ưu toàn cục”; chỉ Held–Karp có exact guarantee trong giới hạn.
 
 ## 6.4. Câu kết luận report-safe đề xuất
@@ -1592,7 +1686,7 @@ live re-query TomTom.
 # Phụ lục A. Current documentation audit register
 
 Phụ lục này thay register raw-vắng/2-of-4/schema-mismatch của audit cũ bằng
-disposition tại HEAD `91adfa9608fc5377ed5a786c33fd4850c9c94554`. Nó chỉ giúp
+disposition tại HEAD `da2bc084ad18b68e4b855bedcb4ebf2c6913d4af`. Nó chỉ giúp
 người viết report tránh lấy nhầm historical Markdown làm current evidence;
 actual raw/data/code vẫn có độ ưu tiên cao hơn bảng này.
 
@@ -1603,11 +1697,11 @@ actual raw/data/code vẫn có độ ưu tiên cao hơn bảng này.
 | `PLAN.md`, `UI_PLAN.md` | Dated implementation checkpoints | Test/UI counts là checkpoint lịch sử; không phải data/provenance source. |
 | `PROMPT-MASTER.md` | Original build specification + current notes | Hữu ích cho intent/constants; không dùng wording “cùng trục/cùng tên” thay cho actual TomTom nearest-source-node matching. |
 | `README.md` | Current project overview | Counts/status chính phần lớn đúng; chi tiết canonical về raw-vs-derived và cost phải lấy từ tài liệu này/code/data. |
-| `data/DATA.md` | Pipeline description gần implementation | Phần đầu xác nhận 8/8 risk URL nhưng một đoạn cuối vẫn gọi tám URL là task chưa hoàn thành; chỉ final link/archive QA còn mở. |
+| `data/DATA.md` | Pipeline description gần implementation | Pipeline/count/results closeout phần lớn current. Claim POI “±100 m/đã review Google Maps” không có source manifest và không được dùng thay snap QA (5 POI >100 m); cách gọi TomTom “raw” phải hiểu là selected-field extracts. |
 | `docs/AUDIT-CLAUDE-PRE-SUBMISSION.md`, `docs/CODEX-BASELINE.md` | Historical audit/baseline | Các thế hệ 51/292, 2-of-4 TomTom và test counts cũ không phải current evidence. |
-| `docs/CODEX-CODEBASE-MAP.md` | Current code map | Current counts/gates hữu ích; open-work section còn câu “Complete risk URLs” đã stale vì 8/8 URL hiện có. |
+| `docs/CODEX-CODEBASE-MAP.md` | Current code map | Current counts/gates/closeout phần lớn hữu ích; dòng 341 còn nói exp2/results stale và các dòng B-1/P-09 gọi SHA ledger clean đã không phản ánh CRLF/LF mismatch hiện tại. |
 | `docs/DESIGN.md` | UI intent | Không phải data/provenance evidence; browser intent nằm ngoài scope canonical này. |
-| `docs/GIAI-THICH-THUAT-TOAN.md` | Generated teaching artifact | Header/body vẫn cảnh báo `SỐ TẠM`, synthetic/2-of-4 profile và legacy Dijkstra. Không dùng numerical body cho current 9-algorithm/data claims; chỉ regenerate qua generator khi được phép. |
+| `docs/GIAI-THICH-THUAT-TOAN.md` | Generated teaching artifact | Đã regenerate ngày 2026-08-11 theo current 9-algorithm/data chain; numerical body không còn thế hệ 2/4/stale. Claim checksum vẫn chịu caveat EOL ở §5.3; chỉ regenerate qua generator khi được phép. |
 | `docs/HEURISTIC-PROOF.md` | Conditional proof | Phù hợp current formulas nếu giữ length floor, resolved `v_max` và non-negative costs; không chứng minh external data truth. |
 | `docs/KE-HOACH-TRIEN-KHAI-NHIEM-VU-HOP-NHOM.md` | Historical plan | Body còn TODO cũ về risk URLs dù header đã supersede; không dùng body task status làm current fact. |
 | `docs/KIEMTOAN.md`, `docs/TIENDO.md` | Historical ledgers | Cố ý chứa nhiều graph/test generations; không trích một dòng rời làm current state. |
@@ -1616,9 +1710,9 @@ actual raw/data/code vẫn có độ ưu tiên cao hơn bảng này.
 | `docs/SCHEMA.md` | Intended public contract | Fresh audit không phát hiện current mismatch với executable node/edge/profile/request contract liên quan tài liệu này. |
 | `hdcrawl.md` | Operational crawl closeout/history | Four-slot/635 history hiện được selected-field/profile reconstruction hỗ trợ, nhưng exact matching/timestamp semantics phải dùng mục 2.6 thay cho prose cũ. |
 | `manual_risks_sources_review.md` | Manual source review | 8/8 link/evidence assessment phù hợp; chỉ chứng minh historical route/area context. |
-| `report/BaoCao-Khung.md`, `report/Slide-Outline.md`, `report/Video-KichBan.md` | Manual deliverable scaffolds | Data headers phần lớn current; mọi benchmark mang `SỐ TẠM` vẫn provisional. |
-| `report_algorithm.md` | Current algorithm explanation | Current 9-search/3-ATSP contract phù hợp; benchmark/result section vẫn phải giữ stale warning. |
-| `results/README.md` | Results status authority | Đúng khi cảnh báo toàn bộ current `results/` predates graph/profile refresh và không phải official current benchmark. |
+| `report/BaoCao-Khung.md`, `report/Slide-Outline.md`, `report/Video-KichBan.md` | Manual deliverable scaffolds | Counts/9-algorithm/current result generation phần lớn current, nhưng các câu gọi γ̂ “độc lập” là overclaim; SHA/official wording cần caveat EOL ở §5.3. |
+| `report_algorithm.md` | Algorithm explanation | Core current 9-search/3-ATSP contract phù hợp; §14 vẫn nói results là synthetic/stale trước data refresh, trái current generation history. |
+| `results/README.md` | Result provenance ledger candidate | Ghi coherent run ngày 2026-08-11 và current result counts, nhưng gọi γ̂ “độc lập” là overclaim. Bốn input data hashes trong bảng là hash của CRLF serialization, không phải current LF bytes dù prose nói LF; vì vậy chưa phải strict checksum-clean authority. |
 
 ## A.1. Disposition hiện hành cho các mismatch cũ
 
@@ -1638,8 +1732,10 @@ actual raw/data/code vẫn có độ ưu tiên cao hơn bảng này.
    Dijkstra trong generated/historical content không thuộc current contract.
 7. **Schema/GraphView:** executable hỗ trợ `teach_3..teach_50` và `full`; fresh
    audit không giữ lại claim schema mismatch cũ.
-8. **Calibration/results:** chưa resolved; gamma/penalties vẫn `CONFIG`, còn
-   `results/` vẫn stale/`SỐ TẠM` và không được báo là current benchmark.
+8. **Calibration/results:** semantic stale-status cũ đã resolved bởi coherent run
+   2026-08-11. γ runtime/penalties vẫn `CONFIG`; γ̂=1,238 chỉ là post-hoc
+   within-snapshot estimate. Strict official checksum status còn unresolved do
+   bốn graph/profile hashes trong ledger dùng CRLF trong khi checkout dùng LF.
 
 ---
 
@@ -1665,7 +1761,7 @@ actual raw/data/code vẫn có độ ưu tiên cao hơn bảng này.
 | ATSP matrix/objectives/solvers | `backend/app/tsp.py`, `backend/tests/test_tsp.py`, `test_optimization_trace.py` |
 | Map draws endpoint-to-endpoint lines, no stored geometry | `frontend/components/map-view.tsx`, graph JSON schema |
 | Manual risk records/provenance and caveats | `data/manual_risks.json`, `data/DATA.md` §2.1, `manual_risks_sources_review.md`, `scripts/pipeline_common.py` |
-| Stale benchmark warning | `results/README.md` and dates in `results/` versus graph/profile metadata |
+| Current result generation, γ̂ và checksum/EOL caveat | `results/README.md`, `results/gamma_calibration.csv`, `scripts/05_calibrate_gamma.py`, `.gitattributes`, direct SHA-256 of current graph/profile bytes |
 
 ## B.1. Canonical maintenance rule
 

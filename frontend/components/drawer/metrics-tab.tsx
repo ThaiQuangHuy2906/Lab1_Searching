@@ -131,7 +131,7 @@ export function MetricsTab() {
           title={hasStops ? "Chưa có hành trình nhiều điểm" : "Chưa có kết quả"}
           hint={hasStops ? (
             <ol className="mx-auto max-w-60 list-decimal space-y-1 pl-5 text-left">
-              <li>Đã có điểm <b>Đi</b> và {stops.length} điểm giao.</li>
+              <li>{`Đã chọn điểm Đi và ${stops.length} điểm giao hàng.`}</li>
               <li>Dùng <b className="text-ink">Chạy qua {stops.length} điểm giao</b> để đi theo thứ tự đã nhập.</li>
               <li>Hoặc chọn <b className="text-ink">Tối ưu thứ tự ghé</b> ở panel trái để chạy ATSP.</li>
             </ol>
@@ -147,7 +147,7 @@ export function MetricsTab() {
           <p className="text-xs font-bold text-ink-dim">Mẹo demo</p>
           <ul className="flex list-disc flex-col gap-1 pl-4 text-xs leading-5 text-ink-dim">
             <li>Đổi <b className="text-ink">Khung giờ</b> rồi chạy lại để thấy tuyến có thể thay đổi.</li>
-            <li>Tab <b className="text-ink">So sánh</b> đặt hai thuật toán trên cùng một hành trình.</li>
+            <li>Mục <b className="text-ink">So sánh</b> đặt hai thuật toán trên cùng một hành trình.</li>
             <li>Thêm ít nhất hai <b className="text-ink">điểm giao</b> để tối ưu thứ tự ghé bất đối xứng.</li>
           </ul>
         </div>

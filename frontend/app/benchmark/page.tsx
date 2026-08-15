@@ -27,6 +27,7 @@ import {
   YAxis,
 } from "recharts";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { LanguageToggle } from "@/components/language-toggle";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -34,17 +35,30 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ALGORITHM_ORDER } from "@/lib/algorithm-policy";
 import { api, BackendError } from "@/lib/api";
 import { fmtInt, fmtVi } from "@/lib/format";
-import type { ExperimentResult } from "@/lib/types";
+import type { Algorithm, ExperimentResult } from "@/lib/types";
 import { usePalette } from "@/lib/use-palette";
 
 type PageState = "loading" | "empty" | "ready" | "error";
 type TableCell = React.ReactNode;
 
 interface AlgorithmDatum {
-  algorithm: string;
+  algorithm: Algorithm;
+  label: string;
   expanded: number;
   runtime: number;
 }
+
+const ALGORITHM_LABEL: Record<Algorithm, string> = {
+  bfs: "BFS",
+  dfs: "DFS",
+  iddfs: "IDDFS",
+  ucs: "UCS",
+  astar: "A*",
+  greedy: "Greedy Best-First",
+  bidijkstra: "Dijkstra hai chiều",
+  idastar: "IDA*",
+  beam: "Beam Search",
+};
 
 interface GammaDatum {
   gamma: number;
@@ -249,6 +263,7 @@ export default function BenchmarkPage() {
       );
       return {
         algorithm,
+        label: ALGORITHM_LABEL[algorithm],
         // Trục log không nhận 0; giữ ngưỡng hiển thị đã có của trang cũ.
         expanded: Math.max(1, Math.round(mean(rows, "nodes_expanded"))),
         runtime: Math.max(0.01, Number(mean(rows, "runtime_ms").toFixed(2))),
@@ -292,6 +307,7 @@ export default function BenchmarkPage() {
           </Button>
           <span className="h-5 w-px bg-surface-border" aria-hidden="true" />
           <p className="min-w-0 flex-1 truncate text-sm font-semibold text-ink">Benchmark</p>
+          <LanguageToggle />
           <ThemeToggle />
         </div>
       </header>
@@ -374,31 +390,31 @@ export default function BenchmarkPage() {
               <CardHeader className="border-b border-surface-border">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <h2 id="expanded-chart-title" className="text-sm font-bold text-ink">Số điểm đã duyệt trung bình theo thuật toán</h2>
-                    <p className="mt-1 text-xs leading-5 text-ink-dim">Số điểm đã duyệt (nodes expanded) trung bình · thang log</p>
+                    <h2 id="expanded-chart-title" className="text-sm font-bold text-ink">Số đỉnh đã mở rộng trung bình theo thuật toán</h2>
+                    <p className="mt-1 text-xs leading-5 text-ink-dim">Số đỉnh đã mở rộng trung bình · thang lôgarit</p>
                   </div>
-                  <Badge className="shrink-0">Node</Badge>
+                  <Badge className="shrink-0">Số đỉnh</Badge>
                 </div>
               </CardHeader>
               <CardContent className="p-3">
                 {byAlgorithm.length ? (
                   <>
                     <p id="expanded-chart-desc" className="sr-only">
-                      Biểu đồ cột so sánh số điểm đã duyệt trung bình của các thuật toán trên trục log. Dữ liệu thuộc lượt benchmark chính thức đã lưu.
+                      Biểu đồ cột so sánh số đỉnh đã mở rộng trung bình của các thuật toán trên trục lôgarit. Dữ liệu lấy từ lần đánh giá thực nghiệm chính thức đã lưu.
                     </p>
                     <div role="img" aria-labelledby="expanded-chart-title" aria-describedby="expanded-chart-desc" className="h-72 min-w-0">
                       <div aria-hidden="true" className="size-full">
                         <ResponsiveContainer width="100%" height="100%">
                           <BarChart accessibilityLayer={false} tabIndex={-1} data={byAlgorithm} margin={{ top: 8, right: 8, bottom: 0, left: 4 }}>
                             <CartesianGrid stroke={grid} vertical={false} />
-                            <XAxis dataKey="algorithm" stroke={inkDim} fontSize={10} interval={0} angle={-30} textAnchor="end" height={52} tickMargin={3} />
+                            <XAxis dataKey="label" stroke={inkDim} fontSize={10} interval={0} angle={-30} textAnchor="end" height={52} tickMargin={3} />
                             <YAxis stroke={inkDim} fontSize={11} scale="log" domain={[1, "auto"]} tickFormatter={formatLogTick} width={44} />
                             <RTooltip
                               {...tooltipStyle}
                               cursor={{ fill: `${grid}55` }}
-                              formatter={(value: number | string): [string, string] => [fmtInt(Number(value)), "Số điểm đã duyệt"]}
+                              formatter={(value: number | string): [string, string] => [fmtInt(Number(value)), "Số đỉnh đã mở rộng"]}
                             />
-                            <Bar dataKey="expanded" name="Số điểm đã duyệt" fill={pink} radius={[4, 4, 0, 0]} isAnimationActive={animateCharts} />
+                            <Bar dataKey="expanded" name="Số đỉnh đã mở rộng" fill={pink} radius={[4, 4, 0, 0]} isAnimationActive={animateCharts} />
                           </BarChart>
                         </ResponsiveContainer>
                       </div>
@@ -410,9 +426,9 @@ export default function BenchmarkPage() {
               </CardContent>
               {byAlgorithm.length > 0 && (
                 <ChartDataTable
-                  label="Bảng số điểm đã duyệt trung bình theo thuật toán"
-                  columns={["Thuật toán", "Số điểm đã duyệt trung bình"]}
-                  rows={byAlgorithm.map((row) => [row.algorithm, fmtInt(row.expanded)])}
+                  label="Bảng số đỉnh đã mở rộng trung bình theo thuật toán"
+                  columns={["Thuật toán", "Số đỉnh đã mở rộng trung bình"]}
+                  rows={byAlgorithm.map((row) => [row.label, fmtInt(row.expanded)])}
                 />
               )}
             </Card>
@@ -422,7 +438,7 @@ export default function BenchmarkPage() {
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <h2 id="runtime-chart-title" className="text-sm font-bold text-ink">Thời gian xử lý trung bình theo thuật toán</h2>
-                    <p className="mt-1 text-xs leading-5 text-ink-dim">Thời gian xử lý (runtime) trung bình · thang log</p>
+                    <p className="mt-1 text-xs leading-5 text-ink-dim">Thời gian xử lý trung bình · thang lôgarit</p>
                   </div>
                   <Badge className="shrink-0">ms</Badge>
                 </div>
@@ -431,14 +447,14 @@ export default function BenchmarkPage() {
                 {byAlgorithm.length ? (
                   <>
                     <p id="runtime-chart-desc" className="sr-only">
-                      Biểu đồ cột so sánh thời gian xử lý trung bình tính bằng mili giây trên trục log. Dữ liệu thuộc lượt benchmark chính thức đã lưu.
+                      Biểu đồ cột so sánh thời gian xử lý trung bình tính bằng mili giây trên trục lôgarit. Dữ liệu lấy từ lần đánh giá thực nghiệm chính thức đã lưu.
                     </p>
                     <div role="img" aria-labelledby="runtime-chart-title" aria-describedby="runtime-chart-desc" className="h-72 min-w-0">
                       <div aria-hidden="true" className="size-full">
                         <ResponsiveContainer width="100%" height="100%">
                           <BarChart accessibilityLayer={false} tabIndex={-1} data={byAlgorithm} margin={{ top: 8, right: 8, bottom: 0, left: 4 }}>
                             <CartesianGrid stroke={grid} vertical={false} />
-                            <XAxis dataKey="algorithm" stroke={inkDim} fontSize={10} interval={0} angle={-30} textAnchor="end" height={52} tickMargin={3} />
+                            <XAxis dataKey="label" stroke={inkDim} fontSize={10} interval={0} angle={-30} textAnchor="end" height={52} tickMargin={3} />
                             <YAxis stroke={inkDim} fontSize={11} scale="log" domain={[0.01, "auto"]} tickFormatter={formatLogTick} width={44} />
                             <RTooltip
                               {...tooltipStyle}
@@ -459,7 +475,7 @@ export default function BenchmarkPage() {
                 <ChartDataTable
                   label="Bảng thời gian xử lý trung bình theo thuật toán"
                   columns={["Thuật toán", "Thời gian xử lý trung bình (ms)"]}
-                  rows={byAlgorithm.map((row) => [row.algorithm, fmtVi(row.runtime, 2)])}
+                  rows={byAlgorithm.map((row) => [row.label, fmtVi(row.runtime, 2)])}
                 />
               )}
             </Card>
@@ -478,7 +494,7 @@ export default function BenchmarkPage() {
                 {gamma.length ? (
                   <>
                     <p id="gamma-chart-desc" className="sr-only">
-                      Biểu đồ đường thể hiện thời gian trung bình tính bằng giây và quãng đường trung bình tính bằng ki-lô-mét theo trọng số gamma. Dữ liệu thuộc lượt benchmark chính thức đã lưu.
+                      Biểu đồ đường thể hiện thời gian trung bình tính bằng giây và quãng đường trung bình tính bằng ki-lô-mét theo hệ số γ. Dữ liệu lấy từ lần đánh giá thực nghiệm chính thức đã lưu.
                     </p>
                     <div role="img" aria-labelledby="gamma-chart-title" aria-describedby="gamma-chart-desc" className="h-72 min-w-0">
                       <div aria-hidden="true" className="size-full">
@@ -510,7 +526,7 @@ export default function BenchmarkPage() {
               </CardContent>
               {gamma.length > 0 && (
                 <ChartDataTable
-                  label="Bảng độ nhạy trọng số gamma"
+                  label="Bảng độ nhạy trọng số γ"
                   columns={["γ", "Thời gian TB (s)", "Quãng đường TB (km)"]}
                   rows={gamma.map((row) => [fmtVi(row.gamma, 1), fmtVi(row.time, 1), fmtVi(row.dist, 2)])}
                   firstColumnNumeric

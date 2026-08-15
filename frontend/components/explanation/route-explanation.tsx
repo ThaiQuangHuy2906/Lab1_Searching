@@ -4,6 +4,7 @@ import { ReferenceRouteComparison } from "./reference-route-comparison";
 import { ResultContextStrip } from "./result-context-strip";
 import { SearchStepExplanation } from "./search-step";
 import { routeExplanationViewModel } from "@/lib/explanation-policy";
+import { referenceKindLabel } from "@/lib/reference-route-presentation";
 import {
   criterionExplanation, objectiveTotalLabel, presentFactor,
 } from "@/lib/factor-presentation";
@@ -225,7 +226,7 @@ export function RouteExplanation({
             <ul className="mt-2 flex flex-col gap-1.5">
               {structuredSources.flatMap((trace, legIndex) => trace.explanation.evidence.reference_routes.map((reference) => (
                 <li key={`${legIndex}-${reference.id}`} className="rounded-lg border border-surface-border bg-surface-panel p-2.5 text-xs">
-                  <p className="font-semibold text-ink">{envelope.snapshot.problemMode === "multi_point" ? `Chặng ${legIndex + 1} · ` : ""}{reference.kind.replaceAll("_", " ")}</p>
+                  <p className="font-semibold text-ink">{envelope.snapshot.problemMode === "multi_point" ? `Chặng ${legIndex + 1} · ` : ""}{referenceKindLabel(reference.kind)}</p>
                   <p className="mt-1 text-ink-dim">Hậu kiểm bằng UCS · {referenceRelation(reference, envelope.snapshot.mode)}</p>
                 </li>
               ))) }

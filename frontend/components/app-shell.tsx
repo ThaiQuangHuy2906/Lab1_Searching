@@ -6,6 +6,7 @@ import * as React from "react";
 import { Toaster } from "sonner";
 import { useApp } from "@/lib/store";
 import { themeAppearance } from "@/lib/theme";
+import { LanguageProvider } from "@/components/language-provider";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const theme = useApp((s) => s.theme);
@@ -14,7 +15,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     initTheme();
   }, [initTheme]);
   return (
-    <>
+    <LanguageProvider>
       {children}
       <Toaster
         theme={themeAppearance(theme)}
@@ -27,6 +28,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           },
         }}
       />
-    </>
+    </LanguageProvider>
   );
 }

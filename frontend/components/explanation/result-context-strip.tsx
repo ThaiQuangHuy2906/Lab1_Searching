@@ -50,7 +50,7 @@ export function ResultContextStrip({
     ? envelope.snapshot.returnToStart ? "Vòng kín" : "Hành trình mở"
     : null;
   const viewLabel = envelope.snapshot.graphView === "full"
-    ? `đầy đủ${graphData ? `, ${graphData.meta.node_count} nút` : ""}`
+    ? `toàn bộ đồ thị${graphData ? `, ${graphData.meta.node_count} đỉnh` : ""}`
     : `${envelope.snapshot.graphView.slice("teach_".length)} điểm minh họa`;
 
   return (

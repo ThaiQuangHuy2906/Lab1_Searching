@@ -33,6 +33,6 @@ test("appearance and labels stay aligned with the selected palette", () => {
   for (const theme of ["light", "pink", "lavender", "sage", "lemon"]) {
     assert.equal(themeAppearance(theme), "light");
   }
-  assert.equal(themeOption("pink").label, "Hồng baby");
+  assert.equal(themeOption("pink").label, "Hồng phấn");
   assert.equal(themeOption("lemon").swatches.length, 3);
 });

@@ -138,7 +138,7 @@ export function AtspResultExplanation({
 
       {response.contract_version === 2 && (
         <section aria-labelledby="atsp-matrix-title" className="rounded-lg border border-surface-border bg-surface-panel p-3">
-          <h3 id="atsp-matrix-title" className="text-sm font-bold text-ink">Ma trận có hướng và công sức tính</h3>
+          <h3 id="atsp-matrix-title" className="text-sm font-bold text-ink">Ma trận chi phí có hướng và công sức tính toán</h3>
           <p className="mt-1 text-xs leading-5 text-ink-dim">
             Đã có {fmtInt(response.matrix_evidence.reachable_directed_pair_count)}/{fmtInt(response.matrix_evidence.directed_pair_count)} cặp có hướng đi được; {fmtInt(response.matrix_evidence.asymmetric_unordered_pair_count)} cặp không đối xứng.
           </p>

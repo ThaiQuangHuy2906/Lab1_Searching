@@ -27,7 +27,7 @@ backend và frontend.
 | Hạng mục | Bằng chứng gần nhất |
 |---|---|
 | Backend | `235 passed`, 1 dependency warning, ngày 15/08/2026 |
-| Frontend | `137/137` tests và `npx tsc --noEmit` đạt, ngày 15/08/2026 |
+| Frontend | `147/147` tests và `npx tsc --noEmit` đạt, ngày 15/08/2026 |
 | Dữ liệu | `ALL DATA VALID`; `G_demo` 51 nút/298 cạnh/60 cạnh một chiều; `G_real` 2.118 nút/4.699 cạnh/1.433 cạnh một chiều |
 | Production build | Next.js 15.5.22 compile, type-check và sinh 6/6 trang tĩnh, ngày 11/08/2026 |
 | Benchmark | Exp1–Exp7 là bộ kết quả chính thức ngày 11/08/2026; provenance và checksum nằm trong [`results/README.md`](results/README.md) |
@@ -190,6 +190,10 @@ Sau đó mở:
 - Giao diện: <http://localhost:3000>
 - Benchmark viewer: <http://localhost:3000/benchmark>
 - OpenAPI/Swagger: <http://localhost:8000/docs>
+
+Trên giao diện và trang Benchmark, dùng bộ chọn ngôn ngữ ở thanh công cụ để
+chuyển giữa `English` và `Tiếng Việt`. Lựa chọn được lưu trong trình duyệt và
+được giữ sau khi tải lại trang; tên địa danh Việt Nam vẫn giữ nguyên.
 
 Mặc định, frontend gọi `/api/*` cùng origin và Next.js chuyển tiếp request tới
 `http://127.0.0.1:8000`. Nếu backend chạy ở địa chỉ khác, tạo

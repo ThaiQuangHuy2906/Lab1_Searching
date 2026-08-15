@@ -6,6 +6,7 @@ import Link from "next/link";
 import { BarChart3, PanelLeftOpen, PanelRightOpen, WifiOff } from "lucide-react";
 import { ControlPanel } from "@/components/control-panel";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { LanguageToggle } from "@/components/language-toggle";
 import { Drawer } from "@/components/drawer/drawer";
 import { Button } from "@/components/ui/button";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -118,6 +119,7 @@ export default function Home() {
               <BarChart3 className="size-3.5" />
               Benchmark
             </Link>
+            <LanguageToggle />
             <ThemeToggle />
           </div>
 
@@ -140,6 +142,7 @@ export default function Home() {
             >
               <BarChart3 className="size-4" />
             </Link>
+            <LanguageToggle />
             <ThemeToggle />
           </div>
         </div>

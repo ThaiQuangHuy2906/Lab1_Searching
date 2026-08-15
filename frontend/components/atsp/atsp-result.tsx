@@ -16,6 +16,12 @@ function formatOutcomeMetric(metric: OutcomeMetric, totals: LegMetrics) {
   return formatOutcomeMetricValue(metric, totals[metric.key]);
 }
 
+function savingsComparisonCopy(mode: Mode): string {
+  if (mode === "distance") return "So với tổng quãng đường của thứ tự nhập.";
+  if (mode === "time") return "So với tổng thời gian ước tính theo ùn tắc của thứ tự nhập.";
+  return "So với tổng chi phí cân bằng của thứ tự nhập.";
+}
+
 function ResultSummary({ label, totals, emphasized = false, mode }: {
   label: string; totals: LegMetrics; emphasized?: boolean; mode: Mode;
 }) {
@@ -101,7 +107,7 @@ export function AtspResult({ multi, graphData }: { multi: MultirouteResponse; gr
       <div className={`rounded-lg border p-3 ${savingsTone}`}>
         <p className="text-xs font-medium text-ink-dim">{savings.label}</p>
         <p className={`mt-1 font-mono text-xl font-bold leading-none ${savingsText}`}>{savings.absolutePct === null ? "—" : fmtPct(savings.absolutePct)}</p>
-        <p className="mt-1.5 text-xs leading-5 text-ink-dim">So với thứ tự nhập, theo tổng chi phí của tiêu chí {ATSP_MODE_LABEL[multi.mode].toLowerCase()}.</p>
+        <p className="mt-1.5 text-xs leading-5 text-ink-dim">{savingsComparisonCopy(multi.mode)}</p>
       </div>
       <div className="flex flex-col gap-1.5">
         <p className="text-xs font-bold text-ink-dim">Trước và sau tối ưu</p>

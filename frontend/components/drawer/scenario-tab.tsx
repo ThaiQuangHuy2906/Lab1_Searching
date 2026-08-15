@@ -226,7 +226,7 @@ function ScenarioEditor() {
           </Button>
         </div>
         <div className="mt-2.5 flex items-center justify-between gap-2 border-t border-algo-frontier/15 pt-2.5">
-          <span className="text-xs font-medium text-ink">{editedCount} đoạn đang điều chỉnh</span>
+          <span className="text-xs font-medium text-ink">{`${editedCount} đoạn đang điều chỉnh`}</span>
           <Button variant="ghost" size="sm" disabled={busy || editedCount === 0} onClick={state.resetAllEdgeOverrides}>
             <RotateCcw /> Khôi phục tất cả
           </Button>

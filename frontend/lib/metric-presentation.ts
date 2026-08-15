@@ -157,7 +157,7 @@ export function costBreakdownRows(
       value: breakdown.congestion_delay_s, unit: "s", affectsObjective: mode !== "distance",
     },
     {
-      key: "risk_penalty_total_s", label: "Tổng penalty nguy cơ",
+      key: "risk_penalty_total_s", label: "Tổng phần phạt rủi ro",
       value: breakdown.risk_penalty_total_s, unit: "s", affectsObjective: mode === "balanced",
     },
     {

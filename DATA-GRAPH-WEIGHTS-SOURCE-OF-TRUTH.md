@@ -4,12 +4,13 @@
 > OSM/TomTom, traffic profiles, weights, cost, heuristic và dữ liệu mà từng
 > thuật toán Searching/ATSP thực sự sử dụng.
 >
-> **Checkpoint kiểm lại hiện hành:** 2026-08-15 (Asia/Saigon), nhánh `main`.
-> Lượt kiểm read-only xác nhận đủ 19/19 checksum graph/profile/source/result
-> trong `results/README.md`; không crawl, rebuild hay tái sinh artifact.
+> **Checkpoint kiểm lại hiện hành:** 2026-08-15 (Asia/Saigon), nhánh `main`,
+> HEAD nền `4f34fb5ff5fadeed38e7627a99a260756bed70eb`, đồng bộ `origin/main` tại
+> thời điểm bắt đầu lượt cập nhật. Không crawl, rebuild, benchmark hay tái sinh
+> artifact dữ liệu/kết quả.
 >
 > **Fresh gates tại checkpoint:** backend `235 passed, 1 warning`; frontend
-> `137/137`; TypeScript exit 0; data validator trả `ALL DATA VALID`, xác nhận hai
+> `147/147`; TypeScript exit 0; data validator trả `ALL DATA VALID`, xác nhận hai
 > graph strongly connected, đủ bốn profile slot trên toàn bộ edge và sáu bất
 > biến demo/real. Deep provenance audit ngày 2026-08-13 đã tái dựng read-only
 > OSM → G_real, TomTom + fallback → profile_real và corridor/profile_real →
@@ -22,10 +23,16 @@
 > nhưng không phải chứng nhận độc lập về độ chính xác ngoài đời của
 > OSM/TomTom/POI/manual risks.
 >
-> **Superseding result closeout 2026-08-11:** chuỗi benchmark, hiệu chuẩn gamma
-> và teaching generator đã hoàn tất từ graph/profile hiện hành. Mọi nhận định
-> “`results/` cũ/SỐ TẠM” ở snapshot audit 2026-08-08 đã hết hiệu lực;
-> `results/README.md` là nguồn provenance/checksum hiện hành.
+> **Trạng thái result chain 2026-08-11:** chuỗi benchmark, hiệu chuẩn gamma và
+> teaching generator đã hoàn tất từ cùng nội dung JSON graph/profile hiện hành.
+> Direct-byte verification ngày 2026-08-15 khớp **15/19** checksum trong
+> `results/README.md`. Bốn graph/profile hash còn lại được ghi từ byte stream
+> CRLF trước Git normalization, trong khi `.gitattributes` quy định
+> `* text=auto eol=lf` và current HEAD/index/worktree đều chứa LF. Đổi duy nhất
+> LF→CRLF tạo đúng cả bốn hash ledger; JSON parse/canonical content không đổi.
+> Vì vậy result chain **đồng bộ hoàn toàn về data semantics và report-usable**;
+> caveat chỉ thuộc khả năng kiểm tra raw-byte ledger qua ranh giới Git filter,
+> không phải lỗi dataset, graph/profile hay runtime behavior.
 >
 > **Ranh giới lượt kiểm 2026-08-15:** không crawl lại OSM/TomTom, không rebuild
 > graph/profile, không chạy benchmark, không hiệu chuẩn gamma và không chạy
@@ -58,10 +65,11 @@ khi các artifact đó có thể kiểm trực tiếp.
 - **Tracked Git repository:** toàn bộ source dùng để lập claim current trong tài
   liệu này đều được track: `backend/`, active `frontend/`, `scripts/`, `data/`
   (bao gồm sáu file dưới `data/raw/`), tests, schema và assignment/spec.
-- **Current local workspace trước lần sửa tài liệu này:** đúng HEAD nêu trên;
-  tracked worktree sạch và chỉ có `2 - Data.txt` là untracked file đã tồn tại.
-  Current executable route contract có chín thuật toán; không có
-  graph/profile/result artifact nào được sửa để lập tài liệu.
+- **Workspace tại lượt xác minh này:** HEAD nền nêu trên đồng bộ `origin/main`.
+  Worktree đang giữ ba tài liệu report/data đã sửa theo các lượt trước và một
+  SVG report mới chưa track; đây là deliverable documentation/presentation.
+  Không code, graph, profile, raw provenance hay result artifact nào có diff.
+  Current executable route contract vẫn có chín thuật toán.
 - **Ignored local runtime:** `.env`, `.venv/`, `frontend/node_modules/`,
   `frontend/.next/`, cache, log, `audit_tmp/`, `tmp/` và `.playwright-cli/` chỉ là
   secret/dependency/build/tool state. Tài liệu này **không dùng nội dung của các
@@ -112,7 +120,7 @@ Evidence:
 - `scripts/validate_data.py`; xem giới hạn riêng của
   `check_source_consistency()` tại §5.4.
 - `git ls-files data/raw`, checksum ledger trong `results/README.md` và lượt
-  raw/provenance/profile reconstruction read-only ngày 2026-08-08.
+  raw/provenance/profile reconstruction read-only ngày 2026-08-13.
 
 ### 0.3. Fresh verification record — 2026-08-15
 
@@ -126,7 +134,11 @@ lượt benchmark mới:
 | `.venv\Scripts\python.exe scripts\validate_data.py` | PASS — `ALL DATA VALID`; G_real 2.118/4.699/1.433 one-way, G_demo 51/298/60 one-way, profile 4×100% và sáu bất biến đạt |
 | Read-only reconstruction profile_real (2026-08-13) | PASS — mỗi slot 635 TomTom-assigned + 4.064 fallback; exact match 4/4 persisted mappings |
 | Read-only reconstruction profile_demo (2026-08-13) | PASS — 298/298 corridor non-empty (1–33 real edge); exact weighted-mean match 4/4 slots |
-| Đối chiếu SHA-256 với `results/README.md` | PASS — 19/19 input/source/output khớp |
+| `npm test` tại `frontend/` | PASS — 147/147 |
+| `npx tsc --noEmit` tại `frontend/` | PASS — exit 0 |
+| Git/index/worktree EOL và blob identity | PASS — `.gitattributes` ép `eol=lf`; cả bốn file là `i/lf w/lf`; raw worktree blob bằng đúng HEAD blob |
+| Đối chiếu SHA-256 trực tiếp với `results/README.md` | **15/19 raw-byte hash khớp**; bốn graph/profile hash còn lại khớp chính xác sau phép đổi duy nhất LF→CRLF |
+| JSON semantic/canonical comparison LF so với CRLF | PASS — 4/4 parsed object và canonical JSON content bằng nhau; topology, attributes và profile values không đổi |
 
 Không crawl lại OSM/TomTom, không rebuild graph/profile, không rerun benchmark,
 không recalibrate γ và không regenerate teaching Markdown trong lượt kiểm này.
@@ -1163,7 +1175,7 @@ Chúng phải được trình bày là project configuration/modeling choices.
 `scripts/05_calibrate_gamma.py` là bước phân tích tùy chọn để ước lượng
 `gamma_hat` từ TomTom selected-field records và so với `GAMMA_LOCKED=1.5`; nó
 không thay product constant lúc runtime. Các selected-field snapshots hiện có
-đã được dùng trong lượt closeout chính thức ngày 2026-08-11: $\hat\gamma=1{,}238$
+đã được dùng trong lượt closeout ngày 2026-08-11: $\hat\gamma=1{,}238$
 từ 160 điểm đo/4 slot, lệch 17,5% so với hằng số thiết kế 1,5. Kết quả và
 checksum nằm trong `results/gamma_calibration.csv` và `results/README.md`;
 runtime vẫn giữ 1,5 theo contract, không tự thay bằng giá trị hiệu chuẩn. Phép
@@ -1533,15 +1545,38 @@ live re-query TomTom.
    theo thời gian shipper đã di chuyển.
 5. ATSP hiện không model demand, vehicle capacity, delivery time windows,
    service time, multiple depots hoặc multiple shippers; chưa phải VRP đầy đủ.
-6. `results/` là bộ artifact chính thức ngày 2026-08-11 và chỉ được trích như
-   current khi checksum input/source trong `results/README.md` còn khớp. Runtime
-   wall-clock vẫn phụ thuộc môi trường và không phải số byte-reproducible.
+6. `results/` là bộ artifact sinh coherent ngày 2026-08-11 từ đúng nội dung
+   semantic graph/profile hiện hành và có thể dùng cho report. Raw-byte ledger
+   chỉ khớp trực tiếp 15/19 vì bốn graph/profile hash được lấy trên CRLF trước
+   Git normalization, còn repository bắt buộc LF. Đây là limitation của cách
+   lập/đối chiếu checksum qua Git text filter, không phải data-quality hoặc
+   runtime mismatch. Runtime wall-clock vẫn phụ thuộc môi trường và không phải
+   số byte-reproducible.
 7. Trace cap bảo vệ payload nhưng không tự bảo vệ runtime worst-case của các
    thuật toán exponential; full work vẫn chạy sau khi trace bị cap.
 
-Fresh direct-byte audit ngày 2026-08-15 xác nhận bốn graph/profile SHA-256 và
-toàn bộ 19 input/source/output SHA-256 đều khớp ledger trong
-`results/README.md`; không có EOL/content mismatch ở current checkout.
+Fresh direct-byte audit ngày 2026-08-15 xác nhận 15/19 SHA-256 khớp ledger.
+Bốn mismatch duy nhất và nguyên nhân đã kiểm được:
+
+| Artifact | SHA-256 current LF bytes | SHA-256 CRLF ghi trong ledger |
+|---|---|---|
+| `data/graph_real.json` | `4523025300556255591d2061d95072b26568e0d5a05307bdb2049d6c36c6f722` | `4920fcccac83c7646a6da6fa90ef19a9810eca12b6b9e1e4794ff3daf8c5ea83` |
+| `data/graph_demo.json` | `1f0977478512c4da39e405fd494537469ca0fda38d0fcaa4630f02eac2f0d8fd` | `79066a8105bd7a6b42b918bc9fdfe2b56aefd4de34ff5a68a37e4122f80ef892` |
+| `data/traffic_profiles_real.json` | `7ea4840ad6e5878375742691ac1e03436c0e1e501bdb4f23763d0898e6e77c1e` | `c231f1fb64c560adf84bb3658ecd79d37ff9faa187d678ae3f9e353668f93910` |
+| `data/traffic_profiles_demo.json` | `31d5f10560f9b7f19dd1e4e1cd7292e94cc550bf32ad8f3d475e09e54421ad75` | `093567c5ae17b0e7309fcc74c56cd5d40f4af20770d355bf753688497c045373` |
+
+Chuyển đúng current LF byte streams sang CRLF tạo ra chính xác bốn hash ledger.
+Nguyên nhân đã được cô lập: `.gitattributes` đã quy định
+`* text=auto eol=lf` trước lần result closeout; producer chạy trên Windows ghi
+text-mode CRLF, ledger lấy hash trên byte stream đó, rồi Git clean filter chuẩn
+hóa file được track thành LF. Bởi vậy câu cũ trong `results/README.md` rằng raw
+content và post-filter content đồng nhất là không đúng ở bốn input này.
+
+Current raw worktree blob bằng đúng HEAD blob cho cả bốn file; JSON parse và
+canonical JSON comparison LF/CRLF đều bằng nhau 4/4. Toàn bộ structural,
+topological, profile và behavioral validation vẫn đạt. Đây chỉ là raw-byte
+ledger portability caveat; nó không thay đổi graph topology, node/edge
+attributes, profile values, cost inputs, route behavior hoặc report readiness.
 
 ## 5.4. API/data-quality limitations
 
@@ -1636,9 +1671,11 @@ toàn bộ 19 input/source/output SHA-256 đều khớp ledger trong
 - Gọi `free_speed_kmh`, gamma/risk penalty và synthetic traffic là modeling
   assumptions/config, không phải ground-truth measurements.
 - Nếu dùng benchmark hiện hành, nói artifact set được tạo coherent ngày
-  2026-08-11 trên current graph/profile và 19/19 checksum còn khớp khi kiểm ngày
-  2026-08-15; runtime wall-clock vẫn chỉ có ý nghĩa trong môi trường/protocol đã
-  ghi, không chứng minh ưu thế tuyệt đối ngoài workload.
+  2026-08-11 từ đúng semantic graph/profile hiện hành và report-usable. Không
+  cần đưa chi tiết LF/CRLF vào report khoa học; nếu mô tả reproducibility kỹ
+  thuật thì ghi raw-byte ledger chỉ đạt 15/19 trực tiếp vì bốn input hash được
+  lấy trước Git EOL normalization. Runtime wall-clock vẫn chỉ có ý nghĩa trong
+  môi trường/protocol đã ghi.
 - Gọi risk flags manual/rule-derived; tám URL chỉ hỗ trợ bối cảnh lịch sử ở cấp
   tuyến/khu vực, không xác nhận circle hoặc tình trạng hiện tại.
 - Nói heuristic admissible/consistent **dưới các invariants được code/validator
@@ -1655,9 +1692,11 @@ toàn bộ 19 input/source/output SHA-256 đều khớp ledger trong
 - “Flood/construction/narrow/signal risk đã được authoritative verified”.
 - “Map line là geometry đường thật”.
 - “G_demo edge tương ứng đúng một road segment thực”.
-- “Benchmark chứng minh thuật toán X luôn nhanh/tốt hơn”; kết quả chính thức chỉ
-  mô tả workload, dữ liệu và môi trường ghi trong `results/README.md`. Không suy
-  rộng runtime wall-clock của một máy thành ưu thế tuyệt đối ngoài protocol.
+- “Benchmark chứng minh thuật toán X luôn nhanh/tốt hơn”; bộ kết quả ngày
+  2026-08-11 chỉ mô tả workload, dữ liệu và môi trường ghi trong
+  `results/README.md`. Raw-byte EOL caveat không làm kết quả semantic bị stale,
+  nhưng cũng không cho phép suy rộng runtime wall-clock của một máy thành ưu thế
+  tuyệt đối ngoài protocol.
 - “NN/2-opt/SA tối ưu toàn cục”; chỉ Held–Karp có exact guarantee trong giới hạn.
 
 ## 6.4. Câu kết luận report-safe đề xuất
@@ -1699,7 +1738,7 @@ toàn bộ 19 input/source/output SHA-256 đều khớp ledger trong
 | ATSP matrix/objectives/solvers | `backend/app/tsp.py`, `backend/tests/test_tsp.py`, `test_optimization_trace.py` |
 | Map draws endpoint-to-endpoint lines, no stored geometry | `frontend/components/map-view.tsx`, graph JSON schema |
 | Manual risk records/provenance and caveats | `data/manual_risks.json`, `data/DATA.md` §2.1, `manual_risks_sources_review.md`, `scripts/pipeline_common.py` |
-| Official benchmark provenance and freshness | `results/README.md` checksums plus current graph/profile/source files |
+| Benchmark provenance và trạng thái checksum | `results/README.md`, `.gitattributes`, HEAD/index/worktree blob identity và semantic JSON comparison; 15/19 raw-byte hash khớp trực tiếp, bốn hash còn lại là EOL-only và semantic-equivalent |
 
 ## Quy tắc duy trì canonical
 
@@ -1708,7 +1747,9 @@ chain và ghi rõ evidence mới. Không copy status từ ledger. Với public c
 phải giải quyết mismatch trong `docs/SCHEMA.md` trước khi đổi code theo workflow
 của repository. Với generated teaching numbers, chỉ regenerate qua
 `scripts/gen_teaching_doc.py`. Với data/profile/benchmark, chỉ rebuild khi đã
-được phê duyệt toàn chuỗi; không trộn artifact của các mốc khác nhau.
+được phê duyệt toàn chuỗi; không trộn artifact của các mốc khác nhau. Nếu cần
+checksum portable qua hệ điều hành/Git filter, hash Git blob hoặc canonical JSON
+bytes thay vì raw pre-staging text bytes.
 
 ---
 

@@ -1,374 +1,340 @@
 DATA DESCRIPTION — LAB 1: SEARCHING
-GroupID: 2
-Project: Tìm đường cho shipper đa điểm tại trung tâm TP.HCM
-Repository: https://github.com/ThaiQuangHuy2906/Lab1_Searching
-Audit checkpoint: 2026-08-13, HEAD da2bc084ad18b68e4b855bedcb4ebf2c6913d4af
-
-1. PHẠM VI VÀ PHƯƠNG PHÁP DỮ LIỆU
-
-Đề bài cho phép nộp dataset hoặc data description và cho phép dữ liệu mô phỏng,
-real-world đã đơn giản hóa, hoặc hybrid. Project này dùng phương án HYBRID:
-
-- cấu trúc đường G_real có nguồn từ OpenStreetMap (OSM), được OSMnx đơn giản hóa
-  và pipeline của nhóm chuẩn hóa thành graph có hướng;
-- congestion là hỗn hợp giữa các mẫu TomTom đã lưu và fallback mô phỏng có seed;
-- POI, vùng rủi ro và các hằng số tốc độ/penalty là dữ liệu hoặc cấu hình do nhóm
-  quản lý;
-- G_demo là abstraction có thể tái dựng từ G_real, không phải graph vẽ tay độc lập.
-
-Hai graph đều vượt yêu cầu tối thiểu 20 node/30 edge của đề bài. Backend khi chạy
-demo chỉ đọc các JSON đã commit; không gọi OSM, TomTom hay dịch vụ mạng.
-
-2. DATASET RUNTIME VÀ ARTIFACT PROVENANCE
-
-Các file runtime chính:
-
-- data/graph_demo.json: graph 51 POI dùng cho GUI, giảng dạy và trace.
-- data/graph_real.json: graph intersection quy mô lớn hơn.
-- data/traffic_profiles_demo.json và traffic_profiles_real.json: congestion
-  level 1–5 cho bốn slot 07:30, 12:00, 17:30, 22:00.
-- data/gdemo_pois.json: catalog POI manual đầu vào của G_demo.
-- data/gdemo_corridors.json: ánh xạ mỗi demo edge sang dãy real edge có hướng.
-- data/manual_risks.json: 5 vùng flood và 3 vùng construction do nhóm mô hình hóa.
-- data/teaching_graph_presets.json: thứ tự node tạo các induced teaching view.
-
-Artifact giữ provenance và khả năng đối chiếu pipeline:
-
-- data/raw/osmnx_cache/8d7c2de8a277ad68a1fa7acd4259530e9fc41fa1.json
-- data/raw/graph_raw.graphml
-- data/raw/tomtom/0730/flow_20260727T074003.json
-- data/raw/tomtom/1200/flow_20260727T124957.json
-- data/raw/tomtom/1730/flow_20260803T173001.json
-- data/raw/tomtom/2200/flow_20260803T222752.json
-
-Lưu ý: data/mock/* là fixture test/frontend, không phải dataset runtime.
-results/* là artifact phân tích/benchmark, không phải input của dataset runtime.
-Bộ này đã được regenerate coherent ngày 2026-08-11 trên graph/profile hiện hành;
-tuy nhiên bảng SHA-256 graph/profile trong results/README.md phản ánh byte CRLF,
-trong khi current checkout dùng LF. Vì vậy không gọi trạng thái checksum hiện tại
-là clean/official cho tới khi quy ước EOL và ledger được reconcile.
-
-3. SNAPSHOT HIỆN HÀNH
-
-                         G_demo                     G_real
-Created                  2026-08-03                 2026-07-27
-Node                     51                         2.118
-Directed edge            298                        4.699
-oneway=true              60                         1.433
-Connectivity             strongly connected         strongly connected
-Node type                40 landmark, 7 school,     2.118 intersection
-                         3 hospital, 1 warehouse
-Flood edge               24                         54
-Construction edge        24                         19
-Narrow-alley edge        0                          8
-Traffic-light edge       130                        185
-Traffic coverage         298/298 edge × 4 slot      4.699/4.699 edge × 4 slot
-length_m range           23,0–2.775,6 m             1,1–1.682,3 m
-free_speed range         30–45 km/h                 25–45 km/h
-stored free-time range   1,8–270,8 s                0,1–134,6 s
-CRS                      EPSG:4326                  EPSG:4326
-Bbox                     [106.68, 10.76, 106.72, 10.8]
-
-Hai traffic profile đều được tạo ngày 2026-08-03 và có
-meta.source="tomtom+synthetic".
-
-Cả hai graph là directed simple graph ở schema/runtime level: không self-loop,
-không duplicate ordered pair (u,v). Graph chỉ cho phép chuyển từ u sang v khi có
-edge u→v trong adjacency. Có edge u→v không suy ra có v→u. oneway=false yêu cầu
-có reverse edge; oneway=true nghĩa reverse ordered pair không tồn tại trong
-snapshot. Vì cả hai graph strongly connected, mọi node đều có directed path tới
-mọi node khác trong base snapshot, nhưng không nhất thiết có cạnh trực tiếp.
-
-4. SCHEMA PERSISTED
-
-Graph:
-  meta = {name, bbox, directed=true, created, crs="EPSG:4326",
-          node_count, edge_count}
-  nodes = danh sách Node
-  edges = danh sách Edge
-
-Node:
-  {id, name, lat, lon, type}
-  id có dạng nNNNN. G_real hiện có name=null và type=intersection; G_demo có
-  tên POI và type landmark|hospital|school|warehouse. Node không có weight.
-
-Edge:
-  {id, u, v, name, length_m, highway, oneway, free_speed_kmh,
-   free_travel_time_s, risk}
-  risk = {flood, construction, narrow_alley, traffic_light}, mỗi flag là 0/1.
-  id có dạng eNNNNN; length dùng mét, speed dùng km/h, time dùng giây.
-
-Traffic profile:
-  meta = {graph, created, source="tomtom+synthetic"}
-  profiles[slot][edge_id] = congestion level nguyên từ 1 đến 5.
-
-free_travel_time_s trong JSON được làm tròn 0,1 giây để mô tả. Runtime tính lại
-exact free-flow time từ length_m/free_speed_kmh khi tạo weight.
-
-5. DANH SÁCH 51 LOCATION CỦA G_demo
-
-Warehouse (1): Bưu điện Thành phố.
-
-Hospital (3): BV Nhi Đồng 2; BV Mắt TP.HCM; BV Từ Dũ.
-
-School (7): ĐH Kiến trúc TP.HCM; ĐH Kinh tế TP.HCM; THPT Lê Quý Đôn;
-Trường Marie Curie; THPT Nguyễn Thị Minh Khai; ĐH Mở TP.HCM;
-ĐH Khoa học Tự nhiên (Nguyễn Văn Cừ).
-
-Landmark (40): Chợ Bến Thành; Nhà thờ Đức Bà; Dinh Độc Lập; Hồ Con Rùa;
-Công viên Tao Đàn; Bitexco Financial Tower; Nhà hát Thành phố; UBND TP.HCM;
-Saigon Centre (Takashimaya); Công trường Mê Linh; Bến Bạch Đằng; Cầu Mống;
-Bảo tàng Hồ Chí Minh (Bến Nhà Rồng); Cầu Ba Son; Thảo Cầm Viên;
-Bảo tàng Lịch sử TP.HCM; Đài truyền hình HTV; Sân vận động Hoa Lư;
-Nhà văn hoá Thanh Niên; Chợ Đa Kao; Chùa Ngọc Hoàng; Công viên Lê Văn Tám;
-Chợ Tân Định; Nhà thờ Tân Định; Cầu Kiệu; Chùa Vĩnh Nghiêm; Chùa Xá Lợi;
-Bảo tàng Chứng tích Chiến tranh; Vòng xoay Dân Chủ; Cung Văn hoá Lao Động;
-Bảo tàng TP.HCM; Bảo tàng Mỹ thuật TP.HCM; Điểm trung chuyển Hàm Nghi;
-Công viên 23/9; Đền Bà Mariamman; Phố đi bộ Bùi Viện; Chợ Thái Bình;
-Cầu Ông Lãnh; Cầu Calmette; Chợ Nancy.
-
-Tên, type và tọa độ đầu vào là MANUAL. POI được snap vào node G_real. Khoảng
-cách input→node ở snapshot hiện tại: min 2,70 m, median 46,14 m, max 185,74 m.
-Năm POI trên 100 m là Dinh Độc Lập (185,74 m), Công viên Tao Đàn (154,2 m),
-Cầu Ba Son (139,9 m), Cung Văn hoá Lao Động (116,7 m) và Bảo tàng Hồ Chí Minh
-(Bến Nhà Rồng) (105,8 m). Nhà thờ Tân Định là trường hợp duy nhất dùng candidate
-gần thứ hai (72,46 m) để tránh trùng node trong ngưỡng 120 m. Các số này chỉ đo
-snap distance, không xác minh độ chính xác của cổng/tâm POI ngoài đời.
-
-6. NGUỒN DỮ LIỆU VÀ LINEAGE
-
-Taxonomy dùng trong mô tả này:
-
-- VERIFIED REAL RAW: artifact gần nguồn nhất còn lưu trong repo.
-- VERIFIED REAL-DERIVED: field/artifact dẫn xuất từ raw provenance và có thể
-  đối chiếu bằng pipeline local.
-- BUILD-TIME-DERIVED: tính trong crawl/build rồi persist.
-- SEED/SIMULATED: sinh bằng rule/random có seed.
-- MANUAL: nhóm tự nhập/curate.
-- CONFIG: hằng số/quy ước mô hình.
-- RUNTIME-COMPUTED: chỉ tính lúc load/request.
-- UNKNOWN/UNVERIFIED: chưa đủ bằng chứng để khẳng định external truth.
-
-6.1. OSM → G_real
-
-OSMnx 2.1.1 query network_type="drive" trên bbox
-(106.680, 10.760, 106.720, 10.800), rồi giữ largest directed strongly connected
-component. Overpass cache là VERIFIED REAL RAW trong phạm vi repo: metadata có
-timestamp_osm_base=2026-07-26T11:45:05Z, 19.864 elements (15.959 node, 3.905
-way) và thông báo nguồn openstreetmap.org theo ODbL.
-
-data/raw/graph_raw.graphml KHÔNG phải raw OSM nguyên bản. Nó là intermediate đã
-qua OSMnx simplification và SCC, có metadata created 2026-07-26 18:47:01,
-simplified=true, 2.118 node và 4.721 directed MultiDiGraph edge. Pipeline 02 bỏ
-2 self-loop, collapse parallel edge theo ordered pair bằng free-flow time nhỏ
-nhất và tạo graph_real.json có 4.699 edge. Product JSON không giữ OSM ID,
-polyline geometry, maxspeed, width hay toàn bộ raw tag.
-
-G_real lat/lon, length, highway, name và traffic-signal tag là OSM-derived.
-free_speed_kmh là CONFIG theo highway class; narrow_alley là rule theo class;
-flood/construction xuất phát từ circle MANUAL. oneway trong product là thuộc
-tính cấu trúc dựa trên reverse pair sau dedup, không phải bản sao trực tiếp của
-OSM oneway tag.
-
-6.2. TomTom + fallback → traffic_profiles_real
-
-Có đúng một selected-field crawler extract cho mỗi slot, mỗi file 40/40 record
-hợp lệ. queried_at là timestamp bắt đầu cả batch, không phải timestamp riêng cho
-từng request:
-
-- 07:30: 20260727T074003; 12:00: 20260727T124957;
-- 17:30: 20260803T173001; 22:00: 20260803T222752.
-
-Hai slot đầu và hai slot sau được thu vào hai ngày thứ Hai cách nhau 7 ngày. Đây
-là bốn snapshot đại diện, không phải time series cùng ngày và không phải traffic
-real-time. Crawler chỉ lưu lat, lon, currentSpeed, freeFlowSpeed, frc và
-queried_at; các file không phải verbatim API response. External authenticity
-của response nguyên bản không được live re-query trong audit hiện tại.
-
-Mapping currentSpeed/freeFlowSpeed sang congestion:
-  ratio >=0,85 → level 1; >=0,70 → 2; >=0,55 → 3; >=0,40 → 4; còn lại → 5.
-
-Sample chỉ được gán cho edge thuộc nhóm main-road và có source node gần sample
-nhất không quá 250 m. Matching không dùng street name, frc, bearing hay segment
-geometry. frc được lưu nhưng không được profile builder/runtime sử dụng. Tái
-dựng current pipeline xác nhận mỗi slot có 635/4.699 edge TomTom-assigned và
-4.064/4.699 edge dùng fallback.
-
-Fallback là SEED/SIMULATED với random.Random(42): hai giờ cao điểm sinh mức theo
-road class, 10% edge có nhiễu sự cố +1 (tối đa 5); 12:00 lấy mức 07:30 trừ 1
-(sàn 1); fallback 22:00 sinh mức 1–2. Vì vậy meta.source="tomtom+synthetic" là
-đúng, nhưng không có nghĩa mọi edge hoặc toàn bộ profile là dữ liệu thật.
-
-6.3. G_real + POI → G_demo → traffic_profiles_demo
-
-51 POI được snap vào các node G_real khác nhau. Các cặp gần được nối bằng
-shortest directed corridor theo free-flow time; hướng đi qua POI thứ ba bị loại.
-Mỗi demo edge co một dãy 1–33 real edge: length là tổng corridor, speed là tốc
-độ tương đương, name/highway là giá trị chiếm chiều dài lớn nhất, các risk flag
-được tổng hợp theo rule. Build repair/prune vẫn phải giữ mọi ordered POI pair
-trong các cận demo/real: free-flow time <=1,5; distance <=1,8; balanced <=1,5 ở
-cả bốn slot. 298/298 corridor hiện có mapping non-empty.
-
-Congestion G_demo không random lại: profile_demo là trung bình congestion của
-các real edge trong corridor, trọng số theo free-flow time và làm tròn half-up
-về level 1–5.
-
-6.4. Manual risk và nguồn ngoài
-
-manual_risks.json có 8/8 source_url: r01–r05 flood, r06–r08 construction.
-Nguồn lần lượt gồm Công báo TP.HCM (Nguyễn Hữu Cảnh), Nhân Dân (Cầu Bông),
-TTXVN/Báo Tin tức (Cống Quỳnh; Võ Văn Kiệt–Calmette), Tiền Phong (khu Bùi Viện),
-VnExpress (chỉnh trang chợ Bến Thành), Dân Trí (hố sụt Hai Bà Trưng) và SAWACO
-(thi công Võ Thị Sáu–Pasteur). Các link chỉ hỗ trợ bối cảnh lịch sử ở cấp tuyến/
-khu vực; chúng không xác nhận trạng thái hiện tại, exact center, radius hoặc
-penalty.
-
-Circle center/radius/type là MANUAL; radius hiện nằm trong khoảng 150–400 m.
-Edge flood/construction flag là BUILD-TIME-DERIVED và chỉ bằng 1 khi edge đi từ
-ngoài vào trong circle. Tuyến khởi đầu bên trong vùng không trả penalty cho lần
-ở sẵn trong vùng. narrow_alley là CONFIG/rule-derived từ road class, không dùng
-width quan trắc. traffic_light là OSM-derived: edge kết thúc tại node có
-highway=traffic_signals.
-
-6.5. Workflow đầy đủ
-
-OSM/Overpass cache
-  → 01_download_osm.py: OSMnx simplify + largest SCC → GraphML
-  → 02_build_graph.py: normalize/dedup + speed/risk rules → graph_real.json
-
-TomTom Flow API
-  → 03a_crawl_tomtom.py → selected-field extracts
-  + fallback seed 42
-  → 03b_build_profiles.py real → traffic_profiles_real.json
-
-graph_real + manual POI + profile_real
-  → 04_build_gdemo.py → graph_demo.json + gdemo_corridors.json
-  → 03b_build_profiles.py demo → traffic_profiles_demo.json
-  → validate_data.py
-
-Committed graph/profile JSON
-  → GraphStore.load: validate, dựng adj/radj và precompute edge weights
-  → search/search_advanced/tsp → FastAPI → Next.js.
-
-NetworkX/OSMnx chỉ dùng ở build/test/baseline; product Searching/ATSP không dùng
-NetworkX và không crawl mạng. GraphView và edge override được dựng request-scoped
-trong memory, không sửa dataset persisted.
-
-7. DISTANCE, TIME, CONGESTION, RISK VÀ COST
-
-Bảng free-speed CONFIG (không phải tốc độ pháp lý hay measured speed):
-motorway/link 60; trunk/primary/link 45; secondary/link 40; tertiary/link 35;
-unclassified/residential/road 30; living_street/service/alley/track 25 km/h;
-class khác mặc định 30. Snapshot hiện tại thực tế chỉ chứa 25–45 km/h.
-
-Với edge e, length l (m), speed v (km/h), congestion c thuộc {1..5}:
-
-  t_free = l / (v/3,6)                                      [giây]
-  f_cong = 1 + 1,5*(c-1)/4                                  [không đơn vị]
-  penalty = 60*flood + 90*construction
-            + 30*narrow_alley + 25*traffic_light             [giây]
-
-  distance weight = l                                        [mét]
-  time weight     = t_free*f_cong                             [giây]
-  balanced weight = t_free*f_cong + penalty                   [giây]
-
-Gamma 1,5 và penalty 60/90/30/25 là CONFIG. Artifact hiện có γ̂=1,238 từ 160
-selected-field TomTom records/4 slot, nhưng level trong phép fit được tạo từ
-chính speed ratio của các record đó; đây là post-hoc within-snapshot consistency
-estimate, không phải independent ground-truth calibration và không thay runtime
-γ=1,5. Penalties chưa có calibration tương đương. Risk chỉ tác động mode
-balanced; congestion tác động time và balanced; distance mode chỉ dùng length.
-Edge level 5 làm phần travel time bằng 2,5 lần free-flow. Penalty được cộng sau
-multiplier, không bị nhân congestion.
-
-Current two-point contract có đúng 9 thuật toán: BFS, DFS, IDDFS, UCS, A*,
-Greedy, Bidirectional Dijkstra, IDA* và Beam Search. Node không có weight.
-BFS/DFS/IDDFS không dùng edge weight để chọn đường; Greedy chỉ dùng heuristic.
-UCS, A*, Bidirectional Dijkstra, IDA* và Beam dùng selected-mode weight theo
-implementation tương ứng. Sau khi có path, mọi thuật toán vẫn tính metrics từ
-cùng edge data. ATSP tạo asymmetric cost matrix bằng shortest selected-cost cho
-mọi ordered pair bằng UCS; Held–Karp/NN+local search/SA tối ưu tổng matrix cost,
-không tối ưu Haversine trực tiếp.
-
-Heuristic informed search dùng Haversine(node, goal): mode distance dùng mét;
-time/balanced chia cho maximum free speed của resolved graph. Nó consistent và
-admissible dưới các invariant length >= Haversine edge, speed <= v_max,
-congestion factor >=1 và penalty không âm mà validator/scenario code enforce.
-
-8. ASSUMPTIONS VÀ LIMITATIONS
-
-- OSM snapshot và TomTom extracts chứng minh lineage local, không chứng minh dữ
-  liệu vẫn phản ánh hiện trạng bên ngoài tại ngày nộp.
-- G_real là processed OSM-derived graph; không phải raw OSM. Public graph không
-  giữ road polyline, turn restriction, lane/maxspeed/width đầy đủ hoặc OSM ID.
-  UI nối endpoint bằng đường thẳng, không phải geometry đường thật.
-- network_type="drive" loại phần lớn hẻm xe máy; narrow_alley vì vậy chỉ có 8
-  G_real edge và 0 G_demo edge. Hai parallel road segment cùng (u,v) bị collapse.
-- one-way là direction cấu trúc trong snapshot, không được trình bày như biển
-  báo thực địa đã kiểm riêng.
-- POI catalog/coordinates/type là manual; node dùng cho route là intersection
-  đã snap, không nhất thiết là cổng chính xác của địa điểm.
-- TomTom chỉ phủ sampled main-road edge bằng nearest-source-node matching thô.
-  4.064 edge/slot dùng deterministic synthetic fallback; slot là static snapshot
-  cho cả request, không thay đổi theo thời gian xe di chuyển.
-- Flood/construction là circle manual có nguồn bối cảnh lịch sử; không phải
-  incident feed. Risk flag nhị phân không mô tả xác suất hay mức độ.
-- Free speed và penalties là giả định mô hình chưa calibrated; γ̂ hiện có chỉ là
-  post-hoc consistency estimate như mục 7. balanced cost là giây quy đổi của mô
-  hình, không phải ETA đã được kiểm chứng ngoài đời.
-- G_demo corridor chỉ lưu danh sách real edge và thuộc tính tổng hợp; một demo
-  edge không phải một road segment vật lý duy nhất.
-- Base graph hiện strongly connected, nhưng scenario override/view có thể thay
-  cost; runtime vẫn chỉ được đi theo directed adjacency hiện hữu.
-- Results đã cùng thế hệ semantic với current graph/profile, nhưng provenance
-  ledger còn mismatch CRLF/LF; không tuyên bố checksum-clean official.
-
-9. VALIDATION VÀ CÁCH DIỄN ĐẠT REPORT-SAFE
-
-Fresh read-only validation ngày 2026-08-13 tại checkpoint trên trả ALL DATA
-VALID; full backend suite đạt 235 tests (1 dependency warning). Schema/count/ID/
-endpoint hợp lệ, hai graph strongly connected, đủ 4×100% traffic-profile
-coverage, length/heuristic floor và các invariant G_demo/G_real đều đạt. Audit
-cũng tái dựng exact 635 TomTom assignment/slot và exact demo corridor profile.
-Các kiểm tra này xác nhận artifact/consistency local; chúng không live-query hoặc
-independently attest OSM/TomTom/risk/POI ngoài đời.
-
-Có thể khẳng định:
-
-- project dùng hai committed directed graph snapshot và mixed
-  tomtom+synthetic traffic profiles;
-- G_demo 51 POI/298 edge và G_real 2.118 intersection/4.699 edge;
-- OSM cache, derived GraphML và bốn selected-field TomTom extracts hiện có;
-- runtime tính edge weights theo đúng ba công thức ở mục 7 và không gọi mạng.
-
-Phải diễn đạt thận trọng:
-
-- “OSM-derived processed graph”, không gọi G_real hoặc GraphML là raw OSM;
-- “TomTom-assigned cho 635 edge/slot, còn lại fallback”, không gọi profile 100%
-  real, real-time hoặc cùng-day time series;
-- risk/POI/speed/penalty là manual/config/rule-derived với các giới hạn đã nêu.
-
-Không được tuyên bố khi chưa có bằng chứng mới: map geometry thật; speed pháp lý/
-quan trắc; risk hiện hành đã authoritative verified; cost/ETA đã independently
-calibrated; mọi edge dùng TomTom; γ̂ là ground-truth độc lập; hoặc checksum ledger
-hiện khớp nguyên trạng LF checkout.
-
-10. EVIDENCE CHÍNH TRONG REPOSITORY
-
-- Assignment: docs/Lab 1 - Searching.pdf
-- Canonical audit: DATA-GRAPH-WEIGHTS-SOURCE-OF-TRUTH.md
-- Data/pipeline notes: data/DATA.md và JSON metadata hiện hành
-- Executable schema: backend/app/models.py
-- Runtime load/weights: backend/app/graph_store.py, backend/app/costs.py
-- Searching/ATSP: backend/app/search.py, search_advanced.py, tsp.py
-- Pipeline: scripts/01_download_osm.py, 02_build_graph.py,
-  03a_crawl_tomtom.py, 03b_build_profiles.py, 04_build_gdemo.py,
-  pipeline_common.py và validate_data.py
-- Raw/provenance: data/raw/*
-- Manual source review: data/manual_risks.json và manual_risks_sources_review.md
-
-Kết luận: dataset đáp ứng yêu cầu graph/data của assignment bằng phương án hybrid
-và có lineage local từ raw/provenance artifacts qua processed JSON đến runtime.
-Mức realism bị giới hạn bởi map simplification, TomTom sampling, synthetic
-fallback và các giả định manual/config; các giới hạn này được công bố thay vì
-trình bày dữ liệu như ground truth hoặc real-time.
+NHÓM 2
+Đề tài: Tìm đường cho shipper đa điểm tại khu vực trung tâm Thành phố Hồ Chí Minh
+
+1. MỤC ĐÍCH VÀ PHẠM VI BỘ DỮ LIỆU
+
+Bộ dữ liệu được xây dựng để mô hình hóa hoạt động tìm đường và giao hàng qua
+nhiều điểm trên mạng đường có hướng tại khu vực trung tâm Thành phố Hồ Chí Minh.
+Phạm vi địa lý nằm trong khung tọa độ 106,680–106,720 độ kinh Đông và
+10,760–10,800 độ vĩ Bắc, sử dụng hệ tọa độ WGS 84 (EPSG:4326).
+
+Đây là bộ dữ liệu lai, kết hợp bốn nhóm nguồn:
+
+- cấu trúc mạng đường được dẫn xuất từ OpenStreetMap và xử lý bằng OSMnx;
+- mẫu tốc độ giao thông được trích xuất từ TomTom tại bốn khung giờ đại diện;
+- dữ liệu mô phỏng có hạt giống cố định cho các cạnh không được mẫu TomTom phủ;
+- địa điểm, vùng rủi ro và các tham số mô hình do nhóm lựa chọn hoặc cấu hình.
+
+Bộ dữ liệu gồm hai mức đồ thị. G_real giữ mạng đường đã xử lý ở quy mô lớn để
+đánh giá khả năng mở rộng. G_demo là bản trừu tượng hóa theo 51 địa điểm, phục
+vụ minh họa đường đi và bài toán giao hàng nhiều điểm. Cả hai đều là ảnh chụp
+tĩnh đã được lưu sẵn; quá trình tìm đường không gọi dịch vụ bản đồ hoặc giao
+thông trực tuyến.
+
+2. MÔ HÌNH VÀ QUY MÔ DỮ LIỆU
+
+                         G_demo                         G_real
+Ngày tạo đồ thị          03/08/2026                     27/07/2026
+Số nút                   51                             2.118
+Số cạnh có hướng         298                            4.699
+Cạnh một chiều           60                             1.433
+Loại nút                 40 địa danh, 7 trường học,    2.118 nút mạng đường,
+                         3 bệnh viện, 1 điểm làm kho   mô hình hóa như giao lộ
+Cạnh có cờ ngập          24                             54
+Cạnh có cờ thi công      24                             19
+Cạnh có cờ đường hẹp     0                              8
+Cạnh đi vào đèn tín hiệu 130                            185
+Khoảng chiều dài cạnh    23,0–2.775,6 m                 1,1–1.682,3 m
+Khoảng tốc độ mô hình    30–45 km/h                     25–45 km/h
+Số khung giờ giao thông  4                              4
+Tính liên thông          liên thông mạnh                liên thông mạnh
+
+Mỗi nút có mã định danh, tên, tọa độ và loại địa điểm. Nút không có trọng số.
+Mỗi cạnh có mã định danh, nút đầu, nút cuối, tên đường, chiều dài, loại đường,
+trạng thái một chiều, tốc độ thông thoáng, thời gian thông thoáng và bốn cờ rủi
+ro: ngập, thi công, đường hẹp và đèn tín hiệu.
+
+Tên địa điểm được gán cho 51 nút G_demo; các nút G_real hiện không có tên và
+đều mang loại nút mạng đường. Hai hồ sơ giao thông được tạo ngày 03/08/2026.
+
+Chuyển động từ nút A sang nút B chỉ hợp lệ khi tồn tại cạnh A→B. Việc tồn tại
+A→B không đồng nghĩa với việc tồn tại B→A. Cạnh được đánh dấu một chiều khi
+cặp cạnh ngược không tồn tại trong ảnh chụp đã chuẩn hóa. Hai đồ thị đều liên
+thông mạnh, nghĩa là có một đường đi có hướng giữa mọi cặp nút, nhưng không
+nhất thiết có cạnh trực tiếp giữa hai nút bất kỳ.
+
+Đồ thị trung gian do OSMnx tạo là một đa đồ thị có hướng. Khi chuẩn hóa G_real,
+hai khuyên được loại bỏ và các cạnh song song có cùng cặp nút đầu–cuối được rút
+gọn bằng cách giữ cạnh có thời gian thông thoáng nhỏ nhất. Vì vậy, hai đồ thị
+được sử dụng để tìm đường là đồ thị có hướng đơn, không có khuyên và không có
+hai cạnh trùng cùng một cặp nút có thứ tự.
+
+3. DANH SÁCH ĐỊA ĐIỂM CỦA G_demo
+
+Một địa điểm được quy ước làm kho:
+
+- Bưu điện Thành phố.
+
+Ba bệnh viện:
+
+- Bệnh viện Nhi Đồng 2; Bệnh viện Mắt Thành phố Hồ Chí Minh; Bệnh viện Từ Dũ.
+
+Bảy trường học:
+
+- Đại học Kiến trúc Thành phố Hồ Chí Minh;
+- Đại học Kinh tế Thành phố Hồ Chí Minh;
+- Trường Trung học phổ thông Lê Quý Đôn;
+- Trường Marie Curie;
+- Trường Trung học phổ thông Nguyễn Thị Minh Khai;
+- Đại học Mở Thành phố Hồ Chí Minh;
+- Đại học Khoa học Tự nhiên, cơ sở Nguyễn Văn Cừ.
+
+Bốn mươi địa danh:
+
+- Chợ Bến Thành; Nhà thờ Đức Bà; Dinh Độc Lập; Hồ Con Rùa;
+- Công viên Tao Đàn; Bitexco Financial Tower; Nhà hát Thành phố;
+- Ủy ban nhân dân Thành phố Hồ Chí Minh; Saigon Centre (Takashimaya);
+- Công trường Mê Linh; Bến Bạch Đằng; Cầu Mống;
+- Bảo tàng Hồ Chí Minh (Bến Nhà Rồng); Cầu Ba Son; Thảo Cầm Viên;
+- Bảo tàng Lịch sử Thành phố Hồ Chí Minh; Đài Truyền hình Thành phố Hồ Chí Minh;
+- Sân vận động Hoa Lư; Nhà Văn hóa Thanh Niên; Chợ Đa Kao;
+- Chùa Ngọc Hoàng; Công viên Lê Văn Tám; Chợ Tân Định; Nhà thờ Tân Định;
+- Cầu Kiệu; Chùa Vĩnh Nghiêm; Chùa Xá Lợi;
+- Bảo tàng Chứng tích Chiến tranh; Vòng xoay Dân Chủ;
+- Cung Văn hóa Lao động; Bảo tàng Thành phố Hồ Chí Minh;
+- Bảo tàng Mỹ thuật Thành phố Hồ Chí Minh; Điểm trung chuyển Hàm Nghi;
+- Công viên 23/9; Đền Bà Mariamman; Phố đi bộ Bùi Viện; Chợ Thái Bình;
+- Cầu Ông Lãnh; Cầu Calmette; Chợ Nancy.
+
+Tên, loại và tọa độ đầu vào của 51 địa điểm được nhóm biên soạn thủ công. Mỗi
+địa điểm được gắn vào một nút khác nhau của G_real để bảo đảm khả năng định
+tuyến. Khoảng cách từ tọa độ đầu vào đến nút được chọn có giá trị nhỏ nhất
+2,70 m, trung vị 46,14 m và lớn nhất 185,74 m. Năm địa điểm có khoảng cách gắn
+nút lớn hơn 100 m là Dinh Độc Lập (185,74 m), Công viên Tao Đàn (154,2 m),
+Cầu Ba Son (139,9 m), Cung Văn hóa Lao động (116,7 m) và Bảo tàng Hồ Chí Minh
+(Bến Nhà Rồng) (105,8 m). Nhà thờ Tân Định là trường hợp duy nhất dùng nút gần
+thứ hai, cách 72,46 m, để tránh trùng với một địa điểm khác. Các khoảng cách này
+chỉ đánh giá phép gắn nút, không chứng minh tọa độ đầu vào trùng chính xác với
+cổng hoặc tâm địa điểm ngoài thực địa.
+
+4. NGUỒN DỮ LIỆU VÀ QUÁ TRÌNH HÌNH THÀNH
+
+4.1. OpenStreetMap và G_real
+
+Nguồn gần dữ liệu gốc nhất được lưu lại là bản phản hồi Overpass do OSMnx lưu
+đệm. Bản này có mốc dữ liệu OpenStreetMap 11:45:05 ngày 26/07/2026, gồm 19.864
+phần tử: 15.959 nút và 3.905 đường, đồng thời kèm thông báo giấy phép ODbL.
+
+Từ nguồn trên, OSMnx 2.1.1 tải mạng dành cho ô tô, đơn giản hóa cấu trúc và giữ
+thành phần liên thông mạnh lớn nhất. Sản phẩm trung gian được lưu ở định dạng
+GraphML và là đồ thị có hướng gồm 2.118 nút, 4.721 cạnh. Đây là dữ liệu đã qua
+xử lý, không phải bản OpenStreetMap nguyên bản. Sau bước chuẩn hóa, loại khuyên
+và rút gọn cạnh song song, G_real còn 2.118 nút và 4.699 cạnh có hướng.
+
+Tọa độ nút, chiều dài cạnh, loại đường, tên đường và thông tin nút đèn tín hiệu
+của G_real được dẫn xuất từ OpenStreetMap. Mạng cuối không lưu hình học đường
+chi tiết, mã định danh OpenStreetMap, giới hạn tốc độ, chiều rộng làn đường hoặc
+toàn bộ thẻ thuộc tính gốc. Tốc độ thông thoáng được gán theo loại đường bằng
+bảng cấu hình của mô hình, không phải tốc độ pháp lý hoặc tốc độ đo tại hiện
+trường.
+
+4.2. TomTom, dữ liệu mô phỏng và hồ sơ giao thông
+
+Bộ dữ liệu có bốn khung giờ đại diện: 07:30, 12:00, 17:30 và 22:00. Mỗi khung
+giờ có một bản trích xuất gồm 40 bản ghi hợp lệ. Hai đợt đầu được thu lúc
+07:40:03 và 12:49:57 ngày thứ Hai 27/07/2026; hai đợt sau được thu lúc 17:30:01
+và 22:27:52 ngày thứ Hai 03/08/2026. Đây là hai ngày cách nhau bảy ngày, không
+phải chuỗi quan sát trong cùng một ngày và không phải luồng giao thông thời gian
+thực.
+
+Bốn mươi điểm truy vấn được chọn từ nút đầu của các cạnh đường chính, ưu tiên
+cạnh dài hơn và loại trùng theo lưới tọa độ làm tròn ba chữ số.
+
+Mỗi bản ghi chỉ lưu tọa độ truy vấn, tốc độ hiện tại, tốc độ thông thoáng, cấp
+phân loại đường của TomTom và thời điểm bắt đầu đợt thu thập. Do chỉ lưu các
+trường đã chọn, chúng không phải phản hồi API nguyên vẹn. Mốc thời gian được
+gán chung cho cả đợt 40 truy vấn, không phải mốc riêng của từng phản hồi; các
+mốc được lưu không kèm thông tin múi giờ.
+
+Tỷ lệ giữa tốc độ hiện tại và tốc độ thông thoáng được quy đổi thành năm mức
+ùn tắc:
+
+- từ 0,85 trở lên: mức 1;
+- từ 0,70 đến dưới 0,85: mức 2;
+- từ 0,55 đến dưới 0,70: mức 3;
+- từ 0,40 đến dưới 0,55: mức 4;
+- dưới 0,40: mức 5.
+
+Một mẫu chỉ được gán cho cạnh thuộc nhóm đường chính khi nút đầu cạnh cách điểm
+truy vấn không quá 250 m. Phép ghép không sử dụng tên đường, hướng di chuyển,
+hình học đoạn đường hoặc cấp phân loại đường do TomTom trả về. Ở mỗi khung giờ,
+635 trong 4.699 cạnh G_real nhận mức ùn tắc từ mẫu TomTom; 4.064 cạnh còn lại
+nhận mức mô phỏng tất định.
+
+Phần mô phỏng sử dụng hạt giống 42. Hai khung giờ cao điểm 07:30 và 17:30 có mức
+cơ sở phụ thuộc loại đường và xác suất 10% tăng thêm một mức, tối đa là 5. Khung
+12:00 lấy mức 07:30 giảm một đơn vị, không thấp hơn 1; khung 22:00 chủ yếu nhận
+mức 1–2. Vì vậy, hồ sơ giao thông phải được mô tả là hỗn hợp giữa dữ liệu dẫn
+xuất từ TomTom và dữ liệu mô phỏng, không phải dữ liệu thực cho toàn bộ cạnh.
+
+4.3. Từ G_real đến G_demo
+
+Sau khi 51 địa điểm được gắn vào G_real, các cặp địa điểm lân cận được nối bằng
+đường đi có hướng có thời gian thông thoáng nhỏ nhất. Đường đi đi xuyên qua một
+địa điểm thứ ba bị loại để tránh tạo cạnh tắt không phù hợp. Mỗi cạnh G_demo là
+một hành lang gồm từ 1 đến 33 cạnh G_real; chiều dài là tổng chiều dài hành
+lang, tốc độ là tốc độ tương đương, còn tên đường, loại đường và cờ rủi ro được
+tổng hợp theo quy tắc cố định. Cả 298 cạnh G_demo đều có hành lang G_real tương
+ứng và G_demo giữ tính liên thông mạnh.
+
+Mức ùn tắc của một cạnh G_demo được tính bằng trung bình mức ùn tắc của các cạnh
+trên hành lang G_real, có trọng số theo thời gian thông thoáng, rồi làm tròn về
+mức nguyên 1–5. Như vậy, G_demo không được tạo bằng một quá trình giao thông
+ngẫu nhiên độc lập mà kế thừa trực tiếp hồ sơ của G_real.
+
+4.4. Rủi ro và nguồn tham khảo
+
+Bộ dữ liệu mô hình hóa năm vùng ngập và ba vùng thi công. Tám nguồn công khai
+được dùng để hỗ trợ bối cảnh lịch sử ở cấp tuyến hoặc khu vực:
+
+- Nguyễn Hữu Cảnh: Công báo Thành phố Hồ Chí Minh;
+- Cầu Bông: Báo Nhân Dân;
+- Cống Quỳnh: Báo Tin tức, Thông tấn xã Việt Nam;
+- Võ Văn Kiệt – Calmette: Báo Tin tức, Thông tấn xã Việt Nam;
+- khu vực Bùi Viện: Báo Tiền Phong;
+- khu vực Chợ Bến Thành: VnExpress;
+- Hai Bà Trưng: Dân Trí;
+- Võ Thị Sáu – Pasteur: Tổng công ty Cấp nước Sài Gòn.
+
+Các nguồn này không xác nhận sự cố còn tồn tại tại thời điểm sử dụng, cũng
+không xác nhận chính xác tâm vùng, bán kính hoặc mức phạt. Tâm và bán kính
+150–400 m do nhóm xác định thủ công. Cạnh chỉ được đánh dấu ngập hoặc thi công
+khi đi từ ngoài vào vùng tròn tương ứng. Cờ đường hẹp được suy ra theo loại
+đường, không dựa trên số đo chiều rộng; cờ đèn tín hiệu được suy ra khi cạnh đi
+vào một nút được OpenStreetMap đánh dấu là đèn giao thông.
+
+5. GIÁ TRỊ DỮ LIỆU VÀ HÀM CHI PHÍ
+
+Tốc độ thông thoáng được cấu hình theo loại đường: đường cao tốc 60 km/h; đường
+trục chính 45 km/h; đường thứ cấp 40 km/h; đường cấp ba 35 km/h; đường dân cư
+30 km/h; đường nội bộ, đường dịch vụ và đường hẹp 25 km/h. Các đồ thị hiện hành
+thực tế chỉ chứa các giá trị từ 25 đến 45 km/h.
+
+Với một cạnh có chiều dài l mét, tốc độ thông thoáng v km/h và mức ùn tắc c từ
+1 đến 5, thời gian thông thoáng và hệ số ùn tắc được xác định bởi:
+
+  thời gian thông thoáng = l / (v / 3,6)                         (giây)
+  hệ số ùn tắc = 1 + 1,5 × (c - 1) / 4                          (không đơn vị)
+
+Ba mục tiêu tìm đường sử dụng chi phí như sau:
+
+  khoảng cách = chiều dài cạnh                                    (mét)
+  thời gian = thời gian thông thoáng × hệ số ùn tắc                (giây)
+  cân bằng = thời gian + 60 × ngập + 90 × thi công
+             + 30 × đường hẹp + 25 × đèn tín hiệu                 (giây)
+
+Ở mức ùn tắc 5, phần thời gian di chuyển bằng 2,5 lần thời gian thông thoáng.
+Khoản phạt rủi ro được cộng sau khi điều chỉnh ùn tắc và chỉ ảnh hưởng mục tiêu
+cân bằng. Hệ số 1,5 và các mức phạt 60, 90, 30, 25 giây là tham số cấu hình,
+chưa được hiệu chuẩn bằng dữ liệu kiểm chứng độc lập. Một ước lượng hậu nghiệm
+từ 160 bản ghi TomTom cho giá trị 1,238, nhưng phép ước lượng sử dụng mức ùn tắc
+được suy ra từ chính các tỷ lệ tốc độ đó; vì vậy nó chỉ phản ánh tính nhất quán
+nội bộ và không thay thế tham số 1,5 của mô hình.
+
+Các thuật toán tìm kiếm theo trọng số sử dụng đúng một trong ba chi phí trên.
+Các phương pháp duyệt không trọng số chỉ dùng cấu trúc kề để lựa chọn đường;
+sau khi tìm được đường, các chỉ số chiều dài và thời gian vẫn được tổng hợp từ
+cùng bộ thuộc tính cạnh. Heuristic dựa trên khoảng cách đường chim bay giữa nút
+hiện tại và đích; đối với mục tiêu thời gian hoặc cân bằng, khoảng cách này được
+chia cho tốc độ lớn nhất trong đồ thị. Bài toán nhiều điểm xây dựng ma trận chi
+phí bất đối xứng từ đường đi ngắn nhất cho từng cặp địa điểm có thứ tự rồi tối
+ưu tổng chi phí của toàn hành trình.
+
+6. PHÂN LOẠI NGUỒN GỐC
+
+- Dữ liệu thực gần nguồn nhất đã lưu: bản phản hồi Overpass trong bộ nhớ đệm.
+- Dữ liệu thực đã dẫn xuất: cấu trúc, tọa độ, chiều dài, loại và tên đường từ
+  OpenStreetMap; thẻ đèn tín hiệu; tỷ lệ tốc độ từ các bản trích xuất TomTom.
+- Dữ liệu dẫn xuất khi xây dựng: đồ thị chuẩn hóa, phép gắn địa điểm, hành lang
+  G_demo, cờ rủi ro theo vùng và hồ sơ ùn tắc đã lưu.
+- Dữ liệu mô phỏng: mức ùn tắc thay thế cho các cạnh không được TomTom phủ.
+- Dữ liệu thủ công: danh sách địa điểm, tọa độ/loại địa điểm và tám vùng rủi ro.
+- Dữ liệu cấu hình: tốc độ theo loại đường, hệ số ùn tắc, mức phạt và quy tắc
+  nhận diện đường hẹp.
+- Dữ liệu tính khi tìm đường: trọng số cuối của cạnh, heuristic, tổng chi phí và
+  ma trận chi phí nhiều điểm.
+- Chưa được kiểm chứng độc lập: tính xác thực của phản hồi API nguyên vẹn, độ
+  chính xác hiện thời ngoài thực địa, tọa độ cổng địa điểm, giới hạn tốc độ pháp
+  lý, chiều rộng đường, trạng thái rủi ro hiện tại và độ chính xác của thời gian
+  dự báo.
+
+7. GIẢ ĐỊNH VÀ GIỚI HẠN
+
+- Mạng đường là ảnh chụp OpenStreetMap đã đơn giản hóa cho ô tô; nó không lưu
+  hình học đường chi tiết, hạn chế rẽ, số làn, giới hạn tốc độ hoặc chiều rộng
+  đầy đủ. Hai đoạn song song có cùng hướng và cùng cặp nút bị rút gọn còn một.
+- Tính một chiều phản ánh cấu trúc của ảnh chụp sau chuẩn hóa, không phải một
+  cuộc kiểm tra độc lập biển báo tại hiện trường.
+- Danh sách và tọa độ địa điểm do nhóm biên soạn; nút định tuyến có thể nằm cách
+  cổng thực tế của địa điểm.
+- Mẫu TomTom chỉ phủ một phần đường chính và được ghép theo khoảng cách đến nút
+  đầu cạnh. Mỗi khung giờ có 4.064 cạnh dùng dữ liệu mô phỏng.
+- Bốn khung giờ là các ảnh chụp đại diện và được giữ cố định trong suốt một yêu
+  cầu tìm đường; mô hình không mô phỏng sự thay đổi ùn tắc khi xe đang di chuyển.
+- Vùng rủi ro là các hình tròn thủ công, cờ nhị phân và nguồn chỉ cung cấp bối
+  cảnh lịch sử. Chúng không phải nguồn cảnh báo sự cố trực tiếp.
+- Tốc độ, hệ số ùn tắc và mức phạt là giả định mô hình. Chi phí cân bằng là số
+  giây quy đổi để so sánh tuyến, không phải thời gian đến dự báo đã được xác
+  minh ngoài thực địa.
+- Một cạnh G_demo biểu diễn cả hành lang đường, không phải một đoạn đường vật lý
+  duy nhất. Đường hiển thị chỉ nối các đầu mút nên không phản ánh đầy đủ độ cong
+  của tuyến thực tế.
+
+8. KIỂM TRA TÍNH NHẤT QUÁN
+
+Bộ dữ liệu hiện hành đã vượt qua các kiểm tra cấu trúc và quan hệ nội bộ: mã
+định danh và đầu mút hợp lệ; không có khuyên hoặc cặp cạnh trùng; hai đồ thị liên
+thông mạnh; bốn hồ sơ giao thông phủ đủ toàn bộ cạnh; 298 hành lang G_demo đều
+có ánh xạ hợp lệ; các giá trị chiều dài, tốc độ, mức ùn tắc và cờ rủi ro nằm
+trong miền cho phép; các điều kiện hỗ trợ heuristic được thỏa mãn.
+
+Việc tái dựng độc lập trong phạm vi dữ liệu đã lưu cũng cho kết quả đúng 635
+cạnh dùng mẫu TomTom và 4.064 cạnh dùng mô phỏng ở mỗi khung giờ, đồng thời tái
+tạo chính xác hồ sơ ùn tắc của G_demo từ các hành lang G_real. Các kiểm tra này
+xác nhận tính nhất quán và khả năng tái lập của quy trình đã lưu, nhưng không
+thay thế việc kiểm chứng dữ liệu trực tiếp ngoài thực địa.
+
+9. HƯỚNG PHÁT TRIỂN DỮ LIỆU
+
+Các bước phát triển phù hợp gồm lưu phản hồi TomTom nguyên vẹn cùng múi giờ và
+siêu dữ liệu truy vấn; tăng số mẫu và thu đồng bộ trong cùng ngày; ghép mẫu theo
+hình học đoạn đường, hướng và tên đường; cập nhật giao thông theo thời gian xe
+di chuyển; giữ hình học đường và hạn chế rẽ; bổ sung giới hạn tốc độ, chiều rộng
+và số làn có nguồn; chuẩn hóa tọa độ cổng địa điểm; thay vùng rủi ro thủ công
+bằng nguồn dữ liệu có thời gian hiệu lực; và hiệu chuẩn hệ số, mức phạt, thời
+gian dự báo bằng dữ liệu hành trình độc lập.
+
+10. NGUỒN CÔNG KHAI
+
+- OpenStreetMap, giấy phép và yêu cầu ghi công:
+  https://www.openstreetmap.org/copyright
+- OSMnx 2.1.1, tài liệu chính thức:
+  https://osmnx.readthedocs.io/en/stable/
+- TomTom Traffic API, Flow Segment Data:
+  https://docs.tomtom.com/traffic-api/documentation/tomtom-maps/v1/traffic-flow/flow-segment-data
+- Công báo Thành phố Hồ Chí Minh, Nguyễn Hữu Cảnh:
+  https://congbao.hochiminhcity.gov.vn/cong-bao/van-ban/quyet-dinh/so/6261-qd-ubnd/ngay/30-11-2016/tai-ve/42090
+- Báo Nhân Dân, khu vực Cầu Bông:
+  https://nhandan.vn/mua-to-trieu-cuong-gay-ngap-ung-tai-tp-ho-chi-minh-post410945.html
+- Báo Tin tức, khu vực Cống Quỳnh:
+  https://baotintuc.vn/xa-hoi/tp-ho-chi-minh-ngap-nang-nhieu-tuyen-duong-sau-con-mua-nhu-trut-nuoc-20240527215404154.htm
+- Báo Tin tức, khu vực Võ Văn Kiệt – Calmette:
+  https://baotintuc.vn/anh/tp-ho-chi-minh-trieu-cuong-dang-cao-nhieu-tuyen-duong-ngap-sau-20251105181405682.htm
+- Báo Tiền Phong, khu vực Bùi Viện:
+  https://tienphong.vn/pho-tay-bui-vien-ngap-sau-mua-lon-o-tphcm-post1793541.tpo
+- VnExpress, khu vực Chợ Bến Thành:
+  https://vnexpress.net/tp-hcm-chinh-trang-quang-truong-truoc-cho-ben-thanh-tu-thang-10-4758459.html
+- Dân Trí, khu vực Hai Bà Trưng:
+  https://dantri.com.vn/thoi-su/tphcm-ho-tu-than-bat-ngo-xuat-hien-giua-duong-1380068305.htm
+- Tổng công ty Cấp nước Sài Gòn, khu vực Võ Thị Sáu – Pasteur:
+  https://benthanh.sawaco.com.vn/tin-tuc/hoat-dong-san-xuat-kinh-doanh/thong-bao-ve-viec-gian-doan-cung-cap-nuoc-de-phuc-vu-cong-tac.-vi-tri-thi-cong-giao-lo-vo-thi-sau-pasteur-giao-lo-vo-van-tan-truong-dinh-va-198-tran-quoc-thao-thuoc-phuong-vo-thi-sau-va-phuong-9-quan-3..html
+
+KẾT LUẬN
+
+Bộ dữ liệu đáp ứng yêu cầu mô hình đồ thị của bài Lab bằng hai đồ thị có hướng
+và hồ sơ giao thông bốn khung giờ. Điểm mạnh của bộ dữ liệu là có chuỗi xuất xứ
+rõ từ OpenStreetMap, OSMnx, TomTom và các đầu vào thủ công đến dữ liệu tìm đường
+đã chuẩn hóa. Mức độ hiện thực vẫn bị giới hạn bởi việc đơn giản hóa bản đồ, độ
+phủ TomTom một phần, dữ liệu mô phỏng thay thế và các tham số mô hình chưa được
+kiểm chứng độc lập; các giới hạn này phải được giữ nguyên khi diễn giải kết quả.

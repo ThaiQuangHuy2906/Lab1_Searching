@@ -27,7 +27,7 @@ $$
 
 Do đường một chiều, hướng rẽ và trọng số theo chiều di chuyển, nhìn chung $c_{ij}\ne c_{ji}$. Vì vậy, mọi bộ giải phải đọc đúng cạnh có hướng; không được thay $c_{ij}$ bằng $c_{ji}$, đối xứng hóa ma trận hoặc dùng công thức chênh lệch chi phí chỉ đúng cho TSP đối xứng.
 
-Hành trình mặc định là **đường đi mở**:
+Hành trình mặc định là **lộ trình hở (hành trình mở)**, nghĩa là shipper kết thúc tại điểm giao cuối:
 
 $$
 \min_{\pi}\ C_{\mathrm{open}}(\pi)
@@ -43,7 +43,7 @@ C_{\mathrm{closed}}(\pi)
 +c_{\pi_{n-1},p_0}.
 $$
 
-Trong phản hồi của hành trình đóng, `order` vẫn không lặp lại $p_0$ ở cuối; chặng quay về được biểu diễn riêng trong `legs` [P2].
+Trên giao diện, công tắc **Quay về điểm Đi sau điểm giao cuối** mặc định ở trạng thái tắt. Khi tắt, UI gửi `return_to_start=false` để tạo lộ trình hở; khi người dùng bật công tắc, UI gửi `return_to_start=true` và hệ thống thêm đúng một chặng từ điểm giao cuối về điểm xuất phát. Như vậy, `false` chỉ là **giá trị mặc định**, không phải giá trị UI luôn gửi. Trong phản hồi của hành trình đóng, `order` vẫn không lặp lại $p_0$ ở cuối; chặng quay về được biểu diễn riêng trong `legs` [P2], [P6].
 
 ### 8.1.2. Hàm chi phí và đơn vị
 
@@ -92,8 +92,8 @@ Hàm mục tiêu `balanced` cộng thời gian điều chỉnh ùn tắc với k
 | Ba phương pháp | `held_karp`, `nn_2opt`, `sa` |
 | Số điểm | Tối đa 16 điểm tính cả `start`; Held–Karp tối đa 15 điểm |
 | Đầu ra thành công | Thứ tự `order`, từng chặng `legs`, tổng chi phí/khoảng cách, tổng theo thứ tự nhập, phần trăm tiết kiệm, thống kê bộ giải và cờ bảo đảm tối ưu |
-| Không tới được | Nếu có cặp có hướng cần thiết không tới được, hệ thống trả `found=false`, không tạo hành trình giả |
-| Hành trình mặc định | Mở, tức kết thúc tại điểm giao cuối; chỉ quay về khi `return_to_start=true` |
+| Không tới được | Nếu bất kỳ cặp có thứ tự nào trong tập điểm được chọn không tới được, hệ thống trả `found=false`, không tạo hành trình giả |
+| Dạng hành trình trên UI | Hỗ trợ cả lộ trình hở và lộ trình quay về điểm xuất phát; mặc định là hở (`return_to_start=false`) |
 
 ### 8.1.4. Luồng chương trình và ánh xạ vào mã nguồn
 
@@ -114,7 +114,7 @@ Cả ba phương pháp dùng chung một luồng xử lý. Việc dùng cùng m�
 | Metaheuristic | `simulated_annealing` trong [P1] | Chạy năm quỹ đạo có seed và lấy nghiệm tốt nhất |
 | Bằng chứng tối ưu hóa | Vết tối ưu hóa và phản hồi đa điểm [P2] | Ghi sự kiện quy hoạch động, tìm kiếm cục bộ hoặc SA tách biệt với vết tìm đường |
 
-Trên giao diện, người dùng chọn điểm, hàm mục tiêu, khung giờ, hành trình mở/đóng và phương pháp; lớp giao diện gửi cùng một bộ tham số đầu vào tới `POST /api/multiroute` khi so sánh nhiều phương pháp. Phía máy chủ là nguồn có thẩm quyền tính ma trận, thứ tự và chi phí; giao diện chỉ cấu hình, gọi API và trình bày kết quả [P2], [P6].
+Trên giao diện, người dùng chọn điểm, hàm mục tiêu, khung giờ, phương pháp và có quay về điểm xuất phát hay không. Lớp giao diện chụp giá trị hiện thời của công tắc thành `return_to_start` và gửi cùng một bộ tham số đầu vào tới `POST /api/multiroute` khi so sánh nhiều phương pháp. Phía máy chủ là nguồn có thẩm quyền tính ma trận, thứ tự và chi phí; giao diện chỉ cấu hình, gọi API và trình bày kết quả [P2], [P6].
 
 Với hàng đợi ưu tiên dạng heap và trọng số không âm, một lượt UCS có độ phức tạp xấp xỉ $O((E+V)\log V)$. Trong trường hợp xấu nhất, dựng ma trận từ $n$ nguồn có độ phức tạp
 
@@ -187,9 +187,13 @@ HELD_KARP(C, points, return_to_start)
                 nếu candidate tốt hơn dp[mask ∪ {j}, j]:
                     lưu candidate và predecessor i
 
-    chọn endpoint cuối có tổng chi phí nhỏ nhất
+    full <- mask chứa toàn bộ điểm
     nếu return_to_start:
-        cộng C[endpoint, start]
+        endpoint <- argmin_{i != start} (dp[full, i] + C[i, start])
+        total_cost <- dp[full, endpoint] + C[endpoint, start]
+    ngược lại:
+        endpoint <- argmin_{i != start} dp[full, i]
+        total_cost <- dp[full, endpoint]
     truy predecessor để khôi phục order
     return order, total_cost
 ```
@@ -212,7 +216,7 @@ Sau khi so sánh tất cả điểm kết thúc, thuật toán trả `BT → SC 
 
 - **Tính đúng của truy hồi:** một hành trình tối ưu kết thúc tại $(S,j)$ phải có một điểm ngay trước $j$. Nếu phần hành trình đến điểm trước đó không tối ưu, thay nó bằng phần rẻ hơn sẽ tạo hành trình đến $(S,j)$ rẻ hơn, mâu thuẫn với giả thiết tối ưu.
 - **Dừng:** số bitmask và điểm kết thúc là hữu hạn; ba vòng lặp kết thúc sau khi xét hết các trạng thái được phép.
-- **Bảo đảm trả nghiệm hợp lệ:** có điều kiện. Khi ma trận có đủ các cặp có hướng cần thiết và $n\le15$, phiên bản cài đặt trả một hành trình hợp lệ. Cặp không tới được bị phát hiện ở bước dựng ma trận trước khi chạy bộ giải.
+- **Bảo đảm trả nghiệm hợp lệ:** có điều kiện. Khi ma trận có chi phí hữu hạn cho mọi cặp có thứ tự và $n\le15$, phiên bản cài đặt trả một hành trình hợp lệ. Cặp không tới được bị phát hiện ở bước dựng ma trận trước khi chạy bộ giải.
 - **Bảo đảm tối ưu toàn cục:** có. Thuật toán xét đầy đủ các trạng thái tập con–điểm kết thúc và trả nghiệm tối ưu của đúng ma trận, hàm mục tiêu và dạng hành trình mở/đóng đã cung cấp.
 
 **Độ phức tạp, giới hạn và trường hợp sử dụng.**
@@ -273,14 +277,18 @@ BT\rightarrow MT\rightarrow HN\rightarrow SC,
 \qquad C=176+30+254=460.
 $$
 
-2-opt thử đảo đoạn $[MT,HN,SC]$, tạo:
+Phiên bản cài đặt quét các cặp chỉ số theo thứ tự ổn định và nhận ngay mỗi cải thiện nghiêm ngặt. Vì vậy, vết 2-opt thực tế trên ví dụ là:
 
 $$
-BT\rightarrow SC\rightarrow HN\rightarrow MT,
-\qquad C=304+52+30=386.
+\begin{aligned}
+BT\rightarrow MT\rightarrow HN\rightarrow SC &: 460,\\
+BT\rightarrow HN\rightarrow MT\rightarrow SC &: 459,\\
+BT\rightarrow SC\rightarrow MT\rightarrow HN &: 416,\\
+BT\rightarrow SC\rightarrow HN\rightarrow MT &: 386.
+\end{aligned}
 $$
 
-Vì 386 < 460, ứng viên được nhận. Việc hành trình cuối trùng Held–Karp trong ví dụ này là một quan sát trên bộ thử nhỏ, không phải bảo đảm lý thuyết.
+Mỗi chuyển tiếp trên giảm chi phí nên đều được nhận. Việc hành trình cuối trùng Held–Karp trong ví dụ này là một quan sát trên bộ thử nhỏ, không phải bảo đảm lý thuyết.
 
 **Tính hợp lệ, điều kiện dừng và bảo đảm.**
 
@@ -291,11 +299,11 @@ Vì 386 < 460, ứng viên được nhận. Việc hành trình cuối trùng He
 
 **Độ phức tạp, giới hạn và trường hợp sử dụng.**
 
-NN trong phiên bản cài đặt gọi `sorted(left)` trước khi chọn phần tử nhỏ nhất, nên thời gian là $O(n^2\log n)$, không chỉ $O(n^2)$. Trong mỗi lượt tìm kiếm cục bộ, số ứng viên là $\Theta(n^2)$; mỗi ứng viên được tính lại toàn bộ chi phí trong $\Theta(n)$, nên một lượt tốn $O(n^3)$. Với $P$ lượt:
+NN trong phiên bản cài đặt gọi `sorted(left)` trước khi chọn phần tử nhỏ nhất, nên thời gian là $O(n^2\log n)$, không chỉ $O(n^2)$. Trong mỗi lượt tìm kiếm cục bộ, số ứng viên là $\Theta(n^2)$; mỗi ứng viên được tính lại toàn bộ chi phí trong $\Theta(n)$, nên một lượt tốn $O(n^3)$. Với $L$ lượt:
 
 $$
 T_{\mathrm{NN+local}}
-=O(n^2\log n+Pn^3).
+=O(n^2\log n+Ln^3).
 $$
 
 Bộ nhớ phụ trợ của riêng bộ giải là $O(n)$ cho thứ tự và ứng viên; nếu tính cả ma trận chung thì là $O(n^2)$, chưa kể bộ nhớ đệm đường đi.
@@ -401,10 +409,10 @@ Bảng 8.7 chỉ so sánh các bộ giải trên ma trận $C$ đã dựng; chi 
 | Phương pháp | Nhãn API | Phân loại | Thời gian bộ giải | Bộ nhớ phụ trợ | Bảo đảm trả nghiệm hợp lệ | Bảo đảm tối ưu toàn cục | Giới hạn chính |
 |---|---|---|---|---|---|---|---|
 | Held–Karp | `held_karp` | Quy hoạch động chính xác | $O(n^2 2^n)$ | $O(n2^n)$ | Có, khi mọi cặp có hướng đều có chi phí hữu hạn và $n\le15$ | **Có** | Tăng theo hàm mũ; tối đa 15 điểm |
-| NN + 2-opt/Or-opt | `nn_2opt` | Heuristic xác định và tìm kiếm cục bộ | $O(n^2\log n+Pn^3)$ | $O(n)$ | Có, khi mọi cặp có hướng đều có chi phí hữu hạn và $n\le16$ | **Không** | Không có cận chất lượng; có thể dừng ở cực tiểu cục bộ |
+| NN + 2-opt/Or-opt | `nn_2opt` | Heuristic xác định và tìm kiếm cục bộ | $O(n^2\log n+Ln^3)$ | $O(n)$ | Có, khi mọi cặp có hướng đều có chi phí hữu hạn và $n\le16$ | **Không** | Không có cận chất lượng; có thể dừng ở cực tiểu cục bộ |
 | SA, năm seed | `sa` | Metaheuristic giả ngẫu nhiên có seed | $O(S(n^2\log n+In))$ | $O(Sn)$ | Có, khi mọi cặp có hướng đều có chi phí hữu hạn và $n\le16$ | **Không** | Không có cận chất lượng; phụ thuộc tham số và ngân sách tìm kiếm |
 
-Trong Bảng 8.7, $P$ là số lượt tìm kiếm cục bộ, $S$ là số seed và $I$ là số vòng lặp trên mỗi seed; cấu hình hiện hành có $S=5$, $I=2.000$. “Trả nghiệm hợp lệ” chỉ nói rằng bộ giải tạo đủ thứ tự ghé theo hợp đồng, không đồng nghĩa với tìm được hành trình tốt nhất.
+Trong Bảng 8.7, $L$ là số lượt tìm kiếm cục bộ, $S$ là số seed và $I$ là số vòng lặp trên mỗi seed; cấu hình hiện hành có $S=5$, $I=2.000$. “Trả nghiệm hợp lệ” chỉ nói rằng bộ giải tạo đủ thứ tự ghé theo hợp đồng, không đồng nghĩa với tìm được hành trình tốt nhất.
 
 ## 8.3. So sánh thứ tự ban đầu và thứ tự sau tối ưu
 
@@ -481,7 +489,7 @@ Các đơn vị trong Bảng 8.10 không tương đương về chi phí CPU, nê
 - **Held–Karp; đồng thời là nghiệm tốt nhất trong năm seed của SA:** Bưu điện Thành phố → Bitexco Financial Tower → BV Từ Dũ → Phố đi bộ Bùi Viện → Chợ Bến Thành → Nhà thờ Đức Bà → Thảo Cầm Viên → Công viên Lê Văn Tám → Chợ Tân Định → Chùa Vĩnh Nghiêm.
 - **NN + 2-opt/Or-opt:** Bưu điện Thành phố → Thảo Cầm Viên → Nhà thờ Đức Bà → Bitexco Financial Tower → BV Từ Dũ → Phố đi bộ Bùi Viện → Chợ Bến Thành → Công viên Lê Văn Tám → Chợ Tân Định → Chùa Vĩnh Nghiêm.
 
-Hình 8.2 biểu diễn các đường đi có hướng của nghiệm Held–Karp trong cùng kịch bản.
+Hình 8.2 biểu diễn nghiệm Held–Karp trong cùng kịch bản; hướng di chuyển được đọc theo thứ tự các nhãn 1–9 trên tuyến.
 
 ![Hành trình Held–Karp trong thí nghiệm exp7](../results/figs/exp7_tsp_map.png)
 
@@ -493,7 +501,7 @@ Held–Karp giảm 1.825,2 giây chi phí `balanced` so với thứ tự nhập,
 
 NN + 2-opt/Or-opt chỉ lệch 1,6% trong phép đo và có thời gian bộ giải thấp nhất. Kết quả phù hợp với vai trò “phản hồi nhanh”, nhưng một kịch bản không đủ để xem 1,6% là cận bảo đảm. Trên đầu vào khác, quyết định tham lam ban đầu và cực tiểu cục bộ có thể làm độ lệch lớn hơn.
 
-Nghiệm tốt nhất trong năm seed của SA chạm đúng chi phí Held–Karp, nhưng trung bình 2.584,6 ± 66,0 giây cho thấy các seed không cho chất lượng giống nhau. Vì vậy, báo cáo cả độ phân tán và chính sách seed trung thực hơn việc chỉ nêu lần chạy tốt nhất. SA cần nhiều thời gian hơn NN và Held–Karp trong exp7 do đánh giá 10.000 ứng viên qua năm seed.
+Nghiệm tốt nhất trong năm seed của SA chạm đúng chi phí Held–Karp, nhưng trung bình 2.584,6 ± 66,0 giây cho thấy các seed không cho chất lượng giống nhau. Vì vậy, báo cáo cả độ phân tán và chính sách seed trung thực hơn việc chỉ nêu lần chạy tốt nhất. Runtime quan sát của SA cao hơn NN và Held–Karp trong exp7; kết quả này phù hợp với việc SA đánh giá 10.000 ứng viên qua năm seed, nhưng một phép đo trên một kịch bản không đủ để khẳng định quan hệ nhân quả hoặc hiệu năng tổng quát.
 
 ### 8.3.6. Ảnh hưởng của ùn tắc
 
@@ -503,7 +511,7 @@ Tuy nhiên, exp7 chỉ chạy lúc 07:30 nên **không phải** thí nghiệm nh
 
 ## 8.4. Đánh giá tính tối ưu và chất lượng nghiệm heuristic
 
-Held–Karp là phương pháp duy nhất trong bộ ba bảo đảm **tối ưu toàn cục đối với ma trận, hàm mục tiêu và dạng hành trình đã cho**, với điều kiện đầu vào nằm trong giới hạn $n\le15$. NN + 2-opt/Or-opt và SA là các heuristic không có cận bảo đảm chất lượng: NN kết thúc ở cực tiểu cục bộ của lân cận được cài đặt, còn SA thực hiện tìm kiếm giả ngẫu nhiên hữu hạn để tăng khả năng thoát cực tiểu cục bộ. Mức gần tối ưu của hai phương pháp chỉ được đánh giá thực nghiệm bằng độ lệch so với Held–Karp; việc chúng chạm hoặc gần nghiệm Held–Karp trong exp7 không làm thay đổi phạm vi bảo đảm.
+Held–Karp là phương pháp duy nhất trong bộ ba bảo đảm **tối ưu toàn cục đối với ma trận, hàm mục tiêu và dạng hành trình đã cho**, với điều kiện đầu vào nằm trong giới hạn $n\le15$. NN + 2-opt/Or-opt và SA là các heuristic không có cận bảo đảm chất lượng: toàn bộ phương pháp NN + 2-opt/Or-opt kết thúc ở cực tiểu cục bộ theo các lân cận 2-opt và Or-opt được cài đặt, còn SA thực hiện tìm kiếm giả ngẫu nhiên hữu hạn để tăng khả năng thoát cực tiểu cục bộ. Mức gần tối ưu của hai phương pháp chỉ được đánh giá thực nghiệm bằng độ lệch so với Held–Karp; việc chúng chạm hoặc gần nghiệm Held–Karp trong exp7 không làm thay đổi phạm vi bảo đảm.
 
 ### 8.4.1. Kiểm thử và khả năng tái lập
 
@@ -516,7 +524,7 @@ Các kiểm thử trong [P3] bao phủ những thuộc tính trực tiếp liên
 | Bất đối xứng | Ma trận kiểm thử được xác nhận có $c_{ij}\ne c_{ji}$ |
 | Đúng đắn của bộ giải chính xác | Held–Karp khớp vét cạn trên ma trận kiểm thử và nhiều ma trận bất đối xứng có seed |
 | Đúng đắn của ma trận | `build_matrix` khớp đối chứng NetworkX cho mọi `mode` và bốn khung giờ trên `G_demo` |
-| Heuristic | NN kết thúc tại cực tiểu cục bộ theo lân cận được kiểm; heuristic không cho chi phí thấp hơn chuẩn chính xác trong các ca kiểm thử |
+| Heuristic | Phương pháp NN + 2-opt/Or-opt kết thúc tại cực tiểu cục bộ theo các lân cận được kiểm; các heuristic không cho chi phí thấp hơn chuẩn chính xác trong các ca kiểm thử |
 | SA | Cùng seed cho kết quả tái lập; hành trình hợp lệ ở dạng mở và đóng; nghiệm tốt nhất cùng thống kê nhất quán |
 | Hợp đồng và lỗi biên | Phản hồi tổng/chặng nhất quán; quay về điểm xuất phát đúng; giới hạn kích thước và nút không tồn tại được kiểm |
 
@@ -585,6 +593,6 @@ Các đường dẫn dưới đây tham chiếu đến gói mã nguồn và dữ
 - [P1] [`backend/app/tsp.py`](../backend/app/tsp.py): dựng ma trận, Held–Karp, NN + 2-opt/Or-opt, SA và hàm điều phối đa điểm.
 - [P2] [`docs/SCHEMA.md`](../docs/SCHEMA.md): hợp đồng chi phí, `POST /api/multiroute` và vết tối ưu hóa.
 - [P3] [`backend/tests/test_tsp.py`](../backend/tests/test_tsp.py): kiểm thử ATSP mục tiêu.
-- [P4] [`results/exp7_tsp.csv`](../results/exp7_tsp.csv), [`results/README.md`](../results/README.md) và [`results/figs/exp7_tsp_map.png`](../results/figs/exp7_tsp_map.png): kết quả exp7, môi trường chạy, mã SHA-256 và hình tuyến đường.
+- [P4] [`results/exp7_tsp.csv`](../results/exp7_tsp.csv), [`results/exp4_congestion.csv`](../results/exp4_congestion.csv), [`results/README.md`](../results/README.md) và [`results/figs/exp7_tsp_map.png`](../results/figs/exp7_tsp_map.png): kết quả exp7, bằng chứng độ nhạy tuyến đường ở exp4, môi trường chạy, mã SHA-256 và hình tuyến đường.
 - [P5] [`docs/GIAI-THICH-THUAT-TOAN.md`](../docs/GIAI-THICH-THUAT-TOAN.md): ví dụ bốn điểm được sinh từ mã nguồn và dữ liệu dự án.
-- [P6] [`frontend/components/control-panel.tsx`](../frontend/components/control-panel.tsx), [`frontend/lib/store.ts`](../frontend/lib/store.ts) và [`frontend/components/atsp/atsp-compare.tsx`](../frontend/components/atsp/atsp-compare.tsx): luồng cấu hình, gọi API và trình bày kết quả ATSP.
+- [P6] [`frontend/components/control-panel.tsx`](../frontend/components/control-panel.tsx), [`frontend/components/atsp/atsp-setup.tsx`](../frontend/components/atsp/atsp-setup.tsx), [`frontend/lib/store.ts`](../frontend/lib/store.ts), [`frontend/lib/run-orchestrator.ts`](../frontend/lib/run-orchestrator.ts) và [`frontend/components/atsp/atsp-compare.tsx`](../frontend/components/atsp/atsp-compare.tsx): công tắc open/closed, snapshot cấu hình, ánh xạ chính xác `return_to_start` vào request và trình bày kết quả ATSP.

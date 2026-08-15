@@ -132,7 +132,7 @@
 <g id="node10" class="node">
 <title>output</title>
 <path fill="#e8f3f8" stroke="#2b5d7d" stroke-width="1.2" d="M1057.35,-90C1057.35,-90 956.7,-90 956.7,-90 950.7,-90 944.7,-84 944.7,-78 944.7,-78 944.7,-66 944.7,-66 944.7,-60 950.7,-54 956.7,-54 956.7,-54 1057.35,-54 1057.35,-54 1063.35,-54 1069.35,-60 1069.35,-66 1069.35,-66 1069.35,-78 1069.35,-78 1069.35,-84 1063.35,-90 1057.35,-90"/>
-<text xml:space="preserve" text-anchor="middle" x="1007.02" y="-74.5" font-family="Arial" font-size="10.00" fill="#173a4f">Tổng cost, km, thời gian,</text>
+<text xml:space="preserve" text-anchor="middle" x="1007.02" y="-74.5" font-family="Arial" font-size="10.00" fill="#173a4f">Cost, km, phút quy đổi,</text>
 <text xml:space="preserve" text-anchor="middle" x="1007.02" y="-62.5" font-family="Arial" font-size="10.00" fill="#173a4f">savings và bằng chứng</text>
 </g>
 <!-- paths&#45;&gt;output -->

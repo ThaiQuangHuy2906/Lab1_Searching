@@ -132,6 +132,7 @@ caches:
 ├── CLAUDE.md                         legacy handoff and commands
 ├── PROMPT-MASTER.md                  historical construction specification
 ├── README.md                         user run guide
+├── report_dataset_graphmodel.md       report sections b/c/d/j for data and graph modeling
 ├── backend/
 │   ├── app/                          API, models, stores, search, TSP, benchmark
 │   ├── tests/                        eleven pytest modules
@@ -547,6 +548,7 @@ part. Full provenance and SHA-256 fingerprints are in `results/README.md`.
 | `results/*.csv`, figures, routes | `backend/app/benchmark.py` | official 2026-08-11 coherent run; verified against current inputs |
 | `data/graph_*.json`, profiles, preview | pipeline scripts | generated snapshot; current and validated |
 | `report/Report_3ATSP_Final.md`, `report/Report_3ATSP_EN.md` | manual report sources + official exp7 artifact | current ATSP report section in Vietnamese plus English companion; result provenance rechecked 2026-08-15 |
+| `report_dataset_graphmodel.md` | manual report source + current graph/profile evidence | current sections b/c/d/j; exact counts, POI snap statistics and provenance rechecked 2026-08-15 |
 | `report/BaoCao-Khung.md` | manual frame with data/result references | incomplete |
 | `report/Slide-Outline.md` | manual | outline only |
 | `report/Video-KichBan.md` | manual | script only, video absent |

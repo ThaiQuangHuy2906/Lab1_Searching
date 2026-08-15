@@ -312,6 +312,8 @@ frontend/app/      trang chính và /benchmark
 frontend/components/
 frontend/lib/      API client, types, format và Zustand store
 report/            báo cáo ATSP Markdown, khung báo cáo, slide và video
+report_dataset_graphmodel.md
+                   phần báo cáo bối cảnh, mô hình, dataset và hạn chế dữ liệu
 results/           benchmark chính thức 2026-08-11 + provenance/checksum
 scripts/           pipeline data, validator, generator và QA
 ```
@@ -334,6 +336,7 @@ scripts/           pipeline data, validator, generator và QA
 | [`docs/GIAI-THICH-THUAT-TOAN.md`](docs/GIAI-THICH-THUAT-TOAN.md) | tài liệu sinh tự động từ view `teach_7` và exp3/exp7 chính thức; không hand-edit phần số |
 | [`docs/ROLE-C-ADVANCED-ATSP-GIAI-THICH-DE-HIEU.md`](docs/ROLE-C-ADVANCED-ATSP-GIAI-THICH-DE-HIEU.md) | tài liệu lịch sử tên Role C; hiện dùng để học thuật toán nâng cao và ATSP, không đại diện vai trò đã chốt |
 | [`report/Report_3ATSP_Final.md`](report/Report_3ATSP_Final.md) · [`report/Report_3ATSP_EN.md`](report/Report_3ATSP_EN.md) | phần báo cáo ATSP hoàn chỉnh bằng tiếng Việt và bản tiếng Anh; số exp7 lấy từ artifact chính thức |
+| [`report_dataset_graphmodel.md`](report_dataset_graphmodel.md) | phần báo cáo bối cảnh, mô hình hóa, dataset, hạn chế và hướng phát triển; số liệu graph/profile được tái xác minh ngày 2026-08-15 |
 
 ## Checklist nộp bài
 

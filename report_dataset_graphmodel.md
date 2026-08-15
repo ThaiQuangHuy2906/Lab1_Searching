@@ -1,5 +1,10 @@
 # b. Problem Context (Bối cảnh bài toán)
 
+> **Trạng thái số liệu — tái xác minh read-only 15/08/2026:** hai graph/profile
+> hiện hành tiếp tục đạt `ALL DATA VALID`; 19/19 checksum graph, profile, source
+> thuật toán và kết quả khớp ledger chính thức trong `results/README.md`. Lượt
+> kiểm không crawl, rebuild, benchmark, hiệu chuẩn hay tái sinh artifact. [1], [6]
+
 ## b.1. Kịch bản giao hàng tại khu vực trung tâm Thành phố Hồ Chí Minh
 
 Đề tài xây dựng bài toán tìm đường cho một shipper giao hàng tại khu vực trung
@@ -259,7 +264,7 @@ mức ùn tắc trong phép tính này được rời rạc hóa từ chính t�
 bản ghi đó. Vì vậy, kết quả chỉ cho biết mức độ nhất quán nội bộ giữa quy tắc
 chia mức và hàm nhân thời gian; nó không phải hiệu chuẩn độc lập bằng thời gian
 di chuyển đầu-cuối. Hệ thống vẫn sử dụng \(\gamma=1{,}5\), còn các mức phạt chưa
-có dữ liệu hiệu chuẩn tương ứng.
+có dữ liệu hiệu chuẩn tương ứng. [2]
 
 ### c.5.4. Ảnh hưởng của ùn tắc đến tuyến đường
 
@@ -320,7 +325,7 @@ Bộ dữ liệu gồm hai đồ thị và hai hồ sơ giao thông tương ứn
 Hai đồ thị dùng hệ tọa độ WGS 84 (EPSG:4326) và cùng giới hạn địa lý
 \([106{,}68;10{,}76;106{,}72;10{,}80]\), theo thứ tự kinh độ trái, vĩ độ dưới,
 kinh độ phải, vĩ độ trên. Phạm vi này bao phủ một phần khu vực trung tâm, không
-đại diện cho toàn bộ Thành phố Hồ Chí Minh.
+đại diện cho toàn bộ Thành phố Hồ Chí Minh. [1]
 
 ## d.2. Danh sách địa điểm của đồ thị demo
 
@@ -343,7 +348,7 @@ cách từ tọa độ đầu vào đến nút được chọn có giá trị nh
 hoá Lao Động (116,7 m) và Bảo tàng Hồ Chí Minh – Bến Nhà Rồng (105,8 m). Nhà
 thờ Tân Định là trường hợp duy nhất dùng nút gần thứ hai, cách 72,46 m, để tránh
 trùng nút trong ngưỡng 120 m. Các khoảng cách này đánh giá phép gắn nút, không xác
-nhận tọa độ POI đầu vào hoặc cổng ra vào là chính xác ngoài thực địa.
+nhận tọa độ POI đầu vào hoặc cổng ra vào là chính xác ngoài thực địa. [3]
 
 ## d.3. Nguồn dữ liệu và xuất xứ dữ liệu
 
@@ -448,7 +453,7 @@ Mức ùn tắc của \(G_{\text{demo}}\) không được sinh ngẫu nhiên l�
 cạnh demo và từng khung giờ, mức này là trung bình mức của các cạnh
 \(G_{\text{real}}\) trong hành lang, có trọng số theo thời gian thông thoáng và
 được làm tròn theo quy tắc 0,5 làm tròn lên về số nguyên 1–5. Nhờ đó hai tầng đồ
-thị có dữ liệu giao thông nhất quán với nhau.
+thị có dữ liệu giao thông nhất quán với nhau. [4]
 
 ### d.3.4. Dữ liệu rủi ro
 
@@ -474,7 +479,7 @@ phí vào vùng cho trạng thái ban đầu. Cờ đường hẹp không dùng 
 thực tế mà được suy ra từ loại đường; cờ đèn tín hiệu được dẫn xuất từ nút OSM
 có thẻ đèn tín hiệu. Trên \(G_{\text{demo}}\), cờ ngập, thi công hoặc đèn tín
 hiệu bằng 1 nếu ít nhất một cạnh trong hành lang có cờ tương ứng; cờ đường hẹp
-bằng 1 khi hơn 30% chiều dài hành lang đã được đánh dấu hẹp.
+bằng 1 khi hơn 30% chiều dài hành lang đã được đánh dấu hẹp. [5]
 
 ## d.4. Quy trình tạo dữ liệu
 
@@ -570,7 +575,7 @@ Các kiểm tra cấu trúc trên bộ dữ liệu cuối cho kết quả:
 Các kiểm tra này xác nhận tính nhất quán nội bộ. Cùng với quy trình cố định và
 hạt giống đã xác định, chúng hỗ trợ khả năng tái lập của bộ dữ liệu. Chúng không
 chứng minh rằng mọi giá trị phản ánh chính xác trạng thái giao thông ngoài đời
-tại thời điểm sử dụng.
+tại thời điểm sử dụng. [6]
 
 ## d.7. Các giả định mô hình hóa
 
@@ -668,3 +673,34 @@ Các hướng phát triển được đề xuất trực tiếp từ những h�
 Các mở rộng này giữ nguyên định hướng của đề tài: sử dụng đồ thị có hướng và
 chi phí giải thích được, đồng thời tăng dần độ trung thực của dữ liệu thay vì
 đánh đổi khả năng kiểm chứng và tái lập.
+
+# Tài liệu tham khảo
+
+Các mục dưới đây là nguồn kiểm chứng nội bộ của dự án; các nguồn bối cảnh bên
+ngoài cho từng vùng rủi ro được liên kết trực tiếp tại §d.3.4.
+
+1. [`data/graph_real.json`](data/graph_real.json),
+  [`data/graph_demo.json`](data/graph_demo.json),
+  [`data/traffic_profiles_real.json`](data/traffic_profiles_real.json),
+  [`data/traffic_profiles_demo.json`](data/traffic_profiles_demo.json) và
+  [`data/DATA.md`](data/DATA.md): snapshot, metadata, số lượng và quy tắc dữ liệu.
+2. [`backend/app/costs.py`](backend/app/costs.py),
+  [`results/gamma_calibration.csv`](results/gamma_calibration.csv) và
+  [`results/README.md`](results/README.md): công thức chi phí, ước lượng hậu
+  nghiệm $\hat\gamma$ và provenance/checksum.
+3. [`data/gdemo_pois.json`](data/gdemo_pois.json),
+  [`scripts/04_build_gdemo.py`](scripts/04_build_gdemo.py) và
+  [`data/gdemo_corridors.json`](data/gdemo_corridors.json): POI, phép gắn nút và
+  hành lang co của $G_{\text{demo}}$.
+4. [`data/raw/tomtom/`](data/raw/tomtom/),
+  [`scripts/03b_build_profiles.py`](scripts/03b_build_profiles.py) và
+  [`scripts/pipeline_common.py`](scripts/pipeline_common.py): bản trích xuất
+  TomTom, phép gán 635/4.699 cạnh và synthetic fallback seed 42.
+5. [`data/manual_risks.json`](data/manual_risks.json),
+  [`manual_risks_sources_review.md`](manual_risks_sources_review.md) và
+  [`data/DATA.md`](data/DATA.md): tám vùng rủi ro, nguồn bối cảnh lịch sử và giới
+  hạn diễn giải.
+6. [`scripts/validate_data.py`](scripts/validate_data.py),
+  [`DATA-GRAPH-WEIGHTS-SOURCE-OF-TRUTH.md`](DATA-GRAPH-WEIGHTS-SOURCE-OF-TRUTH.md)
+  và [`results/README.md`](results/README.md): kiểm tra cấu trúc, tái dựng
+  read-only và lần tái xác minh 19/19 checksum ngày 15/08/2026.

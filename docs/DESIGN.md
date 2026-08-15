@@ -5,8 +5,11 @@
 > extraction và Phase 6 route comparison 2–4 đều READY; Phase 7 ATSP comparison
 > 2–3 và Phase 8 hardening đã pass frontend 137/137, TypeScript, production build
 > và backend 235/235 sau official-result closeout. Final audit chỉ dùng Chrome Desktop maximized làm runtime
-> gate; mobile/tablet/narrow QA không thuộc phạm vi lượt này. Evidence nằm ở
-> `docs/UI-V2-PHASE7-READINESS.md` và `docs/UI-V2-PHASE8-READINESS.md`.
+> gate; mobile/tablet/narrow QA không thuộc phạm vi lượt này. Evidence tổng hợp
+> nằm ở `docs/UI-V2-PHASE8-READINESS.md` và `docs/CODEX-CODEBASE-MAP.md`.
+> Lượt kiểm read-only 2026-08-15 xác nhận lại frontend 137/137, backend 235/235,
+> TypeScript và data validator; browser/build evidence gần nhất vẫn là lượt
+> closeout 2026-08-11, không được suy thành QA mới trên máy demo cuối.
 >
 > **Luật:** mọi màu/font/hiệu ứng trên UI phải tra được về token trong file này và
 > `frontend/tailwind.config.ts`. Không tự thêm hiệu ứng ngoài đặc tả. Nếu cần token
@@ -719,8 +722,8 @@ dựa vào số benchmark hay artifact sinh mới:
   Với `prefers-reduced-motion: reduce` sau reload, player `Phát` bị khóa và route
   giữ tĩnh. Không tuyên bố full WCAG conformance.
 - **States:** empty ban đầu, loading, lỗi graph có Retry, benchmark ready/error và
-  offline đều đã được mở bằng UI thật. `/benchmark` reflow tại 390 px, giữ banner
-  `SỐ TẠM` và bảng thay thế dữ liệu biểu đồ.
+  offline đều đã được mở bằng UI thật. `/benchmark` reflow tại 390 px và giữ
+  bảng thay thế dữ liệu khi biểu đồ không khả dụng.
 - **Console/network và data snapshot:** sau clean restart + hard refresh, Chromium
   báo 0 console errors; graph/traffic trả 200. `GET /api/graph?level=demo&view=full`
   xác nhận 51 node, 298 cạnh, 60 một chiều.
@@ -742,10 +745,8 @@ error/warning và không tràn ngang. Lượt ảnh 2026-08-08 được thay th�
 > **Trạng thái 2026-08-11:** contract/runtime v2 đã triển khai code qua Phase 8.
 > Phase 5 map extraction và Phase 6 route comparison 2–4 đều READY. Phase 7 ATSP
 > comparison đã READY; Phase 8 READY WITH KNOWN ISSUES trong phạm vi Desktop sau
-> fresh automated gates và Chrome Desktop full-view. Evidence hiện hành nằm ở
-> `docs/UI-V2-PHASE5-READINESS.md`, `docs/UI-V2-PHASE6-READINESS.md` và
-> `docs/UI-V2-PHASE7-READINESS.md`, `docs/UI-V2-PHASE8-READINESS.md`; contract
-> nằm ở `docs/SCHEMA.md` §F.
+> fresh automated gates và Chrome Desktop full-view. Evidence cuối nằm ở
+> `docs/UI-V2-PHASE8-READINESS.md`; contract nằm ở `docs/SCHEMA.md` §F.
 
 Thiết kế mới tách rõ ba lớp: **Hai điểm/Nhiều điểm**; với Nhiều điểm là **Đi theo
 thứ tự đã chọn/Tối ưu thứ tự ATSP**; sau cùng là **Chạy một/So sánh nhiều**.

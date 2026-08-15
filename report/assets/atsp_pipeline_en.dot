@@ -1,0 +1,43 @@
+digraph ATSPPipeline {
+  graph [
+    rankdir=LR,
+    bgcolor="transparent",
+    pad="0.12",
+    nodesep="0.25",
+    ranksep="0.42",
+    splines=ortho,
+    fontname="Arial"
+  ];
+  node [
+    shape=box,
+    style="rounded,filled",
+    color="#2B5D7D",
+    fillcolor="#F2F7FA",
+    fontcolor="#173A4F",
+    fontname="Arial",
+    fontsize=10,
+    margin="0.10,0.07",
+    penwidth=1.2
+  ];
+  edge [color="#4B7289", penwidth=1.2, arrowsize=0.65];
+
+  request [label="POST /api/multiroute", fillcolor="#E8F3F8"];
+  validate [label="Validate points\nand limits"];
+  matrix [label="Build directed matrix C\nwith n UCS runs"];
+  choose [label="Select the\nordering solver", shape=diamond, fillcolor="#FFF4D9", color="#B88019"];
+  hk [label="Held–Karp", fillcolor="#EAF6EC", color="#3E7B4F"];
+  nn [label="NN + 2-opt/Or-opt", fillcolor="#EAF6EC", color="#3E7B4F"];
+  sa [label="SA\nseeds 0–4", fillcolor="#EAF6EC", color="#3E7B4F"];
+  restore [label="Reconstruct\norder"];
+  paths [label="Join cached paths\nfor each leg"];
+  output [label="Total cost, kilometres, time,\nsavings, and evidence", fillcolor="#E8F3F8"];
+
+  request -> validate -> matrix -> choose;
+  choose -> hk;
+  choose -> nn;
+  choose -> sa;
+  hk -> restore;
+  nn -> restore;
+  sa -> restore;
+  restore -> paths -> output;
+}

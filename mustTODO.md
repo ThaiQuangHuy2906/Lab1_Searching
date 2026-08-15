@@ -14,9 +14,14 @@
 > checkpoint/count 2026-08-08 ở §3.1 là lịch sử, không thay cho evidence closeout
 > phía trên.
 >
-> Bằng chứng UI hiện hành được ghi tại §2, §3.1 và `UI_PLAN.md`; provenance số
+> Bằng chứng UI hiện hành được ghi tại §2, §3.1,
+> `docs/UI-V2-PHASE8-READINESS.md` và `docs/CODEX-CODEBASE-MAP.md`; provenance số
 > chính thức nằm tại `results/README.md`. Bộ ảnh nộp cuối, report PDF, slide thật,
 > video và submission ZIP vẫn là việc thủ công chưa hoàn tất.
+>
+> **Tái xác minh read-only 2026-08-15:** 19/19 checksum trong ledger kết quả vẫn
+> khớp; backend `235 passed`, frontend `137/137`, TypeScript và data validator
+> đều đạt. Không chạy lại benchmark/gamma/generator.
 >
 > **Cập nhật contract 2026-08-08:** nhóm loại lựa chọn `dijkstra` độc lập vì
 > trùng UCS; sản phẩm còn 9 thuật toán route và vẫn giữ Bidirectional Dijkstra.
@@ -33,11 +38,11 @@
 > (3) mở lại các link nguồn bằng tab ẩn danh trong final link QA. Không tự rerun
 > benchmark/gamma/generator nếu input chưa đổi và chưa có ủy quyền mới.
 
-## 1. Phân biệt hai file MUST DO
+## 1. Trạng thái nguồn rủi ro thủ công
 
-- `mustdo.md`: biên bản đóng đầu việc 8 `source_url`, gồm verdict, verification
-  và các caveat bắt buộc giữ khi viết deliverable.
-- `mustTODO.md`: backlog tổng từ sau phase UI cho tới lúc đóng gói bài nộp.
+Biên bản review chi tiết, bằng chứng và caveat bắt buộc khi viết deliverable nằm
+trong `manual_risks_sources_review.md` và `data/DATA.md` §2.1. File này chỉ giữ
+những việc nộp bài còn mở.
 
 Trạng thái `source_url`:
 
@@ -156,7 +161,7 @@ cho nhóm:
 
 - [x] Review toàn bộ `git diff` hiện tại.
 - [x] Xác nhận các Markdown audit và hai ảnh README mới là đúng.
-- [x] Track `mustdo.md` và `mustTODO.md` trong repo.
+- [x] Track backlog nộp bài và biên bản review nguồn rủi ro trong repo.
 - [x] Không đưa `.env`, dependency, cache hay secret vào commit.
 - [x] Commit UI Clarity và documentation liên quan, push thành công lên
       `origin/main`.
@@ -502,8 +507,9 @@ TP.HCM đã nằm trong danh sách kịch bản được cho phép. Vì vậy:
 1. Review rồi commit/push worktree hiện tại; sau đó mọi thành viên pull latest
    `origin/main`. Nhóm chốt các vai trò còn lại và chia các khối report chưa có
    chủ; người đại diện nộp đã chốt là Thái Quang Huy.
-2. ✅ Đã review, tích hợp tám `source_url` theo `mustdo.md`, chạy data validation
-   và giữ nguyên graph/profile/risk counts.
+2. ✅ Đã review, tích hợp tám `source_url` theo
+   `manual_risks_sources_review.md`, chạy data validation và giữ nguyên
+   graph/profile/risk counts.
 3. ✅ Chuỗi benchmark → gamma calibration → teaching generator đã chạy; artifact,
    prose số liệu và năm former banner đã được kiểm/sync.
 4. Hoàn thành 23 marker nội dung report và mọi vai trò/phân công còn lại.

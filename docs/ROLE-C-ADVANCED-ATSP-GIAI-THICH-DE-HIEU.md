@@ -7,10 +7,11 @@
 > đọc trace trên giao diện và trả lời câu hỏi khi bảo vệ.
 >
 > Đây là tài liệu viết tay theo phạm vi Role C lịch sử, không phải file số liệu được
-> sinh tự động. Không lấy các headline trong `results/` làm số chính thức vì
-> chúng đang cũ hơn graph hiện hành.
+> sinh tự động. Bộ `results/` chính thức ngày 2026-08-11 hiện khớp graph/profile
+> và source; lượt kiểm read-only 2026-08-15 xác nhận đủ 19/19 checksum. Chỉ dùng
+> headline trong phạm vi workload và caveat của `results/README.md`.
 >
-> **Kiểm lại 2026-08-08:** semantics bốn thuật toán nâng cao và ba ATSP không đổi.
+> **Kiểm lại 2026-08-15:** semantics bốn thuật toán nâng cao và ba ATSP không đổi.
 > Khi đối chiếu GUI mới, tên thuật toán dùng nhãn ngắn và metric hành trình nhìn
 > thấy dùng km/phút; raw contract vẫn là mét/giây theo `docs/SCHEMA.md`.
 
@@ -1574,7 +1575,8 @@ Bạn sẵn sàng cho Role C khi có thể tự làm, không nhìn tài liệu:
 - [ ] Giải thích nhiệt độ, delta, seed, best/mean/std của SA.
 - [ ] Nói đúng giới hạn 16 điểm tổng và 15 điểm cho Held–Karp.
 - [ ] Không gọi Greedy, Beam, NN+2-opt hoặc SA là “luôn tối ưu”.
-- [ ] Không đọc số benchmark cũ như số chính thức hiện hành.
+- [ ] Chỉ đọc benchmark chính thức 2026-08-11 khi checksum còn khớp và luôn nói
+      đúng phạm vi thí nghiệm, không biến quan sát hữu hạn thành guarantee.
 
 ---
 
@@ -1588,6 +1590,8 @@ Theo thứ tự:
 4. [`backend/tests/test_search_advanced.py`](../backend/tests/test_search_advanced.py) — bằng chứng hành vi thuật toán nâng cao.
 5. [`backend/tests/test_tsp.py`](../backend/tests/test_tsp.py) — bằng chứng Held–Karp/heuristic/SA.
 6. [`docs/GIAI-THICH-THUAT-TOAN.md`](GIAI-THICH-THUAT-TOAN.md) — ví dụ gắn với graph demo.
+7. [`results/README.md`](../results/README.md) — số benchmark chính thức, môi
+   trường, giới hạn và checksum provenance.
 
 Nếu một câu trong tài liệu này mâu thuẫn với contract hiện hành, ưu tiên
 `SCHEMA.md` và code/test hiện tại, rồi cập nhật lại tài liệu này.

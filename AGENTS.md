@@ -34,8 +34,8 @@ Read in this order:
 7. `docs/AUDIT-CLAUDE-PRE-SUBMISSION.md`
 
 Then read the implementation and tests directly relevant to the requested
-change. Treat `docs/TIENDO.md` and `docs/KIEMTOAN.md` as history/audit ledgers,
-not proof of current behavior.
+change. Historical baseline/audit documents are context only, not proof of
+current behavior.
 
 ## Source-of-truth hierarchy
 
@@ -51,8 +51,8 @@ not proof of current behavior.
 - UI design intent: `docs/DESIGN.md`; browser behavior still needs runtime QA.
 - Data meaning and build rules: `data/DATA.md` plus current JSON metadata.
 - Generated teaching content: `scripts/gen_teaching_doc.py` and its inputs.
-- `docs/TIENDO.md`, `docs/KIEMTOAN.md`, `hdcrawl.md`, and audit files are
-  historical/operational evidence and may be stale.
+- `docs/CODEX-BASELINE.md` and `docs/AUDIT-CLAUDE-PRE-SUBMISSION.md` are
+  historical evidence and may be stale.
 
 When describing current state, prefer current code/data and fresh command
 results over schema prose, generated docs, and historical logs.
@@ -176,6 +176,9 @@ npm run dev
   2026-08-11. `results/README.md` records the official provenance, checksums,
   environment, validation and headline results; all five temporary-result
   banners were synchronized away in the same closeout.
+- A read-only re-verification on 2026-08-15 matched all 19 recorded input/source
+  and output checksums; backend passed 235 tests, frontend passed 137 tests,
+  TypeScript exited 0, and the data validator returned `ALL DATA VALID`.
 - Current profiles are `tomtom+synthetic`; raw TomTom snapshots exist for all
   four slots 07:30, 12:00, 17:30, and 22:00. TomTom supplies sampled main-road
   congestion while uncovered edges still use the deterministic synthetic

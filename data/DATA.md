@@ -1,7 +1,8 @@
 # DATA.md — Nguồn dữ liệu, luật xây dựng và giả định
 
-> **Trạng thái kiểm lại 2026-08-11:** final audit chạy fresh
-> `scripts/validate_data.py` và nhận `ALL DATA VALID` mà không rebuild artifact.
+> **Trạng thái kiểm lại 2026-08-15:** `scripts/validate_data.py` tiếp tục nhận
+> `ALL DATA VALID` mà không rebuild artifact; bốn checksum graph/profile và toàn
+> bộ 19 checksum trong ledger kết quả chính thức đều khớp.
 > `G_real` được build ngày 2026-07-27 từ
 > GraphML OSMnx có `created_date=2026-07-26 18:47:01`; raw TomTom đã
 > đủ bốn slot 07:30, 12:00, 17:30 và 22:00. Chuỗi `03b real → 04 → 03b demo →

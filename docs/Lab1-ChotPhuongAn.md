@@ -12,7 +12,8 @@
 > **additive** response/trace contract theo `docs/SCHEMA.md` §F, nhưng không được
 > đổi graph, công thức cost, heuristic, tie-break, đường đi/kết quả thuật toán,
 > seed, dữ liệu hay benchmark. Việc triển khai phải backend-first, giữ reader cũ
-> hoạt động trong giai đoạn chuyển tiếp và qua các gate trong `UI_caithien.md`.
+> hoạt động trong giai đoạn chuyển tiếp và qua các gate đã chốt trong
+> `docs/SCHEMA.md` §F.
 > **Cập nhật audit 2026-08-11:** Phase 0–6 đã hoàn tất; Phase 7 ATSP comparison
 > 2–3 và Phase 8 hardening đã được triển khai end-to-end. Contract/UI Explanation
 > v2 hiện phát và đọc payload version 2. Regression IDA* từng bị validator bác
@@ -21,6 +22,9 @@
 > và data validator đều đạt. Chrome Desktop full-view ngày 2026-08-11 đã pass
 > route single/compare 2–4, ordered multi-point và ATSP single/compare 2–3; nếu
 > audit machine không phải máy demo cuối thì `FINAL DEMO-MACHINE PREFLIGHT REQUIRED`.
+> **Tái xác minh read-only 2026-08-15:** backend 235/235, frontend 137/137,
+> TypeScript và data validator tiếp tục đạt; 19/19 checksum của bộ kết quả chính
+> thức vẫn khớp. Browser/build không được chạy lại trong lượt tài liệu này.
 
 ## 1. Kịch bản và phạm vi
 

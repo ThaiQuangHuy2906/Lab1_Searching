@@ -8,7 +8,8 @@
 > `results/exp2_*` đã được tái sinh chính thức ngày 2026-08-11: 0 vi phạm trên
 > 21.170 điểm và `max(h/h*) = 0,8886`. Đây vẫn chỉ là empirical check trên 10
 > goal; proof bên dưới mới là cơ sở guarantee tổng quát. Không diễn giải giá trị
-> max như mean hoặc toàn bộ phân bố.
+> max như mean hoặc toàn bộ phân bố. Checksum exp2 và các input/source liên quan
+> vẫn khớp ledger khi kiểm read-only ngày 2026-08-15.
 
 ## 1. Ký hiệu và mô hình
 

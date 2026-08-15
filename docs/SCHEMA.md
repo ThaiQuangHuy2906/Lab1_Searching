@@ -6,8 +6,9 @@
 > được triển khai trong model, producer, API, frontend guards/consumers và tests.
 > `/api/route` hiện phát `contract_version=2`; từng variant bắt buộc phải có đủ
 > termination/decision/explanation evidence theo §F, không còn trạng thái rollout
-> v1→v2. Biên bản lịch sử của từng gate nằm tại
-> `docs/UI-V2-PHASE0-READINESS.md` … `docs/UI-V2-PHASE8-READINESS.md`.
+> v1→v2. Biên bản QA cuối còn giữ tại
+> `docs/UI-V2-PHASE8-READINESS.md`; bản đồ triển khai tổng hợp nằm trong
+> `docs/CODEX-CODEBASE-MAP.md`.
 > Dữ liệu benchmark trong `results/` đã được tái sinh chính thức ngày 2026-08-11
 > từ contract này; provenance/checksum nằm tại `results/README.md`. Việc refresh
 > artifact không đổi API contract. UI chỉ đổi mét/giây sang km/phút ở tầng presentation theo
@@ -415,9 +416,8 @@ Tính chất admissible + consistent: chứng minh tại `docs/HEURISTIC-PROOF.m
 
 ## §E. Mở rộng đã duyệt 2026-08-04 — GraphView, scenario và ATSP trace
 
-Phần này **mở rộng theo kiểu additive** §A–§D. Nó là source-of-truth cho
-Milestone 2–4 của `PLAN.md`; khi một mô tả cũ ở §C.2–§C.5 thiếu field mới,
-§E được ưu tiên. Không thay đổi format của `graph_demo.json`,
+Phần này **mở rộng theo kiểu additive** §A–§D. Khi một mô tả cũ ở
+§C.2–§C.5 thiếu field mới, §E được ưu tiên. Không thay đổi format của `graph_demo.json`,
 `graph_real.json` hay profile đã persist trên đĩa.
 
 ### E.1. GraphView và graph response dẫn xuất
@@ -741,9 +741,9 @@ Mọi lỗi vẫn dùng §C.7 envelope. Bổ sung code typed, không dò substri
 
 ### F.0. Trạng thái, phạm vi và version
 
-§F là migration contract **additive** đã được duyệt, nhưng chưa được coi là đã
-triển khai cho đến khi backend models/producers/tests của Phase 1 trong
-`UI_caithien.md` cùng hoàn tất. Không nội dung nào ở §F cho phép đổi graph, cost,
+§F là migration contract **additive** đã được duyệt và triển khai đầy đủ trong
+backend models/producers/tests cùng frontend consumers. Không nội dung nào ở §F
+cho phép đổi graph, cost,
 heuristic, tie-break, traversal order, stopping rule tạo nghiệm, path
 reconstruction, seed, data hoặc benchmark đã chốt.
 

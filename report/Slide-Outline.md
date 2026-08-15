@@ -5,6 +5,8 @@
 > `tomtom+synthetic`, seed 42. Exp1–exp7, gamma CSV và generated guide đã qua
 > kiểm tra độc lập; provenance/SHA-256 nằm tại `results/README.md`. Catalog có 9
 > thuật toán route và không còn series `dijkstra` độc lập.
+> **Kiểm lại read-only 2026-08-15:** 19/19 checksum vẫn khớp; không benchmark,
+> calibrate hoặc regenerate artifact.
 >
 > **Tiến độ:** raw TomTom đủ 4/4 snapshot đại diện trên hai ngày thứ Hai;
 > profile hiện là `tomtom+synthetic`, `G_demo` là 51/298; raw GraphML/TomTom/cache

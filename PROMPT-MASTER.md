@@ -11,7 +11,7 @@
 > inventory hiện hành. Frontend hiện có 9 thuật toán, drawer bốn tab
 > `Số liệu/Giải thích/So sánh/Thử nghiệm`, scenario editor request-scoped và
 > presentation km/phút; contract UI mới nhất nằm ở `docs/DESIGN.md` §12 và
-> bằng chứng triển khai nằm ở `UI_PLAN.md`.
+> bằng chứng triển khai tổng hợp nằm ở `docs/CODEX-CODEBASE-MAP.md`.
 >
 > **Current route-contract delta 2026-08-08:** lựa chọn `dijkstra` độc lập trong
 > đặc tả lịch sử bên dưới đã bị loại vì trùng UCS; `bidijkstra` vẫn được giữ.
@@ -33,7 +33,7 @@ Bạn là kỹ sư trưởng chịu trách nhiệm xây dựng **toàn bộ** đ
 
 ## 1. LUẬT CỨNG — không bao giờ vi phạm
 
-1. **Làm theo phase (mục 5).** Cuối mỗi phase: chạy test, commit, cập nhật `docs/TIENDO.md`, tóm tắt ≤10 dòng, rồi **DỪNG chờ tôi duyệt** — trừ khi tôi ra lệnh "làm liên tục Phase X→Y".
+1. **Ritual phase lịch sử (mục 5).** Quy trình build ban đầu đã kết thúc; không áp dụng stop/commit/log ritual này cho yêu cầu hiện tại.
 2. **Schema trước code.** Ba hợp đồng dữ liệu (mục 3) được chốt ở Phase 0 trong `docs/SCHEMA.md`. Sau khi tôi duyệt, mọi thay đổi schema phải cập nhật `SCHEMA.md` **và báo rõ trong tóm tắt phase**.
 3. **Mọi thuật toán tìm đường trả về cùng một cấu trúc `trace`** (mục 3.2), không ngoại lệ. Đây là quy tắc vàng của nhóm.
 4. **Không trộn đơn vị.** `distance` dùng mét; `time` và `balanced` dùng giây. Công thức cost/heuristic đúng như mục 4, hằng số đúng như phương án: γ = 1.5; penalty ngập 60 / lô cốt 90 / hẻm nhỏ 30 / đèn đỏ 25 giây; IDA* dùng ε = 5 đơn vị cost của mode (mét cho `distance`, giây cho hai mode còn lại). Muốn đổi hằng số → hỏi tôi.
@@ -44,7 +44,7 @@ Bạn là kỹ sư trưởng chịu trách nhiệm xây dựng **toàn bộ** đ
 9. **Ngôn ngữ:** code, tên biến, tên file, commit message → tiếng Anh. Docstring → tiếng Anh ngắn gọn. UI, phần giải thích lộ trình (explanation), báo cáo, `DATA.md`, `GIAI-THICH-THUAT-TOAN.md` → **tiếng Việt**.
 10. **Tái lập 100%:** mọi random đều có seed cố định (mặc định 42; SA chạy 5 seed 0–4); `requirements.txt` và `package.json` pin version đã kiểm chứng chạy được; README có lệnh chạy từ zero cho cả bash lẫn PowerShell (thành viên nhóm dùng Windows).
 11. **Mỗi phase một commit** với message dạng `phase-N: <nội dung>`; sửa lỗi giữa chừng thì commit `fix: <nội dung>`.
-12. **Khi bắt đầu session mới:** đọc lại `CLAUDE.md` → `docs/TIENDO.md` → `PROMPT-MASTER.md` → `docs/SCHEMA.md` rồi tiếp tục phase đang dở. Không bao giờ làm lại từ đầu thứ đã xong.
+12. **Khi bắt đầu session mới:** dùng thứ tự đọc hiện hành trong `AGENTS.md`; không tiếp tục các phase lịch sử trong file này.
 
 ---
 
@@ -52,13 +52,12 @@ Bạn là kỹ sư trưởng chịu trách nhiệm xây dựng **toàn bộ** đ
 
 ```
 .
-├── CLAUDE.md                     # tạo ở Phase 0: tổng quan 10 dòng, lệnh chạy, quy ước, trỏ tới TIENDO.md
+├── CLAUDE.md                     # legacy handoff; AGENTS.md là hướng dẫn hiện hành
 ├── PROMPT-MASTER.md              # file này
 ├── docs/
 │   ├── Lab 1 - Searching.pdf
 │   ├── Lab1-ChotPhuongAn.md
 │   ├── SCHEMA.md                 # 3 hợp đồng dữ liệu (Phase 0)
-│   ├── TIENDO.md                 # bảng: phase | trạng thái | ghi chú | commit
 │   ├── HEURISTIC-PROOF.md        # chứng minh admissible + consistent (Phase 2)
 │   └── GIAI-THICH-THUAT-TOAN.md  # tài liệu ôn để quay video (Phase 7)
 ├── data/
@@ -212,7 +211,7 @@ mode=time|balanced → h(n) = haversine(n, goal) / v_max   # giây, v_max = max 
 
 | Phase | Nội dung | DoD (Definition of Done) |
 |---|---|---|
-| **0** | Scaffold repo, `CLAUDE.md`, `docs/SCHEMA.md` (3 hợp đồng), `docs/TIENDO.md`, mock data generator sinh graph giả 8 node đúng schema (cho frontend làm song song) | Cây thư mục đủ; SCHEMA.md đầy đủ 3 hợp đồng + ví dụ JSON; `pytest tests/test_schema.py` pass trên mock. **DỪNG chờ duyệt SCHEMA.** |
+| **0** | Scaffold repo, `CLAUDE.md`, `docs/SCHEMA.md` (3 hợp đồng), mock data generator sinh graph giả 8 node đúng schema (cho frontend làm song song) | Cây thư mục đủ; SCHEMA.md đầy đủ 3 hợp đồng + ví dụ JSON; `pytest tests/test_schema.py` pass trên mock. **DỪNG chờ duyệt SCHEMA.** |
 | **1** | Data pipeline `scripts/01→04` + `DATA.md` | `graph_real.json`, `graph_demo.json`, `traffic_profiles_{real,demo}.json` build được không cần API key; script validate schema pass; **báo số node/edge thực tế của G_real để tôi chốt bbox cuối** (mục tiêu ~2 000–6 000 node; lệch nhiều → đề xuất bbox mới và DỪNG). |
 | **2** | `costs.py`, heuristic, `search.py` (BFS, DFS, IDDFS, UCS, Dijkstra, A*) + trace + tests + `HEURISTIC-PROOF.md` | Toàn bộ test pass, trong đó UCS/Dijkstra/A* khớp chi phí NetworkX (sai số 1e-6) trên G_demo và 50 cặp mẫu G_real, đủ 3 mode × 4 khung giờ. |
 | **3** | `search_advanced.py` (Greedy, Bidirectional Dijkstra, IDA* ε=5 đơn vị mode, Beam k) + `tsp.py` (ma trận ATSP, Held-Karp, NN+2-opt, SA 5 seed) + tests | Bidirectional & IDA* khớp Dijkstra (IDA* trong ngưỡng ε); Held-Karp khớp brute-force với n≤8; NN+2-opt và SA không bao giờ tốt hơn Held-Karp (sanity ATSP). |
@@ -342,5 +341,6 @@ Mục tiêu: 10 mục **a–j đúng đề**, khi hoàn thiện đạt 35–50 t
 ## 9. Giao thức làm việc với tôi
 
 - Kết mỗi phase: tóm tắt ≤10 dòng (làm gì, test ra sao, số liệu chính, quyết định đã tự đưa, việc chờ tôi) rồi DỪNG.
-- Lệnh tôi sẽ dùng: `tiếp tục` (phase kế) · `làm liên tục Phase X→Y, chỉ dừng khi gặp quyết định lớn` · `sửa schema: …` (→ cập nhật SCHEMA.md + refactor) · `chạy lại benchmark` · `trạng thái?` (→ đọc TIENDO.md trả lời).
+- Các lệnh phase ở mục này là lịch sử. Trạng thái hiện hành phải lấy từ code/data,
+  `docs/CODEX-CODEBASE-MAP.md` và các lệnh kiểm chứng mới.
 - Quyết định đã chốt sau phase: bbox giữ `(106.680, 10.760, 106.720, 10.800)`; Python 3.14; `return_to_start=false`; NetworkX bị cô lập khỏi product runtime; người đại diện nộp chính thức là Thái Quang Huy. Việc nhóm còn phải chốt bằng con người: vai trò/phân công còn lại, xác nhận giảng viên nếu cần và bộ artifact nộp cuối.

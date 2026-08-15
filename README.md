@@ -63,16 +63,16 @@ bắt buộc trong report/video.
   objective và quãng đường nằm cạnh nhau; thời gian xử lý thuật toán vẫn dùng ms.
 - Benchmark viewer chỉ đọc với provenance của lượt kết quả chính thức.
 
-> **Trạng thái audit ngày 2026-08-11 — implementation qua Phase 8, chưa phải bộ
+> **Trạng thái xác minh ngày 2026-08-15 — implementation qua Phase 8, chưa phải bộ
 > nộp hoàn chỉnh:**
 > Lượt data refresh cuối đã tích hợp đủ raw TomTom 07:30, 12:00, 17:30 và 22:00
 > dưới dạng bốn snapshot đại diện lấy trên hai ngày thứ Hai; profile hiện là
 > `tomtom+synthetic`. Raw GraphML, bốn TomTom JSON và OSMnx cache hiện được Git
 > track dưới `data/raw/`. Contract/runtime Explanation v2, route comparison 2–4,
-> ATSP comparison 2–3 và hardening Phase 8 đã được nối end-to-end. Fresh gate của
-> audit và result closeout đạt `235 passed` backend, `137/137` frontend,
-> TypeScript, production
-> build 6/6 static pages và `ALL DATA VALID`; `G_demo` hiện có 51 node / 298 cạnh.
+> ATSP comparison 2–3 và hardening Phase 8 đã được nối end-to-end. Lượt kiểm
+> read-only 2026-08-15 đạt `235 passed` backend, `137/137` frontend, TypeScript
+> và `ALL DATA VALID`; production build 6/6 static pages gần nhất thuộc lượt
+> closeout 2026-08-11. `G_demo` hiện có 51 node / 298 cạnh.
 > Regression IDA* từng bị validator bác nhầm nghiệm hợp lệ trong biên ε đã được
 > sửa và test. Chrome Desktop full-view đã pass trên máy audit với route
 > single/compare 2–4, ordered multi-point và ATSP single/compare 2–3; clean
@@ -90,8 +90,8 @@ bắt buộc trong report/video.
 | Backend | **Đạt** | `235 passed, 1 dependency warning`; 9 route algorithms, 3 ATSP methods, contract v2 và artifact-generator regressions đều qua suite; known issue IDA* cũ đã có regression |
 | Data contract | **Đạt** | `ALL DATA VALID`; profile `tomtom+synthetic`; raw GraphML và TomTom 4/4 hiện diện, được Git track |
 | Frontend automated | **Đạt** | `npm test`: 137/137 pass |
-| TypeScript | **Đạt** | `npx tsc --noEmit --incremental false` exit 0 |
-| Frontend production build | **Đạt** | Next.js 15.5.22 compile/type/static generation 6/6; `/` 58,7 kB, first-load 242 kB |
+| TypeScript | **Đạt** | `npx tsc --noEmit` exit 0 ngày 2026-08-15 |
+| Frontend production build | **Đạt ở lượt closeout 2026-08-11** | Next.js 15.5.22 compile/type/static generation 6/6; `/` 58,7 kB, first-load 242 kB; không chạy lại trong lượt tài liệu 2026-08-15 |
 | G_demo | **Hiện hành** | 51 node, 298 cạnh có hướng, 60 cạnh một chiều |
 | G_real | **Hiện hành** | 2.118 node, 4.699 cạnh có hướng, 1.433 cạnh một chiều |
 | Benchmark | **Chính thức, hiện hành** | exp1 800/800; exp3 3.600 dòng/9 thuật toán; exp4 149/200 = 74,5%; exp7 HK tiết kiệm 42,2%; provenance/checksum tại [`results/README.md`](results/README.md) |
@@ -271,7 +271,8 @@ npm test
 npx tsc --noEmit
 ```
 
-Fresh automated gates sau official-result closeout 2026-08-11:
+Fresh read-only gates ngày 2026-08-15; production build giữ bằng chứng từ
+official-result closeout 2026-08-11:
 
 - backend: `235 passed`, 1 Starlette/httpx dependency deprecation warning;
 - data validator: `ALL DATA VALID` với G_demo 51/298/60 one-way và
@@ -310,7 +311,7 @@ docs/              đề bài, contract, proof, design, baseline và audit
 frontend/app/      trang chính và /benchmark
 frontend/components/
 frontend/lib/      API client, types, format và Zustand store
-report/            khung báo cáo, slide và video
+report/            báo cáo ATSP Markdown, khung báo cáo, slide và video
 results/           benchmark chính thức 2026-08-11 + provenance/checksum
 scripts/           pipeline data, validator, generator và QA
 ```
@@ -326,13 +327,13 @@ scripts/           pipeline data, validator, generator và QA
 | [`data/DATA.md`](data/DATA.md) | nguồn, pipeline, giả định và snapshot |
 | [`docs/DESIGN.md`](docs/DESIGN.md) | contract thiết kế UI |
 | [`docs/HUONG-DAN-SU-DUNG-UI.md`](docs/HUONG-DAN-SU-DUNG-UI.md) | hướng dẫn thao tác giao diện hiện hành qua Phase 8 |
-| [`UI_PLAN.md`](UI_PLAN.md) | checklist triển khai và bằng chứng hoàn tất phase UI Clarity |
-| [`UI_caithien.md`](UI_caithien.md) | master plan UI & Explanation v2; Phase 0–8 dùng hệ phase này |
+| [`docs/UI-V2-PHASE8-READINESS.md`](docs/UI-V2-PHASE8-READINESS.md) | biên bản QA cuối của UI & Explanation v2, gồm giới hạn còn chưa kiểm |
 | [`docs/CODEX-BASELINE.md`](docs/CODEX-BASELINE.md) | baseline kỹ thuật ngày 2026-07-27; giữ làm lịch sử |
 | [`docs/CODEX-CODEBASE-MAP.md`](docs/CODEX-CODEBASE-MAP.md) | bản đồ kiến trúc và current-state đã cập nhật qua UI & Explanation v2 Phase 8 |
-| [`docs/TIENDO.md`](docs/TIENDO.md) · [`docs/KIEMTOAN.md`](docs/KIEMTOAN.md) · [`docs/AUDIT-CLAUDE-PRE-SUBMISSION.md`](docs/AUDIT-CLAUDE-PRE-SUBMISSION.md) | nhật ký/audit lịch sử, không phải bằng chứng current |
+| [`docs/AUDIT-CLAUDE-PRE-SUBMISSION.md`](docs/AUDIT-CLAUDE-PRE-SUBMISSION.md) | audit đầu vào lịch sử, không phải bằng chứng current |
 | [`docs/GIAI-THICH-THUAT-TOAN.md`](docs/GIAI-THICH-THUAT-TOAN.md) | tài liệu sinh tự động từ view `teach_7` và exp3/exp7 chính thức; không hand-edit phần số |
 | [`docs/ROLE-C-ADVANCED-ATSP-GIAI-THICH-DE-HIEU.md`](docs/ROLE-C-ADVANCED-ATSP-GIAI-THICH-DE-HIEU.md) | tài liệu lịch sử tên Role C; hiện dùng để học thuật toán nâng cao và ATSP, không đại diện vai trò đã chốt |
+| [`report/Report_3ATSP_Final.md`](report/Report_3ATSP_Final.md) · [`report/Report_3ATSP_EN.md`](report/Report_3ATSP_EN.md) | phần báo cáo ATSP hoàn chỉnh bằng tiếng Việt và bản tiếng Anh; số exp7 lấy từ artifact chính thức |
 
 ## Checklist nộp bài
 

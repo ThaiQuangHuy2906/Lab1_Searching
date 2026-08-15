@@ -2,9 +2,9 @@
 
 ## Trạng thái hiện hành
 
-Mốc kiểm mới nhất: **2026-08-08**, base HEAD `8a78a22`; current worktree đã loại
-lựa chọn route `dijkstra` độc lập khỏi schema/backend/API/frontend/test và đồng
-bộ tài liệu thủ công. Graph/profile/data/results không thay đổi.
+Mốc kiểm mới nhất: **2026-08-15** trên nhánh `main`. Lượt kiểm read-only xác
+nhận toàn bộ 19 checksum graph/profile/source/result trong `results/README.md`
+vẫn khớp; graph/profile/data/result không bị tái sinh hoặc thay đổi.
 
 - 9 thuật toán hai điểm: `bfs`, `dfs`, `iddfs`, `ucs`, `astar`, `greedy`,
   `bidijkstra`, `idastar`, `beam`. Lựa chọn `dijkstra` độc lập đã được nhóm loại
@@ -20,12 +20,14 @@ bộ tài liệu thủ công. Graph/profile/data/results không thay đổi.
   hai ngày thứ Hai cách nhau bảy ngày, không phải time series cùng ngày.
 - `data/raw/graph_raw.graphml`, bốn raw TomTom JSON và OSMnx cache hiện đều được
   Git track; đây không còn là artifact local-only/Git-ignore.
-- `results/` là benchmark tạm ngày 2026-07-26, cũ hơn graph ngày 2026-07-27.
-- Gate mới nhất: **177 backend pytest pass**, **41 frontend test pass**,
-  `ALL DATA VALID`, `npx tsc --noEmit` và production `npm run build` pass ngày
-  2026-08-08.
-- Các regression hiện hành đã đạt; benchmark/gamma/generator cuối và
-  các deliverable thủ công vẫn được hoãn có chủ đích.
+- `results/` là bộ benchmark chính thức ngày 2026-08-11; chỉ được gọi là hiện
+  hành khi các checksum input/source trong `results/README.md` còn khớp.
+- Gate read-only mới nhất ngày 2026-08-15: **235 backend pytest pass** (1 cảnh
+  báo dependency), **137/137 frontend test pass**, `ALL DATA VALID` và
+  `npx tsc --noEmit` exit 0. Production build 6/6 gần nhất thuộc lượt closeout
+  ngày 2026-08-11 và không được chạy lại trong lượt tài liệu này.
+- Các regression và chuỗi benchmark/gamma/generator hiện hành đã đạt; report
+  tổng, slide, video/link, ảnh nộp cuối và submission ZIP vẫn là việc thủ công.
 
 Chuỗi `03b real → 04 → 03b demo → validate_data` đã hoàn tất. Không chạy lại
 graph/profile; không chạy benchmark, gamma calibration hoặc teaching generator
@@ -41,9 +43,9 @@ nếu chưa có ủy quyền riêng cho giai đoạn ghi artifact đó.
 6. `docs/CODEX-BASELINE.md` — snapshot lịch sử 2026-07-27.
 7. `docs/AUDIT-CLAUDE-PRE-SUBMISSION.md` — audit lịch sử.
 
-`AGENTS.md` là quy tắc vận hành repository hiện hành. `docs/TIENDO.md`,
-`docs/KIEMTOAN.md`, baseline và audit Claude là lịch sử, không phải bằng chứng
-cho worktree hiện tại; current code/data và lệnh kiểm chứng mới có quyền cao hơn.
+`AGENTS.md` là quy tắc vận hành repository hiện hành. Baseline và audit Claude
+là lịch sử, không phải bằng chứng cho worktree hiện tại; current code/data và
+lệnh kiểm chứng mới có quyền cao hơn.
 
 ## Bất biến không được phá
 
@@ -111,8 +113,9 @@ Không chạy `npm run build` khi dev server còn hoạt động vì cả hai c�
 - `scripts/05_calibrate_gamma.py`: ghi calibration result.
 - `scripts/gen_teaching_doc.py`: ghi tài liệu sinh tự động.
 
-Lượt data closeout trong `hdcrawl.md` đã hoàn tất. Phần benchmark/gamma/generator
-còn lại là deferred work, chỉ chạy trọn chuỗi sau khi được cho phép riêng.
+Chuỗi data closeout và benchmark/gamma/generator đã hoàn tất; provenance và
+checksum nằm trong `results/README.md`. Chỉ chạy lại trọn chuỗi khi input thay
+đổi và có ủy quyền riêng.
 
 ## Trước demo hoặc bàn giao
 
@@ -120,8 +123,8 @@ còn lại là deferred work, chỉ chạy trọn chuỗi sau khi được cho p
 - Xác nhận `/api/graph?level=demo` trả 51/298.
 - Kiểm `/benchmark` cuộn được ở độ phân giải quay/máy chiếu.
 - QA map, keyboard, theme, offline, responsive và accessibility bằng browser.
-- Không quảng bá con số trong `results/` là current.
-- Giữ đủ 5 banner `SỐ TẠM` cho tới khi refresh cuối hoàn tất.
+- Chỉ dùng số trong `results/` là current khi các checksum input/source trong
+  `results/README.md` còn khớp.
 - GroupID đã chốt là 2; danh tính và tỷ lệ 100% mỗi người đã điền. Cả 8
   `source_url` manual risk đã được review/tích hợp với giới hạn nguồn lịch sử;
   còn các vai trò chưa chốt, kiểm link bằng tab ẩn danh trên máy nộp bài,

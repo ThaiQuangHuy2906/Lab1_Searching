@@ -35,16 +35,19 @@ và **Simulated Annealing** (stochastic metaheuristic). Bài toán thuộc lớp
 ## 1. Mục tiêu và phạm vi
 
 **Phạm vi tài liệu.** Tài liệu ban đầu bám theo implementation tại source snapshot
-`2328d5f`; audit 2026-08-08 trên base HEAD `8a78a22` cùng current worktree xác
-nhận solver ATSP không đổi semantics. UI presentation đã được đồng bộ theo
+`2328d5f`; lượt tái xác minh read-only ngày 2026-08-15 xác nhận checksum
+`backend/app/tsp.py` vẫn khớp source dùng cho bộ kết quả chính thức 2026-08-11,
+nên solver ATSP không đổi semantics. UI presentation đã được đồng bộ theo
 `docs/DESIGN.md` §12: bốn tab kết quả và đơn vị nhìn thấy là km/phút. Tài liệu
 không viết theo kiến thức thuật toán chung. Mọi claim về
 hành vi thuật toán, số lượng iteration, tie-breaking, acceptance condition, v.v. đều
 đối chiếu với code thực thi.
 
 Ví dụ trong tài liệu là **dữ liệu tổng hợp**, không phải dữ liệu giao thông thật.
-Benchmark trong `results/` hiện là artifact cũ theo `results/README.md` — không được
-trích số vào tài liệu chính.
+Benchmark exp1–exp7 trong `results/` là bộ artifact chính thức ngày 2026-08-11;
+19/19 checksum input/source/output vẫn khớp khi kiểm lại ngày 2026-08-15. Chỉ
+được trích các số đó trong đúng phạm vi workload và giới hạn ghi tại
+`results/README.md`.
 
 Sau khi đọc xong, người đọc sẽ:
 
@@ -1173,11 +1176,22 @@ flowchart TD
 - `benchmark.py::exp7()` dùng depot + 9 stops trên `G_demo`, mode `balanced`, slot
   `07:30`, open tour.
 - So original order, Held–Karp, NN + 2-opt/Or-opt và SA best-of-5. Runtime được đo
-  lúc chạy.
+  cho solver sau khi dựng matrix; đây là wall-clock phụ thuộc máy chạy.
 - Ratio với Held–Karp là empirical ratio, không phải approximation guarantee.
-- Artifact hiện tại trong `results/` là số cũ theo `results/README.md` — thuộc lượt
-  chạy congestion synthetic trước data refresh.
-- Không trích số vào report chính trước khi chạy lại toàn bộ pipeline được phép.
+- Artifact hiện tại là lượt chính thức ngày 2026-08-11 trên `G_demo` 51 node/298
+  cạnh, profile `tomtom+synthetic`, seed 42. Checksum artifact và toàn bộ input
+  liên quan vẫn khớp khi kiểm lại ngày 2026-08-15.
+
+| Phương pháp | Chi phí `balanced` (s) | Tiết kiệm so với thứ tự nhập | Gap so với Held–Karp | Runtime solver (ms) |
+|---|---:|---:|---:|---:|
+| Thứ tự nhập | 4.320,1 | 0,0% | +73,2% | — |
+| Held–Karp | **2.494,9** | **42,2%** | 0,0% | 3,9 |
+| NN + 2-opt/Or-opt | 2.534,2 | 41,3% | +1,6% | **1,5** |
+| SA, tốt nhất trong 5 seed | **2.494,9** | **42,2%** | 0,0% trong instance này | 40,5 |
+
+Best cost trung bình của SA qua năm seed là **2.584,6 ± 66,0 s**. Việc nghiệm
+tốt nhất chạm Held–Karp chỉ là quan sát trên exp7, không biến SA thành thuật toán
+có bảo đảm tối ưu.
 
 ---
 

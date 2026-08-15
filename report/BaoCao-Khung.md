@@ -7,6 +7,8 @@
 > lại từ 160 mẫu/4 slot và generator cho output byte-identical. Provenance và
 > SHA-256 nằm tại `results/README.md`. Contract có 9 thuật toán route; không còn
 > series `dijkstra` độc lập trong CSV mới.
+> **Kiểm lại read-only 2026-08-15:** 19/19 checksum vẫn khớp; backend 235,
+> frontend 137/137, TypeScript và data validator đều đạt. Không tái sinh artifact.
 >
 > **Tiến độ dữ liệu:** raw TomTom đã đủ 4/4 snapshot đại diện lấy trên hai ngày
 > thứ Hai; profile hiện là `tomtom+synthetic`; `G_demo` đã rebuild 51/298 và

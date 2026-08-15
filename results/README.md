@@ -7,6 +7,11 @@
 > Lượt benchmark dùng seed 42, 200 cặp OD cách thẳng tối thiểu 1 km trên `G_real`,
 > hai slot 07:30/22:00 và hoàn tất trong 540,5 giây. Sau đó chuỗi tiếp tục với
 > hiệu chuẩn γ từ 160 mẫu TomTom đủ bốn slot và tái sinh tài liệu giảng.
+>
+> **Tái xác minh read-only 2026-08-15:** 19/19 checksum input/source/output bên
+> dưới vẫn khớp; backend `235 passed`, frontend `137/137`, TypeScript exit 0 và
+> data validator tiếp tục trả `ALL DATA VALID`. Không benchmark, calibrate hay
+> regenerate artifact trong lượt kiểm này.
 
 ## Kết quả chính
 
@@ -90,6 +95,8 @@ thì deterministic với cùng input/code.
 
 ## Verification đã chạy
 
+- re-verification 2026-08-15: 19/19 checksum khớp, backend `235 passed`, frontend
+  `137/137`, TypeScript exit 0 và `scripts/validate_data.py` trả `ALL DATA VALID`;
 - backend full suite sau fix generator/newline producer: `235 passed`, 1 dependency warning;
 - `scripts/validate_data.py`: `ALL DATA VALID`;
 - validator artifact độc lập: row/key/method/count/formula, exp4 recompute 200 cặp,

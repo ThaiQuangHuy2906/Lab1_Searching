@@ -11,7 +11,7 @@ The current-state sections were refreshed again on 2026-08-04 from the dirty,
 validated worktree at HEAD `9a790dee005ffc13016094749b92c0375d16929b`; these
 uncommitted changes are user work, not a release commit.
 
-**Current audit refresh — 2026-08-08:** current-state claims in this map were
+**Historical audit refresh — 2026-08-08:** current-state claims at that checkpoint were
 rechecked on base HEAD `8a78a22` plus the current worktree. The active and only
 tracked application frontend is `frontend/`; `frontend1/` was deleted in
 commit `faf9866` and is not a current implementation. Fresh gates are 177
@@ -55,6 +55,16 @@ changes, seven exp5 gamma rows, five exp6 routes and a five-row exp7 manifest.
 `results/README.md` records input/output SHA-256 fingerprints. The generated
 teaching document was regenerated twice byte-identically. Counts later in this
 map that predate this closeout remain historical rather than current evidence.
+
+**Documentation consolidation — 2026-08-15:** completed implementation plans,
+intermediate UI phase-readiness files, duplicate historical ledgers and the
+obsolete TomTom closeout run-book were removed. Current contracts remain in
+`docs/SCHEMA.md`/`docs/DESIGN.md`; the final UI QA checkpoint remains in
+`docs/UI-V2-PHASE8-READINESS.md`; data/result provenance remains in
+`data/DATA.md` and `results/README.md`. A read-only re-verification matched all
+19 recorded SHA-256 values, passed 235 backend tests and 137 frontend tests,
+returned `ALL DATA VALID`, and completed TypeScript with exit code 0. No data,
+benchmark, calibration or generated teaching artifact was rewritten.
 
 **Route-contract delta — 2026-08-08:** the group removed the standalone
 `dijkstra` choice because it duplicated UCS. The current product exposes nine
@@ -122,7 +132,6 @@ caches:
 ├── CLAUDE.md                         legacy handoff and commands
 ├── PROMPT-MASTER.md                  historical construction specification
 ├── README.md                         user run guide
-├── UI_PLAN.md                        implemented UI Clarity checklist/evidence
 ├── backend/
 │   ├── app/                          API, models, stores, search, TSP, benchmark
 │   ├── tests/                        eleven pytest modules
@@ -143,18 +152,16 @@ caches:
 │   ├── HEURISTIC-PROOF.md
 │   ├── DESIGN.md
 │   ├── GIAI-THICH-THUAT-TOAN.md      generated teaching document
-│   ├── TIENDO.md                     historical phase log
-│   ├── KIEMTOAN.md                   historical audit/fix ledger
+│   ├── UI-V2-PHASE8-READINESS.md     final UI v2 QA checkpoint
 │   └── AUDIT-CLAUDE-PRE-SUBMISSION.md historical input audit
 ├── frontend/
 │   ├── app/                          root map and benchmark pages
 │   ├── components/                   controls, map, timeline, drawer, UI
 │   ├── lib/                          Zustand, API, types, formatting, colors
 │   └── package.json                  Next 15 / React 19 / TypeScript
-├── report/                           report frame, slide outline, video script
+├── report/                           ATSP Markdown reports, report frame, slide/video sources
 ├── results/                          official 2026-08-11 benchmark artifacts
-├── scripts/                          data, validation, generator, contrast tools
-└── hdcrawl.md                        final TomTom/refresh run-book
+└── scripts/                          data, validation, generator, contrast tools
 ```
 
 Inventory at onboarding: 132 tracked files, 7 backend test modules, 35
@@ -168,12 +175,12 @@ TypeScript/TSX files. The only pre-existing unignored changes were modified
 | Assignment/rubric | `docs/Lab 1 - Searching.pdf` | Deliverables on disk | Report self-assessments |
 | Settled choices | `docs/Lab1-ChotPhuongAn.md` | Current implementation/data | `PROMPT-MASTER.md` construction details |
 | Graph/trace/API/cost contract | `docs/SCHEMA.md` | `backend/app/models.py`, producers, consumers | Generated teaching examples |
-| Current backend behavior | Current `backend/app/*.py` | Fresh tests/live calls | `TIENDO.md`, old audit claims |
+| Current backend behavior | Current `backend/app/*.py` | Fresh tests/live calls | old audit claims |
 | Current data | Current JSON metadata/content | `scripts/validate_data.py` | Old result prose and old graph counts |
 | UI behavior | `docs/DESIGN.md` for intent | Current TS/TSX plus browser QA | Screenshots/audit prose |
 | Benchmark definition | `backend/app/benchmark.py` | Official 2026-08-11 run plus independent artifact checks | Older benchmark prose is historical |
 | Generated teaching doc | `scripts/gen_teaching_doc.py` plus current inputs | Official regenerated output; byte-idempotence checked | Older generated examples are historical |
-| Progress/audit history | None for current behavior | Re-check code/data/tests | `TIENDO.md`, `KIEMTOAN.md`, audit/run-book |
+| Progress/audit history | None for current behavior | Re-check code/data/tests | baseline and historical audit documents |
 
 For current-behavior disputes, use:
 
@@ -280,10 +287,10 @@ reload endpoint or automatic disk-change invalidation.
 
 Therefore changing files on disk does nothing to an existing process until
 caches are cleared or the backend restarts. The 2026-07-27 onboarding reproduced
-a stale live API (51/141 versus 51/292 on disk). FINAL-01 later stopped old
-services and verified a clean process matched disk for both G_demo (51/292) and
-G_real (2.118/4.699); the lifecycle risk remains, but the latest clean runtime
-was not stale.
+a stale live API (51/141 versus the then-current 51/292 on disk). FINAL-01 later
+verified that historical 51/292 snapshot after a clean restart. The latest
+clean runtime probe on 2026-08-11 matched the current G_demo (51/298/60 one-way)
+and G_real (2.118/4.699/1.433 one-way); the lifecycle risk still remains.
 
 Demo pre-flight:
 
@@ -337,8 +344,11 @@ Executed tests:
 - `test_heuristic_consistent_on_every_edge`.
 
 The consistency test covers every edge but only three goals per store; its
-name/proof prose should not be confused with an exhaustive all-goal run.
-Existing exp2 output is stale with the rest of `results/`.
+name/proof prose should not be confused with an exhaustive all-goal run. The
+official exp2 artifact adds an empirical check over 21,170 reached-node records
+for ten goals: zero violations and `max(h/h*) = 0.8886`. Its SHA-256 still
+matched the official ledger on 2026-08-15; the proof, not this finite sample,
+supports the general guarantee.
 
 ## 9. Nine search algorithms
 
@@ -536,6 +546,7 @@ part. Full provenance and SHA-256 fingerprints are in `results/README.md`.
 | `docs/GIAI-THICH-THUAT-TOAN.md` | `scripts/gen_teaching_doc.py` + data/traces + exp3/exp7 | official 2026-08-11 generated output; repeated generation was byte-identical |
 | `results/*.csv`, figures, routes | `backend/app/benchmark.py` | official 2026-08-11 coherent run; verified against current inputs |
 | `data/graph_*.json`, profiles, preview | pipeline scripts | generated snapshot; current and validated |
+| `report/Report_3ATSP_Final.md`, `report/Report_3ATSP_EN.md` | manual report sources + official exp7 artifact | current ATSP report section in Vietnamese plus English companion; result provenance rechecked 2026-08-15 |
 | `report/BaoCao-Khung.md` | manual frame with data/result references | incomplete |
 | `report/Slide-Outline.md` | manual | outline only |
 | `report/Video-KichBan.md` | manual | script only, video absent |
@@ -837,8 +848,8 @@ Statuses use the onboarding vocabulary requested by the handoff.
   benchmark examples survive only in dated historical ledgers; current artifacts
   are the official 2026-08-11 set.
 - Old graph counts such as 141/253/402 edges in history.
-- `TIENDO.md` phase rows; later entries are newer but still historical.
-- `KIEMTOAN.md` and the Claude audit are claim collections, not current truth.
+- The retained baseline and Claude audit are historical claim collections, not
+  current truth.
 - Earlier audit placeholder counts 31/25 and 13/11 are stale; current count is
   25 occurrences and 23 actionable markers after excluding two instructional
   mentions.

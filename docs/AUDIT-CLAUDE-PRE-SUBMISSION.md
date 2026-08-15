@@ -11,6 +11,9 @@
 > bằng chứng lịch sử. Tám URL đã được review/tích hợp ngày 2026-08-08 với giới
 > hạn nguồn sự kiện lịch sử ở cấp tuyến/khu vực.
 > Nội dung gốc được giữ bên dưới để bảo toàn bằng chứng và mạch quyết định.
+> Các tên `TIENDO.md` và `hdcrawl.md` xuất hiện trong phần nguyên bản là tham
+> chiếu lịch sử tới các ledger/run-book đã được dọn khỏi repository ngày
+> 2026-08-15; không dùng chúng làm hướng dẫn thực thi hay liên kết hiện hành.
 
 ## Báo cáo nguyên bản
 

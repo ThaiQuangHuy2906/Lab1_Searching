@@ -1,6 +1,6 @@
-# Program Flow
+# f. Program Flow
 
-## 1. System overview
+## f.1. System overview
 
 The project is a client/server web app: a Next.js single-page GUI on top of a
 stateless FastAPI backend that owns all search/TSP logic. The backend never
@@ -45,7 +45,7 @@ flowchart TD
     Scenario --> Presets
 ```
 
-## 2. Two axes that decide which request the GUI sends
+## f.2. Two axes that decide which request the GUI sends
 
 Every run in the GUI is a point on two independent switches kept in the
 store: **problem mode** (how many stops) and **run kind** (one algorithm or a
@@ -84,7 +84,7 @@ flowchart TD
   or 2-3 methods (ATSP) against one frozen input snapshot, so results are
   judged on identical conditions.
 
-## 3. Scenario sandbox
+## f.3. Scenario sandbox
 
 A drawer tab lets the user edit one edge's length, free speed, per-slot
 congestion, or risk flags before running a search, without touching the
@@ -114,7 +114,7 @@ a step-by-step demo easier to follow, or switch back to the full graph at any
 time. The real graph always stays at full size - it cannot be shrunk this
 way.
 
-## 4. Main backend modules
+## f.4. Main backend modules
 
 | Module | Responsibility | Key functions |
 |---|---|---|
@@ -130,7 +130,7 @@ way.
 | `models.py` | Pydantic contracts shared by API and frontend (`Trace`, `RouteRequest`, `MultirouteRequest`, `ScenarioConfig`, ...) - executable form of `docs/SCHEMA.md` | - |
 | `benchmark.py` | Offline experiment runner (7 experiments), writes `results/`; served read-only by `/api/benchmark`, never runs live search | `exp1` ... `exp7` - one function per experiment, each writes one CSV/figure set under `results/`. |
 
-## 5. Main frontend modules
+## f.5. Main frontend modules
 
 | Area | Files | Responsibility |
 |---|---|---|
@@ -147,7 +147,7 @@ way.
 | Policy/orchestration | `lib/journey-mode-policy.ts`, `run-orchestrator.ts`, `comparison-policy.ts`, `sequential-route.ts`, `scenario.ts` | Pure functions the store composes. `createRunSnapshot(input)` - builds the immutable `RunSnapshot` a run is frozen into. `routeRequestFromSnapshot`/`multirouteRequestFromSnapshot` - turn a snapshot into the exact request body `api.ts` sends. `buildScenario(view, overrides)` - turns the sandbox edits into the `scenario` field of a request. `mergeSequentialRouteTraces` - stitches per-leg `Trace`s into one continuous route for an ordered multi-stop run. |
 | API client | `lib/api.ts`, `lib/contract-guards.ts` | `api.route(body)`/`api.multiroute(body)` - thin fetch wrappers for the 5 non-health endpoints. `parseTraceResponse`/`parseMultirouteResponse` (in `contract-guards.ts`) - parse and validate every response against the locked contract before it reaches the store, so a malformed backend reply fails loudly instead of corrupting the UI. |
 
-## 6. How the GUI drives the search algorithms
+## f.6. How the GUI drives the search algorithms
 
 The GUI never implements search logic itself - it only collects parameters,
 freezes them into a snapshot, calls the backend, and visualizes the returned

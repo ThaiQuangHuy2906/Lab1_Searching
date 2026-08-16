@@ -1,8 +1,8 @@
-# Program Instructions
+# i. Program Instructions
 
-## 1. Installation and Setup Instructions
+## i.1. Installation and Setup Instructions
 
-### 1.1. Environment requirements
+### i.1.1. Environment requirements
 
 | Component | Version verified |
 |---|---|
@@ -15,7 +15,7 @@
 Python dependencies are pinned in `backend/requirements.txt`; frontend
 dependencies are locked in `frontend/package-lock.json`.
 
-### 1.2. Install dependencies (run once)
+### i.1.2. Install dependencies (run once)
 
 From the repository root, in PowerShell:
 
@@ -33,7 +33,7 @@ Set-Location ..
 No API key or network access is required to run the demo: the graph and
 traffic data the app uses are already pre-built and committed under `data/`.
 
-### 1.3. Run the application (two terminals)
+### i.1.3. Run the application (two terminals)
 
 **Terminal 1 - backend (FastAPI, port 8000):**
 
@@ -49,7 +49,7 @@ Set-Location frontend
 npm run dev
 ```
 
-### 1.4. Open the app
+### i.1.4. Open the app
 
 | What | URL |
 |---|---|
@@ -61,9 +61,9 @@ npm run dev
 
 ---
 
-## 2. Guidelines for Using the GUI
+## i.2. Guidelines for Using the GUI
 
-### 2.1. Overall layout
+### i.2.1. Overall layout
 
 The app opens in Vietnamese by default. In the top bar there is a
 **language switcher** (globe/languages icon, showing "Tiếng Việt" /
@@ -87,17 +87,18 @@ The main screen then has three areas:
 
 ![Idle GUI in English](../assets/screenshot-03-idle-ui.png)
 
-### 2.1.1. `G_demo` vs `G_real`, and why this walkthrough uses `G_demo`
+### i.2.1.1. `G_demo` vs `G_real`, and why this walkthrough uses `G_demo`
 
 The **Graph** field at the top of the Setup panel switches between the two
 datasets the app ships with:
 
-- **`G_demo`** - 51 hand-picked landmarks, 298 directed edges. Small enough
+- **`G_demo`** - 51 curated points of interest (40 landmarks, 7 schools,
+  3 hospitals, and 1 warehouse) connected by 298 directed edges. Small enough
   that every expanded/frontier node during a search trace stays individually
   readable on screen, which is why it is the graph used for the dropdown
   Start/Goal pickers (§2.2.1 step 5).
-- **`G_real`** - the actual OpenStreetMap-derived road network for the
-  covered area of HCMC, ~2,100 nodes and 4,699 directed edges. Realistic
+- **`G_real`** - the processed OpenStreetMap-derived road network for the
+  covered area of HCMC, with 2,118 nodes and 4,699 directed edges. Realistic
   scale, but far too dense to read individual trace steps by eye; endpoints
   are picked by clicking directly on the map instead of a dropdown.
 
@@ -110,14 +111,14 @@ G_real:
 G_demo:
 ![G_demo - teaching graph](../assets/screenshot-03c-graph-demo.png)
 
-### 2.1.2. Adjusting `G_demo`'s node count
+### i.2.1.2. Adjusting `G_demo`'s node count
 
 Still on `G_demo`, the **Displayed node count** field in the Setup panel
 (default 51, the full teaching graph) shrinks the graph down to a smaller
 *connected* subgraph - type any number from 3 to 51 and click **Apply**.
 This reloads a smaller `G_demo` subgraph and clears any existing
 journey/results; the field is disabled outside `G_demo` (`G_real` always
-stays at its full ~2,100 nodes). It is handy for projector-scale demos:
+stays at its full 2,118 nodes). It is handy for projector-scale demos:
 shrinking to a small subgraph (e.g. 7-20 nodes) keeps every expanded/
 frontier node individually legible even from the back of a room, at the
 cost of fewer landmarks to route between.
@@ -126,7 +127,7 @@ cost of fewer landmarks to route between.
 
 *`G_demo` with Displayed node count set to 20*
 
-### 2.1.3. Display options: Congestion layer and Offline mode
+### i.2.1.3. Display options: Congestion layer and Offline mode
 
 Two switches under **Display** in the Setup panel toggle map overlays only -
 neither one changes which route gets computed, only what is drawn on top of
@@ -147,7 +148,7 @@ it:
 
 *`G_demo` with Congestion layer / Offline mode enabled*
 
-### 2.1.4. Theme picker
+### i.2.1.4. Theme picker
 
 The **palette dropdown** in the top bar (next to the language switcher,
 showing a palette icon plus the current theme's name) swaps the color
@@ -164,7 +165,7 @@ on routing, search behavior, or any number shown on screen.
 *Top bar with the palette dropdown open, showing the swatch + name +
 description for each of the 7 themes, Default currently selected.*
 
-### 2.1.5. Benchmark viewer
+### i.2.1.5. Benchmark viewer
 
 The **Benchmark** link in the top bar (same row as the language switcher
 and theme picker) opens `/benchmark`, a visual overview of the project's 7
@@ -179,12 +180,12 @@ has no effect on the rest of the app.
 *The Benchmark page: nodes-expanded and runtime bar charts per algorithm,
 and the gamma weight-sensitivity line chart with its data table below.*
 
-### 2.2. Two-point search
+### i.2.2. Two-point search
 
-#### 2.2.1. Step by step - running a single algorithm
+#### i.2.2.1. Step by step - running a single algorithm
 
 1. **Graph** - pick `G_demo` (small teaching graph, shows the full trace)
-   or `G_real` (full-size real network, ~2,100 nodes).
+   or `G_real` (full-size real network, 2,118 nodes).
 2. **Time slot** - one of `07:30`, `12:00`, `17:30`, `22:00`. Each slot has
    a different congestion profile.
 3. **Objective** (`Balanced` / `Fastest` / `Shortest`):
@@ -198,7 +199,7 @@ and the gamma weight-sensitivity line chart with its data table below.*
 5. **Start / Destination** - the picker depends on which graph is selected:
    - On **G_demo** (51 named nodes), pick Start and Goal from a **dropdown
      list**.
-   - On **G_real** (~2,100 nodes - too many to list usefully), there is no
+   - On **G_real** (2,118 nodes - too many to list usefully), there is no
      dropdown; instead click **"Pick on map"**, then click two nodes
      directly on the map.
 6. **Run mode** - choose **Single run**.
@@ -222,7 +223,7 @@ slot 17:30, objective Balanced, problem type Two points, Start = Chợ Bến
 Thành, Goal = Dinh Độc Lập, run mode Single run, algorithm A\*. Capture right
 before clicking Run, so every dropdown is visible in the same screenshot.*
 
-#### 2.2.2. Reading a result: Metrics, Explanation, and the timeline
+#### i.2.2.2. Reading a result: Metrics, Explanation, and the timeline
 
 - **Metrics tab** - separates *journey outcome* (distance, time, cost under
   the chosen objective) from *search effort* (nodes expanded, max frontier
@@ -283,7 +284,7 @@ Data source notes, and "What is the algorithm doing? · Step N/N" with its
 expandable technical detail. On the map, the red segment of the result
 route marks a congestion level 4-5 stretch for the selected time slot.*
 
-#### 2.2.3. Step by step - comparing 2 to 4 algorithms
+#### i.2.2.3. Step by step - comparing 2 to 4 algorithms
 
 1. Keep the same Start/Goal (or the same stop sequence) you want to compare
    on.
@@ -321,9 +322,9 @@ Balanced cost, Distance, Nodes expanded, Maximum frontier size, Runtime,
 Result guarantee) plus the per-algorithm Status/Explanation row list below
 it.*
 
-### 2.3. Multi-point journey (ATSP)
+### i.2.3. Multi-point journey (ATSP)
 
-#### 2.3.1. Step by step - running a multi-point journey
+#### i.2.3.1. Step by step - running a multi-point journey
 
 Under **Problem type**, choose **Multiple stops**, enter a **Start** (the
 depot) and add several **stops** (the deliveries), then pick one of two
@@ -366,7 +367,7 @@ drawer opens automatically, same as a two-point run.
 TP.HCM, strategy Optimize visit order with ATSP, method Held–Karp, right
 before clicking Run.*
 
-#### 2.3.2. Reading an ATSP result: Metrics and Explanation
+#### i.2.3.2. Reading an ATSP result: Metrics and Explanation
 
 - **Metrics tab** - shows an optimality badge (**guaranteed** for
   Held–Karp, **approximate** for NN + 2-opt/Or-opt and Simulated Annealing),
@@ -403,7 +404,7 @@ the order typed in.*
 *Same result, right drawer switched to the Explanation tab, showing the
 plain-language verdict and Held–Karp's DP search statistics.*
 
-#### 2.3.3. Step by step - comparing 2 to 3 ATSP methods
+#### i.2.3.3. Step by step - comparing 2 to 3 ATSP methods
 
 1. Same Start + stops as §2.3.1.
 2. Run mode: **Compare multiple**.
@@ -435,7 +436,7 @@ Held–Karp/NN+2-opt/SA comparison table (cost, distance, matrix/optimizer
 effort, savings, gap from exact Held–Karp, guarantee, method-specific
 details), and the per-method Status/Explanation row list below it.*
 
-### 2.4. Scenario sandbox ("Experiment" tab)
+### i.2.4. Scenario sandbox ("Experiment" tab)
 
 Editing is only available in **Single run** mode, for either problem type
 (Two points or Multiple stops):
@@ -481,7 +482,7 @@ higher.*
 
 ---
 
-## 3. Example Inputs and Outputs
+## i.3. Example Inputs and Outputs
 
 All four examples below reuse the same two landmarks (for the two-point
 cases) or the same depot + stop list (for the multi-point cases), so a
@@ -497,7 +498,7 @@ document).
 - **Common settings:** graph `G_demo`, time slot `17:30`, objective
   `Balanced`.
 
-### 3.1. Single algorithm run - A*
+### i.3.1. Single algorithm run - A*
 
 - **Input:** Start = Chợ Bến Thành, Goal = Dinh Độc Lập, algorithm = A*,
   mode = Balanced, slot = 17:30.
@@ -510,7 +511,7 @@ document).
 
 See §2.2.1–§2.2.2 above for the matching screenshots.
 
-### 3.2. Single ATSP method run - Held–Karp
+### i.3.2. Single ATSP method run - Held–Karp
 
 - **Input:** Start (depot) = Điểm trung chuyển Hàm Nghi, stops = Nhà thờ
   Đức Bà, Bitexco Financial Tower, Dinh Độc Lập, Bảo tàng Mỹ thuật TP.HCM
@@ -524,7 +525,7 @@ See §2.2.1–§2.2.2 above for the matching screenshots.
 
 See §2.3.1–§2.3.2 above for the matching screenshots.
 
-### 3.3. Comparison - two-point (A* vs DFS vs BFS vs Greedy Best-First)
+### i.3.3. Comparison - two-point (A* vs DFS vs BFS vs Greedy Best-First)
 
 - **Input:** same pair as §3.1 (Chợ Bến Thành → Dinh Độc Lập), 4 algorithms
   selected: A*, DFS, BFS, Greedy Best-First.
@@ -532,7 +533,7 @@ See §2.3.1–§2.3.2 above for the matching screenshots.
 
 See §2.2.3 above for the matching screenshots.
 
-### 3.4. Comparison - multi-point (Held–Karp vs NN+2-opt vs Simulated Annealing)
+### i.3.4. Comparison - multi-point (Held–Karp vs NN+2-opt vs Simulated Annealing)
 
 - **Input:** same depot + 4 stops as §3.2, 3 ATSP methods selected:
   Held–Karp, NN + 2-opt/Or-opt, Simulated Annealing.

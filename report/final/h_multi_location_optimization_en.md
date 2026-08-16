@@ -35,7 +35,7 @@ where $\pi$ is a permutation of $P$. When `return_to_start=true`, the system add
 
 All three methods share the same pipeline: receive the list of points → build the directed cost matrix via UCS → optimize the visit order → assemble the cached UCS paths into a complete route.
 
-![](../../assets/atsp_pipeline_en.svg)
+![](../assets/atsp_pipeline_en.svg)
 
 *Figure 1. From a multi-stop request → directed cost-matrix construction → visit-order optimization → assembly of the cached UCS paths.*
 
@@ -297,7 +297,7 @@ The three methods are complementary: Held–Karp supplies an exact reference for
 
 ### References
 
-1. Department of Introduction to Artificial Intelligence, [*Lab 1: Search Algorithms for Vietnamese Traffic Route Optimization*](<../docs/Lab 1 - Searching.pdf>), sections 4.2–4.10 and evaluation criteria, 2026.
+1. Department of Introduction to Artificial Intelligence, [*Lab 1: Search Algorithms for Vietnamese Traffic Route Optimization*](<../../docs/Lab 1 - Searching.pdf>), sections 4.2–4.10 and evaluation criteria, 2026.
 2. [*Artificial Intelligence — Chapter 6: Local Search*](https://lenbui.github.io/bookai/ai-06-local-search.html), course material, accessed 11/08/2026.
 3. M. Held and R. M. Karp, "A Dynamic Programming Approach to Sequencing Problems," *Journal of the Society for Industrial and Applied Mathematics*, vol. 10, no. 1, pp. 196–210, 1962, [doi:10.1137/0110015](https://doi.org/10.1137/0110015).
 4. G. A. Croes, "A Method for Solving Traveling-Salesman Problems," *Operations Research*, vol. 6, no. 6, pp. 791–812, 1958, [doi:10.1287/opre.6.6.791](https://doi.org/10.1287/opre.6.6.791).

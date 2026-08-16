@@ -1,44 +1,52 @@
-# 2. Bối cảnh bài toán
+# b. Problem Context (Bối cảnh bài toán)
 
-## 2.1. Kịch bản giao thông được lựa chọn
+## b.1. Kịch bản giao thông được lựa chọn
 
-Nhóm lựa chọn kịch bản **tối ưu tuyến đường giao hàng qua nhiều địa điểm tại Thành phố Hồ Chí Minh**, hướng đến đối tượng người giao hàng (shipper) của các nền tảng giao hàng công nghệ. Đây là một tình huống gần gũi với giao thông đô thị Việt Nam, nơi người giao hàng thường phải di chuyển liên tục giữa nhiều địa điểm trong cùng một hành trình.
+Đề tài lựa chọn kịch bản **hỗ trợ một shipper lập hành trình giao hàng qua nhiều địa điểm tại khu vực trung tâm Thành phố Hồ Chí Minh**. Trong mỗi chuyến đi, shipper xuất phát từ một điểm tập kết, cần ghé các địa điểm giao hàng và phải quyết định đồng thời tuyến đường cho từng chặng cũng như thứ tự phục vụ các điểm đến. Đây là một bài toán tiêu biểu của logistics chặng cuối (*last-mile delivery*), nơi chất lượng của quyết định định tuyến ảnh hưởng trực tiếp đến tổng quãng đường, thời gian di chuyển và khả năng duy trì tiến độ giao hàng.
 
-Trong điều kiện lý tưởng, lựa chọn tuyến đường có thể chỉ đơn giản là tìm con đường ngắn nhất từ điểm xuất phát đến điểm giao hàng. Tuy nhiên, trong môi trường giao thông thực tế tại Thành phố Hồ Chí Minh, **khoảng cách ngắn nhất không đồng nghĩa với hành trình hiệu quả nhất**. Một tuyến đường có thể ngắn về mặt địa lý nhưng lại đi qua khu vực đông xe, đường một chiều, giao lộ phức tạp, đoạn đường đang thi công, khu vực ngập nước hoặc những tuyến đường có điều kiện di chuyển không thuận lợi.
+Bối cảnh này có ý nghĩa thực tiễn rõ rệt tại Thành phố Hồ Chí Minh. Theo TomTom Traffic Index, trong năm 2025, mức ùn tắc trung bình của khu vực thành phố đạt **46,9%**; một hành trình 10 km mất trung bình **31 phút 55 giây**. Trong giờ cao điểm buổi tối, cùng quãng đường này mất trung bình **40 phút 32 giây**, với tốc độ trung bình chỉ **14,8 km/h**; tổng thời gian mất thêm do ùn tắc trong các giờ cao điểm được ước tính là **127 giờ trong năm** (TomTom, n.d.). Các số liệu này là chỉ báo ở quy mô thành phố, không phải số đo trực tiếp cho từng đoạn đường trong mô hình, nhưng cho thấy thời gian di chuyển có thể biến động đáng kể theo thời điểm.
 
-Thách thức trở nên rõ rệt hơn khi shipper phải giao hàng tại **nhiều địa điểm trong cùng một chuyến đi**. Khi đó, bài toán không chỉ là “đi đường nào”, mà còn là **“nên giao địa điểm nào trước, địa điểm nào sau và nên di chuyển giữa các địa điểm đó bằng tuyến nào”**. Một thứ tự giao hàng không hợp lý có thể khiến shipper phải quay lại khu vực đã đi qua, di chuyển vòng hoặc tạo ra tổng hành trình dài hơn cần thiết.
+Ở phạm vi rộng hơn, báo cáo *Viet Nam Rising: Pathways to a High-Income Future* nhận định ùn tắc tại Hà Nội và Thành phố Hồ Chí Minh đang làm suy giảm lợi ích kinh tế từ tập trung đô thị và hạn chế khả năng kết nối lao động trong vùng đô thị (Coppola Suriani et al., 2025). Đối với hoạt động giao hàng, tác động này được thể hiện ở quy mô nhỏ hơn nhưng diễn ra lặp lại hằng ngày: mỗi lần đi vòng, chọn nhầm tuyến trong giờ đông xe hoặc sắp xếp thứ tự giao hàng chưa hợp lý đều có thể cộng dồn thành thời gian chậm trễ đáng kể trong toàn bộ hành trình.
 
-Vì vậy, nhóm lựa chọn kịch bản này nhằm mô phỏng một quyết định thường gặp trong giao thông đô thị: **tìm một hành trình hợp lý trong khi đồng thời phải cân nhắc khoảng cách, thời gian và các điều kiện giao thông trên đường**.
+Nghiên cứu về logistics chặng cuối cũng chỉ ra rằng sự gia tăng nhu cầu giao nhận trong đô thị tạo thêm áp lực lên hạ tầng đường bộ, trong khi bài toán định tuyến phải xử lý đồng thời nhiều điều kiện vận hành như ùn tắc, thời gian phục vụ và sự biến động của môi trường giao hàng (Boysen et al., 2021; Jazemi et al., 2023). Vì vậy, kịch bản shipper tại Thành phố Hồ Chí Minh vừa phù hợp với yêu cầu của đề tài, vừa đại diện cho một nhu cầu ra quyết định có cơ sở thực tế.
 
-## 2.2. Vấn đề thực tế cần giải quyết
+## b.2. Vấn đề thực tế cần giải quyết
 
-Vấn đề cốt lõi của bài toán là việc người giao hàng phải đưa ra quyết định tuyến đường trong một mạng lưới giao thông có nhiều phương án khác nhau và nhiều yếu tố ảnh hưởng đến chất lượng của từng phương án.
+Trong mạng lưới đường đô thị, **tuyến ngắn nhất về khoảng cách không nhất thiết là tuyến có thời gian di chuyển thấp nhất hoặc phù hợp nhất**. Một tuyến ngắn có thể đi qua đoạn đường ùn tắc, giao lộ có độ trễ lớn, khu vực ngập hoặc thi công; trong khi một tuyến dài hơn đôi chút có thể giúp hành trình ổn định hơn. Đường một chiều còn làm cho chi phí di chuyển giữa hai địa điểm phụ thuộc vào hướng đi: tuyến từ A đến B có thể khác đáng kể so với tuyến từ B về A. Do đó, khoảng cách đường chim bay hoặc một thứ tự ghé dựa đơn thuần trên vị trí địa lý không đủ để đại diện cho chi phí vận hành thực tế.
 
-Đối với trường hợp **một điểm đến**, nếu chỉ lựa chọn tuyến có khoảng cách nhỏ nhất, shipper có thể đi vào một đoạn đường đang ùn tắc hoặc có điều kiện di chuyển bất lợi. Kết quả là quãng đường tuy ngắn nhưng thời gian thực tế lại cao hơn một tuyến khác dài hơn đôi chút.
+Với một điểm đến, shipper cần lựa chọn một đường đi hợp lệ theo mục tiêu đang ưu tiên, chẳng hạn quãng đường, thời gian ước tính hoặc mức độ phù hợp tổng hợp có xét điều kiện bất lợi trên đường. Với nhiều điểm giao, bài toán xuất hiện thêm một tầng quyết định: **nên ghé các điểm theo thứ tự nào**. Một thứ tự không hợp lý có thể khiến shipper quay lại khu vực vừa đi qua hoặc thực hiện nhiều chặng có chi phí cao, ngay cả khi mỗi chặng riêng lẻ đã sử dụng một tuyến tốt.
 
-Đối với trường hợp **nhiều điểm giao hàng**, độ phức tạp còn tăng lên vì chất lượng của toàn bộ hành trình phụ thuộc vào cả **thứ tự ghé thăm các địa điểm**. Ví dụ, nếu các điểm giao được sắp xếp không phù hợp, shipper có thể phải di chuyển qua lại giữa các khu vực thay vì hoàn thành các điểm gần nhau theo một trình tự hợp lý. Vì vậy, tối ưu riêng từng đoạn đường chưa chắc tạo ra một hành trình tổng thể tốt.
+Vì vậy, vấn đề được phân thành hai nhiệm vụ liên kết:
 
-Từ đó, bài toán của nhóm tập trung giải quyết hai nhu cầu liên quan:
+1. **Tối ưu tuyến giữa hai địa điểm:** tìm đường đi phù hợp trên mạng đường có hướng theo tiêu chí được lựa chọn.
+2. **Tối ưu hành trình qua nhiều địa điểm:** xác định thứ tự ghé thăm và ghép các tuyến giữa từng cặp điểm thành một hành trình nhất quán.
 
-- **Tìm tuyến đường giữa hai địa điểm:** xác định một tuyến phù hợp từ vị trí bắt đầu đến điểm đến.
-- **Tối ưu hành trình qua nhiều địa điểm:** xác định thứ tự ghé thăm hiệu quả và tuyến di chuyển tương ứng giữa các địa điểm.
+Cách phân tách này giúp thể hiện đúng bản chất của quyết định giao hàng: tối ưu từng chặng không tự động bảo đảm tối ưu toàn bộ chuyến đi, còn một thứ tự ghé tốt chỉ có ý nghĩa khi chi phí giữa các điểm được tính từ các tuyến đường thực sự có thể di chuyển. Trong phạm vi đồ án, hệ thống tập trung vào một shipper và một hành trình tại một thời điểm; các ràng buộc của bài toán vận tải quy mô lớn như nhiều phương tiện, tải trọng hoặc khung giờ giao hàng chưa được đưa vào. Việc xác định rõ giới hạn này giúp kết quả được diễn giải đúng như một mô hình hỗ trợ học tập và ra quyết định, thay vì một hệ thống điều phối thương mại hoàn chỉnh.
 
-Điểm quan trọng là hệ thống **không xem khoảng cách là tiêu chí duy nhất**. Một tuyến đường cần được đánh giá trong mối quan hệ với thời gian di chuyển ước tính, mức độ ùn tắc và các yếu tố bất lợi của đường đi. Điều này giúp bài toán phản ánh tốt hơn cách một quyết định định tuyến được đưa ra trong môi trường giao thông đô thị thực tế.
+## b.3. Ý nghĩa của việc tối ưu tuyến đường
 
-## 2.3. Ý nghĩa của việc tối ưu tuyến đường
+Tối ưu tuyến đường mang lại ba nhóm giá trị chính trong kịch bản đã chọn.
 
-Tối ưu tuyến đường có ý nghĩa trong kịch bản này vì mục tiêu của shipper không đơn thuần là tìm một con đường có thể đi từ A đến B, mà là **lựa chọn phương án di chuyển phù hợp nhất trong số nhiều phương án có thể tồn tại**.
+Thứ nhất, về **hiệu quả hành trình**, hệ thống giúp hạn chế các chặng vòng không cần thiết, giảm chi phí di chuyển theo mục tiêu đã chọn và sắp xếp thứ tự giao hàng hợp lý hơn. Trong điều kiện ùn tắc thay đổi theo thời điểm, khả năng đánh giá nhiều phương án cho phép tránh việc mặc định rằng tuyến ngắn nhất luôn là lựa chọn tốt nhất.
 
-Một hệ thống tối ưu tuyến hiệu quả có thể giúp:
+Thứ hai, về **tính ổn định của quyết định**, việc xem xét đồng thời hướng đường, thời gian ước tính, mức độ ùn tắc và yếu tố rủi ro tạo ra một cơ sở lựa chọn sát với bối cảnh đô thị hơn so với tối ưu khoảng cách đơn thuần. Điều này không biến kết quả thành dự báo thời gian thực, nhưng giúp người dùng quan sát rõ vì sao cùng một cặp địa điểm có thể cần tuyến khác nhau khi mục tiêu hoặc điều kiện giao thông thay đổi.
 
-- hạn chế những quãng đường di chuyển không cần thiết;
-- giảm thời gian dự kiến của hành trình;
-- tránh hoặc giảm ảnh hưởng của các khu vực có điều kiện giao thông bất lợi;
-- hỗ trợ lựa chọn thứ tự giao hàng hợp lý khi có nhiều địa điểm;
-- cung cấp cơ sở rõ ràng để người dùng hiểu vì sao một tuyến được ưu tiên hơn tuyến khác.
+Thứ ba, về **khả năng giải thích và so sánh**, hệ thống không chỉ trả về một đường đi. Mỗi phương án còn được trình bày cùng chi phí, quãng đường, thời gian ước tính, các yếu tố ảnh hưởng và mức bảo đảm của phương pháp tìm kiếm. Nhờ đó, người dùng có thể hiểu sự đánh đổi giữa các lựa chọn thay vì tiếp nhận một kết quả như một “hộp đen”. Đây cũng là cơ sở để đánh giá công bằng nhiều thuật toán trên cùng dữ liệu và cùng điều kiện giao thông.
 
-Ví dụ, giữa hai phương án, **Route A** có thể ngắn hơn về khoảng cách nhưng đi qua khu vực ùn tắc, trong khi **Route B** dài hơn một chút nhưng có thời gian di chuyển dự kiến thấp hơn và điều kiện giao thông thuận lợi hơn. Trong trường hợp đó, lựa chọn Route B có thể hợp lý hơn đối với một shipper cần hoàn thành nhiều đơn hàng liên tiếp.
+Giá trị cốt lõi của đề tài vì thế nằm ở việc kết nối **ba lớp quyết định** trong một quy trình thống nhất: lựa chọn tuyến cho từng chặng, tối ưu thứ tự giao nhiều điểm và giải thích cơ sở của phương án được chọn. Sự kết hợp này tạo ra một mô hình có tính ứng dụng và giá trị minh họa cao hơn bài toán đường đi ngắn nhất thuần túy, nhưng vẫn giữ phạm vi phù hợp với mục tiêu nghiên cứu thuật toán tìm kiếm của môn học.
 
-Đây cũng chính là điểm khiến bài toán phù hợp với các phương pháp tìm kiếm trong Trí tuệ nhân tạo. Thay vì chỉ trả về một đường đi, hệ thống cần **tìm kiếm, đánh giá và so sánh nhiều phương án**, sau đó xác định tuyến phù hợp theo tiêu chí được lựa chọn. Đối với nhiều điểm giao hàng, hệ thống còn cần xem xét các thứ tự ghé thăm khác nhau để xây dựng một hành trình tổng thể hiệu quả hơn.
+## b.4. Điểm nhấn của bài toán
 
-Qua đó, ứng dụng đóng vai trò như một **công cụ hỗ trợ ra quyết định**: giúp người dùng biết nên đi tuyến nào, nên ghé các địa điểm theo thứ tự nào và quan trọng hơn là **giải thích được vì sao phương án đó được lựa chọn**. Điều này giúp đề tài vừa gắn với một vấn đề giao thông quen thuộc tại Việt Nam, vừa thể hiện rõ giá trị của việc áp dụng các thuật toán tìm kiếm và tối ưu vào một bài toán thực tế.
+Đề tài không đặt mục tiêu đề xuất một thuật toán hoàn toàn mới. Điểm nhấn nằm ở cách **đưa các thuật toán tìm kiếm và tối ưu vào một bối cảnh giao thông Việt Nam có nhiều yếu tố tương tác**, thay vì đánh giá chúng trên một đồ thị trừu tượng chỉ có một loại trọng số. Mạng đường có hướng làm nổi bật ảnh hưởng của đường một chiều; hồ sơ ùn tắc theo thời điểm cho phép quan sát sự thay đổi của tuyến; các yếu tố rủi ro tạo ra sự đánh đổi giữa “ngắn”, “nhanh” và “phù hợp”; còn bài toán nhiều điểm cho thấy khác biệt giữa tối ưu cục bộ từng chặng và tối ưu toàn bộ hành trình.
+
+Nhờ đó, sản phẩm vừa giải quyết đúng hai yêu cầu tìm đường và giao hàng đa điểm, vừa tạo điều kiện để người học quan sát, so sánh và giải thích hành vi của các phương pháp khác nhau. Đây là đóng góp thực tiễn và sư phạm của bài toán trong phạm vi đồ án.
+
+## Tài liệu tham khảo
+
+Boysen, N., Fedtke, S., & Schwerdfeger, S. (2021). Last-mile delivery concepts: A survey from an operational research perspective. *OR Spectrum, 43*, 1–58. https://doi.org/10.1007/s00291-020-00607-8
+
+Coppola Suriani, A., Wai-Poi, M., Dray, S. S. J., Sosa, M. E., Nguyen, T.-H. T., & Nguyen, H. T. T. (2025). *Viet Nam rising: Pathways to a high-income future*. World Bank. https://documents.worldbank.org/en/publication/documents-reports/documentdetail/099072225231030509
+
+Jazemi, R., Alidadiani, E., Ahn, K., & Jang, J. (2023). A review of literature on vehicle routing problems of last-mile delivery in urban areas. *Applied Sciences, 13*(24), 13015. https://doi.org/10.3390/app132413015
+
+TomTom. (n.d.). *Ho Chi Minh traffic report*. TomTom Traffic Index. Retrieved August 16, 2026, from https://www.tomtom.com/traffic-index/city/ho-chi-minh/

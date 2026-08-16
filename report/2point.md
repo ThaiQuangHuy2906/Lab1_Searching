@@ -91,7 +91,8 @@ theo cùng một thước đo vận hành.
 ### 5.2.2. Hàm ước lượng
 
 Gọi $d_H(n,t)$ là khoảng cách Haversine từ đỉnh $n$ đến đích $t$ và $v_{\max}$
-là vận tốc tự do lớn nhất trên toàn đồ thị. Hàm ước lượng được chọn như sau:
+là vận tốc tự do lớn nhất trên đồ thị hiệu lực đang xét. Hàm ước lượng được chọn
+như sau:
 
 $$
 h(n)=
@@ -311,7 +312,7 @@ với $\varepsilon=5$ mét ở chế độ khoảng cách và 5 giây ở hai ch
 
 ```text
 ngưỡng = h(s)
-Lặp tối đa số vòng an toàn:
+Lặp tối đa số vòng an toàn (mặc định 1.000):
     Chạy DFS, chỉ mở rộng trạng thái có g + h không vượt ngưỡng
     Nếu gặp đích: trả về đường đi
     Ghi nhận giá trị f nhỏ nhất đã vượt ngưỡng
@@ -382,22 +383,29 @@ rộng ít trong tiểu đồ thị; IDA* dùng biên nhỏ nhưng phải lặp 
 | Beam Search | Không | Không | Có thể loại bỏ toàn bộ nhánh dẫn đến đích |
 
 Gọi $b$ là hệ số phân nhánh, $d$ là độ sâu của nghiệm nông nhất, $k$ là độ rộng
-Beam. Bảng 7.2 trình bày cận điển hình; với A*, Greedy và IDA*, hiệu quả thực tế
-phụ thuộc mạnh vào chất lượng hàm ước lượng.
+Beam và $Q$ là số bản ghi lớn nhất nằm đồng thời trong ngăn xếp tường minh.
+Bảng 7.2 tách cận thời gian thường dùng khỏi bộ nhớ của cách hiện thực hiện tại;
+với A*, Greedy và IDA*, hiệu quả thực tế còn phụ thuộc mạnh vào chất lượng hàm
+ước lượng.
 
 **Bảng 7.2. Độ phức tạp và đặc điểm sử dụng tài nguyên**
 
-| Thuật toán | Thời gian điển hình hoặc cận xấu nhất | Bộ nhớ | Đặc điểm chính |
+| Thuật toán | Thời gian điển hình hoặc cận xấu nhất | Bộ nhớ của cách hiện thực | Đặc điểm chính |
 |---|---|---|---|
 | BFS | $O(V+E)$ | $O(V)$ | Tốt cho số bước, không xét trọng số |
-| DFS | $O(V+E)$ | $O(V)$ | Đi sâu nhanh, nhạy với thứ tự kề |
-| IDDFS | $O(b^d)$ | $O(V+bd)$ trong hiện thực hiện tại | Mở rộng lặp nhiều vòng |
-| UCS | $O((V+E)\log V)$ | $O(V)$ | Mốc chuẩn tối ưu đáng tin cậy |
-| A* | Xấu nhất $O((V+E)\log V)$ | $O(V)$ | Có thể giảm tìm kiếm nhờ hàm ước lượng |
+| DFS | $O(V+E)$ | $O(V+E)$ trong trường hợp xấu do ngăn xếp có thể chứa ứng viên trùng | Đi sâu nhanh, nhạy với thứ tự kề |
+| IDDFS | $O(b^d)$ | $O(V+Q)$ cho ánh xạ độ sâu và ngăn xếp tường minh | Mở rộng lặp nhiều vòng |
+| UCS | $O((V+E)\log V)$ | $O(V+E)$ trong trường hợp xấu do hàng đợi có bản ghi cũ | Mốc chuẩn tối ưu đáng tin cậy |
+| A* | Xấu nhất $O((V+E)\log V)$ | $O(V+E)$ trong trường hợp xấu do hàng đợi có bản ghi cũ | Có thể giảm tìm kiếm nhờ hàm ước lượng |
 | Greedy | Xấu nhất $O((V+E)\log V)$ | $O(V)$ | Nhanh nhưng không bảo đảm chất lượng |
-| Dijkstra hai chiều | Xấu nhất $O((V+E)\log V)$ | $O(V)$ | Hai biên tìm kiếm và điều kiện dừng chặt chẽ |
-| IDA* | Xấu nhất $O(b^d)$ | $O(V+bd)$ trong hiện thực hiện tại | Biên nhỏ nhưng tái mở rộng rất nhiều |
-| Beam Search | Xấp xỉ $O(dkb\log(kb))$ | $O(kb)$ | Giới hạn biên bằng $k$, đánh đổi tính đầy đủ |
+| Dijkstra hai chiều | Xấu nhất $O((V+E)\log V)$ | $O(V+E)$ cho hai phía và các bản ghi hàng đợi | Hai biên tìm kiếm và điều kiện dừng chặt chẽ |
+| IDA* | Xấu nhất $O(b^d)$ | $O(V+Q)$ cho các ánh xạ theo đỉnh và ngăn xếp tường minh | Biên nhỏ nhưng tái mở rộng rất nhiều |
+| Beam Search | Xấp xỉ $O(dkb\log(kb))$ khi không lưu diễn tiến | $O(V+kb)$ do vẫn giữ tập đã thăm, chi phí và cha | Giới hạn lớp kế tiếp bằng $k$, đánh đổi tính đầy đủ |
+
+Các cận trên không tính chi phí tuần tự hóa diễn tiến minh họa. Khi lưu từng
+bước, việc dựng và sắp xếp ảnh chụp biên làm tăng thời gian và bộ nhớ. Chỉ số
+“biên lớn nhất” trong thực nghiệm vì thế là một chỉ báo thuật toán, không phải
+toàn bộ bộ nhớ của tiến trình và cũng không nhất thiết bằng $Q$.
 
 ## 7.2. Thiết kế thực nghiệm
 
@@ -445,8 +453,19 @@ Lượt đo hiệu năng hoàn tất lúc 00:06 ngày 15/08/2026 và kéo dài 6
 Cấu hình đo gồm AMD Ryzen 7 7735HS, 8 nhân/16 luồng, 15,25 GiB RAM,
 Microsoft Windows 11 Home Single Language bản dựng 26100 và Python 3.14.7.
 Trong thời gian đo, máy chủ giao diện và máy chủ dịch vụ không chạy để tránh
-cạnh tranh tài nguyên. Các máy chủ chỉ được khởi động sau khi phép đo kết thúc
-để kiểm tra khả năng đọc và trình bày kết quả.
+cạnh tranh tài nguyên. Sau phép đo, dịch vụ API được khởi động độc lập và xác
+nhận nạp đủ 3.600 bản ghi; trang trình bày kết quả phản hồi HTTP 200 và mã giao
+diện vượt kiểm tra kiểu tĩnh riêng. Các kiểm tra hậu nghiệm này không tham gia
+và không làm thay đổi phép đo hiệu năng.
+
+Lượt ngày 15/08 đo lại thí nghiệm so sánh chín thuật toán trên đúng đồ thị,
+hồ sơ, mã thuật toán, hạt giống và 200 cặp OD của lượt chính thức ngày
+11/08/2026. Đối chiếu từng hàng cho thấy **0/3.600 hàng khác nhau ở mọi cột xác
+định** gồm thuật toán, cặp, khung giờ, trạng thái tìm thấy, chi phí, độ chênh, số
+đỉnh mở rộng và biên lớn nhất; chỉ cột thời gian chạy thay đổi ở 3.594/3.600
+hàng do khác máy và nhiễu đo. Vì vậy, các bảng chất lượng/tìm kiếm dùng bằng
+chứng xác định chung của hai lượt, còn mọi nhận xét về mili giây trong chương
+này chỉ áp dụng cho môi trường ngày 15/08 nêu trên.
 
 Do phân phối thời gian và số đỉnh mở rộng lệch phải mạnh, báo cáo ưu tiên trung
 vị và phân vị 95 (P95). Giá trị trung bình vẫn được dùng cho độ chênh chi phí để
@@ -471,17 +490,22 @@ phản ánh toàn bộ mức thiệt hại do các nghiệm xấu.
 | Beam Search | 396/400 | 99,0% | 20,118% | 16,846% | 52,846% | 104,173% |
 
 UCS, A* và Dijkstra hai chiều đạt độ chênh bằng 0 trong toàn bộ 400 lượt. Kết quả
-này phù hợp với bảo đảm tối ưu của ba thuật toán. IDA* có độ chênh trung bình 0,174%;
-xét theo đơn vị tuyệt đối, sai lệch trung bình là 0,849 giây, P95 là 3,750 giây
-và lớn nhất là 4,845 giây. Như vậy, toàn bộ quan sát IDA* đều nằm trong biên
-cộng 5 giây đã công bố.
+này phù hợp với bảo đảm tối ưu của ba thuật toán. IDA* có độ chênh trung bình
+0,174%. Tính xấp xỉ từ các giá trị đã làm tròn trong bảng dữ liệu, sai lệch
+tuyệt đối trung bình là 0,849 giây, P95 là 3,750 giây và lớn nhất khoảng
+4,845 giây. Như vậy, toàn bộ quan sát IDA* đều phù hợp với biên cộng 5 giây đã
+công bố.
 
-BFS và IDDFS tạo cùng tuyến vì đều ưu tiên độ sâu nhỏ nhất; chi phí trung bình
-cao hơn tối ưu 26,163%. Greedy hướng mạnh về đích và nhanh, nhưng độ chênh trung bình
-33,678%. DFS cho chất lượng kém nhất: độ chênh trung vị 980,228%, cho thấy một tuyến
-được tìm thấy không đồng nghĩa với một tuyến hữu ích. Tìm kiếm chùm có độ chênh thấp
-hơn BFS và Greedy trên các lượt thành công, nhưng bỏ lỡ 4/400 truy vấn vì thao
-tác cắt tỉa đã loại bỏ các nhánh cần thiết.
+BFS và IDDFS có cùng thống kê độ chênh trên tập đo, phù hợp với việc cả hai ưu
+tiên nghiệm nông theo số cạnh; dữ liệu tổng hợp không lưu chuỗi đỉnh nên không
+dùng kết quả này để khẳng định hai thuật toán luôn trả cùng một tuyến khi có
+nhiều nghiệm đồng độ sâu. Chi phí trung bình của chúng cao hơn tối ưu 26,163%.
+Greedy hướng mạnh về đích và nhanh, nhưng độ chênh trung bình 33,678%. DFS cho
+chất lượng kém nhất:
+độ chênh trung vị 980,228%, cho thấy một tuyến được tìm thấy không đồng nghĩa
+với một tuyến hữu ích. Tìm kiếm chùm có độ chênh thấp hơn BFS và Greedy trên
+các lượt thành công, nhưng bỏ lỡ 4/400 truy vấn vì thao tác cắt tỉa đã loại bỏ
+các nhánh cần thiết.
 
 ### 7.3.2. Khối lượng tìm kiếm, biên và thời gian
 
@@ -499,7 +523,8 @@ tác cắt tỉa đã loại bỏ các nhánh cần thiết.
 | IDA* | 83.931,0 | 1.108.857,05 | 29,0 | 47,00 | 124,213 | 1.607,135 |
 | Beam Search | 1.025,0 | 1.836,10 | 50,0 | 50,00 | 3,717 | 6,743 |
 
-Greedy nhanh nhất với trung vị 0,295 ms và chỉ mở rộng trung vị 55 đỉnh, nhưng
+Trong môi trường đo đã nêu, Greedy nhanh nhất với trung vị 0,295 ms và chỉ mở
+rộng trung vị 55 đỉnh, nhưng
 đánh đổi bằng độ chênh lớn. BFS có thời gian thấp thứ hai dù mở rộng nhiều đỉnh, vì
 mỗi thao tác hàng đợi đơn giản và không cần tính thứ tự ưu tiên theo trọng số.
 
@@ -533,9 +558,11 @@ phù hợp hơn cho minh họa sự đánh đổi hoặc tình huống chấp nh
 
 ![Hình 7.3. Chênh lệch chi phí trung bình và tỷ lệ tìm thấy.](../results/figs/report_exp3_quality.png)
 
-*Hình 7.3. Chất lượng lời giải và tỷ lệ tìm thấy trên 400 lượt.*
+*Hình 7.3. Chất lượng lời giải và tỷ lệ tìm thấy trên 400 lượt. Trong ba hình
+7.1-7.3, màu lam biểu diễn nhóm duyệt không thông tin, màu tím biểu diễn nhóm
+tối ưu chính xác và màu cam biểu diễn nhóm heuristic hoặc có cắt/biên sai số.*
 
-### 7.3.3. Ảnh hưởng của khung giờ
+### 7.3.3. Ảnh hưởng của khung giờ đến hiệu năng thuật toán
 
 **Bảng 7.6. Kết quả tách theo hồ sơ 07:30 và 22:00**
 
@@ -571,6 +598,58 @@ và thời gian trung vị giảm 25,5%. IDA* cũng giảm mạnh khối lượn
 đúng với hai hồ sơ đại diện và tập 200 cặp đã chọn. Beam Search thất bại ba lượt
 ở 07:30 và một lượt ở 22:00, cho thấy kết quả cắt tỉa có thể thay đổi khi trọng
 số giao thông thay đổi.
+
+### 7.3.4. Ùn tắc làm thay đổi tuyến được chọn
+
+Thí nghiệm đổi khung giờ chạy A* trên cùng 200 cặp OD, cùng chế độ cân bằng và
+chỉ thay hồ sơ ùn tắc từ 07:30 sang 22:00. Kết quả có **149/200 cặp đổi chuỗi
+đỉnh, tương đương 74,5%**. Đây là bằng chứng trực tiếp cho yêu cầu phân tích ảnh
+hưởng của ùn tắc đến tuyến, khác với Bảng 7.6 vốn đo hiệu năng thuật toán.
+
+Một ví dụ cụ thể là cặp OD-000, từ nút `n0457` đến `n0103`. Hai tuyến nhập lại
+với nhau tại `n0490` rồi dùng chung hậu tố:
+
+```text
+S = n0490 → n0498 → n0461 → n0400 → n2060 → n2061 → n1859
+  → n0157 → n0502 → n1949 → n0372 → n0172 → n0531 → n0981
+  → n0470 → n0373 → n2049 → n0103
+
+R07 = n0457 → n0122 → n1424 → n0419 → n1426 → n0523 → n0518
+    → n0484 → n0485 → n0804 → S
+
+R22 = n0457 → n1621 → n1982 → n1981 → n0123 → n0402 → n0990
+    → n0080 → n1436 → n0511 → n0460 → n0456 → n1318 → S
+```
+
+**Bảng 7.7. Hai tuyến ứng viên của cặp OD-000 được chấm dưới cả hai hồ sơ**
+
+| Tuyến | Quãng đường (m) | Chi phí lúc 07:30 (giây) | Chi phí lúc 22:00 (giây) | Trễ do ùn tắc 07:30 / 22:00 (giây) | Phạt rủi ro (giây) |
+|---|---:|---:|---:|---:|---:|
+| R07 - tuyến được chọn lúc 07:30 | 2.685,2 | **565,2** | 376,1 | 249,0 / 60,0 | 75,0 |
+| R22 - tuyến được chọn lúc 22:00 | 2.656,1 | 596,1 | **357,7** | 283,6 / 45,2 | 100,0 |
+
+Tại 07:30, R07 rẻ hơn R22 khoảng 30,9 giây; đến 22:00, thứ tự đảo lại và R22
+rẻ hơn R07 khoảng 18,4 giây. Phần khác biệt trước nút nhập `n0490` giải thích
+quyết định này rõ hơn: ở 07:30, toàn bộ 13 cạnh của nhánh R22 nằm ở mức ùn tắc
+4 hoặc 5, làm chi phí tiền tố tăng lên 276,6 giây; tại 22:00, các cạnh này đều
+hạ xuống mức 1 hoặc 2, kéo chi phí tiền tố còn 169,4 giây. Trong khi đó, tiền
+tố R07 lần lượt có chi phí 245,7 và 187,8 giây.
+
+Các đoạn thay đổi mạnh trên R22 gồm `n0460→n0456` (mức 5→1, chi phí
+61,8→39,7 giây), `n0990→n0080` (5→2, 36,0→19,8 giây),
+`n1436→n0511` (5→2, 17,7→9,7 giây) và `n0511→n0460` (5→2,
+38,1→20,9 giây). A* vì vậy không đơn thuần chọn tuyến ngắn hơn: nó chọn R07
+trong hồ sơ sáng dù R07 dài hơn 29,1 m, rồi chuyển sang R22 khi mức ùn tắc trên
+nhánh này giảm vào hồ sơ đêm.
+
+![Hình 7.4. Hai tuyến A* của cặp OD-000 dưới hồ sơ 07:30 và 22:00.](assets/traffic_route_change_pair_000.png)
+
+*Hình 7.4. Phần nét tách nhau thể hiện hai tiền tố khác nhau; hai tuyến nhập lại
+tại n0490 và đi chung đến đích.*
+
+Kết luận trên chỉ áp dụng cho hai **hồ sơ đại diện** đã thu thập và mô phỏng;
+không được diễn giải thành tình trạng giao thông thời gian thực hoặc quan hệ
+nhân quả tổng quát cho mọi ngày.
 
 ## 7.4. Thảo luận
 
@@ -614,9 +693,16 @@ tọa độ và giới hạn vận tốc; nếu thay đổi mô hình chi phí t
 Thực nghiệm mới xác nhận ba nhóm hành vi. Nhóm tối ưu gồm UCS, A* và Dijkstra
 hai chiều đạt độ chênh bằng 0 trên toàn bộ 400 lượt; trong đó A* cho sự cân bằng tốt nhất
 giữa chất lượng và khối lượng tìm kiếm. Nhóm gần tối ưu gồm IDA*, đạt sai lệch
-tối đa 4,845 giây nhưng phải trả giá bằng số lần mở rộng và thời gian lớn. Nhóm
+lớn nhất xấp xỉ 4,845 giây nhưng phải trả giá bằng số lần mở rộng và thời gian lớn. Nhóm
 không tối ưu gồm BFS, DFS, IDDFS, Greedy và Beam Search thể hiện các đánh đổi
-khác nhau; Greedy nhanh nhất, còn Beam kiểm soát biên nhưng không đầy đủ.
+khác nhau; Greedy nhanh nhất trong môi trường đo, còn Beam kiểm soát biên nhưng
+không đầy đủ.
+
+Ảnh hưởng của giao thông không chỉ thể hiện ở thời gian chạy thuật toán:
+149/200 cặp OD đổi chính tuyến A* giữa hai hồ sơ. Ví dụ OD-000 cho thấy các cạnh
+trên nhánh R22 giảm từ mức ùn tắc 4 đến 5 xuống 1 đến 2, đủ làm thứ tự chi phí của hai
+tuyến đảo chiều. Bằng chứng này hoàn thành phần so sánh tuyến cụ thể nhưng vẫn
+được giới hạn đúng phạm vi hai hồ sơ đại diện.
 
 Kết quả quan trọng nhất là không có một thuật toán thắng trên mọi tiêu chí. Với
 bài toán giao thông có hướng và trọng số biến đổi theo thời gian, lựa chọn hợp
@@ -638,12 +724,14 @@ nhu cầu bộ nhớ và khả năng giải thích cho người dùng.
 9. Bảng 7.4. Tỷ lệ tìm thấy và chênh lệch chi phí.
 10. Bảng 7.5. Mức sử dụng tài nguyên và thời gian chạy.
 11. Bảng 7.6. Kết quả tách theo khung giờ.
+12. Bảng 7.7. Hai tuyến ứng viên của cặp OD-000 dưới hai hồ sơ.
 
 ## Danh mục hình
 
 1. Hình 7.1. Trung vị và P95 số đỉnh mở rộng của chín thuật toán.
 2. Hình 7.2. Trung vị và P95 thời gian chạy của chín thuật toán.
 3. Hình 7.3. Chênh lệch chi phí trung bình và tỷ lệ tìm thấy.
+4. Hình 7.4. Hai tuyến A* của cặp OD-000 dưới hồ sơ 07:30 và 22:00.
 
 # TÀI LIỆU THAM KHẢO
 
@@ -656,8 +744,8 @@ kết quả tìm kiếm*, tài liệu kỹ thuật nội bộ, 2026.
 [3] Nhóm thực hiện, *Bộ dữ liệu đồ thị đường bộ và hồ sơ giao thông đại diện tại
 trung tâm Thành phố Hồ Chí Minh*, phiên bản ngày 03/08/2026.
 
-[4] Nhóm thực hiện, *Kết quả thực nghiệm độ đúng và hiệu năng của các thuật toán
-tìm đường hai điểm*, lượt chạy hoàn tất ngày 15/08/2026.
+[4] Nhóm thực hiện, *Kết quả thực nghiệm độ đúng, hiệu năng và ảnh hưởng của ùn
+tắc đến tuyến đường*, các lượt xác minh ngày 11/08/2026 và 15/08/2026.
 
 [5] S. Russell và P. Norvig, *Artificial Intelligence: A Modern Approach*,
 ấn bản thứ 4, Pearson, 2020, Chương 3.
@@ -685,6 +773,8 @@ Search,” *Artificial Intelligence*, tập 27, số 1, tr. 97–109, 1985.
 - [x] Bảng hiệu năng có đủ 3.600 bản ghi và 400 lượt cho mỗi thuật toán.
 - [x] Phân tích tách biệt chất lượng, số đỉnh mở rộng, biên, thời gian và tỷ lệ
   tìm thấy.
+- [x] Có bằng chứng 149/200 cặp đổi tuyến và một cặp OD cụ thể với hai đường đi,
+  chi phí, mức ùn tắc cạnh và giới hạn diễn giải hồ sơ đại diện.
 - [x] Phần thuyết minh không chứa tên tệp, mã phiên bản hoặc chỉ dẫn thao tác nội bộ.
 - [x] Không thảo luận các thuật toán tối ưu hành trình nhiều điểm trong hai
   chương này.

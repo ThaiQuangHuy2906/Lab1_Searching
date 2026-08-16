@@ -75,8 +75,11 @@ flowchart TD
 - **`multi_point` + `ordered_search`**: the stops are visited in the order the
   user added them; the GUI just chains several two-point searches
   (Start→stop1, stop1→stop2, ...) and stitches the legs into one route.
-- **`multi_point` + `atsp`**: the backend decides the *optimal visiting
-  order* itself via one of the 3 ATSP methods (`held_karp` / `nn_2opt` / `sa`).
+- **`multi_point` + `atsp`**: the backend works out a visiting order for
+  the stops using one of 3 ATSP methods (`held_karp` / `nn_2opt` / `sa`).
+  Only `held_karp` guarantees that order is optimal (exact search); `nn_2opt`
+  and `sa` are heuristics and carry no such guarantee, even when their
+  result happens to match the exact optimum.
 - **`runKind: compare`** re-runs the same journey with 2-4 algorithms (route)
   or 2-3 methods (ATSP) against one frozen input snapshot, so results are
   judged on identical conditions.
@@ -108,19 +111,19 @@ way.
 
 ## 4. Main backend modules
 
-| Module | Responsibility | Key symbols |
+| Module | Responsibility | Key functions |
 |---|---|---|
-| `main.py` | FastAPI app, 6 REST endpoints, request dispatch, unified error envelope | `post_route`, `post_multiroute`, `get_graph`, `get_traffic`, `post_benchmark`, `ALL_ALGORITHMS` |
-| `graph_store.py` | Loads/validates graph + traffic JSON once per level, builds adjacency lists, precomputes edge weights for every (mode, time_slot) pair and node heuristics | `GraphStore.load`, `weights`, `heuristic` |
-| `scenario.py` | Resolves the requested graph view (`full`/`teach_N`) and edge overrides into a request-scoped, immutable `GraphStore`; never mutates the cached base graph | `resolve_scenario`, `resolve_view_store`, `graph_response` |
-| `costs.py` | Edge weight and heuristic math (distance/time/balanced modes) | `congestion_factor`, `edge_weight`, `haversine_m`, `heuristic_m`, `heuristic_s` |
-| `search.py` | 5 core algorithms: BFS, DFS, IDDFS, UCS, A* + shared trace/decision recorder | `ALGORITHMS`, `bfs`, `dfs`, `iddfs`, `ucs`, `astar` |
-| `search_advanced.py` | 4 additional algorithms: Greedy Best-First, Bidirectional Dijkstra, IDA*, Beam Search | `ADVANCED_ALGORITHMS`, `greedy`, `bidijkstra`, `idastar`, `beam` |
-| `tsp.py` | Builds the asymmetric pairwise cost matrix (via an internal UCS search per point), 3 ATSP solvers, multi-stop orchestration | `build_matrix`, `held_karp`, `nn_2opt`, `simulated_annealing`, `solve_multiroute` |
-| `optimization_trace.py` | Bounded, deterministic recorder for the ATSP optimization trace (DP updates, NN decisions, 2-opt/or-opt moves, SA iterations); never influences the solver, only samples its events | `OptimizationTraceRecorder` |
-| `explain.py` | Builds the evidence-based explanation: summary, cost breakdown, congestion/risk factors, and reference routes (UCS optimum, avoid-edge counterfactual) used to judge how far a heuristic result is from optimal | `build_explanation` |
+| `main.py` | FastAPI app, 6 REST endpoints, request dispatch, unified error envelope | `post_route(req)` - handles `POST /api/route`: resolves the scenario, runs the chosen algorithm, attaches the explanation. `post_multiroute(req)` - same for `POST /api/multiroute` (ATSP/multi-stop). `get_graph`/`get_traffic` - serve the resolved graph view and its congestion layer. `ALL_ALGORITHMS` - dict mapping an algorithm name string to its function, so dispatch is one lookup. |
+| `graph_store.py` | Loads/validates graph + traffic JSON once per level, builds adjacency lists, precomputes edge weights for every (mode, time_slot) pair and node heuristics | `GraphStore.load(level)` - loads and caches one graph level (`demo`/`real`). `weights(mode, slot)` - returns the precomputed edge-id → cost map for that pair (hot-path lookup, no recomputation per search step). `heuristic(node, goal, mode)` - straight-line distance/time estimate a search node to the goal, used by A*/IDA*/Beam. |
+| `scenario.py` | Resolves the requested graph view (`full`/`teach_N`) and edge overrides into a request-scoped, immutable `GraphStore`; never mutates the cached base graph | `resolve_scenario(base, config)` - applies the view + any edge overrides on top of `base`, returns an isolated `GraphStore` plus the `applied_scenario` the response echoes back. `resolve_view_store(base, view)` - builds the smaller `full`/`teach_N` induced subgraph. `graph_response` - builds the payload `/api/graph` returns for a resolved view. |
+| `costs.py` | Edge weight and heuristic math (distance/time/balanced modes) | `congestion_factor(level)` - turns a 1–5 congestion level into a time multiplier. `edge_weight(edge, congestion, mode)` - the actual per-edge cost a search algorithm adds to `g`. `heuristic_m`/`heuristic_s` - straight-line lower-bound estimate to the goal, in meters or seconds. |
+| `search.py` | 5 core algorithms: BFS, DFS, IDDFS, UCS, A* + shared trace/decision recorder | `ALGORITHMS` - dict of the 5 functions below. `bfs`/`dfs`/`iddfs`/`ucs`/`astar(store, start, goal, mode, time_slot, ...)` - each runs its search and returns one `Trace` (path, metrics, step-by-step trace); same signature and return shape for all 5. |
+| `search_advanced.py` | 4 additional algorithms: Greedy Best-First, Bidirectional Dijkstra, IDA*, Beam Search | `ADVANCED_ALGORITHMS` - dict of the 4 functions below, merged with `ALGORITHMS` in `main.py`. `greedy`/`bidijkstra`/`idastar`/`beam(store, start, goal, mode, time_slot, ...)` - same signature/return shape as the 5 core algorithms. |
+| `tsp.py` | Builds the asymmetric pairwise cost matrix (via an internal UCS search per point), 3 ATSP solvers, multi-stop orchestration | `build_matrix(store, points, mode, slot)` - runs one UCS search per point, returns the full pairwise cost matrix (directed, so `cost[a,b]` ≠ `cost[b,a]` in general). `held_karp(cost, points)` - bitmask DP, exact optimal order, practical up to 15 points. `nn_2opt(cost, points)` - nearest-neighbour + 2-opt/or-opt local search, heuristic only. `simulated_annealing(cost, points)` - swap/insert moves over 5 fixed seeds, heuristic only. `solve_multiroute(store, start, stops, method, ...)` - orchestrates the matrix build + chosen solver into the `/api/multiroute` response. |
+| `optimization_trace.py` | Bounded, deterministic recorder for the ATSP optimization trace (DP updates, NN decisions, 2-opt/or-opt moves, SA iterations); never influences the solver, only samples its events | `OptimizationTraceRecorder` - the solvers call `.emit(event)` at each candidate decision; the recorder decides (by a fixed sampling policy) whether to keep it, so enabling the trace can't change the solver's result. |
+| `explain.py` | Builds the evidence-based explanation: summary, cost breakdown, congestion/risk factors, and reference routes (UCS optimum, avoid-edge counterfactual) used to judge how far a heuristic result is from optimal | `build_explanation(store, trace)` - fills `Trace.explanation` from a finished run: cost breakdown, which factors actually affected the objective, and up to two UCS-computed reference routes for comparison. |
 | `models.py` | Pydantic contracts shared by API and frontend (`Trace`, `RouteRequest`, `MultirouteRequest`, `ScenarioConfig`, ...) - executable form of `docs/SCHEMA.md` | - |
-| `benchmark.py` | Offline experiment runner (7 experiments), writes `results/`; served read-only by `/api/benchmark`, never runs live search | `exp1` ... `exp7` |
+| `benchmark.py` | Offline experiment runner (7 experiments), writes `results/`; served read-only by `/api/benchmark`, never runs live search | `exp1` ... `exp7` - one function per experiment, each writes one CSV/figure set under `results/`. |
 
 ## 5. Main frontend modules
 
@@ -135,9 +138,9 @@ way.
 | Timeline | `components/timeline.tsx`, `lib/use-animation.ts` | Step-by-step playback of either the search trace or the ATSP optimization trace, keyboard shortcuts, speed control |
 | Drawer | `components/drawer/{drawer,metrics-tab,explain-tab,compare-tab,scenario-tab}.tsx` | Right-hand results panel with 4 tabs: Metrics (g/h/f + decision table), Explain (evidence-based summary), Compare, Scenario (edge sandbox) |
 | Explanation | `components/explanation/*` | Cost breakdown, reference-route comparison, per-factor overlays driving the Explain tab and map highlight |
-| State | `lib/store.ts` (Zustand) | Single global store: journey inputs, run lifecycle, results (`trace`/`multi`/comparison sessions), animation state; every API call and toast lives in a store action |
-| Policy/orchestration | `lib/journey-mode-policy.ts`, `run-orchestrator.ts`, `comparison-policy.ts`, `sequential-route.ts`, `scenario.ts` | Pure functions the store composes: journey state machine, immutable `RunSnapshot` construction, run-lifecycle/abort bookkeeping, comparison-session state machine, leg-merging for ordered multi-stop routes, scenario/edge-cost math |
-| API client | `lib/api.ts`, `lib/contract-guards.ts` | Thin fetch wrapper for the 5 non-health endpoints; `contract-guards.ts` parses and validates every response against the locked contract before it reaches the store |
+| State | `lib/store.ts` (Zustand) | Single global store: journey inputs, run lifecycle, results (`trace`/`multi`/comparison sessions), animation state. Key actions: `runRoute()` - single two-point/ordered run. `runRouteComparison(algorithms)` / `runAtspComparison(methods)` - the N-way comparison loops. `runMulti(method)` - single ATSP run. `cancelActiveRun()` - aborts whatever run is in flight. Every API call and toast lives in one of these actions. |
+| Policy/orchestration | `lib/journey-mode-policy.ts`, `run-orchestrator.ts`, `comparison-policy.ts`, `sequential-route.ts`, `scenario.ts` | Pure functions the store composes. `createRunSnapshot(input)` - builds the immutable `RunSnapshot` a run is frozen into. `routeRequestFromSnapshot`/`multirouteRequestFromSnapshot` - turn a snapshot into the exact request body `api.ts` sends. `buildScenario(view, overrides)` - turns the sandbox edits into the `scenario` field of a request. `mergeSequentialRouteTraces` - stitches per-leg `Trace`s into one continuous route for an ordered multi-stop run. |
+| API client | `lib/api.ts`, `lib/contract-guards.ts` | `api.route(body)`/`api.multiroute(body)` - thin fetch wrappers for the 5 non-health endpoints. `parseTraceResponse`/`parseMultirouteResponse` (in `contract-guards.ts`) - parse and validate every response against the locked contract before it reaches the store, so a malformed backend reply fails loudly instead of corrupting the UI. |
 
 ## 6. How the GUI drives the search algorithms
 
@@ -183,8 +186,12 @@ Key points:
 
 - **One contract, nine algorithms.** The GUI sends an `algorithm` string
   (`bfs`, `astar`, `idastar`, ...); the backend looks it up in
-  `ALL_ALGORITHMS` and always returns the same `Trace` shape, so the frontend
-  code that renders results never branches per algorithm.
+  `ALL_ALGORITHMS` and always returns the same `Trace` shape, so the
+  frontend never needs a different request or response type per algorithm.
+  The *presentation* still branches for a couple of algorithms where it
+  genuinely has to - `bidijkstra` gets its own forward/backward frontier
+  table and legend, since a two-directional search has no equivalent in
+  the other 8 algorithms.
 - **Ordered multi-stop routes** reuse `/api/route`: the store chains one
   request per leg (Start→stop1, stop1→stop2, ...) and
   merges the legs into one continuous `Trace` for the map and timeline.
@@ -206,10 +213,12 @@ Key points:
   backend always echoes back exactly which scenario it used. If a response
   ever turns out not to match the sandbox state the user was looking at, the
   GUI can tell and simply throws that response away.
-- **One request in flight at a time**, with explicit cancellation. `running`
-  / `comparing` / `multiRunning` guard new runs, and `cancelActiveRun()`
-  aborts the in-flight `fetch` via `AbortController`, so a slow response can
-  never overwrite a screen the user has since changed.
+- **One active run at a time**, with explicit cancellation. `running` /
+  `comparing` / `multiRunning` block a new route/ATSP run or comparison
+  while one is already in flight, and `cancelActiveRun()` aborts it via
+  `AbortController`. This guard is scoped to runs specifically - loading
+  the graph or the traffic layer uses its own separate staleness check and
+  can happen independently of whatever run is in progress.
 - **Consistent across multiple calls.** A multi-stop journey or a comparison
   needs several backend calls (one per leg, or one per algorithm/method).
   Each response carries back a signature of the exact data it was computed

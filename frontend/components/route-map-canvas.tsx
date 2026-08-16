@@ -125,6 +125,7 @@ export interface RouteMapModel {
   traceOnReal: boolean;
   edgeOverrides: Record<string, EdgeOverride>;
   edgeEditMode: boolean;
+  edgeEditFirstNode: string | null;
   selectedEdgeId: string | null;
   trace: Trace | null;
   multi: MultirouteResponse | null;
@@ -182,7 +183,7 @@ export function RouteMapCanvas({
 }: RouteMapCanvasProps) {
   const {
     graphData, graphLoading, graph, offline, trafficLayer, traffic, slot,
-    traceOnReal, edgeOverrides, edgeEditMode: requestedEdgeEditMode, selectedEdgeId, trace,
+    traceOnReal, edgeOverrides, edgeEditMode: requestedEdgeEditMode, edgeEditFirstNode, selectedEdgeId, trace,
     multi, optimizationTrace, timelineSource, stepIdx, drawerTab, start, goal,
     problemMode, stops, activeSnapshot, pickTarget: requestedPickTarget, theme,
   } = model;
@@ -329,6 +330,7 @@ export function RouteMapCanvas({
 
   const nodeColor = React.useCallback(
     (n: GraphNode): RGBA => {
+      if (edgeEditMode && n.id === edgeEditFirstNode) return C.current;
       if (optimizationEvent?.kind === "held_karp_update") {
         if (n.id === optimizationEvent.endpoint) return C.current;
         if (heldKarpHighlightSet.has(n.id)) return C.frontier;
@@ -345,7 +347,7 @@ export function RouteMapCanvas({
       if (anim.frontierSet.has(n.id)) return C.frontier;
       return deEmphasizeBaseColor(isDemo ? C.node : C.nodeReal, hasResultRoute);
     },
-    [anim, C, hasResultRoute, heldKarpHighlightSet, isDemo, optimizationEvent],
+    [anim, C, edgeEditFirstNode, edgeEditMode, hasResultRoute, heldKarpHighlightSet, isDemo, optimizationEvent],
   );
   // v8: G_demo labels are ALWAYS on (user request) — collision filter handles overlap
   const showLabels = isDemo;
@@ -390,21 +392,6 @@ export function RouteMapCanvas({
         },
       }),
     ];
-
-    if (edgeEditMode) {
-      out.push(new LineLayer({
-        id: "edges-pick",
-        data: edgeData,
-        pickable: true,
-        getSourcePosition: (d: (typeof edgeData)[number]) => d.source,
-        getTargetPosition: (d: (typeof edgeData)[number]) => d.target,
-        // Keep a non-zero alpha so the WebGL line survives the picking pass;
-        // alpha=1 remains visually imperceptible on the display pass.
-        getColor: [0, 0, 0, 1],
-        getWidth: 16,
-        widthUnits: "pixels",
-      }));
-    }
 
     if (congestedSet.size) {
       out.push(
@@ -521,12 +508,14 @@ export function RouteMapCanvas({
         4,
       );
     }
-    // nodes (pickable for G_real start/goal picking)
+    // nodes (pickable for G_real start/goal picking, and for edge-edit mode's
+    // two-node edge selection — a directed edge is resolved from two node
+    // picks, never from clicking a road line directly)
     out.push(
       new ScatterplotLayer({
         id: "nodes",
         data: graphData.nodes,
-        pickable: !edgeEditMode,
+        pickable: true,
         getPosition: (n: GraphNode) => [n.lon, n.lat],
         getFillColor: nodeColor,
         getLineColor: (n: GraphNode): RGBA => anim.bidiOverlapSet.has(n.id)
@@ -549,7 +538,10 @@ export function RouteMapCanvas({
         // without it deck.gl kept the stale expanded/frontier fill colors
         // (audit finding L3-03; same bug class as the label layer below)
         updateTriggers: {
-          getFillColor: [anim.stepIdx, anim.steps.length, trace, optimizationEvent, theme],
+          getFillColor: [
+            anim.stepIdx, anim.steps.length, trace, optimizationEvent, theme,
+            edgeEditMode, edgeEditFirstNode,
+          ],
           getLineColor: [anim.stepIdx, anim.steps.length, trace, theme],
           getLineWidth: [anim.stepIdx, anim.steps.length, trace],
           getRadius: [anim.stepIdx, anim.steps.length, trace, optimizationEvent, zoomBucket],
@@ -689,7 +681,7 @@ export function RouteMapCanvas({
       );
     }
     return out;
-  }, [graphData, geometry, coord, toPath, traffic, slot, edgeOverrides, edgeEditMode, selectedEdgeId,
+  }, [graphData, geometry, coord, toPath, traffic, slot, edgeOverrides, edgeEditMode, edgeEditFirstNode, selectedEdgeId,
       trafficLayer, congestedSet, trace,
       multi, optimizationEvent, heldKarpHighlightSet, showFinalMultiRoute, finalRoutePath, referenceRoutePath, hasResultRoute, anim, nodeColor, isDemo, showLabels, start, goal, problemMode, stops, activeSnapshot,
       pickTarget, drawerTab, graph, C, CONGESTION, theme, zoomBucket]);
@@ -919,7 +911,17 @@ export function RouteMapCanvas({
       </div>
       {capabilities.showPrimaryChrome && edgeEditMode && (
         <div className="floating-chrome absolute left-1/2 top-16 z-20 flex min-h-11 max-w-[min(680px,calc(100%-8rem))] -translate-x-1/2 items-center gap-2 rounded-lg border border-algo-frontier/60 px-3 text-sm max-[959px]:max-w-[calc(100%-2rem)]">
-          <span>Bấm một cạnh để chỉnh thử trong phiên hiện tại.</span>
+          {edgeEditFirstNode ? (
+            <span>
+              Đã chọn{" "}
+              <span className="font-bold text-algo-frontier">
+                {graphData?.nodes.find((node) => node.id === edgeEditFirstNode)?.name ?? edgeEditFirstNode}
+              </span>
+              . Bấm nút giao thứ hai theo đúng chiều xe chạy để chọn đoạn cần chỉnh.
+            </span>
+          ) : (
+            <span>Bấm hai nút giao liên tiếp, theo đúng chiều xe chạy, để chọn đoạn cần chỉnh.</span>
+          )}
           <button type="button"
             className="inline-flex h-9 items-center rounded-lg border border-surface-border bg-surface-control px-2.5 text-xs font-medium text-ink-dim transition-colors hover:border-surface-strong hover:text-ink"
             onClick={onDismissEdgeEditor}>

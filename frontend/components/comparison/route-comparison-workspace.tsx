@@ -138,6 +138,7 @@ export function RouteComparisonWorkspace() {
     traceOnReal: state.traceOnReal,
     edgeOverrides: state.edgeOverrides,
     edgeEditMode: false,
+    edgeEditFirstNode: null,
     selectedEdgeId: null,
     trace: null,
     multi: null,

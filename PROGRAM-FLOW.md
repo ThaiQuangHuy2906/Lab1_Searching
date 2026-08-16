@@ -88,13 +88,18 @@ flowchart TD
 
 A drawer tab lets the user edit one edge's length, free speed, per-slot
 congestion, or risk flags before running a search, without touching the
-on-disk graph. This is resolved **server-side**, once, before the algorithm
+on-disk graph. The edge itself is picked by clicking two nodes in sequence
+(from, then to) rather than clicking a road line directly: the graph is
+directed, so the two travel directions between the same node pair are two
+separate edges that can render on the exact same screen line, and only a
+two-node pick can tell them apart unambiguously. This is resolved
+**server-side**, once, before the algorithm
 runs - the GUI's sandbox editor and the search functions always see the same
 consistent graph.
 
 ```mermaid
 flowchart TD
-    A["User clicks an edge"] --> B["Edits its length, speed,<br/>congestion, or risk<br/>(or picks a quick preset)"]
+    A["User clicks two nodes<br/>in sequence: from, then to"] --> B["Edits its length, speed,<br/>congestion, or risk<br/>(or picks a quick preset)"]
     B --> C["The edit is saved<br/>in the app"]
     C --> D["Any old result is cleared -<br/>it no longer matches<br/>the new edit"]
     D --> E["Next run sends this edit<br/>along with the request"]

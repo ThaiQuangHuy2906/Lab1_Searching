@@ -238,8 +238,25 @@ function ScenarioEditor() {
         <div className="flex gap-2 rounded-lg border border-dashed border-surface-strong bg-surface-control/55 p-3 text-xs leading-5 text-ink-dim">
           <Crosshair className="mt-0.5 size-4 shrink-0 text-algo-frontier" />
           <span>
-            {state.edgeEditMode ? "Bấm vào một đường nối trên bản đồ để chọn đoạn cần chỉnh." : "Bấm “Chọn đoạn”, rồi chọn một đường nối trên bản đồ."}
-            <span className="mt-1 block text-ink">Điểm tròn là nút; đường nối giữa hai nút là cạnh hoặc đoạn đường.</span>
+            {state.edgeEditMode ? (
+              state.edgeEditFirstNode ? (
+                <>
+                  Đã chọn{" "}
+                  <span className="font-medium text-ink">
+                    {state.graphData?.nodes.find((node) => node.id === state.edgeEditFirstNode)?.name
+                      ?? state.edgeEditFirstNode}
+                  </span>
+                  . Bấm nút giao thứ hai theo đúng chiều xe chạy để hoàn tất chọn đoạn.
+                </>
+              ) : (
+                "Bấm nút giao đầu tiên (điểm đi), rồi bấm nút giao thứ hai (điểm đến) theo đúng chiều xe chạy."
+              )
+            ) : (
+              "Bấm “Chọn đoạn”, rồi bấm hai nút giao liên tiếp trên bản đồ (điểm đi trước, điểm đến sau) để chọn đoạn cần chỉnh."
+            )}
+            <span className="mt-1 block text-ink">
+              Điểm tròn là nút; đồ thị có hướng nên hai chiều giữa cùng cặp nút là hai đoạn đường khác nhau — thứ tự bấm quyết định chiều bạn chọn.
+            </span>
           </span>
         </div>
       ) : (

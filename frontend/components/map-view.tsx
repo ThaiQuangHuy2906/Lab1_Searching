@@ -38,6 +38,7 @@ export function MapView() {
   const traceOnReal = useApp((state) => state.traceOnReal);
   const edgeOverrides = useApp((state) => state.edgeOverrides);
   const edgeEditMode = useApp((state) => state.edgeEditMode);
+  const edgeEditFirstNode = useApp((state) => state.edgeEditFirstNode);
   const selectedEdgeId = useApp((state) => state.selectedEdgeId);
   const trace = useApp((state) => state.trace);
   const multi = useApp((state) => state.multi);
@@ -87,6 +88,7 @@ export function MapView() {
     traceOnReal,
     edgeOverrides,
     edgeEditMode,
+    edgeEditFirstNode,
     selectedEdgeId,
     trace,
     multi,
@@ -103,7 +105,7 @@ export function MapView() {
     theme,
   }), [
     graphData, graphLoading, graph, offline, trafficLayer, traffic, slot,
-    traceOnReal, edgeOverrides, edgeEditMode, selectedEdgeId, trace,
+    traceOnReal, edgeOverrides, edgeEditMode, edgeEditFirstNode, selectedEdgeId, trace,
     multi, optimizationTrace, timelineSource, stepIdx, drawerTab, start, goal,
     problemMode, stops, activeSnapshot, pickTarget, theme,
   ]);
@@ -112,10 +114,14 @@ export function MapView() {
     const state = useApp.getState();
     if (state.running || state.comparing || state.multiRunning) return;
     if (state.edgeEditMode) {
-      const edgeId = info.object && "id" in (info.object as object)
+      // Edges are resolved from two node clicks (§ store.ts pickEdgeNode),
+      // never from clicking a road line directly: opposite-direction edges
+      // between the same node pair render on the exact same screen line and
+      // cannot be told apart by a line click.
+      const nodeId = info.object && "id" in (info.object as object)
         ? (info.object as { id?: string }).id
         : undefined;
-      if (edgeId) state.selectEdge(edgeId);
+      if (nodeId) state.pickEdgeNode(nodeId);
       return;
     }
     const target = state.pickTarget;

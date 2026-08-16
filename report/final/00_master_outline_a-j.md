@@ -1,0 +1,504 @@
+# KHUNG BÁO CÁO KỸ THUẬT — Lab 1: Search Algorithms for Vietnamese Traffic
+
+> ✅ **KẾT QUẢ THÍ NGHIỆM CHÍNH THỨC (2026-08-11):** exp1–exp7 đã được chạy
+> một lượt cô lập trên graph/profile `tomtom+synthetic` hiện hành (seed 42), sau
+> backend `235 passed` và `ALL DATA VALID`. Artifact validator độc lập xác nhận
+> đúng row/key/method/count/công thức, tái tính exp4, mở được 11 PNG; γ̂ được tính
+> lại từ 160 mẫu/4 slot và generator cho output byte-identical. Provenance và
+> SHA-256 nằm tại `results/README.md`. Contract có 9 thuật toán route; không còn
+> series `dijkstra` độc lập trong CSV mới.
+> **Kiểm lại read-only 2026-08-15:** 19/19 checksum vẫn khớp; backend 235,
+> frontend 137/137, TypeScript và data validator đều đạt. Không tái sinh artifact.
+>
+> **Tiến độ dữ liệu:** raw TomTom đã đủ 4/4 snapshot đại diện lấy trên hai ngày
+> thứ Hai; profile hiện là `tomtom+synthetic`; `G_demo` đã rebuild 51/298 và
+> validator đạt. Raw GraphML/TomTom/cache hiện được Git track dưới `data/raw/`.
+> **Tiến độ nội dung (fresh scan 2026-08-11):** đây vẫn là khung Markdown, còn
+> 23 marker nội dung cần điền (25 occurrence tổng, loại hai lần chỉ nhắc quy ước),
+> 13 occurrence marker screenshot và 8 entry phụ trách còn `CHƯA CHỐT` sau khi
+> loại các dòng tự mô tả/giải thích. Chưa phải report PDF để nộp.
+
+> **Đích:** hoàn thiện thành PDF 35–50 trang, đủ 10 mục a–j đúng đề. Khung này điền sẵn
+> mọi thứ máy làm được (công thức, bảng, số liệu benchmark, hình); phần lập luận để
+> nhóm TỰ VIẾT bằng lời của mình.
+>
+> **Quy ước marker:**
+> - `[ĐIỀN: …]` — nhóm tự viết prose theo mô tả.
+> - `[SỐ LIỆU → file]` — con số lấy từ file benchmark (đã điền sẵn giá trị hiện tại,
+>   chạy lại benchmark thì đối chiếu lại file).
+> - `[HÌNH → file]` — hình đã sinh sẵn, chỉ việc chèn.
+> - `[SCREENSHOT: …]` — nhóm chụp GUI theo mô tả (chế độ TỐI — quy ước DESIGN.md §1).
+> - `> 💡 Gợi ý:` — cần chạm ý gì, độ dài, tiêu chí chấm nào ăn điểm.
+> - `> ✍️ Phụ trách:` — chỉ ghi người đã được nhóm xác nhận; các mục còn lại để
+>   `CHƯA CHỐT`, không suy diễn từ vai trò lịch sử A–E.
+
+---
+
+## a. Giới thiệu nhóm (2–3 trang)
+
+> ✍️ Phụ trách: **CHƯA CHỐT**
+> 💡 Gợi ý: trung thực về mức hoàn thành; rubric 100 điểm bên dưới là thứ giảng viên
+> dò từng dòng — tự chấm trước sẽ ghi điểm thiện chí. Final audit hiện chỉ chứng
+> minh Google Chrome Desktop maximized trên laptop 2560×1440; không suy claim
+> mobile/tablet/narrow hoặc máy demo khác từ evidence này.
+
+- **GroupID:** 2
+- **Người đại diện nộp chính thức:** Thái Quang Huy
+- **Tên nhóm:** không sử dụng theo yêu cầu giảng viên
+
+**Bảng thành viên** *(vai trò thực tế sẽ chốt sau)*:
+
+| Họ tên | MSSV | Vai trò | Phạm vi đã xác nhận | % đóng góp |
+|---|---|---|---|---:|
+| Nguyễn Hữu Gia Minh | 24127078 | Chưa chốt | Chưa chốt | 100% |
+| Thái Quang Huy | 24127177 | Chưa chốt | 3 thuật toán ATSP | 100% |
+| Nguyễn Văn Minh | 24127205 | Chưa chốt | 9 thuật toán tìm đường hai điểm | 100% |
+| Mai Phương Thùy | 24127249 | Chưa chốt | Chưa chốt | 100% |
+| Trần Hoàng Phúc | 24127505 | Chưa chốt | Chưa chốt | 100% |
+
+**Bảng tự đánh giá theo rubric đề (100 điểm):**
+
+| Tiêu chí (theo đề) | Điểm tối đa | Nhóm tự chấm | Ghi chú |
+|---|---|---|---|
+| Bối cảnh giao thông VN thực tế | 10 | [ĐIỀN] | kịch bản shipper TP.HCM, dữ liệu OSM khu trung tâm |
+| Mô hình đồ thị, dataset, hàm chi phí | 15 | [ĐIỀN] | 2 tầng G_demo/G_real; cost quy về giây |
+| Cài đúng 4 thuật toán bắt buộc | 20 | [ĐIỀN] | đối chứng UCS/A* với NetworkX đạt 800/800 ở exp1 chính thức |
+| Thuật toán bổ sung (≥2) | 10 | [ĐIỀN] | nhóm làm 5: IDDFS, Greedy, BiDijkstra, IDA*, Beam |
+| Tối ưu đa điểm | 10 | [ĐIỀN] | Held-Karp + NN+2-opt + SA (3 phương pháp) |
+| GUI + visualize quá trình tìm kiếm | 10 | [ĐIỀN] | animation từng bước, bảng g/h/f, 7 theme; Chrome Desktop maximized 2560×1440 đã đạt keyboard/focus và reduced motion |
+| Giải thích tuyến + so sánh phương án | 10 | [ĐIỀN] | explanation tiếng Việt + ≥1 alternative |
+| Chất lượng báo cáo | 10 | [ĐIỀN] | |
+| Chất lượng video | 5 | [ĐIỀN] | |
+
+---
+
+## b. Bối cảnh bài toán (2–3 trang)
+
+> ✍️ Phụ trách: **CHƯA CHỐT**
+> 💡 Gợi ý: 3 ý bắt buộc: (1) vấn đề thật của TP.HCM giờ cao điểm; (2) vì sao tuyến
+> ngắn nhất km không phải tuyến tốt; (3) shipper đa điểm cần gì. Dẫn 1–2 nguồn
+> (cổng giao thông TP.HCM giaothong.hochiminhcity.gov.vn, báo chí về điểm ngập).
+> Ăn điểm tiêu chí "Vietnamese traffic context" (10đ).
+
+[ĐIỀN: kịch bản shipper giao hàng đa điểm khu trung tâm TP.HCM — ùn tắc 07:30/17:30,
+mạng lưới một chiều dày đặc (1 433/4 699 cạnh một chiều trong dữ liệu nhóm), điểm ngập
+(Nguyễn Hữu Cảnh, Đinh Tiên Hoàng…), lô cốt thi công, và nhu cầu: (i) tìm đường tốt
+giữa 2 điểm theo nhiều tiêu chí, (ii) xếp thứ tự giao nhiều đơn tối ưu.]
+
+[ĐIỀN: vì sao chọn kịch bản shipper — có sẵn cả HAI bài toán đề yêu cầu.]
+
+---
+
+## c. Mô hình hoá bài toán (3–5 trang) `[⚠️ CHƯA CHỐT NGƯỜI PHỤ TRÁCH]`
+
+> Phạm vi “3 thuật toán ATSP” đã giao cho Thái Quang Huy thuộc phần h; nó không
+> đồng nghĩa với mục c về mô hình hóa bài toán.
+
+> 💡 Gợi ý: mục ăn điểm "Graph modeling + cost function" (15đ). Điểm KHÁC BIỆT phải
+> lập luận kỹ: nhóm KHÔNG cộng α·dist + β·time + γ·cong đa đơn vị như công thức mẫu
+> của đề mà QUY HẾT VỀ GIÂY — đề vẫn được thoả vì đủ 4 thành phần distance/time/
+> congestion/risk (mode distance riêng, congestion nhân vào time, risk cộng giây).
+> Trỏ sang thí nghiệm 5 (PHÂN TÍCH ĐỘ NHẠY) khi bàn về γ — γ=1,5 là hằng số thiết kế;
+> exp5 chỉ chứng minh kết luận BỀN với lựa chọn γ, không phải "chọn 1,5 bằng thí nghiệm".
+
+**Định nghĩa hình thức** *(điền sẵn — nhóm kiểm tra và diễn giải thêm)*:
+- Không gian trạng thái: tập node V (giao lộ/địa danh); trạng thái = node hiện tại.
+- Hành động: đi qua cạnh có hướng (u, v) ∈ E; đồ thị CÓ HƯỚNG — đường 2 chiều là 2 cạnh.
+- Trạng thái đầu: node xuất phát; đích: node đến; nghiệm: dãy cạnh liên tiếp.
+- Chi phí bước = trọng số cạnh theo chế độ (bảng dưới).
+
+**Mô hình cần diễn giải trong bản PDF:** đặt `G=(V,E)` là graph có hướng;
+`adj(u)` liệt kê cạnh đi từ `u`, còn `radj(v)` liệt kê cạnh đi vào `v` và chỉ dùng
+đúng chiều ngược trong Bidirectional Dijkstra. Một path hợp lệ là
+`P=(v₀,…,v_k)` sao cho `(v_i,v_{i+1})∈E`; với mode/slot đã chọn,
+`cost(P)=Σ_i w(v_i,v_{i+1})`. Cạnh một chiều chỉ có một hướng hợp lệ; cạnh hai
+chiều được biểu diễn bằng hai edge có hướng. Điều này giải thích cả route hai
+điểm lẫn vì sao ma trận multi-location có thể bất đối xứng `c(a,b) ≠ c(b,a)`.
+
+**Thuộc tính cạnh** *(chèn từ `docs/SCHEMA.md` §A.3 — bảng đầy đủ trong đó)*:
+`length_m`, `highway`, `oneway`, `free_speed_kmh`, `free_travel_time_s`,
+`risk{flood, construction, narrow_alley, traffic_light}`.
+
+**Hàm chi phí** *(điền sẵn từ SCHEMA §D — ĐÚNG như code)*:
+
+```
+t_free(e)   = length_m / (free_speed_kmh / 3.6)                    [giây]
+f_cong(e,h) = 1 + γ·(congestion(e,h) − 1)/4        γ = 1,5; congestion ∈ [1..5]
+penalty(e)  = 60·ngập + 90·lô_cốt + 30·hẻm_nhỏ + 25·đèn_đỏ         [giây]
+
+mode=distance → w = length_m                       [mét]
+mode=time     → w = t_free · f_cong                [giây]
+mode=balanced → w = t_free · f_cong + penalty      [giây]  (MẶC ĐỊNH)
+```
+
+[ĐIỀN: lập luận vì sao quy hết về giây thay vì tổng đa đơn vị: (1) mọi thành phần
+cùng thứ nguyên → cộng có nghĩa vật lý "thời gian tương đương"; (2) penalty đọc được
+("mỗi LƯỢT băng qua một vùng ngập đắt thêm 60 giây" — flag đặt tại cạnh ĐI VÀO vùng
+nên tuyến xuyên vùng trả đúng một lần, không cộng dồn theo từng đoạn OSM nhỏ,
+xem DATA.md §4); (3) heuristic admissible chứng minh
+được sạch sẽ trên cùng đơn vị. Về γ=1,5: trình bày là HẰNG SỐ THIẾT KẾ — nghĩa vật lý
+"kẹt cứng mức 5 làm thời gian gấp (1+γ) = 2,5 lần lúc thoáng". TUYỆT ĐỐI KHÔNG lập luận
+"đường cong đạt cực tiểu tại γ=1,5 nên 1,5 là đúng": thước đo của exp5 tự dùng γ=1,5
+nên cực tiểu tại 1,5 là hệ quả toán học của thước, không phải bằng chứng (đổi thước
+sang γ=0 thì "cực tiểu" nhảy về 0). Trình bày exp5 đúng vai PHÂN TÍCH ĐỘ NHẠY: trỏ
+[HÌNH → results/figs/exp5_gamma_curves.png] — thời gian tuyến chênh trên CẢ DẢI γ∈[0;3]
+**5,4%** [SỐ LIỆU → results/exp5_gamma.csv: 607,4 s tại γ=0; 580,1 s tại γ=1,5;
+574,4 s tại γ=3] ⇒ lựa chọn tuyến có thay đổi nhưng kết luận tổng thể không quá nhạy
+trong dải khảo sát. γ̂ ước lượng độc lập từ raw TomTom local
+(`scripts/05_calibrate_gamma.py` — fit `f = 1 + γ(c−1)/4` trên inflation
+freeFlow/current) là **1,238** từ **160 điểm đo/4 khung giờ**, thấp hơn hằng số
+thiết kế 1,5 khoảng **17,5%** [SỐ LIỆU → results/gamma_calibration.csv].]
+
+[ĐIỀN: ùn tắc đổi tuyến thế nào — trỏ exp4: 149/200 = 74,5% cặp OD đổi tuyến giữa 07:30 và 22:00.]
+
+**Ghi chú scenario dạy học/thử nghiệm (không thay dataset gốc):** bản triển khai
+mở rộng dùng graph view induced `full` hoặc `teach_3`…`teach_50` (UI nhận 3…51,
+51 ánh xạ về `full`) và sandbox
+edge override request-scoped. View/sandbox chỉ là graph hiệu lực của một request;
+không sửa `graph_*.json`, profile base hay benchmark. Mỗi result phải echo
+provenance/fingerprint do server sinh để người xem biết đang xem data gốc, graph
+dạy học hay kịch bản thử nghiệm. Phần này phải được mô tả theo `SCHEMA.md §E`,
+không thay thế provenance dataset ở mục d.
+
+---
+
+## d. Dataset (3–5 trang)
+
+> ✍️ Phụ trách: **CHƯA CHỐT**
+> 💡 Gợi ý: phần lớn nội dung đã có trong `data/DATA.md` — chuyển thành prose, đừng
+> dán nguyên bảng. Bắt buộc nêu: pipeline 4 bước + validator; 2 tầng đồ thị và LÝ DO;
+> nguồn (OSM/OSMnx v2, TomTom 4/4 snapshot đại diện trên hai ngày thứ Hai, chỉ
+> dùng trên các cạnh được gán + synthetic fallback, Công báo/báo chí/SAWACO đối
+> chiếu định tính cho manual risk); bảng free-speed; giả định & hạn chế (mục 8
+> DATA.md — trung thực là điểm cộng).
+
+**Sơ đồ pipeline** *(vẽ lại từ DATA.md §1)*: `01_download_osm → 02_build_graph →
+03b_build_profiles(real) → 04_build_gdemo → 03b(demo) → validate_data`.
+
+**Số liệu bản build hiện tại** *(từ DATA.md §7)*:
+
+| | G_real | G_demo |
+|---|---|---|
+| Node | 2 118 (log download trước SCC: 2 230; GraphML được lưu sau SCC: 2 118) | 51 POI do nhóm curate rồi snap vào G_real |
+| Cạnh | 4 699 (1 433 một chiều) | 298 (60 một chiều) |
+| Đèn / ngập / lô cốt / hẻm | 185 / 54 / 19 / 8 | 130 / 24 / 24 / 0 |
+| Bất biến demo/real | — | time ≤1,5× · dist ≤1,8× · balanced ≤1,5× cả 4 khung giờ, mọi cặp POI (validator chặn) |
+
+[ĐIỀN: kiến trúc 2 tầng — vì sao cần cả hai: G_demo để visualize/giảng/quay video
+(tên POI do nhóm curate, cạnh co kế thừa chiều dài/hướng/thuộc tính tổng hợp của corridor G_real;
+JSON không lưu polyline geometry), G_real để benchmark/chứng minh scale.]
+
+[ĐIỀN: luật TomTom + synthetic fallback (DATA.md §5), phạm vi phủ mẫu và khẳng
+định demo offline 100%.]
+
+**Bảng provenance bắt buộc trong PDF** *(không được gộp lẫn “thật” và “nhóm đặt”)*:
+
+| Nhóm | Field/ý nghĩa |
+|---|---|
+| Artifact OSM-derived | topology/toạ độ và thuộc tính name/highway dùng để build G_real; raw GraphML local hiện được track, nhưng không được live re-query trong audit |
+| Suy ra từ topology/thuộc tính OSM | `oneway` public của G_real (có/không ordered pair ngược sau dedup), free-time, traffic_light, narrow_alley |
+| Suy ra từ G_real | toạ độ/hướng/length/corridor và thuộc tính tổng hợp của G_demo |
+| Nhóm đặt thủ công | POI ban đầu, giả định free-speed, vùng flood/construction |
+| Synthetic deterministic fallback | congestion của edge không được TomTom gán ở slot tương ứng |
+
+Nêu rõ bốn snapshot TomTom là hai slot 2026-07-27 và hai slot 2026-08-03, cùng là
+thứ Hai cách nhau bảy ngày: chúng là snapshot đại diện theo slot, **không phải**
+time series cùng một ngày. Mỗi slot có 40 record hợp lệ và chỉ gán mức TomTom cho
+635/4 699 edge G_real; phần còn lại dùng fallback seed 42, còn G_demo kế thừa qua
+corridor weighted mean. Assignment hiện dùng khoảng cách từ node nguồn cạnh tới
+sample gần nhất trong 250 m trên edge thuộc `MAIN_CLASSES`; không map-match tên
+đường/segment geometry/`frc`. Tám `source_url` manual risk đã được review và tích
+hợp ngày 2026-08-08; dùng bảng `data/DATA.md` §2.1 để dẫn nguồn. Chỉ được nói các
+nguồn ghi nhận **sự kiện lịch sử ở cấp tuyến/khu vực**; không nói chúng xác nhận
+tâm, bán kính, penalty, mức độ hoặc tình trạng hiện tại. Nêu riêng `r02` lệch
+không gian, `r07` là khắc phục hố sụt/rào chắn chứ không phải dự án cống, và
+`r08` là thi công hạ tầng cấp nước chứ không phải nâng cấp mặt đường.
+
+Các nhãn OSM/TomTom ở bảng trên mô tả provenance của artifact local và phép dẫn
+xuất có thể tái kiểm, không tuyên bố ground truth ngoài đời hay traffic real-time.
+
+[SCREENSHOT: `data/gdemo_preview.png` — sơ đồ G_demo 51 điểm]
+
+---
+
+## e. Nguyên lý thuật toán (8–12 trang)
+
+> ✍️ Phụ trách: **Nguyễn Văn Minh** (cả 9 thuật toán route)
+> 💡 Gợi ý: mục ăn điểm "Correct implementation" (20đ) + "Additional" (10đ). Mỗi thuật
+> toán 1 tiểu mục theo KHUNG: ý tưởng ngắn → pseudocode → ví dụ minh hoạ → complete/
+> optimal. Ví dụ minh hoạ: `[ĐIỀN — VIẾT LẠI BẰNG LỜI CỦA BẠN từ docs/GIAI-THICH-THUAT-TOAN.md
+> — bảng từng bước đã được tái sinh chính thức từ graph/profile hiện hành ngày
+> 2026-08-11; được phép chèn bảng, cấm chép nguyên văn lời giảng]`.
+
+Danh sách tiểu mục (theo thứ tự): BFS · DFS · IDDFS · UCS · A* · Greedy Best-First ·
+Bidirectional Dijkstra (đồ thị đảo cạnh, luật dừng μ) ·
+IDA* (ε=5 m ở distance, 5 s ở time/balanced; cap 1.000 vòng) · Beam Search
+(k, incomplete).
+
+**Khung thống nhất cho đủ 12 phương pháp** (9 search + Held–Karp + NN/local +
+SA): mỗi tiểu mục cần có (1) mục đích, (2) trực giác, (3) input/parameter/default,
+(4) output, (5) cấu trúc dữ liệu, (6) các bước, (7) pseudocode, (8) priority/đại
+lượng quyết định, (9) time complexity, (10) space complexity, (11) complete và
+điều kiện, (12) optimal và điều kiện, (13) ưu điểm, (14) nhược điểm/khi dùng,
+(15) ví dụ chạy tay + so sánh với phương pháp gần nhất. Không dùng benchmark để
+thay chứng minh guarantee. IDDFS chỉ complete khi depth nghiệm không vượt cap 100;
+IDA* chỉ giữ guarantee khi chưa chạm cap 1.000 round; Bidirectional Dijkstra
+không được quảng cáo tốt hơn UCS trong worst case vô điều kiện.
+
+**Ranh giới của khung này:** 15 mục trên là cấu trúc bắt buộc đã khóa cho cả 12
+tiểu mục, không phải tuyên bố rằng prose, pseudocode diễn giải bằng lời nhóm,
+ví dụ chạy tay, hình và report PDF đã hoàn tất. Các phần đó vẫn là việc tay trước
+khi nộp; giữ marker `[ĐIỀN]` cho tới khi nhóm viết/review nội dung, nhưng mọi số
+benchmark trong khung phải tiếp tục khớp bộ chính thức ngày 2026-08-11.
+
+**Tiểu mục heuristic** *(chèn sẵn)*: toàn bộ chứng minh admissible + consistent lấy từ
+`docs/HEURISTIC-PROOF.md` (Bổ đề 1–3, Định lý 1–3, mục 6b về làm tròn số — bài học hay
+nên kể). Kèm [HÌNH → results/figs/admissibility_scatter.png] và
+[SỐ LIỆU → results/exp2_admissibility.csv: 0 vi phạm trên 21 170 điểm; h/h* lớn nhất = 0,8886].
+
+[ĐIỀN: nhận xét đúng về scatter — `0,8886` là **giá trị lớn nhất**, không phải
+trung bình, nên không dùng riêng nó để gọi heuristic “lỏng” hay “chặt”. Giải thích
+vì sao haversine/v_max vẫn có slack (đường vòng, một chiều, congestion/penalty) và
+đối chiếu hiệu quả thực nghiệm: A* giảm 41,3% expand so UCS trong exp3.]
+
+---
+
+## f. Program flow (2–3 trang)
+
+> ✍️ Phụ trách: **CHƯA CHỐT**
+> 💡 Gợi ý: 2 sơ đồ + mô tả module. Mermaid dựng sẵn dưới — render rồi chèn hình.
+
+```mermaid
+flowchart LR
+  subgraph offline [Pipeline offline - chạy 1 lần]
+    OSM[OpenStreetMap] --> S01[01_download_osm] --> S02[02_build_graph]
+    S02 --> S03[03b_build_profiles] --> DATA[(data/*.json)]
+    S02 --> S04[04_build_gdemo] --> DATA
+    TT[TomTom tuỳ chọn] -.-> S03
+  end
+  DATA --> GS[GraphStore + precomputed weights]
+  subgraph backend [FastAPI :8000]
+    GS --> SE[search.py / search_advanced.py] --> EX[explain.py]
+    GS --> TSP[tsp.py]
+  end
+  subgraph frontend [Next.js :3000]
+    UI[Panel + MapLibre/deck.gl + Timeline] --> API[/6 endpoint REST/]
+  end
+  API --> backend
+```
+
+```mermaid
+sequenceDiagram
+  participant U as Người dùng
+  participant FE as Frontend (zustand)
+  participant BE as FastAPI
+  participant AL as search.py
+  participant EXP as explain.py
+  U->>FE: chọn Đi/Đến + thuật toán, bấm Chạy
+  FE->>BE: POST /api/route
+  BE->>AL: run(store, start, goal, mode, slot)
+  AL-->>BE: Trace (path, metrics, trace[])
+  BE->>EXP: build_explanation(trace)
+  EXP-->>BE: summary_vi + alternatives
+  BE-->>FE: Trace JSON
+  FE-->>U: animation từng bước + bảng g/h/f + giải thích
+```
+
+[ĐIỀN: mô tả 1 đoạn/module: graph_store (nạp + precompute weight 12 tổ hợp),
+search/search_advanced (hợp đồng trace duy nhất), tsp, explain, main (6 endpoint,
+error envelope), frontend store/timeline đồng bộ 2 chiều.]
+
+---
+
+## g. So sánh thuật toán (4–6 trang)
+
+> ✍️ Phụ trách: **CHƯA CHỐT**
+> 💡 Gợi ý: bảng lý thuyết `[nhóm kiểm tra lại]` rồi ĐỐI CHIẾU số đo thật — phân tích
+> chênh lệch lý thuyết/thực nghiệm là chỗ ăn điểm phân tích. b = bậc nhánh, d = độ sâu
+> nghiệm, C* = chi phí tối ưu, ε_min = cận dưới trọng số cạnh dương trong bound
+> textbook của UCS; ε_IDA = bước nới ngưỡng IDA* theo đơn vị mode.
+
+**Bảng lý thuyết** *(điền sẵn — [nhóm kiểm tra lại])*:
+
+| Thuật toán | Thời gian | Bộ nhớ | Complete | Optimal |
+|---|---|---|---|---|
+| BFS | graph traversal O(V+E) | O(V) | trên graph hữu hạn | ✘ (chỉ cost-optimal khi cạnh đều) |
+| DFS | graph traversal O(V+E) | O(V) | trên graph hữu hạn + visited | ✘ |
+| IDDFS | textbook O(b^d) | stack/closed theo vòng | Có điều kiện: d≤cap 100 | ✘ (như BFS) |
+| UCS | O((V+E)logV) với heap | O(V+E) worst case với lazy heap | ✔ khi weight không âm | ✔ khi weight không âm |
+| A* | worst case có thể xét toàn graph | O(V+E) worst case với heap/lazy entry | ✔ với heuristic nhất quán | ✔ với heuristic admissible + consistent |
+| Greedy | phụ thuộc frontier/heap; không dùng g để chọn | O(V) | tìm path trên graph hữu hạn có closed set | ✘ |
+| BiDijkstra | worst-case cùng bậc UCS, không hơn vô điều kiện | O(V+E) worst case với hai lazy heap | ✔ khi weight không âm + stop rule | ✔ khi weight không âm + stop rule |
+| IDA* | thường O(b^d), có lặp threshold, tối đa 1.000 vòng | O(V+Q): `best_g`/`parent`/`h_of` + explicit stack đang chờ Q | Có điều kiện: chưa chạm cap | ✔ trong C*+ε_IDA nếu chưa chạm cap |
+| Beam | xấp xỉ O(b·k·d) | O(V+b·k): maps + raw pool lớp kế | ✘ | ✘ |
+
+**Bảng thực nghiệm** *(điền sẵn từ [SỐ LIỆU → results/exp3_benchmark.csv] — trung bình
+200 cặp × 2 khung giờ trên G_real)*:
+
+> Bảng dưới là số chính thức ngày 2026-08-11 từ đúng 400 dòng/thuật toán. Runtime
+> là wall-clock trên máy Ryzen 7 6800H và phụ thuộc môi trường; path/cost/gap/count
+> mới là các đại lượng deterministic với cùng input/code/seed.
+
+| Thuật toán | expand TB | runtime TB (ms) | gap % TB | found % |
+|---|---|---|---|---|
+| bfs | 1 242 | 1,2 | 26,2 | 100 |
+| dfs | 1 036 | 41,0 | 1 192,7* | 100 |
+| iddfs | 109 612 | 855,3 | 26,2 | 100 |
+| ucs | 1 227 | 3,9 | 0 | 100 |
+| astar | 721 | 3,7 | 0 | 100 |
+| greedy | 62 | 0,3 | 33,7 | 100 |
+| bidijkstra | 739 | 3,9 | 0 | 100 |
+| idastar | 290 427 | 385,9 | 0,2 (≤ ε) | 100 |
+| beam (k=50) | 1 051 | 3,4 | 20,1 | 99,0 |
+
+*\*DFS gap trung bình cực lớn vì vài ca lượn gần hết đồ thị — nêu thêm median nếu nhóm muốn công bằng hơn.*
+*(Số tổng hợp từ 400 dòng/thuật toán trong CSV — làm tròn để đọc; đối chiếu file khi cần chính xác.)*
+
+[HÌNH → results/figs/exp3_expanded_bar.png] · [HÌNH → results/figs/exp3_runtime_bar.png]
+· [HÌNH → results/figs/exp3_gap.png]
+
+[ĐIỀN: phân tích — (1) A*/BiDijkstra tiết kiệm lần lượt **41,3%/39,7%** expand
+so UCS; giải thích bằng heuristic/tìm hai phía; (2) Greedy expand ít nhất (62) nhưng gap trung bình 33,7%
+— cái giá của việc bỏ qua g, đắt hơn cả BFS; (3) IDDFS/IDA* expand khủng (hàng trăm
+nghìn) do chạy lại từng vòng; implementation IDA* hiện vẫn giữ các map theo node
+và explicit stack nên không được quảng cáo là `O(bd)`. IDA* chỉ giữ guarantee
+gap ≤ ε khi chưa chạm cap, còn IDDFS không tối ưu weighted cost; (4) Beam k=50
+lỡ **4/400 = 1,0%** ca không tìm thấy
+— minh hoạ incomplete bằng số; (5) DFS gap 4 chữ số: vô nghĩa cho định tuyến.]
+
+**Ảnh hưởng ùn tắc** [SỐ LIỆU → results/exp4_congestion.csv]: **149/200 cặp (74,5%)**
+đổi tuyến giữa 07:30 và 22:00. [ĐIỀN: bình luận + lấy 1 ví dụ GeoJSON trong
+results/exp4_examples/ mô tả cụ thể đổi thế nào.]
+
+**Đối chứng Google Maps (định tính)** — 5 cặp trong `results/exp6_pairs.json`:
+[SCREENSHOT ×5: mở từng `google_maps_url` lúc ~07:30, chụp đặt cạnh
+`results/exp6_routes/route_i.png`; nhận xét trùng/khác và VÌ SAO (Google có dữ liệu
+real-time, ta dùng snapshot 4 khung giờ)].
+
+**Provenance của lượt chính thức:** `G_real` created 2026-07-27, 2.118/4.699;
+`G_demo` created 2026-08-03, 51/298; profile created 2026-08-03, source
+`tomtom+synthetic`; base/full graph, không scenario override; mode balanced; slot
+theo từng exp; OD seed 42; command `python -m app.benchmark`; HEAD nền `821e77d`
+và current worktree được định danh bằng checksum source. Chi tiết SHA-256, máy
+chạy và từng artifact: `results/README.md`.
+
+---
+
+## h. Tối ưu đa điểm (3–4 trang)
+
+> ✍️ Phụ trách: **Thái Quang Huy** (3 thuật toán ATSP)
+> 💡 Gợi ý: mục ăn điểm "Multi-location" (10đ). Nhấn: vì sao ATSP (bất đối xứng do
+> một chiều — ví dụ hiện hành ở tài liệu generated §10: BT→SC và SC→BT khác nhau);
+> Held-Karp là ground truth ≤15 điểm; tuyên bố rõ cái nào TỐI ƯU cái nào XẤP XỈ.
+
+**Phát biểu bài toán** [ĐIỀN: shipper từ kho (Bưu điện TP), thăm k điểm giao đúng 1 lần,
+không quay về (return_to_start=false — giả định ghi rõ); ma trận chi phí từ UCS
+theo (mode, khung giờ); tổng điểm ≤ 16, Held-Karp ≤ 15].
+
+**Trace tối ưu thứ tự (nếu bật trong GUI):** đây là `OptimizationTrace` riêng, không
+phải `Trace` của chín thuật toán route. Nó chỉ giải thích việc chọn/thay đổi thứ tự
+ghé (DP update, NN decision, local improvement, SA seed/iteration), còn tuyến xe
+thật là các leg cuối. Cap Held–Karp 2 000, NN/local 2 000 và SA 1 500 chỉ cắt
+payload theo sampling deterministic; chúng không dừng optimizer. Phần report/video
+phải gọi đúng đây là quá trình tối ưu **thứ tự**, không gọi là frontier search trên
+graph đường phố.
+
+**Kết quả kịch bản 10 điểm** *(điền sẵn từ [SỐ LIỆU → results/exp7_tsp.csv])*:
+
+| Phương pháp | Tổng chi phí (s) | Tiết kiệm vs thứ tự nhập | Runtime (ms) | Tối ưu? |
+|---|---|---|---|---|
+| Thứ tự nhập | 4 320,1 | — | — | — |
+| Held-Karp | 2 494,9 | **42,2%** | 3,9 | ✔ tuyệt đối |
+| NN + 2-opt/Or-opt | 2 534,2 | 41,3% | 1,5 | ✘ (gap +1,6% so Held-Karp) |
+| SA (best/5 seed) | 2 494,9 | 42,2% | 40,5 | ✘ (mean 2 584,6 ± 66,0) |
+
+[HÌNH → results/figs/exp7_tsp_map.png]
+
+[ĐIỀN: thảo luận — NN+2-opt/Or-opt cách Held-Karp +1,6%; SA best chạm nghiệm
+Held-Karp trên instance 10 điểm này nhưng mean 5 seed là 2 584,6 ± 66,0 s, minh
+hoạ tính ngẫu nhiên; với k lớn
+hơn 15 chỉ còn heuristic. Nêu giới hạn Held-Karp O(n²·2ⁿ); Nearest Neighbour hiện
+là O(n² log n) vì sort ở mỗi vòng; local 2-opt/Or-opt là O(Pn³) vì Θ(n²)
+candidate/pass × Θ(n) full re-cost; SA là O(S·I·n) với S=5 seed, I=2 000
+iteration/seed. “Nghiệm bằng Held–Karp ở instance này” không biến NN/local hoặc SA
+thành thuật toán đảm bảo tối ưu toàn cục; local optimum chỉ là điểm không còn nước
+cải thiện theo neighbourhood đã chọn.]
+
+[SCREENSHOT: GUI multiroute — thứ tự đánh số trên bản đồ + card "Tiết kiệm %"]
+
+---
+
+## i. Hướng dẫn sử dụng (2–3 trang)
+
+> ✍️ Phụ trách: **CHƯA CHỐT**
+> Nguồn thao tác hiện hành: `docs/HUONG-DAN-SU-DUNG-UI.md`.
+
+Cài đặt và chạy theo README: tạo `.venv`, cài backend, `npm ci`, chạy uvicorn ở
+cổng 8000 và Next dev ở cổng 3000. Demo sản phẩm chỉ đọc snapshot đã commit;
+không cần và không được chạy lại pipeline OSM/TomTom/benchmark trong lúc demo.
+
+**Luồng Chạy một:** chọn graph/view → khung giờ → tiêu chí → Hai điểm → Đi/Đến →
+Chạy một → thuật toán (+k/ε nếu có) → Chạy. Tab Số liệu tách outcome khỏi effort;
+timeline đồng bộ map và g/h/f. Tab Giải thích cho biết verdict/guarantee,
+breakdown, yếu tố tham gia objective và câu theo đúng quy tắc của thuật toán.
+Tuyến tham chiếu do UCS tính hậu kiểm có selector và overlay nét đứt; không nói
+thuật toán chính đã xét hay loại full route đó. Đường đỏ là cạnh mức ùn tắc 4–5
+trên tuyến kết quả cuối cùng, không phải search path của bước timeline hiện tại.
+
+**Luồng So sánh nhiều:** chuyển `Chế độ chạy` sang `So sánh nhiều`, chọn 2–4
+thuật toán rồi chạy. Đúng N thuật toán tạo N map final-only cùng kích thước; từng
+map pan/zoom/Home độc lập và không cho chỉnh node/cạnh/scenario. Drawer phải gom
+bảng N-way, rank, objective, effort và guarantee; partial failure không xoá item
+thành công, retry theo item. `Xem giải thích` mở đúng result đã chọn; selector
+tuyến tham chiếu chỉ có ở Chạy một.
+
+**Luồng nhiều điểm:** chọn `Nhiều điểm`. `Đi theo thứ tự đã chọn` chạy search cho
+từng chặng và hỗ trợ comparison 2–4. `Tối ưu thứ tự ATSP` hiện chạy một
+phương pháp Held–Karp/NN+local-search/SA và đối chiếu trước/sau, hoặc so sánh 2–3
+phương pháp trên cùng immutable snapshot. Đúng N phương pháp tạo N map; baseline
+thứ tự nhập chỉ xuất hiện một lần trong bảng, không tạo map giả.
+
+**Danh sách 9 screenshot cần chụp** *(chế độ Tối)*:
+1. [SCREENSHOT: toàn cảnh trang chính G_demo + lớp ùn tắc 07:30]
+2. [SCREENSHOT: animation A* đang chạy — node trắng pulse + frontier cyan + bảng g/h/f]
+3. [SCREENSHOT: tuyến kết quả amber + panel Số liệu + badge "Đảm bảo tối ưu"]
+4. [SCREENSHOT: Chạy một — bảng tuyến kết quả/tham chiếu + overlay nét đứt + chú thích đường đỏ ùn tắc]
+5. [SCREENSHOT: Dijkstra hai chiều — 2 màu 2 phía]
+6. [SCREENSHOT: So sánh 3 thuật toán — 3 map độc lập, cùng kích thước + bảng N-way]
+7. [SCREENSHOT: ATSP comparison 3 phương pháp — 3 map + baseline duy nhất + bảng N-way]
+8. [SCREENSHOT: tab Thử nghiệm — bảng Thông số/Gốc/Đang thử và cạnh đang chọn]
+9. [SCREENSHOT: trang /benchmark với 3 biểu đồ]
+
+**Ví dụ input/output API:** dùng request `/api/route` trong README/Swagger và chỉ
+trích response rút gọn gồm `contract_version`, `found`, `path`, `metrics`,
+`termination`, `explanation.evidence` và 1–2 `trace` step. Không chép payload
+trace hàng nghìn bước vào báo cáo; đơn vị và invariant giải thích theo SCHEMA.
+
+---
+
+## j. Hạn chế & hướng phát triển (1–2 trang)
+
+> ✍️ Phụ trách: **CHƯA CHỐT**
+> 💡 Gợi ý: trung thực + cụ thể; mỗi hạn chế kèm "nếu có thêm thời gian sẽ làm gì".
+
+**Điền sẵn từ phương án §10 + phát sinh thực tế:**
+- Chưa mô hình turn penalty / cấm rẽ trái (cần edge-based graph) — Future Work.
+- Heuristic chỉ dùng haversine/v_max; exp2 có `max(h/h*) = 0,8886` nhưng max không
+  đại diện phân bố. Có thể nghiên cứu landmark ALT để tăng độ định hướng.
+- Profile congestion hiện là `tomtom+synthetic`: TomTom 4/4 chỉ phủ các cạnh
+  trục chính được gán, phần còn lại fallback; 4 khung giờ tĩnh, không real-time.
+- Tám vùng flood/construction là circle thủ công. Nguồn ngoài chỉ chứng minh
+  tuyến/khu vực từng có sự kiện tại ngày bài đăng; tâm, bán kính, flag và penalty
+  là giả định mô hình, không phải hazard quan trắc hay trạng thái hiện tại.
+- `r02` chỉ khớp sát ranh theo cạnh chính; `r03`/`r05` không có vị trí sự kiện
+  chính xác; `r07` là work-zone khắc phục hố sụt; `r08` là thi công cấp nước đã
+  hết hiệu lực. Cần polygon, validity interval, severity và incident feed nếu mở
+  rộng thành mô hình rủi ro thực tế.
+- `narrow_alley` hiếm vì network drive loại hẻm (DATA.md §8) — cần network_type="all".
+- VRP nhiều shipper, GA/ACO: ngoài phạm vi, đã chừa kiến trúc.
+- Final audit chỉ chấp nhận Chrome Desktop maximized trên laptop vật lý
+  2560×1440 (viewport CSS 1707×825, DPR 1,5); chưa có chứng nhận screen-reader
+  hoặc GPU trên mọi thiết bị, và máy demo cuối vẫn cần preflight nếu khác máy audit.
+- [ĐIỀN: khó khăn thực tế nhóm gặp — gợi ý kể chuyện THẬT: lỗi làm tròn phá admissible
+  bị test bắt được (HEURISTIC-PROOF §6b); chữ Ð của OSM khác Đ tiếng Việt; npm build
+  đè .next của dev server. Kể được bug mình tự bắt là điểm cộng trưởng thành kỹ thuật.]

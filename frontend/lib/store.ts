@@ -133,6 +133,7 @@ interface AppState {
   pickTarget: "start" | "goal" | "stop" | null;
   edgeOverrides: Record<string, EdgeOverride>;
   edgeEditMode: boolean;
+  edgeEditFirstNode: string | null;
   selectedEdgeId: string | null;
 
   // ---- dữ liệu
@@ -178,6 +179,7 @@ interface AppState {
   setGraphView: (view: GraphView) => void;
   setEdgeEditMode: (enabled: boolean) => void;
   selectEdge: (edgeId: string) => void;
+  pickEdgeNode: (nodeId: string) => void;
   setEdgeOverride: (edgeId: string, override: EdgeOverride | undefined) => void;
   resetAllEdgeOverrides: () => void;
   loadTraffic: () => Promise<void>;
@@ -243,6 +245,7 @@ export const useApp = create<AppState>((set, get) => ({
   pickTarget: null,
   edgeOverrides: {},
   edgeEditMode: false,
+  edgeEditFirstNode: null,
   selectedEdgeId: null,
 
   graphData: null,
@@ -681,6 +684,7 @@ export const useApp = create<AppState>((set, get) => ({
       return;
     set({
       edgeEditMode: enabled,
+      edgeEditFirstNode: null,
       ...(enabled ? { pickTarget: null, drawerOpen: true, drawerTab: "scenario" as DrawerTab } : {}),
       ...(!enabled ? { selectedEdgeId: null } : {}),
     });
@@ -692,7 +696,46 @@ export const useApp = create<AppState>((set, get) => ({
     // Selecting an edge finishes the one-shot picking gesture. Keep the edge
     // itself selected for editing, but remove the broad pick layer so a later
     // map click cannot accidentally replace it.
-    set({ selectedEdgeId: edgeId, edgeEditMode: false, drawerOpen: true, drawerTab: "scenario" });
+    set({
+      selectedEdgeId: edgeId, edgeEditMode: false, edgeEditFirstNode: null,
+      drawerOpen: true, drawerTab: "scenario",
+    });
+  },
+
+  // Edges are picked by two node clicks (from, then to), never by clicking a
+  // road line directly: two directed edges running opposite ways between the
+  // same node pair render on the exact same screen line, so a direct click
+  // could never reliably tell them apart (audit finding: user always landed
+  // on one fixed direction no matter which visual line they clicked).
+  pickEdgeNode: (nodeId) => {
+    const state = get();
+    if (!state.edgeEditMode || !state.graphData) return;
+    const first = state.edgeEditFirstNode;
+    if (!first) {
+      set({ edgeEditFirstNode: nodeId });
+      return;
+    }
+    if (first === nodeId) {
+      // Same node twice: treat as "start over" rather than a dead end.
+      set({ edgeEditFirstNode: null });
+      return;
+    }
+    const nameOf = (id: string) => state.graphData?.nodes.find((node) => node.id === id)?.name ?? id;
+    const forward = state.graphData.edges.find((edge) => edge.u === first && edge.v === nodeId);
+    if (forward) {
+      get().selectEdge(forward.id);
+      return;
+    }
+    const backward = state.graphData.edges.find((edge) => edge.u === nodeId && edge.v === first);
+    if (backward) {
+      toast.error(
+        `Đoạn giữa ${nameOf(first)} và ${nameOf(nodeId)} chỉ đi được một chiều, ngược với thứ tự bạn vừa bấm. Hãy bấm lại, đổi thứ tự hai điểm.`,
+      );
+      set({ edgeEditFirstNode: null });
+      return;
+    }
+    toast.error(`${nameOf(first)} và ${nameOf(nodeId)} không có đoạn đường nối trực tiếp.`);
+    set({ edgeEditFirstNode: null });
   },
 
   setEdgeOverride: (edgeId, override) => {

@@ -548,15 +548,15 @@ Tìm kiếm chùm giữ biên P95 đúng bằng 50, phản ánh trực tiếp đ
 Dù thời gian trung vị 3,717 ms khá tốt, tỷ lệ tìm thấy 99,0% khiến thuật toán
 phù hợp hơn cho minh họa sự đánh đổi hoặc tình huống chấp nhận rủi ro thất bại.
 
-![Hình 7.1. Trung vị và P95 số đỉnh mở rộng của chín thuật toán.](../results/figs/report_exp3_expanded.png)
+![Hình 7.1. Trung vị và P95 số đỉnh mở rộng của chín thuật toán.](../../results/figs/report_exp3_expanded.png)
 
 *Hình 7.1. Số đỉnh mở rộng; trục tung dùng thang logarit.*
 
-![Hình 7.2. Trung vị và P95 thời gian chạy của chín thuật toán.](../results/figs/report_exp3_runtime.png)
+![Hình 7.2. Trung vị và P95 thời gian chạy của chín thuật toán.](../../results/figs/report_exp3_runtime.png)
 
 *Hình 7.2. Thời gian chạy; trục tung dùng thang logarit.*
 
-![Hình 7.3. Chênh lệch chi phí trung bình và tỷ lệ tìm thấy.](../results/figs/report_exp3_quality.png)
+![Hình 7.3. Chênh lệch chi phí trung bình và tỷ lệ tìm thấy.](../../results/figs/report_exp3_quality.png)
 
 *Hình 7.3. Chất lượng lời giải và tỷ lệ tìm thấy trên 400 lượt. Trong ba hình
 7.1-7.3, màu lam biểu diễn nhóm duyệt không thông tin, màu tím biểu diễn nhóm
@@ -642,7 +642,7 @@ Các đoạn thay đổi mạnh trên R22 gồm `n0460→n0456` (mức 5→1, ch
 trong hồ sơ sáng dù R07 dài hơn 29,1 m, rồi chuyển sang R22 khi mức ùn tắc trên
 nhánh này giảm vào hồ sơ đêm.
 
-![Hình 7.4. Hai tuyến A* của cặp OD-000 dưới hồ sơ 07:30 và 22:00.](assets/traffic_route_change_pair_000.png)
+![Hình 7.4. Hai tuyến A* của cặp OD-000 dưới hồ sơ 07:30 và 22:00.](../assets/traffic_route_change_pair_000.png)
 
 *Hình 7.4. Phần nét tách nhau thể hiện hai tiền tố khác nhau; hai tuyến nhập lại
 tại n0490 và đi chung đến đích.*

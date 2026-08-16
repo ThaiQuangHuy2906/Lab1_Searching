@@ -187,6 +187,8 @@ const RULES: readonly DynamicMessageRule[] = [
   { source: "Tối ưu thứ tự ghé hoàn tất với tổng chi phí {0}.", target: "Visit-order optimization completed with total cost {t0}." },
 
   // Validation, state, and action copy.
+  { source: "Đoạn giữa {0} và {1} chỉ đi được một chiều, ngược với thứ tự bạn vừa bấm. Hãy bấm lại, đổi thứ tự hai điểm.", target: "The road between {0} and {1} only runs one way, opposite the order you just clicked. Click again, swapping the order of the two points." },
+  { source: "{0} và {1} không có đoạn đường nối trực tiếp.", target: "{0} and {1} have no direct road segment connecting them." },
   { source: "Cần chọn ít nhất {0} mục để so sánh.", target: "Select at least {0} items for comparison." },
   { source: "Chỉ được chọn tối đa {0} mục để so sánh.", target: "Select no more than {0} items for comparison." },
   { source: "Held–Karp không nhận {0} điểm; giới hạn là 15.", target: "Held–Karp does not accept {0} locations; the limit is 15." },

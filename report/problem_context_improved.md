@@ -14,7 +14,7 @@ Vì vậy, nhóm lựa chọn kịch bản này nhằm mô phỏng một quyết
 
 Vấn đề cốt lõi của bài toán là việc người giao hàng phải đưa ra quyết định tuyến đường trong một mạng lưới giao thông có nhiều phương án khác nhau và nhiều yếu tố ảnh hưởng đến chất lượng của từng phương án.
 
-Đối với trường hợp **một điểm đến**, nếu chỉ lựa chọn tuyến có khoảng cách nhỏ nhất, shipper có thể đi vào một đoạn đường đang ùn tắc hoặc có điều kiện di chuyển bất lợi. Kết quả là quãng đường tuy ngắn nhưng thời gian thực tế lại cao hơn một tuyến khác dài hơn đôi chút.
+Đối với trường hợp **một điểm đến**, nếu chỉ lựa chọn tuyến có khoảng cách nhỏ nhất, shipper có thể đi vào một đoạn đường đang ùn tắc hoặc có điều kiện di chuyển bất lợi. Kết quả là quãng đường tuy ngắn nhưng thời gian di chuyển ước tính có thể cao hơn so với một tuyến khác dài hơn đôi chút.
 
 Đối với trường hợp **nhiều điểm giao hàng**, độ phức tạp còn tăng lên vì chất lượng của toàn bộ hành trình phụ thuộc vào cả **thứ tự ghé thăm các địa điểm**. Ví dụ, nếu các điểm giao được sắp xếp không phù hợp, shipper có thể phải di chuyển qua lại giữa các khu vực thay vì hoàn thành các điểm gần nhau theo một trình tự hợp lý. Vì vậy, tối ưu riêng từng đoạn đường chưa chắc tạo ra một hành trình tổng thể tốt.
 

@@ -4,7 +4,7 @@
 
 ### a.1. Group Information
 
-- **Group:** Group 2 (group code: 2)
+- **Group:** Group 2
 - **Class:** 24C03
 - **Course:** Foundations of Artificial Intelligence
 - **Topic:** Optimal multi-stop route planning for a courier in Ho Chi Minh City

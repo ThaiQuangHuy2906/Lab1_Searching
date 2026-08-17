@@ -8,7 +8,7 @@ Khó khăn tiếp theo là cân bằng giữa **độ thực tế của bản đ
 
 Dự án cũng triển khai nhiều thuật toán tìm kiếm có cách mở rộng nút, quản lý frontier và điều kiện dừng khác nhau. Việc đưa kết quả của các thuật toán về cùng một cấu trúc để giao diện có thể hiển thị đường đi, số nút đã xét, chi phí và các bước tìm kiếm là một thách thức đáng kể.
 
-Đối với bài toán nhiều địa điểm, chi phí giữa hai điểm có thể không đối xứng do đường một chiều và điều kiện giao thông. Vì vậy, nhóm không chỉ phải tìm tuyến giữa từng cặp địa điểm mà còn phải đánh giá thứ tự ghé thăm. Các phương pháp như Held–Karp có thể cho nghiệm tối ưu ở quy mô nhỏ, trong khi Nearest Neighbor hoặc Simulated Annealing phù hợp hơn khi cần giảm thời gian tính toán nhưng chỉ cho nghiệm gần tối ưu.
+Đối với bài toán nhiều địa điểm, chi phí giữa hai điểm có thể không đối xứng do đường một chiều và điều kiện giao thông. Vì vậy, nhóm không chỉ phải tìm tuyến giữa từng cặp địa điểm mà còn phải đánh giá thứ tự ghé thăm. Held–Karp bảo đảm nghiệm tối ưu cho các trường hợp nhỏ trong giới hạn triển khai của dự án. Nearest Neighbor ưu tiên khả năng phản hồi nhanh, còn Simulated Annealing mở rộng phạm vi tìm kiếm; tuy nhiên, cả hai chỉ trả về nghiệm heuristic, không bảo đảm tối ưu và không có cận sai số tổng quát.
 
 Cuối cùng, backend, frontend và phần giải thích kết quả phải sử dụng nhất quán cùng dữ liệu và tham số đầu vào. Điều này đặc biệt quan trọng khi người dùng chạy nhiều thuật toán, so sánh kết quả hoặc chuyển sang chế độ tối ưu nhiều địa điểm.
 

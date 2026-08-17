@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1050" viewBox="0 0 1600 1050" role="img" aria-labelledby="title desc">
+  <title id="title">Data Construction, Graph Modeling, and Routing Flow</title>
+  <desc id="desc">A compact flowchart showing how G_real is built from OpenStreetMap, traffic profiles are derived from TomTom and simulated data, G_demo is constructed from G_real and POIs, and edge weights support search or ATSP optimization.</desc>
+
+  <defs>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="150%">
+      <feDropShadow dx="0" dy="5" stdDeviation="7" flood-color="#0f172a" flood-opacity="0.10"/>
+    </filter>
+    <marker id="arrow" markerWidth="11" markerHeight="11" refX="9" refY="5.5" orient="auto" markerUnits="strokeWidth">
+      <path d="M1 1 L10 5.5 L1 10 Z" fill="#475569"/>
+    </marker>
+    <marker id="arrow-green" markerWidth="11" markerHeight="11" refX="9" refY="5.5" orient="auto" markerUnits="strokeWidth">
+      <path d="M1 1 L10 5.5 L1 10 Z" fill="#059669"/>
+    </marker>
+    <style>
+      .title { font: 700 42px Inter, Arial, sans-serif; fill: #0f172a; }
+      .subtitle { font: 400 20px Inter, Arial, sans-serif; fill: #64748b; }
+      .lane { font: 700 15px Inter, Arial, sans-serif; letter-spacing: 1.8px; }
+      .box-title { font: 700 21px Inter, Arial, sans-serif; fill: #0f172a; }
+      .box-body { font: 400 17px Inter, Arial, sans-serif; fill: #475569; }
+      .metric { font: 700 18px Inter, Arial, sans-serif; fill: #4338ca; }
+      .chip { font: 700 14px Inter, Arial, sans-serif; }
+      .arrow { fill: none; stroke: #475569; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; marker-end: url(#arrow); }
+      .dependency { fill: none; stroke: #059669; stroke-width: 3; stroke-dasharray: 9 8; stroke-linecap: round; stroke-linejoin: round; marker-end: url(#arrow-green); }
+    </style>
+  </defs>
+
+  <rect width="1600" height="1050" fill="#f8fafc"/>
+  <rect width="1600" height="13" fill="#0891b2"/>
+
+  <!-- Header -->
+  <text x="70" y="75" class="title">Data Construction and Routing Flow</text>
+  <text x="70" y="112" class="subtitle">From Data Sources to G_real, G_demo, Edge Weights, and Route Results</text>
+
+  <!-- Lane backgrounds -->
+  <rect x="45" y="150" width="1510" height="160" rx="25" fill="#ffffff" stroke="#dbe4ee" stroke-width="2"/>
+  <rect x="45" y="330" width="1510" height="160" rx="25" fill="#ffffff" stroke="#dbe4ee" stroke-width="2"/>
+  <rect x="45" y="510" width="1510" height="160" rx="25" fill="#ffffff" stroke="#dbe4ee" stroke-width="2"/>
+  <rect x="45" y="710" width="1510" height="265" rx="28" fill="#ffffff" stroke="#cbd5e1" stroke-width="2" filter="url(#shadow)"/>
+
+  <!-- Lane labels -->
+  <rect x="70" y="171" width="180" height="30" rx="15" fill="#e0f2fe"/>
+  <text x="160" y="192" text-anchor="middle" class="lane" fill="#0369a1">01 · G_REAL</text>
+
+  <rect x="70" y="351" width="220" height="30" rx="15" fill="#f3e8ff"/>
+  <text x="180" y="372" text-anchor="middle" class="lane" fill="#7e22ce">02 · TRAFFIC</text>
+
+  <rect x="70" y="531" width="190" height="30" rx="15" fill="#fff7ed"/>
+  <text x="165" y="552" text-anchor="middle" class="lane" fill="#c2410c">03 · G_DEMO</text>
+
+  <rect x="70" y="735" width="190" height="30" rx="15" fill="#ecfdf5"/>
+  <text x="165" y="756" text-anchor="middle" class="lane" fill="#047857">04 · ROUTING</text>
+
+  <!-- Row 1 arrows -->
+  <path class="arrow" d="M400 240 H500"/>
+  <path class="arrow" d="M850 240 H950"/>
+  <path class="arrow" d="M1240 240 H1320"/>
+
+  <!-- Row 1 boxes -->
+  <g filter="url(#shadow)">
+    <rect x="80" y="213" width="320" height="78" rx="18" fill="#e0f2fe" stroke="#0284c7" stroke-width="2"/>
+    <rect x="500" y="213" width="350" height="78" rx="18" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+    <rect x="950" y="213" width="290" height="78" rx="18" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+    <rect x="1320" y="202" width="190" height="100" rx="20" fill="#eef2ff" stroke="#4f46e5" stroke-width="3"/>
+  </g>
+  <text x="240" y="246" text-anchor="middle" class="box-title">OpenStreetMap</text>
+  <text x="240" y="273" text-anchor="middle" class="box-body">central Ho Chi Minh City road network</text>
+  <text x="675" y="246" text-anchor="middle" class="box-title">OSMnx</text>
+  <text x="675" y="273" text-anchor="middle" class="box-body">simplify + retain the largest SCC</text>
+  <text x="1095" y="246" text-anchor="middle" class="box-title">Normalization</text>
+  <text x="1095" y="273" text-anchor="middle" class="box-body">remove self-loops + merge parallel edges</text>
+  <text x="1415" y="240" text-anchor="middle" class="box-title">G_real</text>
+  <text x="1415" y="272" text-anchor="middle" class="metric">2,118 nodes · 4,699 edges</text>
+
+  <!-- Row 2 arrows and boxes -->
+  <path class="arrow" d="M365 420 H500"/>
+  <path class="arrow" d="M850 420 H960"/>
+  <path class="arrow" d="M1260 420 H1330"/>
+
+  <g filter="url(#shadow)">
+    <rect x="80" y="392" width="285" height="78" rx="18" fill="#e0f2fe" stroke="#0284c7" stroke-width="2"/>
+    <rect x="500" y="392" width="350" height="78" rx="18" fill="#f3e8ff" stroke="#9333ea" stroke-width="2"/>
+    <rect x="960" y="392" width="300" height="78" rx="18" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+    <rect x="1330" y="382" width="180" height="98" rx="20" fill="#eef2ff" stroke="#4f46e5" stroke-width="3"/>
+  </g>
+  <text x="222" y="425" text-anchor="middle" class="box-title">TomTom</text>
+  <text x="222" y="452" text-anchor="middle" class="box-body">4 time slots × 40 records</text>
+  <text x="675" y="425" text-anchor="middle" class="box-title">TomTom + deterministic fallback</text>
+  <text x="675" y="452" text-anchor="middle" class="box-body">635 edges + 4,064 edges per time slot</text>
+  <text x="1110" y="425" text-anchor="middle" class="box-title">Congestion level 1–5</text>
+  <text x="1110" y="452" text-anchor="middle" class="box-body">covers every edge in G_real</text>
+  <text x="1420" y="418" text-anchor="middle" class="box-title">Profile_real</text>
+  <text x="1420" y="451" text-anchor="middle" class="metric">4 time slots</text>
+
+  <!-- Row 3 arrows and dependencies -->
+  <path class="arrow" d="M350 600 H485"/>
+  <path class="arrow" d="M835 600 H955"/>
+  <path class="arrow" d="M1245 600 H1330"/>
+  <path class="dependency" d="M1415 302 V585 H1248"/>
+  <path class="dependency" d="M1420 480 V530"/>
+
+  <g filter="url(#shadow)">
+    <rect x="80" y="572" width="270" height="78" rx="18" fill="#fff7ed" stroke="#ea580c" stroke-width="2"/>
+    <rect x="485" y="572" width="350" height="78" rx="18" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+    <rect x="955" y="562" width="290" height="98" rx="20" fill="#eef2ff" stroke="#4f46e5" stroke-width="3"/>
+    <rect x="1330" y="562" width="180" height="98" rx="20" fill="#eef2ff" stroke="#4f46e5" stroke-width="3"/>
+  </g>
+  <text x="215" y="605" text-anchor="middle" class="box-title">51 curated POIs</text>
+  <text x="215" y="632" text-anchor="middle" class="box-body">delivery locations</text>
+  <text x="660" y="605" text-anchor="middle" class="box-title">Snap Nodes + Contract Corridors</text>
+  <text x="660" y="632" text-anchor="middle" class="box-body">using directed paths in G_real</text>
+  <text x="1100" y="598" text-anchor="middle" class="box-title">G_demo</text>
+  <text x="1100" y="631" text-anchor="middle" class="metric">51 nodes · 298 edges</text>
+  <text x="1420" y="598" text-anchor="middle" class="box-title">Profile_demo</text>
+  <text x="1420" y="631" text-anchor="middle" class="metric">4 time slots</text>
+
+  <!-- Runtime inputs -->
+  <path class="dependency" d="M1420 660 V690 H325 V790"/>
+
+  <!-- Runtime flow -->
+  <path class="arrow" d="M470 855 H565"/>
+  <path class="arrow" d="M835 855 H930"/>
+  <path class="arrow" d="M1190 855 H1280"/>
+
+  <g filter="url(#shadow)">
+    <rect x="80" y="790" width="390" height="130" rx="22" fill="#eef2ff" stroke="#4f46e5" stroke-width="3"/>
+    <rect x="565" y="790" width="270" height="130" rx="22" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+    <rect x="930" y="790" width="260" height="130" rx="22" fill="#fff7ed" stroke="#ea580c" stroke-width="2"/>
+    <rect x="1280" y="790" width="230" height="130" rx="22" fill="#0f172a" stroke="#0f172a" stroke-width="2"/>
+  </g>
+
+  <text x="275" y="828" text-anchor="middle" class="box-title" style="font-size:18px">G_real/G_demo + corresponding profile</text>
+  <text x="275" y="862" text-anchor="middle" class="box-body">directed edges and time-slot data</text>
+  <g>
+    <rect x="130" y="881" width="95" height="25" rx="12" fill="#dbeafe"/>
+    <rect x="230" y="881" width="90" height="25" rx="12" fill="#dcfce7"/>
+    <rect x="325" y="881" width="95" height="25" rx="12" fill="#ffedd5"/>
+    <text x="177" y="899" text-anchor="middle" class="chip" fill="#1d4ed8">distance</text>
+    <text x="275" y="899" text-anchor="middle" class="chip" fill="#047857">time</text>
+    <text x="372" y="899" text-anchor="middle" class="chip" fill="#c2410c">balanced</text>
+  </g>
+
+  <text x="700" y="837" text-anchor="middle" class="box-title">Compute Edge Weights</text>
+  <text x="700" y="872" text-anchor="middle" class="box-body">by objective and congestion level</text>
+  <text x="700" y="900" text-anchor="middle" class="box-body">distance: m · other modes: s</text>
+
+  <text x="1060" y="837" text-anchor="middle" class="box-title">Searching / ATSP</text>
+  <text x="1060" y="872" text-anchor="middle" class="box-body">route search or optimization</text>
+  <text x="1060" y="900" text-anchor="middle" class="box-body">multi-stop visiting order</text>
+
+  <text x="1395" y="837" text-anchor="middle" font-family="Inter,Arial,sans-serif" font-size="22" font-weight="700" fill="#ffffff">Results</text>
+  <text x="1395" y="872" text-anchor="middle" font-family="Inter,Arial,sans-serif" font-size="17" fill="#cbd5e1">directed route</text>
+  <text x="1395" y="900" text-anchor="middle" font-family="Inter,Arial,sans-serif" font-size="17" fill="#cbd5e1">and total cost</text>
+
+  <text x="800" y="1020" text-anchor="middle" class="subtitle">Dashed lines denote dependencies on upstream data; solid lines denote the primary processing flow.</text>
+</svg>
